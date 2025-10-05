@@ -67,10 +67,18 @@ DevMiniEngine/
 ├── Tools/                           # Development Tools
 ├── Assets/                          # Resources (Shaders, Textures, Models)
 ├── Tests/                           # Unit Tests
-└── Docs/                            # Documentation
+├── Docs/                            # Documentation
+│
+├── bin/                             # Build Outputs (exe, lib, dll)
+│   ├── Debug/
+│   └── Release/
+│
+└── intermediate/                    # Intermediate Build Files (obj, pch)
+   ├── Debug/
+   └── Release/
 ```
 
-For detailed structure, see [Architecture Documentation](./Docs/Architecture.md).
+For detailed **architecture design and module dependencies**, see [Architecture Documentation](./Docs/Architecture.md).
 
 ## 🚀 Build & Run (Planned)
 

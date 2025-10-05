@@ -67,11 +67,17 @@ DevMiniEngine/
 ├── Tools/                           # 개발 도구
 ├── Assets/                          # 리소스 (셰이더, 텍스처, 모델)
 ├── Tests/                           # 단위 테스트
-└── Docs/                            # 문서
-
+├── Docs/                            # 문서
+├── bin/                             # 빌드 출력물 (exe, lib, dll)
+│   ├── Debug/
+│   └── Release/
+│
+└── intermediate/                    # 중간 빌드 파일 (obj, pch)
+   ├── Debug/
+   └── Release/
 ```
 
-자세한 구조는 [프로젝트 구조 문서](./Docs/Architecture.md)를 참조하세요.
+아키텍처 설계 및 모듈 의존성에 대한 자세한 내용은 [아키텍처 문서](./Docs/Architecture.md)를 참조하세요.
 
 ## 🚀 빌드 및 실행 (예정)
 

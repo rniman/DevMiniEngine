@@ -2,6 +2,44 @@
 
 ---
 
+## 2025-10-05 - Core Project Setup & Basic Types
+
+### Tasks
+- [x] Create Core project (Static Library)
+- [x] Configure project settings
+  - Output: `bin\$(Configuration)\`, Intermediate: `intermediate\$(Configuration)\$(ProjectName)\`
+  - C++20, Additional includes: `$(ProjectDir)include\`
+  - Warning Level 4, Runtime Library: /MDd (Debug), /MD (Release)
+- [x] Implement Types.h
+  - Basic type aliases (uint8, uint16, uint32, int8, int16, int32, float32, float64)
+  - Smart pointer aliases (UniquePtr, SharedPtr, WeakPtr)
+  - Container aliases (Vector, Array, String)
+  - Helper functions (MakeUnique, MakeShared)
+- [x] Add Core.cpp for module initialization
+- [x] Build verification successful
+
+### Decisions
+- **Simplified output paths**: No platform suffix (x64 only target)
+- **Core namespace**: All type aliases in `Core::` to avoid std conflicts
+- **Smart pointers included**: WeakPtr added for circular reference handling
+
+### Issues Encountered
+- C/C++ property tab not visible until .cpp file added
+- Initially added redundant `_DEBUG`/`NDEBUG` preprocessor definitions (auto-defined by VS)
+
+### Notes
+- First successful build: `bin/Debug/Core.lib`
+- ~50 lines of code, 0 warnings, < 1s build time
+- Types.h provides foundation for all future modules
+
+### Next Steps
+- [ ] Implement basic Logging system (Logger.h/cpp)
+- [ ] Add Macros.h (Assert, platform detection)
+- [ ] Create Math project structure
+- [ ] Design Memory allocator interfaces
+
+---
+
 ## 2025-10-05 - Project Initialization
 
 ### Tasks
