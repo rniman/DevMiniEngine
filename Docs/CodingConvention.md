@@ -429,6 +429,22 @@ bool ResourceManager::LoadTexture(const std::string& path)
 - Self-documenting code first
 - Use TODO/FIXME tags
 
+### ✅ Use Objective Expressions
+- Avoid absolute terms (Perfect, Always, Never, Best)
+- Use specific and measurable expressions
+- Clearly state advantages, disadvantages, or conditions
+
+**Examples:**
+```cpp
+// ❌ Perfect for all use cases
+// ✅ Well-suited for per-frame allocations due to O(1) allocation time
+
+// ❌ Always use this method
+// ✅ Recommended for single-threaded scenarios
+
+// ❌ The best approach
+// ✅ More efficient than alternative X when condition Y is met
+
 ### ✅ File Header
 ```cpp
 /**

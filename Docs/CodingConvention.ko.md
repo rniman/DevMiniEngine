@@ -429,6 +429,22 @@ bool ResourceManager::LoadTexture(const std::string& path)
 - Self-documenting code 우선
 - TODO/FIXME 태그 활용
 
+### ✅ 객관적 표현 사용
+- 절대적 표현(Perfect, Always, Never, Best) 지양
+- 구체적이고 측정 가능한 표현 사용
+- 장단점이나 적용 조건을 명시
+
+**예시:**
+```cpp
+// ❌ Perfect for all use cases
+// ✅ Well-suited for per-frame allocations due to O(1) allocation time
+
+// ❌ Always use this method
+// ✅ Recommended for single-threaded scenarios
+
+// ❌ The best approach
+// ✅ More efficient than alternative X when condition Y is met
+
 ### ✅ 파일 헤더
 ```cpp
 /**
