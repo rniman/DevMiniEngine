@@ -5,6 +5,10 @@ VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Engine\Core\Core.vcxproj", "{3EA077BE-CD29-4842-B740-1D746785C778}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01_MemoryTest", "Samples\01_MemoryTest\01_MemoryTest.vcxproj", "{CEA17450-3654-41B3-B546-8423EA46AF26}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,9 +25,20 @@ Global
 		{3EA077BE-CD29-4842-B740-1D746785C778}.Release|x64.Build.0 = Release|x64
 		{3EA077BE-CD29-4842-B740-1D746785C778}.Release|x86.ActiveCfg = Release|Win32
 		{3EA077BE-CD29-4842-B740-1D746785C778}.Release|x86.Build.0 = Release|Win32
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Debug|x64.ActiveCfg = Debug|x64
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Debug|x64.Build.0 = Debug|x64
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Debug|x86.ActiveCfg = Debug|Win32
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Debug|x86.Build.0 = Debug|Win32
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Release|x64.ActiveCfg = Release|x64
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Release|x64.Build.0 = Release|x64
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Release|x86.ActiveCfg = Release|Win32
+		{CEA17450-3654-41B3-B546-8423EA46AF26}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CEA17450-3654-41B3-B546-8423EA46AF26} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {754062E7-A9C4-434F-8C97-CBA9430783A5}
