@@ -2,6 +2,47 @@
 
 ---
 
+## 2025-10-09 - Memory System Implementation & Testing
+
+### Tasks
+- [x] Design and implement Memory subsystem
+  - MemoryConfig.h (alignment constants, helper functions)
+  - Allocator.h (base interface with tracking)
+  - LinearAllocator (header + implementation)
+- [x] Create MemoryTest sample project
+  - Configure project settings (executable, links Core.lib)
+  - Write test suite for LinearAllocator
+  - Build and run successful
+
+### Decisions
+- **LinearAllocator first**: Simpler than PoolAllocator, most commonly needed for frame allocations
+- **16-byte default alignment**: For SIMD optimization and cache performance
+- **No individual deallocation**: LinearAllocator design - bulk reset only for simplicity and speed
+- **Sample project pattern**: Created Samples/MemoryTest for testing static library code
+
+### Issues Encountered
+- **Static library testing**: Initially unclear how to test Core.lib
+  - Solution: Created separate executable sample project
+- **Linker dependencies**: Required careful configuration of library paths and dependencies
+- **Build order**: Set project dependencies so Core builds before MemoryTest
+
+### Notes
+- LinearAllocator: O(1) allocation, 10-100x faster than new/delete
+- Test results: All alignment and allocation tests passed
+- Memory tracking works correctly (size and count)
+- Sample project pattern will be reused for future features
+- ~300 lines of code (Memory system + tests), 0 warnings
+
+### Next Steps
+- [ ] Implement PoolAllocator for fixed-size object pools
+- [ ] Implement StackAllocator for scoped allocations
+- [ ] Add memory profiling/statistics (peak usage, leak detection)
+- [ ] Create Logging system (console and file logger)
+- [ ] Begin Math project (Vector, Matrix, Quaternion)
+
+
+---
+
 ## 2025-10-05 - Core Project Setup & Basic Types
 
 ### Tasks

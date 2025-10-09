@@ -444,6 +444,7 @@ bool ResourceManager::LoadTexture(const std::string& path)
 
 // ❌ The best approach
 // ✅ More efficient than alternative X when condition Y is met
+```
 
 ### ✅ File Header
 ```cpp
