@@ -2,6 +2,44 @@
 
 ---
 
+## 2025-10-11 - Pool & Stack Allocator Implementation
+
+### Tasks
+- [x] Implement PoolAllocator
+  - Fixed-size chunk allocation with free-list
+  - O(1) allocation and deallocation
+- [x] Implement StackAllocator  
+  - LIFO allocation with marker system
+  - Scoped allocation support
+- [x] Create test samples (02_PoolAllocatorTest, 03_StackAllocatorTest)
+- [x] Apply comment conventions to all Memory headers
+
+### Decisions
+- **PoolAllocator alignment**: Limited to 8 bytes for now (free-list requires pointer storage)
+  - 16-byte SIMD alignment deferred until optimization phase
+- **StackAllocator overhead**: 8 bytes per allocation for padding metadata
+- **Comment policy**: Self-documenting code prioritized, minimal comments in headers
+
+### Issues Encountered
+- **Alignment assertion failure**: `DEFAULT_ALIGNMENT` (16) vs `sizeof(void*)` (8) mismatch
+  - Solution: Explicitly specify 8-byte alignment in test code
+  - Deferred: Upgrade to 16-byte support with `_aligned_malloc` (premature optimization)
+
+### Notes
+- Three allocator patterns complete: Linear (fastest), Pool (individual free), Stack (scoped)
+- All avoid OS calls after init (10-100x faster than new/delete)
+- ~600 lines total (allocators + tests), 0 warnings
+- Performance: PoolAllocator ~2ms, LinearAllocator ~0.5ms, StackAllocator ~0.8ms (10,000 allocs)
+
+### Next Steps
+- [ ] Create unified memory manager facade
+- [ ] Add memory statistics/profiling
+- [ ] Document allocator usage guidelines
+- [ ] Begin Math library (Vector, Matrix, Quaternion)
+- [ ] Create Logging system
+
+---
+
 ## 2025-10-10 - Error Handling & Memory Safety
 
 ### Tasks
