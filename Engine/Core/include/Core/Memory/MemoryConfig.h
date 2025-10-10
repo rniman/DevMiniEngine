@@ -10,17 +10,18 @@ namespace Core
         // Memory Configuration
         //=============================================================================
 
-        // Memory alignment
-        constexpr size_t DEFAULT_ALIGNMENT = 16;      // 16-byte aligned (SIMD)
+        // Default alignments for memory allocations
+        constexpr size_t DEFAULT_ALIGNMENT = 16;      // SIMD optimization
         constexpr size_t CACHE_LINE_SIZE = 64;        // CPU cache line
 
-        // Memory pool sizes
+        // Standard memory size units
         constexpr size_t KB = 1024;
         constexpr size_t MB = 1024 * KB;
         constexpr size_t GB = 1024 * MB;
 
-        constexpr size_t FRAME_ALLOCATOR_SIZE = 10 * MB;   // 10MB per frame
-        constexpr size_t TEMP_ALLOCATOR_SIZE = 1 * MB;     // Temporary 1MB
+        // Pre-determined allocator sizes
+        constexpr size_t FRAME_ALLOCATOR_SIZE = 10 * MB;   // Reset every frame
+        constexpr size_t TEMP_ALLOCATOR_SIZE = 1 * MB;     // Short-lived allocations
 
         //=============================================================================
         // Memory Alignment Helpers
@@ -28,9 +29,7 @@ namespace Core
 
         /**
          * @brief Align a pointer to the specified alignment
-         * @param ptr Pointer to align
-         * @param alignment Alignment boundary (must be power of 2)
-         * @return Aligned pointer
+         * @note Alignment must be power of 2
          */
         inline void* AlignPointer(void* ptr, size_t alignment)
         {
@@ -41,18 +40,13 @@ namespace Core
 
         /**
          * @brief Calculate aligned size
-         * @param size Original size
-         * @param alignment Alignment boundary
-         * @return Aligned size
+         * @note Result is always >= original size
          */
         inline size_t AlignSize(size_t size, size_t alignment)
         {
             return (size + alignment - 1) & ~(alignment - 1);
         }
 
-        /**
-         * @brief Check if a pointer is aligned
-         */
         inline bool IsAligned(const void* ptr, size_t alignment)
         {
             return (reinterpret_cast<size_t>(ptr) & (alignment - 1)) == 0;

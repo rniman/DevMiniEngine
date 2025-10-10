@@ -5,22 +5,27 @@
 
 namespace Core
 {
-    // Debug Build: using assert 
-    // Release Build: exception throw
-    #ifdef _DEBUG
-        #define CORE_ASSERT(condition, message) \
-            assert((condition) && (message))
-    #else
-        #define CORE_ASSERT(condition, message) \
-            if (!(condition)) { \
-                throw std::runtime_error(message); \
-            }
-    #endif
+	/**
+	 * @brief Debug-only assertion
+	 * @note Compiled out in Release builds
+	 */
+	#ifdef _DEBUG
+		#define CORE_ASSERT(condition, message) \
+			assert((condition) && (message))
+	#else
+		#define CORE_ASSERT(condition, message) \
+			if (!(condition)) { \
+				throw std::runtime_error(message); \
+			}
+	#endif
 
-    // Fatal Error (Always check)
-    #define CORE_VERIFY(condition, message) \
-        if (!(condition)) { \
-            throw std::runtime_error(message); \
-        }
+	 /**
+	  * @brief Always-checked assertion
+	  * @note Active in both Debug and Release builds
+	  */
+	#define CORE_VERIFY(condition, message) \
+		if (!(condition)) { \
+			throw std::runtime_error(message); \
+		}
 
 } // namespace Core

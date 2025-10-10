@@ -9,8 +9,7 @@ namespace Core
     {
         /**
          * @brief Base allocator interface
-         *
-         * All custom allocators should inherit from this interface.
+         * All custom allocators inherit from this.
          */
         class Allocator
         {
@@ -19,26 +18,16 @@ namespace Core
 
             /**
              * @brief Allocate memory
-             * @param size Size in bytes
-             * @param alignment Memory alignment (default: 16)
              * @return Pointer to allocated memory, or nullptr on failure
              */
             virtual void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) = 0;
 
             /**
              * @brief Deallocate memory
-             * @param ptr Pointer to free
              */
             virtual void Deallocate(void* ptr) = 0;
 
-            /**
-             * @brief Get total allocated size
-             */
             virtual size_t GetAllocatedSize() const = 0;
-
-            /**
-             * @brief Get number of allocations
-             */
             virtual size_t GetAllocationCount() const = 0;
 
             /**

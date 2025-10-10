@@ -39,7 +39,7 @@ namespace Core
     // String Types
     //=============================================================================
     using String = std::string;
-    using WString = std::wstring;  // Wide string (Windows Unicode)
+    using WString = std::wstring;  // Windows Unicode
 
     //=============================================================================
     // Smart Pointers
@@ -72,18 +72,12 @@ namespace Core
     // Helper Functions
     //=============================================================================
 
-    /**
-     * @brief Create a unique pointer
-     */
     template<typename T, typename... Args>
     UniquePtr<T> MakeUnique(Args&&... args)
     {
         return std::make_unique<T>(std::forward<Args>(args)...);
     }
 
-    /**
-     * @brief Create a shared pointer
-     */
     template<typename T, typename... Args>
     SharedPtr<T> MakeShared(Args&&... args)
     {
