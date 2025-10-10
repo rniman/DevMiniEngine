@@ -20,10 +20,10 @@
     <ClCompile Include="src\Core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Memory\Allocator.cpp">
+    <ClCompile Include="src\Memory\LinearAllocator.cpp">
       <Filter>Source Files\Memory</Filter>
     </ClCompile>
-    <ClCompile Include="src\Memory\LinearAllocator.cpp">
+    <ClCompile Include="src\Memory\Allocator.cpp">
       <Filter>Source Files\Memory</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,6 +38,9 @@
       <Filter>Header Files\Memory</Filter>
     </ClInclude>
     <ClInclude Include="include\Core\Types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Assert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

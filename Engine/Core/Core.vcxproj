@@ -24,6 +24,7 @@
     <ClCompile Include="src\Memory\LinearAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Core\Assert.h" />
     <ClInclude Include="include\Core\Memory\Allocator.h" />
     <ClInclude Include="include\Core\Memory\LinearAllocator.h" />
     <ClInclude Include="include\Core\Memory\MemoryConfig.h" />

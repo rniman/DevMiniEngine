@@ -34,6 +34,10 @@ namespace Core
              */
             ~LinearAllocator() override;
 
+            // Non-copyable
+            LinearAllocator(const LinearAllocator&) = delete;
+            LinearAllocator& operator=(const LinearAllocator&) = delete;
+
             /**
              * @brief Allocate memory from the linear buffer
              * @param size Size in bytes
