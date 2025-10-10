@@ -424,76 +424,68 @@ bool ResourceManager::LoadTexture(const std::string& path)
 
 ## 📝 15. 주석 작성 규칙
 
-### ✅ 기본 원칙
+### 기본 원칙
+- **Self-documenting code 우선** - 주석보다 명확한 코드
 - **What보다 Why** 설명
-- Self-documenting code 우선
+- **최소한으로** - 필요한 곳에만
 - TODO/FIXME 태그 활용
 
-### ✅ 객관적 표현 사용
-- 절대적 표현(Perfect, Always, Never, Best) 지양
-- 구체적이고 측정 가능한 표현 사용
-- 장단점이나 적용 조건을 명시
-
-**예시:**
-```cpp
-// ❌ Perfect for all use cases
-// ✅ Well-suited for per-frame allocations due to O(1) allocation time
-
-// ❌ Always use this method
-// ✅ Recommended for single-threaded scenarios
-
-// ❌ The best approach
-// ✅ More efficient than alternative X when condition Y is met
-```
-
-### ✅ 파일 헤더
-```cpp
-/**
- * @file Renderer.h
- * @brief DirectX 12 렌더링 시스템 핵심 클래스
- * @author YourName
- * @date 2025-10-04
- */
-```
-
-### ✅ 함수 설명
-```cpp
-/**
- * @brief 삼각형을 화면에 렌더링
- * @param vertices 정점 배열
- * @param count 정점 개수 (3의 배수)
- * @param transform 변환 행렬
- * @return 성공 시 true
- * @note DirectX 12 파이프라인 상태 필요
- */
-bool DrawTriangles(const Vertex* vertices, size_t count, const Matrix& transform);
-```
-### 📝 함수 문서화 기준
-
-**반드시 문서화:**
-- Public API 함수
-- 사용에 제약 조건이 있는 함수
-- 매개변수 의미가 불명확한 함수
+### 주석이 필요한 경우
+- 복잡한 알고리즘
+- 비직관적인 결정 (성능 최적화 등)
+- Public API의 제약사항
 - 예외를 던질 수 있는 함수
 
-**선택적 문서화:**
-- Protected 함수 (상황에 따라)
-- 복잡한 알고리즘 구현 함수
-
-**문서화 불필요:**
+### 주석이 불필요한 경우
 - 자명한 Getter/Setter
+- 생성자/소멸자 (특별한 이유 없으면)
 - Private 내부 구현 함수
-- 함수명과 매개변수만으로 의미가 명확한 경우
+- 함수명과 파라미터로 의미가 명확한 경우
 
-**원칙:**
-> "이 함수를 처음 보는 개발자가 5초 안에 이해 못하면 문서화하라"
+### 클래스 및 함수 주석
+```cpp
+// ✅ 클래스: 간단한 설명만
+/**
+ * @brief Linear allocator for frame-temporary data
+ * Cannot free individual allocations. Use Reset().
+ */
+class LinearAllocator { ... };
 
-### ✅ TODO 태그
+// ✅ 복잡한 함수만 문서화
+/**
+ * @brief Renders triangles with custom transform
+ * @note Requires active pipeline state
+ */
+bool DrawTriangles(const Vertex* vertices, size_t count, const Matrix& transform);
+
+// ✅ 자명한 함수는 주석 없음
+size_t GetCapacity() const { return mSize; }
+
+// ✅ 중요한 동작만 inline 주석
+void Deallocate(void* ptr) override;  // No-op
+```
+
+### TODO 태그
 ```cpp
 // TODO: 멀티스레드 렌더링 지원 추가
 // FIXME: 창 크기 변경 시 크래시 (Issue #42)
 // NOTE: 최적화 필요 - 현재 100ms 소요
 // HACK: 임시 해결책, 추후 수정 필요
+```
+
+### 피해야 할 주석
+```cpp
+// ❌ 당연한 것 설명
+i++;  // i를 1 증가
+
+// ✅ Why 설명
+i++;  // 다음 프레임 인덱스로 이동
+
+// ❌ 절대적 표현
+// Perfect for all use cases
+
+// ✅ 구체적 표현
+// Well-suited for per-frame allocations (O(1) allocation)
 ```
 
 ---

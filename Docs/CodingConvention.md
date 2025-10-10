@@ -424,77 +424,68 @@ bool ResourceManager::LoadTexture(const std::string& path)
 
 ## 📝 15. Comment Guidelines
 
-### ✅ Basic Principles
+### Basic Principles
+- **Self-documenting code first** - Clear code over comments
 - Explain **Why** over What
-- Self-documenting code first
+- **Minimal** - Only where necessary
 - Use TODO/FIXME tags
 
-### ✅ Use Objective Expressions
-- Avoid absolute terms (Perfect, Always, Never, Best)
-- Use specific and measurable expressions
-- Clearly state advantages, disadvantages, or conditions
-
-**Examples:**
-```cpp
-// ❌ Perfect for all use cases
-// ✅ Well-suited for per-frame allocations due to O(1) allocation time
-
-// ❌ Always use this method
-// ✅ Recommended for single-threaded scenarios
-
-// ❌ The best approach
-// ✅ More efficient than alternative X when condition Y is met
-```
-
-### ✅ File Header
-```cpp
-/**
- * @file Renderer.h
- * @brief Core DirectX 12 rendering system class
- * @author YourName
- * @date 2025-10-04
- */
-```
-
-### ✅ Function Documentation
-```cpp
-/**
- * @brief Renders triangles to the screen
- * @param vertices Vertex array
- * @param count Number of vertices (multiple of 3)
- * @param transform Transformation matrix
- * @return true on success
- * @note Requires DirectX 12 pipeline state
- */
-bool DrawTriangles(const Vertex* vertices, size_t count, const Matrix& transform);
-```
-
-### 📝 Function Documentation Criteria
-
-**Must document:**
-- Public API functions
-- Functions with usage constraints
-- Functions with unclear parameter meanings
+### When Comments Are Needed
+- Complex algorithms
+- Non-intuitive decisions (performance optimizations, etc.)
+- Public API constraints
 - Functions that can throw exceptions
 
-**Optional documentation:**
-- Protected functions (case by case)
-- Complex algorithm implementations
-
-**No documentation needed:**
-- Self-explanatory Getters/Setters
+### When Comments Are Unnecessary
+- Self-explanatory Getter/Setter
+- Constructor/Destructor (unless special reason)
 - Private internal implementation functions
-- When meaning is clear from function name and parameters alone
+- When function name and parameters are clear
 
-**Principle:**
-> "If a developer seeing this function for the first time can't understand it in 5 seconds, document it"
+### Class and Function Comments
+```cpp
+// ✅ Class: Brief description only
+/**
+ * @brief Linear allocator for frame-temporary data
+ * Cannot free individual allocations. Use Reset().
+ */
+class LinearAllocator { ... };
 
-### ✅ TODO Tags
+// ✅ Document complex functions only
+/**
+ * @brief Renders triangles with custom transform
+ * @note Requires active pipeline state
+ */
+bool DrawTriangles(const Vertex* vertices, size_t count, const Matrix& transform);
+
+// ✅ No comment for obvious functions
+size_t GetCapacity() const { return mSize; }
+
+// ✅ Inline comment for important behavior
+void Deallocate(void* ptr) override;  // No-op
+```
+
+### TODO Tags
 ```cpp
 // TODO: Add multithreaded rendering support
 // FIXME: Crash on window resize (Issue #42)
 // NOTE: Optimization needed - currently takes 100ms
 // HACK: Temporary solution, needs future revision
+```
+
+### Comments to Avoid
+```cpp
+// ❌ Stating the obvious
+i++;  // Increment i by 1
+
+// ✅ Explain why
+i++;  // Move to next frame index
+
+// ❌ Absolute statements
+// Perfect for all use cases
+
+// ✅ Specific statements
+// Well-suited for per-frame allocations (O(1) allocation)
 ```
 
 ---
