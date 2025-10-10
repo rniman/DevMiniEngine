@@ -2,6 +2,43 @@
 
 ---
 
+## 2025-10-10 - Error Handling & Memory Safety
+
+### Tasks
+- [x] Implement Assert.h for error handling
+  - CORE_ASSERT (debug only, uses assert)
+  - CORE_VERIFY (always checks, throws exception)
+- [x] Prevent memory leaks in LinearAllocator
+  - Delete copy constructor and copy assignment
+  - Replace assert with new macros
+
+### Decisions
+- **CORE_ASSERT vs CORE_VERIFY**: ASSERT for debug checks (compiled out in release), VERIFY for critical checks (always executed)
+- **No copy semantics**: LinearAllocator owns raw memory - copying would cause double-free
+- **Fail-fast on OOM**: Out-of-memory throws exception rather than returning nullptr
+
+### Issues Encountered
+- **ASSERT vs VERIFY usage**: Initially unclear when to use which
+  - Solution: ASSERT for "should never happen in correct code", VERIFY for "might fail due to external factors"
+- **OOM handling**: Debated between return nullptr vs throw exception
+  - Decision: Fail fast - OOM is unrecoverable in our use case
+
+### Notes
+- Assert.h pattern will be reused across all Core modules
+- Copy prevention pattern applies to all future allocators
+- All existing MemoryTest cases still pass
+- No performance impact in release builds
+
+### Next Steps
+- [ ] Implement PoolAllocator for fixed-size object pools
+- [ ] Implement StackAllocator for scoped allocations
+- [ ] Document assertion guidelines in CodingConvention.md
+- [ ] Add memory profiling/statistics (peak usage, leak detection)
+- [ ] Create Logging system (console and file logger)
+- [ ] Begin Math project (Vector, Matrix, Quaternion)
+
+---
+
 ## 2025-10-09 - Memory System Implementation & Testing
 
 ### Tasks
@@ -39,7 +76,6 @@
 - [ ] Add memory profiling/statistics (peak usage, leak detection)
 - [ ] Create Logging system (console and file logger)
 - [ ] Begin Math project (Vector, Matrix, Quaternion)
-
 
 ---
 
