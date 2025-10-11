@@ -15,6 +15,12 @@
     <Filter Include="Header Files\Memory">
       <UniqueIdentifier>{0b812f94-150d-4aa5-b9f6-31da379bfc68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Logging">
+      <UniqueIdentifier>{35fa2aa5-0604-4b52-8c07-7b20a41f6f4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Logging">
+      <UniqueIdentifier>{f6812a44-8f88-4831-ae28-dd33b028028d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Core.cpp">
@@ -31,6 +37,15 @@
     </ClCompile>
     <ClCompile Include="src\Memory\StackAllocator.cpp">
       <Filter>Source Files\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logging\ConsoleSink.cpp">
+      <Filter>Source Files\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logging\FileSink.cpp">
+      <Filter>Source Files\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logging\Logger.cpp">
+      <Filter>Source Files\Logging</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +69,24 @@
     </ClInclude>
     <ClInclude Include="include\Core\Memory\StackAllocator.h">
       <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Logging\ConsoleSink.h">
+      <Filter>Header Files\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Logging\FileSink.h">
+      <Filter>Header Files\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Logging\Logger.h">
+      <Filter>Header Files\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Logging\LogMacros.h">
+      <Filter>Header Files\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Logging\LogSink.h">
+      <Filter>Header Files\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core\Logging\LogTypes.h">
+      <Filter>Header Files\Logging</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

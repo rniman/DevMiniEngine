@@ -1,5 +1,6 @@
 #include "Core/Memory/LinearAllocator.h"
 #include "Core/Assert.h"
+#include "Core/Logging/LogMacros.h" 
 #include <cstdlib>
 #include <cassert>
 
@@ -19,12 +20,15 @@ namespace Core
             mMemory = std::malloc(size);
             
             CORE_VERIFY(mMemory, "Failed to allocate memory for LinearAllocator");
+
+            LOG_TRACE("LinearAllocator created: %zu bytes", size);
         }
 
         LinearAllocator::~LinearAllocator()
         {
             if (mMemory)
             {
+                LOG_TRACE("LinearAllocator destroyed: %zu bytes allocated, %zu allocations", mOffset, mAllocationCount);
                 std::free(mMemory);
                 mMemory = nullptr;
             }
@@ -43,6 +47,7 @@ namespace Core
             // Check if we have enough space
             if (mOffset + padding + size > mSize)
             {
+                LOG_ERROR("LinearAllocator out of memory: requested %zu bytes, available %zu bytes", size, mSize - mOffset);
                 // Out of memory
                 CORE_ASSERT(false, "LinearAllocator out of memory");
                 return nullptr;
@@ -64,6 +69,7 @@ namespace Core
 
         void LinearAllocator::Reset()
         {
+            LOG_TRACE("LinearAllocator reset: freed %zu bytes, %zu allocations", mOffset, mAllocationCount);
             mOffset = 0;
             mAllocationCount = 0;
         }

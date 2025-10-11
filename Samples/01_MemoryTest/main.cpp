@@ -1,8 +1,17 @@
 #include "Core/Memory/LinearAllocator.h"
+#include "Core/Logging/Logger.h"
+#include "Core/Logging/FileSink.h"
+#include "Core/Logging/ConsoleSink.h"
 #include <iostream>
 
 int main()
 {
+    auto& logger = Core::Logging::Logger::GetInstance();
+    // 콘솔 Sink
+    logger.AddSink(std::make_unique<Core::Logging::ConsoleSink>(true));
+    // 파일 Sink
+    logger.AddSink(std::make_unique<Core::Logging::FileSink>("engine.log"));
+
     std::cout << "========================================" << std::endl;
     std::cout << "    Memory Allocator Test" << std::endl;
     std::cout << "========================================" << std::endl;

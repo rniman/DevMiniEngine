@@ -1,5 +1,6 @@
 #include "Core/Memory/StackAllocator.h"
 #include "Core/Assert.h"
+#include "Core/Logging/LogMacros.h" 
 #include <cstdlib>
 
 namespace Core
@@ -17,12 +18,15 @@ namespace Core
             mMemory = std::malloc(size);
 
             CORE_VERIFY(mMemory, "Failed to allocate memory for StackAllocator");
+         
+            LOG_FATAL("StackAllocator created: %zu bytes", size);
         }
 
         StackAllocator::~StackAllocator()
         {
             if (mMemory)
             {
+                LOG_TRACE("StackAllocator destroyed: %zu bytes peak, %zu allocations", mOffset, mAllocationCount);
                 std::free(mMemory);
                 mMemory = nullptr;
             }
@@ -44,6 +48,7 @@ namespace Core
             // Check if we have enough space
             if (mOffset + totalSize > mSize)
             {
+                LOG_ERROR("StackAllocator out of memory: requested %zu bytes, available %zu bytes", size, mSize - mOffset);
                 CORE_ASSERT(false, "StackAllocator out of memory");
                 return nullptr;
             }
@@ -64,6 +69,7 @@ namespace Core
 
         void StackAllocator::Reset()
         {
+            LOG_TRACE("LinearAllocator reset: freed %zu bytes, %zu allocations", mOffset, mAllocationCount);
             mOffset = 0;
             mAllocationCount = 0;
         }
@@ -74,6 +80,10 @@ namespace Core
 
             if (marker < mOffset)
             {
+                size_t freedBytes = mOffset - marker;
+
+                LOG_TRACE("StackAllocator freed to marker: %zu bytes freed", freedBytes);
+
                 mOffset = marker;
 
                 // NOTE: Cannot accurately track allocation count with markers

@@ -1,5 +1,6 @@
 #include "Core/Memory/PoolAllocator.h"
 #include "Core/Assert.h"
+#include "Core/Logging/LogMacros.h"
 #include <cstdlib>
 
 namespace Core
@@ -26,12 +27,23 @@ namespace Core
             CORE_VERIFY(mMemory, "Failed to allocate memory for PoolAllocator");
 
             InitializeFreeList();
+
+            LOG_TRACE("PoolAllocator created: %zu chunks x %zu bytes = %zu total", mChunkCount, mChunkSize, totalSize);
         }
 
         PoolAllocator::~PoolAllocator()
         {
             if (mMemory)
             {
+                if (mAllocatedChunks > 0)
+                {
+                    LOG_WARN("PoolAllocator destroyed with %zu chunks still allocated (potential leak)", mAllocatedChunks);
+                }
+                else
+                {
+                    LOG_TRACE("PoolAllocator destroyed cleanly");
+                }
+
                 std::free(mMemory);
                 mMemory = nullptr;
             }
@@ -44,6 +56,7 @@ namespace Core
 
             if (mFreeList == nullptr)
             {
+                LOG_ERROR("PoolAllocator out of memory: all %zu chunks allocated", mChunkCount);
                 CORE_ASSERT(false, "PoolAllocator out of memory");
                 return nullptr;
             }

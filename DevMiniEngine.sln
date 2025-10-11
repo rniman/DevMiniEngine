@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Engine\Math\Math.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04_MathTest", "Samples\04_MathTest\04_MathTest.vcxproj", "{A890DC48-E263-41AA-924D-60AEC7842EC7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05_LoggingTest", "Samples\05_LoggingTest\05_LoggingTest.vcxproj", "{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -73,6 +75,14 @@ Global
 		{A890DC48-E263-41AA-924D-60AEC7842EC7}.Release|x64.Build.0 = Release|x64
 		{A890DC48-E263-41AA-924D-60AEC7842EC7}.Release|x86.ActiveCfg = Release|Win32
 		{A890DC48-E263-41AA-924D-60AEC7842EC7}.Release|x86.Build.0 = Release|Win32
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Debug|x64.ActiveCfg = Debug|x64
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Debug|x64.Build.0 = Debug|x64
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Debug|x86.ActiveCfg = Debug|Win32
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Debug|x86.Build.0 = Debug|Win32
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Release|x64.ActiveCfg = Release|x64
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Release|x64.Build.0 = Release|x64
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Release|x86.ActiveCfg = Release|Win32
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +92,7 @@ Global
 		{0E18D7C1-34BC-4F7A-A461-7BB845231ADF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{883D9526-9C85-4471-8730-35E5645427E4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{A890DC48-E263-41AA-924D-60AEC7842EC7} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A088F58C-7F70-4F2E-966E-7C6C8BDCC04D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {754062E7-A9C4-434F-8C97-CBA9430783A5}
