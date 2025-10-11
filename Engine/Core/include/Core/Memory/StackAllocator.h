@@ -60,11 +60,6 @@ namespace Core
             size_t GetFreeSpace() const { return mSize - mOffset; }
 
         private:
-            struct AllocationHeader
-            {
-                size_t padding;  // Padding before actual data
-            };
-
             void* mMemory;              // Start of memory block
             size_t mSize;               // Total size
             size_t mOffset;             // Current offset

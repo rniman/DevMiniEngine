@@ -33,17 +33,13 @@ namespace Core
             CORE_ASSERT(size > 0, "Allocation size must be greater than 0");
             CORE_ASSERT((alignment & (alignment - 1)) == 0, "Alignment must be power of 2");
 
-            // Calculate header position
-            const size_t headerSize = sizeof(AllocationHeader);
-            void* headerPtr = static_cast<char*>(mMemory) + mOffset;
-
             // Calculate aligned data position
-            void* dataPtr = static_cast<char*>(headerPtr) + headerSize;
-            void* alignedDataPtr = AlignPointer(dataPtr, alignment);
+            void* currentPtr = static_cast<char*>(mMemory) + mOffset;
+            void* alignedPtr = AlignPointer(currentPtr, alignment);
 
-            // Calculate padding
-            size_t padding = static_cast<char*>(alignedDataPtr) - static_cast<char*>(dataPtr);
-            size_t totalSize = headerSize + padding + size;
+            // Calculate padding needed for alignment
+            size_t padding = static_cast<char*>(alignedPtr) - static_cast<char*>(currentPtr);
+            size_t totalSize = padding + size;
 
             // Check if we have enough space
             if (mOffset + totalSize > mSize)
@@ -52,15 +48,11 @@ namespace Core
                 return nullptr;
             }
 
-            // Store header
-            AllocationHeader* header = static_cast<AllocationHeader*>(headerPtr);
-            header->padding = padding;
-
             // Update offset and count
             mOffset += totalSize;
             mAllocationCount++;
 
-            return alignedDataPtr;
+            return alignedPtr;
         }
 
         void StackAllocator::Deallocate(void* ptr)
