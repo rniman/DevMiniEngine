@@ -2,6 +2,47 @@
 
 ---
 
+## 2025-10-11 - Logging System Implementation
+
+### Tasks
+- [x] Design and implement logging system
+  - Logger singleton (thread-safe)
+  - Sink pattern (Console + File)
+  - Macro-based API (LOG_INFO, LOG_ERROR, etc.)
+- [x] Create 05_LoggingTest sample
+- [x] Apply logging to Memory allocators
+- [x] Update documentation
+
+### Decisions
+- **Singleton pattern**: Global access with thread safety
+- **Sink pattern**: Extensible output system
+- **Printf-style formatting**: Simple, no dependencies
+- **Macro API**: Compile-time optimization (Trace/Debug removed in Release)
+- **Console colors**: Visual log level distinction (Windows Console API)
+
+### Issues Encountered
+- **localtime() warning**: Replaced with localtime_s()
+- **Macro variadic args**: Used ##__VA_ARGS__ for optional arguments
+- **File path in macros**: Strip path with GetFileName() helper
+
+### Performance
+- Debug overhead: ~50 microseconds/log
+- Release overhead: 0 (Trace/Debug compiled out)
+- Memory allocators now have comprehensive logging
+
+### Notes
+- ~300 lines of code, 0 warnings (Level 4)
+- Async logging deferred until rendering performance profiling
+- Log rotation deferred until long-running applications needed
+- JSON sink deferred until profiling tools required
+
+### Next Steps (Recommended Priority)
+- [ ] **Platform layer** - Window creation (Win32 API)
+- [ ] **DirectX 12 initialization** - Device, SwapChain, basic render loop
+- [ ] ECS TransformComponent (using Math library)
+
+---
+
 ## 2025-10-11 - Math Library with DirectXMath
 
 ### Tasks
