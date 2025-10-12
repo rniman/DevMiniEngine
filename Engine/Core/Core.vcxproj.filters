@@ -5,18 +5,18 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\Memory">
+      <UniqueIdentifier>{c00525d8-6339-4461-b795-ce9ed1c645d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Logging">
+      <UniqueIdentifier>{35fa2aa5-0604-4b52-8c07-7b20a41f6f4b}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Source Files\Memory">
-      <UniqueIdentifier>{c00525d8-6339-4461-b795-ce9ed1c645d8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Memory">
       <UniqueIdentifier>{0b812f94-150d-4aa5-b9f6-31da379bfc68}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Logging">
-      <UniqueIdentifier>{35fa2aa5-0604-4b52-8c07-7b20a41f6f4b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Logging">
       <UniqueIdentifier>{f6812a44-8f88-4831-ae28-dd33b028028d}</UniqueIdentifier>
