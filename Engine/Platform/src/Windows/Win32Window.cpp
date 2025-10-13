@@ -158,6 +158,11 @@ namespace Platform
         return mIsFullscreen;
     }
 
+    Input& Win32Window::GetInput()
+    {
+        return mInput; 
+    }
+
     void Win32Window::SetEventCallback(EventCallback callback)
     {
         mEventCallback = callback;
@@ -266,8 +271,10 @@ namespace Platform
         }
 
         case WM_DESTROY:
+        {
             PostQuitMessage(0);
             return 0;
+        }
 
         case WM_SIZE:
         {
@@ -302,6 +309,81 @@ namespace Platform
                 mEventCallback(WindowEvent::LostFocus);
             }
             return 0;
+
+        //=============================================================================
+        // Keyboard Messages
+        //=============================================================================
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        {
+            KeyCode key = static_cast<KeyCode>(wParam);
+            mInput.OnKeyDown(key);
+            return 0;
+        }
+
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+        {
+            KeyCode key = static_cast<KeyCode>(wParam);
+            mInput.OnKeyUp(key);
+            return 0;
+        }
+
+        //=============================================================================
+        // Mouse Messages
+        //=============================================================================
+        case WM_MOUSEMOVE:
+        {
+            int xPos = static_cast<int>(static_cast<short>(LOWORD(lParam)));
+            int yPos = static_cast<int>(static_cast<short>(HIWORD(lParam)));
+            mInput.OnMouseMove(xPos, yPos);
+            return 0;
+        }
+
+        case WM_LBUTTONDOWN:
+        {
+            mInput.OnMouseButtonDown(MouseButton::Left);
+            return 0;
+        }
+
+        case WM_LBUTTONUP:
+        {
+            mInput.OnMouseButtonUp(MouseButton::Left);
+            return 0;
+        }
+
+        case WM_RBUTTONDOWN:
+        {
+            mInput.OnMouseButtonDown(MouseButton::Right);
+            return 0;
+        }
+
+        case WM_RBUTTONUP:
+        {
+            mInput.OnMouseButtonUp(MouseButton::Right);
+            return 0;
+        }
+
+        case WM_MBUTTONDOWN:
+        {
+            mInput.OnMouseButtonDown(MouseButton::Middle);
+            return 0;
+        }
+
+        case WM_MBUTTONUP:
+        {
+            mInput.OnMouseButtonUp(MouseButton::Middle);
+            return 0;
+        }
+
+        case WM_MOUSEWHEEL:
+        {
+            int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+            float normalizedDelta = static_cast<float>(delta) / WHEEL_DELTA;
+            mInput.OnMouseWheel(normalizedDelta);
+            return 0;
+        }
+
 
         default:
             return DefWindowProcW(reinterpret_cast<HWND>(mHwnd), msg, wParam, lParam);

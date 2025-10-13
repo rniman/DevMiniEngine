@@ -21,6 +21,9 @@
     <ClCompile Include="src\Windows\Win32Window.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Platform\PlatformTypes.h">
@@ -31,6 +34,9 @@
     </ClInclude>
     <ClInclude Include="include\Platform\Windows\Win32Window.h">
       <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Platform\Input.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

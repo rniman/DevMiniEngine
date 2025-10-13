@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Platform/Window.h"
+#include "Platform/Input.h" 
 
 // Forward-declare OS types in headers
 struct HWND__;
@@ -27,6 +28,8 @@ namespace Platform
         Core::uint32 GetWidth() const override;
         Core::uint32 GetHeight() const override;
         bool IsFullscreen() const override;
+
+        Input& GetInput() override;
 
         void SetEventCallback(EventCallback callback) override;
 
@@ -60,6 +63,9 @@ namespace Platform
         Core::uint32 mHeight;
         bool mShouldClose;
         bool mIsFullscreen;
+
+        // Input manager
+        Input mInput;
 
         // Event callback
         EventCallback mEventCallback;

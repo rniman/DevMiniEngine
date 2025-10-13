@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Platform/PlatformTypes.h"
+//#include "Platform/PlatformTypes.h"
+#include "Platform/Input.h"
 #include <functional>
 
 namespace Platform
@@ -40,6 +41,11 @@ namespace Platform
         virtual Core::uint32 GetHeight() const = 0;
 
         virtual bool IsFullscreen() const = 0;
+
+        /**
+        * @brief Get input manager
+        */
+        virtual Input& GetInput() = 0;
 
         /**
          * @brief Set event callback
