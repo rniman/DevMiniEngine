@@ -32,6 +32,8 @@ int main()
 
     void* ptr2 = stack.Allocate(200, sizeof(void*));
     void* ptr3 = stack.Allocate(150, sizeof(void*));
+    std::cout << "  - Pointer2: " << ptr2 << std::endl;
+    std::cout << "  - Pointer3: " << ptr3 << std::endl;
     std::cout << "  - After 2 allocations: " << stack.GetAllocatedSize() << " bytes" << std::endl;
     std::cout << "  - Allocation count: " << stack.GetAllocationCount() << std::endl;
     std::cout << std::endl;
@@ -48,12 +50,15 @@ int main()
     auto marker2 = stack.GetMarker();
     {
         void* temp1 = stack.Allocate(50, sizeof(void*));
+        std::cout << "  - Temp1: " << temp1 << std::endl;
         std::cout << "  - Level 1 allocated: " << stack.GetAllocatedSize() << " bytes" << std::endl;
 
         auto marker3 = stack.GetMarker();
         {
             void* temp2 = stack.Allocate(80, sizeof(void*));
             void* temp3 = stack.Allocate(60, sizeof(void*));
+            std::cout << "  - Temp2: " << temp2 << std::endl;
+            std::cout << "  - Temp3: " << temp3 << std::endl;
             std::cout << "  - Level 2 allocated: " << stack.GetAllocatedSize() << " bytes" << std::endl;
         }
         stack.FreeToMarker(marker3);

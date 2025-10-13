@@ -2,7 +2,7 @@
 
 #include "Platform/Window.h"
 
-// Windows.h 전방선언 (헤더 오염 방지)
+// Forward-declare OS types in headers
 struct HWND__;
 struct HINSTANCE__;
 
