@@ -2,6 +2,50 @@
 
 ---
 
+## 2025-10-13 - Input System Implementation
+
+### Tasks
+- [x] Design Input class architecture
+- [x] Implement keyboard/mouse state tracking
+  - Double buffering system (current + previous frame)
+  - IsKeyPressed/Down/Released distinction
+- [x] Integrate Input with Window (window-owned instance)
+- [x] Create 07_InputTest sample
+- [x] Update documentation
+
+### Decisions
+- **Window-owned instance**: Each window has independent input state (not singleton)
+- **Double buffering**: Track current + previous frame state to distinguish "pressed" vs "held"
+- **Math::Vector2 integration**: Mouse position/delta use engine's vector type
+- **Frame cycle pattern**: `Update()` → `ProcessEvents()` → Game Logic → `Reset()`
+- **Mouse wheel normalization**: Win32 delta (±120) normalized to ±1.0
+
+### Lessons Learned
+- **Win32 Coordinate Sign Extension**: `LOWORD(lParam)` doesn't sign-extend for negative coordinates. Must cast to `short` first for multi-monitor support.
+- **System Key Handling**: Alt key combinations require handling both `WM_KEYDOWN` and `WM_SYSKEYDOWN` messages separately.
+- **State vs Event Distinction**: Keys/buttons are persistent state, but mouse wheel is a per-frame event requiring explicit `Reset()`.
+
+### Future Improvements
+- **Input Mapping System**: Rebindable keys with command pattern for user customization.
+- **Text Input Support**: WM_CHAR handling for text fields and UI input.
+- **Gamepad Support**: XInput integration for Xbox controllers.
+- **Input Recording**: Record/playback functionality for replays and automated testing.
+
+### Notes
+- ~400 lines of code, 0 warnings (Level 4)
+- Window-owned design supports future multi-window scenarios
+- Double buffering pattern applicable to future input devices (gamepad, touch)
+- Clean integration: Input state ↔ Window events ↔ Math types
+
+### Next Steps (Phase 4: DirectX 12)
+- [ ] **Graphics module structure** - Create DX12 wrapper project
+- [ ] **Device initialization** - DX12Device, factory, adapter
+- [ ] **SwapChain creation** - Double/triple buffering setup
+- [ ] **Command Queue** - Graphics command submission
+- [ ] **08_DX12Init sample** - First clear screen render
+
+---
+
 ## 2025-10-12 - Platform Layer Implementation
 
 ### Tasks
