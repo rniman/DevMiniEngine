@@ -2,9 +2,9 @@
 
 **[한국어](./Architecture.ko.md)** | **English**
 
-> 📝 **Note**: This document describes both planned and implemented architecture. Implementation status is marked clearly.
+> **Note**: This document describes both planned and implemented architecture. Implementation status is marked clearly.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Design Philosophy](#design-philosophy)
@@ -17,7 +17,7 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 DevMiniEngine is designed as a learning-focused game engine built on DirectX 12 and modern C++ practices. The architecture emphasizes:
 
@@ -35,7 +35,7 @@ DevMiniEngine is designed as a learning-focused game engine built on DirectX 12 
 
 ---
 
-## 🏛️ Design Philosophy
+## Design Philosophy
 
 ### 1. Entity Component System (ECS)
 
@@ -102,7 +102,7 @@ class RenderSystem : public System
 
 ---
 
-## 🏗️ Core Architecture
+## Core Architecture
 
 ### Layer Breakdown
 
@@ -132,7 +132,7 @@ class WindowsWindow : public Window
 - High-resolution timer
 - Input event handling
 
-#### 2. Math Layer (✅ Implemented)
+#### 2. Math Layer (Implemented)
 **Responsibility**: Mathematical primitives and operations
 
 **Status**: Fully implemented with SIMD optimization
@@ -171,12 +171,12 @@ Quaternion QuaternionFromEuler(float pitch, float yaw, float roll);
 - Wrapper functions for convenience
 - All functions inline (header-only, zero overhead)
 
-#### 3. Core Layer (✅ Partially Implemented)
+#### 3. Core Layer (Partially Implemented)
 **Responsibility**: Engine foundation systems
 
 **Subsystems:**
 
-##### Memory Management (✅ Implemented)
+##### Memory Management (Implemented)
 **Status**: Fully implemented and tested
 
 **Allocators:**
@@ -252,7 +252,7 @@ private:
 - [ ] Memory leak detection
 - [ ] Allocation statistics/profiling
 
-##### Logging System (✅ Implemented)
+##### Logging System (Implemented)
 **Status**: Fully implemented with multi-output support
 
 **Components:**
@@ -510,7 +510,7 @@ private:
 
 ---
 
-## 🔄 Data Flow
+## Data Flow
 
 ### Frame Update Cycle
 
@@ -576,7 +576,7 @@ private:
 
 ---
 
-## 💾 Memory Management
+## Memory Management
 
 ### Strategy Overview
 
@@ -594,7 +594,7 @@ private:
    - Temporary calculations
    - Render command buffers
 
-**Allocator Types (✅ All Implemented):**
+**Allocator Types (All Implemented):**
 
 ```cpp
 // Core/include/Core/Memory/Allocators.h
@@ -671,7 +671,7 @@ stack.FreeToMarker(marker1);  // Free all
 
 ---
 
-## 🧵 Threading Model (Planned)
+## Threading Model (Planned)
 
 ### Thread Architecture
 
@@ -733,9 +733,9 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ---
 
-## 🔮 Future Considerations
+## Future Considerations
 
-### Phase 1: Foundation (✅ 60% Complete)
+### Phase 1: Foundation (60% Complete)
 - [x] Project structure
 - [x] Core systems
   - [x] Memory allocators (Linear, Pool, Stack)
@@ -777,20 +777,20 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ---
 
-## 📊 Implementation Progress
+## Implementation Progress
 
-### Completed Systems (✅)
+### Completed Systems
 | System | Status | Test Coverage | Lines of Code |
 |--------|--------|---------------|---------------|
-| Memory Management | ✅ Complete | 3 tests | ~600 |
-| Math Library | ✅ Complete | 1 test | ~400 |
-| Logging System | ✅ Complete | 1 test | ~300 |
+| Memory Management | Complete | 3 tests | ~600 |
+| Math Library | Complete | 1 test | ~400 |
+| Logging System | Complete | 1 test | ~300 |
 | **Total** | **3/12 subsystems** | **5 tests** | **~1,300** |
 
-### In Progress (🔄)
+### In Progress
 - None
 
-### Planned (📋)
+### Planned
 - Platform Layer
 - DirectX 12 Initialization
 - ECS Framework
@@ -800,7 +800,7 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ---
 
-## 📚 References & Inspirations
+## References & Inspirations
 
 ### Game Engine Architecture
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
@@ -821,7 +821,7 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ---
 
-## 🔄 Document History
+## Document History
 
 - **2025-10-11**: Updated with implemented systems (Memory, Math, Logging)
 - **2025-10-05**: Initial architecture design document

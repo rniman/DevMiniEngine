@@ -2,7 +2,7 @@
 
 **[한국어](./CodingConvention.ko.md)** | **English**
 
-## 📁 1. File and Directory Structure
+## 1. File and Directory Structure
 
 - Use `.h`, `.cpp` extensions
 - `pch.h`, `pch.cpp` → Precompiled headers
@@ -10,30 +10,30 @@
 
 ---
 
-## 🧱 2. Naming Conventions
+## 2. Naming Conventions
 
-### ✅ Classes
+### Classes
 - `PascalCase`
 
-### ✅ Functions
+### Functions
 - `PascalCase`
 - **Always start with a verb**
 - `bool` returning functions use meaningful prefixes: `Is`, `Has`, `Can`, `Should`
 
-### ✅ Variables
+### Variables
 - Local variables: `camelCase`
 - Member variables: `m` prefix + `PascalCase`
   - Example: `mFrameIndex`, `mDevice`
 - Static member variables: `s` prefix + `PascalCase`
 
-### ✅ Global Variables
+### Global Variables
 - `g` prefix + `PascalCase`
   - Example: `gRenderer`, `gInputSystem`
 
-### ✅ Struct Members
+### Struct Members
 - `camelCase`, no prefix
 
-### ✅ Enumerations
+### Enumerations
 ```cpp
 enum class ResourceState
 {
@@ -48,9 +48,9 @@ enum class ResourceState
 
 ---
 
-## 🎨 3. Code Style
+## 3. Code Style
 
-### ✅ Basic Style
+### Basic Style
 - Always use braces `{}` (even for single-line if statements)
 - Attach pointer to type (`ID3D12Device* device`)
 - Use `nullptr`, never `NULL`
@@ -59,21 +59,21 @@ enum class ResourceState
   - Fixed size: `std::array`
   - Dynamic size: `std::vector`
 
-### ✅ Variable Initialization Rules (Simplified)
+### Variable Initialization Rules (Simplified)
 
 **Basic Principle: Prefer `=` initialization**
 
 ```cpp
-// ✅ Default style
+// Default style
 int count = 0;
 float pi = 3.14f;
 auto result = Calculate();
 
-// ✅ Container initialization
+// Container initialization
 std::vector<int> values = {1, 2, 3};
 std::array<float, 3> pos = {0.0f, 1.0f, 0.0f};
 
-// ✅ Member variables (in class definition)
+// Member variables (in class definition)
 class Renderer
 {
 private:
@@ -94,14 +94,14 @@ Vertex vertex{position, normal, uv};
 std::vector<int> sizes(10);  // 10 elements, use parentheses
 ```
 
-> 📌 Narrowing prevention is handled by compiler warnings (`/W4` or `/Wall`)
+> Narrowing prevention is handled by compiler warnings (`/W4` or `/Wall`)
 
-### ✅ Complex Object Initialization Style
+### Complex Object Initialization Style
 
 - Line breaks recommended for multiple or complex items
 
 ```cpp
-// ✅ Multiple items
+// Multiple items
 std::array<CD3DX12_DESCRIPTOR_RANGE, 3> descriptorRanges = {
     CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0),
     CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0),
@@ -109,19 +109,19 @@ std::array<CD3DX12_DESCRIPTOR_RANGE, 3> descriptorRanges = {
 };
 ```
 
-> 📌 Trailing comma (,) recommended after last item (for version control convenience)
+> Trailing comma (,) recommended after last item (for version control convenience)
 
 ---
 
-## 🔐 4. Memory Management
+## 4. Memory Management
 
-### ✅ Basic Principles
+### Basic Principles
 - Minimize raw pointers, use references (`&`) actively
 - Read-only parameters default to `const T&`
 - Pass smart pointers as `const&` (avoid copy cost)
 - Use pointers only for null possibility or explicit ownership transfer
 
-### ✅ Recommended Smart Pointers
+### Recommended Smart Pointers
 - `std::unique_ptr` (default choice)
 - `std::shared_ptr` (when sharing needed)
 - `Microsoft::WRL::ComPtr` (for DirectX COM objects)
@@ -131,7 +131,7 @@ using Microsoft::WRL::ComPtr;
 ComPtr<ID3D12Device> mDevice;
 ```
 
-### ✅ Smart Pointer Parameter Passing
+### Smart Pointer Parameter Passing
 
 | Intent | Signature | Use Case |
 |--------|-----------|----------|
@@ -141,16 +141,16 @@ ComPtr<ID3D12Device> mDevice;
 | Optional observation | `T*` | When null is possible |
 
 ```cpp
-// ✅ Read-only access
+// Read-only access
 void Draw(const Mesh& mesh);
 
-// ✅ Share ownership
+// Share ownership
 void SetTexture(std::shared_ptr<Texture> texture)
 {
     mTexture = std::move(texture);
 }
 
-// ✅ Transfer ownership
+// Transfer ownership
 std::unique_ptr<Mesh> CreateMesh()
 {
     return std::make_unique<Mesh>();
@@ -159,9 +159,9 @@ std::unique_ptr<Mesh> CreateMesh()
 
 ---
 
-## 📌 5. Constant Definitions
+## 5. Constant Definitions
 
-### ✅ Basic Principles
+### Basic Principles
 - Prohibit `#define`
 - Compile-time constants: `constexpr` (globals use **ALL_CAPS**)
 - Runtime constants: `const`
@@ -171,13 +171,13 @@ constexpr int MAX_FRAME_COUNT = 3;
 constexpr float PI = 3.14159f;
 ```
 
-### ✅ Exceptions
+### Exceptions
 - External API macros allowed (`MAX_PATH`, `SUCCEEDED(hr)`, etc.)
 - **Do not use `enum` for constant definitions**
 
 ---
 
-## 🔍 6. const Usage Principles
+## 6. const Usage Principles
 
 - Read-only parameters: `const T&`
 - Read-only member functions: `...() const`
@@ -186,16 +186,16 @@ constexpr float PI = 3.14159f;
 
 ---
 
-## 🧭 7. Namespaces
+## 7. Namespaces
 
 - `using namespace std;` allowed
 - `using Microsoft::WRL::ComPtr;` declaration allowed
 
 ---
 
-## 🧩 8. Class Member Access
+## 8. Class Member Access
 
-### ✅ Basic Principles
+### Basic Principles
 - No direct access to `private` members
 - Use `SetX()`, `GetX()` accessors/mutators
 
@@ -211,16 +211,16 @@ private:
 };
 ```
 
-### ✅ Smart Pointer Get() Allowed
+### Smart Pointer Get() Allowed
 ```cpp
 ID3D12CommandQueue* GetCmdQueue() const { return mCommandQueue.Get(); }
 ```
 
 ---
 
-## 🧾 9. Function Parameter Alignment
+## 9. Function Parameter Alignment
 
-### ✅ Line Break Criteria
+### Line Break Criteria
 - Recommended for 4+ parameters
 - Even with ≤3 parameters if complex types or comments needed
 
@@ -232,7 +232,7 @@ auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 );
 ```
 
-### ✅ Function Definition Line Breaks
+### Function Definition Line Breaks
 ```cpp
 void CommandQueue::Init(
     const ComPtr<ID3D12Device>& device,
@@ -246,16 +246,16 @@ void CommandQueue::Init(
 
 ---
 
-## 🧱 10. Class Organization
+## 10. Class Organization
 
-### ✅ Access Specifier Order
+### Access Specifier Order
 ```cpp
 public:
 protected:
 private:
 ```
 
-### ✅ Order Within Each Block
+### Order Within Each Block
 
 **public / protected:**
 1. Constructors, destructors
@@ -294,9 +294,9 @@ private:
 
 ---
 
-## 🛡️ 11. Function Access Levels
+## 11. Function Access Levels
 
-### ✅ Basic Principles
+### Basic Principles
 - External interface: `public`
 - Internal implementation only: `private`
 - For derived classes: `protected`
@@ -315,14 +315,14 @@ private:
 
 ---
 
-## 🧩 12. Header File Includes
+## 12. Header File Includes
 
-### ✅ Basic Principles
+### Basic Principles
 - Prefer forward declarations in headers
 - Include only when implementation needed
 
 ```cpp
-// ✅ Forward declaration
+// Forward declaration
 class Device;
 class CommandQueue;
 
@@ -330,7 +330,7 @@ class CommandQueue;
 #include <d3d12.h>
 ```
 
-### ✅ When Include is Necessary
+### When Include is Necessary
 - Class size/layout information needed
 - Inheritance relationship definition
 - Template usage
@@ -338,26 +338,26 @@ class CommandQueue;
 
 ---
 
-## 🧭 13. Dependencies and Singleton Access
+## 13. Dependencies and Singleton Access
 
 | Layer | Global Access | Description |
 |-------|--------------|-------------|
-| **Engine Root / App** | ✅ Allowed | Application initialization layer |
-| **Manager** | ⚠️ Limited | Explicit passing ideal, global access temporary |
-| **Component / Object** | ❌ Avoid | Pass explicitly via parameters |
-| **Utility / Math** | 🚫 Forbidden | Maintain complete independence |
+| **Engine Root / App** | Allowed | Application initialization layer |
+| **Manager** | Limited | Explicit passing ideal, global access temporary |
+| **Component / Object** | Avoid | Pass explicitly via parameters |
+| **Utility / Math** | Forbidden | Maintain complete independence |
 
 ```cpp
-// ❌ Component directly accessing singleton
+// Component directly accessing singleton
 Renderer::GetInstance().Draw();
 
-// ✅ Explicit passing
+// Explicit passing
 component->Render(renderer);
 ```
 
-### ✅ Consider Testability
+### Consider Testability
 ```cpp
-// ✅ Make testable with dependency injection
+// Make testable with dependency injection
 class PhysicsSystem
 {
 private:
@@ -375,9 +375,9 @@ public:
 
 ---
 
-## 🛡️ 14. Exception Handling and Error Management
+## 14. Exception Handling and Error Management
 
-### ✅ HRESULT Handling
+### HRESULT Handling
 ```cpp
 inline void ThrowIfFailed(HRESULT hr)
 {
@@ -391,19 +391,19 @@ inline void ThrowIfFailed(HRESULT hr)
 ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&mQueue)));
 ```
 
-### ✅ Exception Usage Principles
+### Exception Usage Principles
 - **Initialization failure**: Throw exception
 - **Runtime error**: Logging + recovery or safe termination
 - **Game logic**: Avoid exceptions, use return values
 
 ```cpp
-// ✅ Initialization
+// Initialization
 void Renderer::Init()
 {
     ThrowIfFailed(CreateDevice());
 }
 
-// ✅ Runtime
+// Runtime
 bool ResourceManager::LoadTexture(const std::string& path)
 {
     if (!std::filesystem::exists(path))
@@ -415,14 +415,14 @@ bool ResourceManager::LoadTexture(const std::string& path)
 }
 ```
 
-### ✅ noexcept Usage
+### noexcept Usage
 - Destructors: Always `noexcept`
 - Move operators: `noexcept` if possible
 - Performance-critical functions: Consider `noexcept`
 
 ---
 
-## 📝 15. Comment Guidelines
+## 15. Comment Guidelines
 
 ### Basic Principles
 - **Self-documenting code first** - Clear code over comments
@@ -444,24 +444,24 @@ bool ResourceManager::LoadTexture(const std::string& path)
 
 ### Class and Function Comments
 ```cpp
-// ✅ Class: Brief description only
+// Class: Brief description only
 /**
  * @brief Linear allocator for frame-temporary data
  * Cannot free individual allocations. Use Reset().
  */
 class LinearAllocator { ... };
 
-// ✅ Document complex functions only
+// Document complex functions only
 /**
  * @brief Renders triangles with custom transform
  * @note Requires active pipeline state
  */
 bool DrawTriangles(const Vertex* vertices, size_t count, const Matrix& transform);
 
-// ✅ No comment for obvious functions
+// No comment for obvious functions
 size_t GetCapacity() const { return mSize; }
 
-// ✅ Inline comment for important behavior
+// Inline comment for important behavior
 void Deallocate(void* ptr) override;  // No-op
 ```
 
@@ -475,77 +475,77 @@ void Deallocate(void* ptr) override;  // No-op
 
 ### Comments to Avoid
 ```cpp
-// ❌ Stating the obvious
+// Stating the obvious
 i++;  // Increment i by 1
 
-// ✅ Explain why
+// Explain why
 i++;  // Move to next frame index
 
-// ❌ Absolute statements
+// Absolute statements
 // Perfect for all use cases
 
-// ✅ Specific statements
+// Specific statements
 // Well-suited for per-frame allocations (O(1) allocation)
 ```
 
 ---
 
-## 🔧 16. Template Usage
+## 16. Template Usage
 
-### ✅ Template Naming
+### Template Naming
 ```cpp
-// ✅ Simple case
+// Simple case
 template<typename T>
 class Array { };
 
-// ✅ When meaning is important
+// When meaning is important
 template<typename VertexType, typename IndexType>
 class Mesh { };
 
-// ✅ C++20 Concepts
+// C++20 Concepts
 template<std::integral T>
 T Add(T a, T b);
 ```
 
-### ✅ Definition Location
+### Definition Location
 - Full definition in header (default)
 - Separate to cpp only when explicit instantiation needed
 
 ---
 
-## ⚡ 17. Performance Optimization
+## 17. Performance Optimization
 
-### ✅ Minimize Copying
+### Minimize Copying
 ```cpp
-// ✅ Return const reference
+// Return const reference
 const std::vector<Vertex>& GetVertices() const
 {
     return mVertices;
 }
 
-// ✅ Move semantics
+// Move semantics
 std::vector<Vertex> ExtractVertices()
 {
     return std::move(mVertices);
 }
 ```
 
-### ✅ Reserve and Emplace
+### Reserve and Emplace
 ```cpp
 std::vector<Vertex> vertices;
 vertices.reserve(1000);  // Pre-allocate
 vertices.emplace_back(pos, normal, uv);  // Construct in-place
 ```
 
-### ✅ Inline Functions
+### Inline Functions
 - Simple Getter/Setter inline in header
 - Only for simple logic ≤3 lines
 
 ---
 
-## 🔀 18. Multithreading
+## 18. Multithreading
 
-### ✅ Synchronization Primitives
+### Synchronization Primitives
 ```cpp
 class ResourceManager
 {
@@ -569,7 +569,7 @@ public:
 };
 ```
 
-### ✅ Thread-safe Singleton
+### Thread-safe Singleton
 ```cpp
 class Engine
 {
@@ -589,31 +589,31 @@ private:
 
 ---
 
-## 🚫 19. Anti-patterns
+## 19. Anti-patterns
 
-### ❌ Macro Abuse
+### Macro Abuse
 ```cpp
-// ❌ Global access macro
+// Global access macro
 #define DEVICE Engine::GetInstance().GetDevice()
 
-// ✅ Explicit passing
+// Explicit passing
 void Init(Device* device);
 ```
 
-### ❌ Unnecessary Smart Pointers
+### Unnecessary Smart Pointers
 ```cpp
-// ❌ shared_ptr when ownership not needed
+// shared_ptr when ownership not needed
 void Draw(const std::shared_ptr<Mesh>& mesh);
 
-// ✅ Reference is sufficient
+// Reference is sufficient
 void Draw(const Mesh& mesh);
 ```
 
-### ❌ Meaningless Comments
+### Meaningless Comments
 ```cpp
-// ❌ Stating the obvious
+// Stating the obvious
 i++;  // Increment i by 1
 
-// ✅ Explain why
+// Explain why
 i++;  // Move to next frame index
 ```
