@@ -2,6 +2,30 @@
 
 **[한국어](./CodingConvention.ko.md)** | **English**
 
+## Table of Contents
+
+1. [File and Directory Structure](#1-file-and-directory-structure)
+2. [Naming Conventions](#2-naming-conventions)
+3. [Code Style](#3-code-style)
+4. [Memory Management](#4-memory-management)
+5. [Constant Definitions](#5-constant-definitions)
+6. [const Usage Principles](#6-const-usage-principles)
+7. [Comment Guidelines](#7-comment-guidelines)
+8. [Namespaces](#8-namespaces)
+9. [Class Member Access](#9-class-member-access)
+10. [Function Parameter Alignment](#10-function-parameter-alignment)
+11. [Class Organization](#11-class-organization)
+12. [Function Access Levels](#12-function-access-levels)
+13. [Header File Includes](#13-header-file-includes)
+14. [Dependencies and Singleton Access](#14-dependencies-and-singleton-access)
+15. [Exception Handling and Error Management](#15-exception-handling-and-error-management)
+16. [Template Usage](#16-template-usage)
+17. [Performance Optimization](#17-performance-optimization)
+18. [Multithreading](#18-multithreading)
+19. [Anti-patterns](#19-anti-patterns)
+
+---
+
 ## 1. File and Directory Structure
 
 - Use `.h`, `.cpp` extensions
@@ -186,243 +210,7 @@ constexpr float PI = 3.14159f;
 
 ---
 
-## 7. Namespaces
-
-- `using namespace std;` allowed
-- `using Microsoft::WRL::ComPtr;` declaration allowed
-
----
-
-## 8. Class Member Access
-
-### Basic Principles
-- No direct access to `private` members
-- Use `SetX()`, `GetX()` accessors/mutators
-
-```cpp
-class Renderer
-{
-public:
-    void SetFrameIndex(UINT index);
-    UINT GetFrameIndex() const;
-
-private:
-    UINT mFrameIndex;
-};
-```
-
-### Smart Pointer Get() Allowed
-```cpp
-ID3D12CommandQueue* GetCmdQueue() const { return mCommandQueue.Get(); }
-```
-
----
-
-## 9. Function Parameter Alignment
-
-### Line Break Criteria
-- Recommended for 4+ parameters
-- Even with ≤3 parameters if complex types or comments needed
-
-```cpp
-auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-    backBuffer.Get(),
-    D3D12_RESOURCE_STATE_RENDER_TARGET,
-    D3D12_RESOURCE_STATE_PRESENT
-);
-```
-
-### Function Definition Line Breaks
-```cpp
-void CommandQueue::Init(
-    const ComPtr<ID3D12Device>& device,
-    const std::shared_ptr<SwapChain>& swapChain,
-    const std::shared_ptr<DescriptorHeap>& descHeap
-)
-{
-    // ...
-}
-```
-
----
-
-## 10. Class Organization
-
-### Access Specifier Order
-```cpp
-public:
-protected:
-private:
-```
-
-### Order Within Each Block
-
-**public / protected:**
-1. Constructors, destructors
-2. Static creation functions (`Create()`, `GetInstance()`)
-3. Main API functions (`Init()`, `Render()`, `Update()`)
-4. Getters / Setters
-
-**private:**
-1. Internal utility functions
-2. Member variables (at the bottom)
-
-```cpp
-class Example
-{
-public:
-    Example();
-    ~Example();
-    
-    static std::shared_ptr<Example> Create();
-    
-    void Initialize();
-    void Update();
-    void Render();
-    
-    const ComPtr<ID3D12Device>& GetDevice() const;
-
-protected:
-    void ProtectedHelper();
-    
-private:
-    void InitInternalResources();
-    
-    ComPtr<ID3D12Device> mDevice;
-};
-```
-
----
-
-## 11. Function Access Levels
-
-### Basic Principles
-- External interface: `public`
-- Internal implementation only: `private`
-- For derived classes: `protected`
-
-```cpp
-class SwapChain
-{
-public:
-    void Init(const WindowInfo& info);
-
-private:
-    void CreateSwapChain(...);
-    void CreateRtv(...);
-};
-```
-
----
-
-## 12. Header File Includes
-
-### Basic Principles
-- Prefer forward declarations in headers
-- Include only when implementation needed
-
-```cpp
-// Forward declaration
-class Device;
-class CommandQueue;
-
-// Include only when necessary
-#include <d3d12.h>
-```
-
-### When Include is Necessary
-- Class size/layout information needed
-- Inheritance relationship definition
-- Template usage
-- Inline function implementation
-
----
-
-## 13. Dependencies and Singleton Access
-
-| Layer | Global Access | Description |
-|-------|--------------|-------------|
-| **Engine Root / App** | Allowed | Application initialization layer |
-| **Manager** | Limited | Explicit passing ideal, global access temporary |
-| **Component / Object** | Avoid | Pass explicitly via parameters |
-| **Utility / Math** | Forbidden | Maintain complete independence |
-
-```cpp
-// Component directly accessing singleton
-Renderer::GetInstance().Draw();
-
-// Explicit passing
-component->Render(renderer);
-```
-
-### Consider Testability
-```cpp
-// Make testable with dependency injection
-class PhysicsSystem
-{
-private:
-    Renderer* mRenderer;
-    
-public:
-    PhysicsSystem(Renderer* renderer) : mRenderer(renderer) {}
-    
-    void Update()
-    {
-        mRenderer->DebugDraw(mColliders);
-    }
-};
-```
-
----
-
-## 14. Exception Handling and Error Management
-
-### HRESULT Handling
-```cpp
-inline void ThrowIfFailed(HRESULT hr)
-{
-    if (FAILED(hr))
-    {
-        throw std::runtime_error("DirectX API call failed");
-    }
-}
-
-// Usage
-ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&mQueue)));
-```
-
-### Exception Usage Principles
-- **Initialization failure**: Throw exception
-- **Runtime error**: Logging + recovery or safe termination
-- **Game logic**: Avoid exceptions, use return values
-
-```cpp
-// Initialization
-void Renderer::Init()
-{
-    ThrowIfFailed(CreateDevice());
-}
-
-// Runtime
-bool ResourceManager::LoadTexture(const std::string& path)
-{
-    if (!std::filesystem::exists(path))
-    {
-        LOG_ERROR("Texture not found: {}", path);
-        return false;
-    }
-    return true;
-}
-```
-
-### noexcept Usage
-- Destructors: Always `noexcept`
-- Move operators: `noexcept` if possible
-- Performance-critical functions: Consider `noexcept`
-
----
-
-## 15. Comment Guidelines
+## 7. Comment Guidelines
 
 ### Basic Principles
 - **Self-documenting code first** - Clear code over comments
@@ -473,6 +261,24 @@ void Deallocate(void* ptr) override;  // No-op
 // HACK: Temporary solution, needs future revision
 ```
 
+### Use Logging for Debug Information
+
+```cpp
+// Bad: Explaining state with comments
+void LinearAllocator::Allocate(size_t size)
+{
+    // Allocated 1024 bytes
+    mOffset += size;
+}
+
+// Good: Use logging system
+void LinearAllocator::Allocate(size_t size)
+{
+    LOG_TRACE("LinearAllocator allocated %zu bytes at offset %zu", size, mOffset);
+    mOffset += size;
+}
+```
+
 ### Comments to Avoid
 ```cpp
 // Stating the obvious
@@ -487,6 +293,299 @@ i++;  // Move to next frame index
 // Specific statements
 // Well-suited for per-frame allocations (O(1) allocation)
 ```
+
+---
+
+## 8. Namespaces
+
+- `using namespace std;` allowed
+- `using Microsoft::WRL::ComPtr;` declaration allowed
+
+---
+
+## 9. Class Member Access
+
+### Basic Principles
+- No direct access to `private` members
+- Use `SetX()`, `GetX()` accessors/mutators
+
+```cpp
+class Renderer
+{
+public:
+    void SetFrameIndex(UINT index);
+    UINT GetFrameIndex() const;
+
+private:
+    UINT mFrameIndex;
+};
+```
+
+### Smart Pointer Get() Allowed
+```cpp
+ID3D12CommandQueue* GetCmdQueue() const { return mCommandQueue.Get(); }
+```
+
+---
+
+## 10. Function Parameter Alignment
+
+### Line Break Criteria
+- Recommended for 4+ parameters
+- Even with ≤3 parameters if complex types or comments needed
+
+```cpp
+auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+    backBuffer.Get(),
+    D3D12_RESOURCE_STATE_RENDER_TARGET,
+    D3D12_RESOURCE_STATE_PRESENT
+);
+```
+
+### Function Definition Line Breaks
+```cpp
+void CommandQueue::Init(
+    const ComPtr<ID3D12Device>& device,
+    const std::shared_ptr<SwapChain>& swapChain,
+    const std::shared_ptr<DescriptorHeap>& descHeap
+)
+{
+    // ...
+}
+```
+
+---
+
+## 11. Class Organization
+
+### Access Specifier Order
+```cpp
+public:
+protected:
+private:
+```
+
+### Order Within Each Block
+
+**public / protected:**
+1. Constructors, destructors
+2. Static creation functions (`Create()`, `GetInstance()`)
+3. Main API functions (`Init()`, `Render()`, `Update()`)
+4. Getters / Setters
+
+**private:**
+1. Internal utility functions
+2. Member variables (at the bottom)
+
+```cpp
+class Example
+{
+public:
+    Example();
+    ~Example();
+    
+    static std::shared_ptr<Example> Create();
+    
+    void Initialize();
+    void Update();
+    void Render();
+    
+    const ComPtr<ID3D12Device>& GetDevice() const;
+
+protected:
+    void ProtectedHelper();
+    
+private:
+    void InitInternalResources();
+    
+    ComPtr<ID3D12Device> mDevice;
+};
+```
+
+### Real Project Example
+
+```cpp
+// Input system - Frame cycle management
+class Input
+{
+public:
+    // Frame start
+    void Update();      // Save previous frame state
+    
+    // During frame
+    bool IsKeyPressed(KeyCode key) const;
+    bool IsKeyDown(KeyCode key) const;
+    
+    // Frame end
+    void Reset();       // Reset per-frame events
+    
+private:
+    bool mKeyState[256];
+    bool mPrevKeyState[256];  // Double buffering
+};
+```
+
+---
+
+## 12. Function Access Levels
+
+### Basic Principles
+- External interface: `public`
+- Internal implementation only: `private`
+- For derived classes: `protected`
+
+```cpp
+class SwapChain
+{
+public:
+    void Init(const WindowInfo& info);
+
+private:
+    void CreateSwapChain(...);
+    void CreateRtv(...);
+};
+```
+
+---
+
+## 13. Header File Includes
+
+### Basic Principles
+- Prefer forward declarations in headers
+- Include only when implementation needed
+
+```cpp
+// Forward declaration
+class Device;
+class CommandQueue;
+
+// Include only when necessary
+#include <d3d12.h>
+```
+
+### When Include is Necessary
+- Class size/layout information needed
+- Inheritance relationship definition
+- Template usage
+- Inline function implementation
+
+### Platform Layer Special Case
+
+```cpp
+// Minimize Win32 API pollution with forward declarations
+// Platform/include/Platform/Windows/Win32Window.h
+struct HWND__;      // Windows type forward declaration
+struct HINSTANCE__;
+
+class Win32Window
+{
+private:
+    HWND__* mHwnd;  // Type-safe forward declaration instead of void* in header
+};
+
+// Actual Windows.h include only in .cpp
+// Platform/src/Windows/Win32Window.cpp
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+```
+
+---
+
+## 14. Dependencies and Singleton Access
+
+| Layer | Global Access | Description |
+|-------|--------------|-------------|
+| **Engine Root / App** | Allowed | Application initialization layer |
+| **Manager** | Limited | Explicit passing ideal, global access temporary |
+| **Component / Object** | Avoid | Pass explicitly via parameters |
+| **Utility / Math** | Forbidden | Maintain complete independence |
+
+```cpp
+// Component directly accessing singleton
+Renderer::GetInstance().Draw();
+
+// Explicit passing
+component->Render(renderer);
+```
+
+### Real Project Examples
+
+**Current Implementation:**
+```cpp
+// Logger - Global access allowed (Engine Root layer)
+Logger::GetInstance().Log(...);
+
+// Input - Explicit passing (Window owns it)
+window->GetInput().IsKeyPressed(KeyCode::Escape);
+
+// Math - Complete independence (Utility layer)
+Vector3 result = Add(v1, v2);  // No global state
+```
+
+### Consider Testability
+```cpp
+// Make testable with dependency injection
+class PhysicsSystem
+{
+private:
+    Renderer* mRenderer;
+    
+public:
+    PhysicsSystem(Renderer* renderer) : mRenderer(renderer) {}
+    
+    void Update()
+    {
+        mRenderer->DebugDraw(mColliders);
+    }
+};
+```
+
+---
+
+## 15. Exception Handling and Error Management
+
+### HRESULT Handling
+```cpp
+inline void ThrowIfFailed(HRESULT hr)
+{
+    if (FAILED(hr))
+    {
+        throw std::runtime_error("DirectX API call failed");
+    }
+}
+
+// Usage
+ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&mQueue)));
+```
+
+### Exception Usage Principles
+- **Initialization failure**: Throw exception
+- **Runtime error**: Logging + recovery or safe termination
+- **Game logic**: Avoid exceptions, use return values
+
+```cpp
+// Initialization
+void Renderer::Init()
+{
+    ThrowIfFailed(CreateDevice());
+}
+
+// Runtime
+bool ResourceManager::LoadTexture(const std::string& path)
+{
+    if (!std::filesystem::exists(path))
+    {
+        LOG_ERROR("Texture not found: {}", path);
+        return false;
+    }
+    return true;
+}
+```
+
+### noexcept Usage
+- Destructors: Always `noexcept`
+- Move operators: `noexcept` if possible
+- Performance-critical functions: Consider `noexcept`
 
 ---
 

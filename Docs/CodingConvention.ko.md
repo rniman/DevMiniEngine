@@ -2,6 +2,30 @@
 
 **한국어** | **[English](./CodingConvention.md)**
 
+## 목차
+
+1. [파일 및 디렉토리 구조](#1-파일-및-디렉토리-구조)
+2. [네이밍 규칙](#2-네이밍-규칙)
+3. [코드 스타일](#3-코드-스타일)
+4. [메모리 관리](#4-메모리-관리)
+5. [상수 정의](#5-상수-정의)
+6. [const 사용 원칙](#6-const-사용-원칙)
+7. [주석 작성 규칙](#7-주석-작성-규칙)
+8. [네임스페이스](#8-네임스페이스)
+9. [클래스 멤버 접근](#9-클래스-멤버-접근)
+10. [함수 인자 정렬](#10-함수-인자-정렬)
+11. [클래스 구성](#11-클래스-구성)
+12. [함수 접근 수준](#12-함수-접근-수준)
+13. [헤더 파일 include](#13-헤더-파일-include)
+14. [의존성 및 싱글톤 접근](#14-의존성-및-싱글톤-접근)
+15. [예외 처리 및 에러 핸들링](#15-예외-처리-및-에러-핸들링)
+16. [템플릿 사용](#16-템플릿-사용)
+17. [성능 최적화](#17-성능-최적화)
+18. [멀티스레딩](#18-멀티스레딩)
+19. [안티패턴](#19-안티패턴)
+
+---
+
 ## 1. 파일 및 디렉토리 구조
 
 - `.h`, `.cpp` 확장자 사용
@@ -186,243 +210,7 @@ constexpr float PI = 3.14159f;
 
 ---
 
-## 7. 네임스페이스
-
-- `using namespace std;` 허용
-- `using Microsoft::WRL::ComPtr;` 선언 허용
-
----
-
-## 8. 클래스 멤버 접근
-
-### 기본 원칙
-- `private` 멤버는 직접 접근 금지
-- `SetX()`, `GetX()` 접근자/설정자 사용
-
-```cpp
-class Renderer
-{
-public:
-    void SetFrameIndex(UINT index);
-    UINT GetFrameIndex() const;
-
-private:
-    UINT mFrameIndex;
-};
-```
-
-### 스마트 포인터 Get() 허용
-```cpp
-ID3D12CommandQueue* GetCmdQueue() const { return mCommandQueue.Get(); }
-```
-
----
-
-## 9. 함수 인자 정렬
-
-### 줄바꿈 기준
-- 인자 4개 이상 시 줄바꿈 권장
-- 인자가 3개 이하라도 복잡한 타입이나 주석이 필요하면 줄바꿈
-
-```cpp
-auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-    backBuffer.Get(),
-    D3D12_RESOURCE_STATE_RENDER_TARGET,
-    D3D12_RESOURCE_STATE_PRESENT
-);
-```
-
-### 함수 정의부 줄바꿈
-```cpp
-void CommandQueue::Init(
-    const ComPtr<ID3D12Device>& device,
-    const std::shared_ptr<SwapChain>& swapChain,
-    const std::shared_ptr<DescriptorHeap>& descHeap
-)
-{
-    // ...
-}
-```
-
----
-
-## 10. 클래스 구성
-
-### 접근 지정자 순서
-```cpp
-public:
-protected:
-private:
-```
-
-### 각 블록 내 정렬 순서
-
-**public / protected:**
-1. 생성자, 소멸자
-2. 정적 생성 함수 (`Create()`, `GetInstance()`)
-3. 주요 API 함수 (`Init()`, `Render()`, `Update()`)
-4. Getter / Setter
-
-**private:**
-1. 내부 유틸 함수
-2. 멤버 변수 (맨 아래)
-
-```cpp
-class Example
-{
-public:
-    Example();
-    ~Example();
-    
-    static std::shared_ptr<Example> Create();
-    
-    void Initialize();
-    void Update();
-    void Render();
-    
-    const ComPtr<ID3D12Device>& GetDevice() const;
-
-protected:
-    void ProtectedHelper();
-    
-private:
-    void InitInternalResources();
-    
-    ComPtr<ID3D12Device> mDevice;
-};
-```
-
----
-
-## 11. 함수 접근 수준
-
-### 기본 원칙
-- 외부 인터페이스: `public`
-- 내부 구현 전용: `private`
-- 파생 클래스용: `protected`
-
-```cpp
-class SwapChain
-{
-public:
-    void Init(const WindowInfo& info);
-
-private:
-    void CreateSwapChain(...);
-    void CreateRtv(...);
-};
-```
-
----
-
-## 12. 헤더 파일 include
-
-### 기본 원칙
-- 헤더에서는 전방 선언(forward declaration) 우선
-- 실제 구현 필요 시에만 include
-
-```cpp
-// 전방 선언
-class Device;
-class CommandQueue;
-
-// 필요 시에만 include
-#include <d3d12.h>
-```
-
-### include가 필요한 경우
-- 클래스 크기/레이아웃 정보 필요
-- 상속 관계 정의
-- 템플릿 사용
-- 인라인 함수 구현
-
----
-
-## 13. 의존성 및 싱글톤 접근
-
-| 계층 | 전역 접근 | 설명 |
-|------|---------|------|
-| **Engine Root / App** | 허용 | 애플리케이션 초기화 계층 |
-| **Manager** | 제한적 | 명시적 전달 이상적, 전역 접근은 임시 |
-| **Component / Object** | 지양 | 파라미터로 명시적 전달 |
-| **Utility / Math** | 금지 | 완전한 독립성 유지 |
-
-```cpp
-// Component가 직접 싱글톤 접근
-Renderer::GetInstance().Draw();
-
-// 명시적 전달
-component->Render(renderer);
-```
-
-### 테스트 가능성 고려
-```cpp
-// 의존성 주입으로 테스트 가능하게
-class PhysicsSystem
-{
-private:
-    Renderer* mRenderer;
-    
-public:
-    PhysicsSystem(Renderer* renderer) : mRenderer(renderer) {}
-    
-    void Update()
-    {
-        mRenderer->DebugDraw(mColliders);
-    }
-};
-```
-
----
-
-## 14. 예외 처리 및 에러 핸들링
-
-### HRESULT 처리
-```cpp
-inline void ThrowIfFailed(HRESULT hr)
-{
-    if (FAILED(hr))
-    {
-        throw std::runtime_error("DirectX API call failed");
-    }
-}
-
-// 사용
-ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&mQueue)));
-```
-
-### 예외 사용 원칙
-- **초기화 실패**: 예외 throw
-- **런타임 에러**: 로깅 + 복구 또는 안전 종료
-- **게임 로직**: 예외 지양, 반환값 사용
-
-```cpp
-// 초기화
-void Renderer::Init()
-{
-    ThrowIfFailed(CreateDevice());
-}
-
-// 런타임
-bool ResourceManager::LoadTexture(const std::string& path)
-{
-    if (!std::filesystem::exists(path))
-    {
-        LOG_ERROR("Texture not found: {}", path);
-        return false;
-    }
-    return true;
-}
-```
-
-### noexcept 사용
-- 소멸자: 항상 `noexcept`
-- 이동 연산자: 가능하면 `noexcept`
-- 성능 중요 함수: `noexcept` 고려
-
----
-
-## 15. 주석 작성 규칙
+## 7. 주석 작성 규칙
 
 ### 기본 원칙
 - **Self-documenting code 우선** - 주석보다 명확한 코드
@@ -473,6 +261,24 @@ void Deallocate(void* ptr) override;  // No-op
 // HACK: 임시 해결책, 추후 수정 필요
 ```
 
+### 디버그 정보는 로깅으로
+
+```cpp
+// 나쁜 예: 주석으로 상태 설명
+void LinearAllocator::Allocate(size_t size)
+{
+    // 1024 바이트 할당됨
+    mOffset += size;
+}
+
+// 좋은 예: 로깅 시스템 활용
+void LinearAllocator::Allocate(size_t size)
+{
+    LOG_TRACE("LinearAllocator allocated %zu bytes at offset %zu", size, mOffset);
+    mOffset += size;
+}
+```
+
 ### 피해야 할 주석
 ```cpp
 // 당연한 것 설명
@@ -487,6 +293,299 @@ i++;  // 다음 프레임 인덱스로 이동
 // 구체적 표현
 // Well-suited for per-frame allocations (O(1) allocation)
 ```
+
+---
+
+## 8. 네임스페이스
+
+- `using namespace std;` 허용
+- `using Microsoft::WRL::ComPtr;` 선언 허용
+
+---
+
+## 9. 클래스 멤버 접근
+
+### 기본 원칙
+- `private` 멤버는 직접 접근 금지
+- `SetX()`, `GetX()` 접근자/설정자 사용
+
+```cpp
+class Renderer
+{
+public:
+    void SetFrameIndex(UINT index);
+    UINT GetFrameIndex() const;
+
+private:
+    UINT mFrameIndex;
+};
+```
+
+### 스마트 포인터 Get() 허용
+```cpp
+ID3D12CommandQueue* GetCmdQueue() const { return mCommandQueue.Get(); }
+```
+
+---
+
+## 10. 함수 인자 정렬
+
+### 줄바꿈 기준
+- 인자 4개 이상 시 줄바꿈 권장
+- 인자가 3개 이하라도 복잡한 타입이나 주석이 필요하면 줄바꿈
+
+```cpp
+auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+    backBuffer.Get(),
+    D3D12_RESOURCE_STATE_RENDER_TARGET,
+    D3D12_RESOURCE_STATE_PRESENT
+);
+```
+
+### 함수 정의부 줄바꿈
+```cpp
+void CommandQueue::Init(
+    const ComPtr<ID3D12Device>& device,
+    const std::shared_ptr<SwapChain>& swapChain,
+    const std::shared_ptr<DescriptorHeap>& descHeap
+)
+{
+    // ...
+}
+```
+
+---
+
+## 11. 클래스 구성
+
+### 접근 지정자 순서
+```cpp
+public:
+protected:
+private:
+```
+
+### 각 블록 내 정렬 순서
+
+**public / protected:**
+1. 생성자, 소멸자
+2. 정적 생성 함수 (`Create()`, `GetInstance()`)
+3. 주요 API 함수 (`Init()`, `Render()`, `Update()`)
+4. Getter / Setter
+
+**private:**
+1. 내부 유틸 함수
+2. 멤버 변수 (맨 아래)
+
+```cpp
+class Example
+{
+public:
+    Example();
+    ~Example();
+    
+    static std::shared_ptr<Example> Create();
+    
+    void Initialize();
+    void Update();
+    void Render();
+    
+    const ComPtr<ID3D12Device>& GetDevice() const;
+
+protected:
+    void ProtectedHelper();
+    
+private:
+    void InitInternalResources();
+    
+    ComPtr<ID3D12Device> mDevice;
+};
+```
+
+### 실제 프로젝트 예시
+
+```cpp
+// Input 시스템 - 프레임 사이클 관리
+class Input
+{
+public:
+    // 프레임 시작
+    void Update();      // 이전 프레임 상태 저장
+    
+    // 프레임 중간
+    bool IsKeyPressed(KeyCode key) const;
+    bool IsKeyDown(KeyCode key) const;
+    
+    // 프레임 종료
+    void Reset();       // 프레임별 이벤트 초기화
+    
+private:
+    bool mKeyState[256];
+    bool mPrevKeyState[256];  // 더블 버퍼링
+};
+```
+
+---
+
+## 12. 함수 접근 수준
+
+### 기본 원칙
+- 외부 인터페이스: `public`
+- 내부 구현 전용: `private`
+- 파생 클래스용: `protected`
+
+```cpp
+class SwapChain
+{
+public:
+    void Init(const WindowInfo& info);
+
+private:
+    void CreateSwapChain(...);
+    void CreateRtv(...);
+};
+```
+
+---
+
+## 13. 헤더 파일 include
+
+### 기본 원칙
+- 헤더에서는 전방 선언(forward declaration) 우선
+- 실제 구현 필요 시에만 include
+
+```cpp
+// 전방 선언
+class Device;
+class CommandQueue;
+
+// 필요 시에만 include
+#include <d3d12.h>
+```
+
+### include가 필요한 경우
+- 클래스 크기/레이아웃 정보 필요
+- 상속 관계 정의
+- 템플릿 사용
+- 인라인 함수 구현
+
+### Platform 레이어 특수 사례
+
+```cpp
+// Win32 API 오염 최소화를 위한 전방 선언
+// Platform/include/Platform/Windows/Win32Window.h
+struct HWND__;      // Windows 타입 전방 선언
+struct HINSTANCE__;
+
+class Win32Window
+{
+private:
+    HWND__* mHwnd;  // 헤더에서 void* 대신 타입 안전한 전방 선언
+};
+
+// 실제 Windows.h include는 .cpp에서만
+// Platform/src/Windows/Win32Window.cpp
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+```
+
+---
+
+## 14. 의존성 및 싱글톤 접근
+
+| 계층 | 전역 접근 | 설명 |
+|------|---------|------|
+| **Engine Root / App** | 허용 | 애플리케이션 초기화 계층 |
+| **Manager** | 제한적 | 명시적 전달 이상적, 전역 접근은 임시 |
+| **Component / Object** | 지양 | 파라미터로 명시적 전달 |
+| **Utility / Math** | 금지 | 완전한 독립성 유지 |
+
+```cpp
+// Component가 직접 싱글톤 접근
+Renderer::GetInstance().Draw();
+
+// 명시적 전달
+component->Render(renderer);
+```
+
+### 실제 프로젝트 예시
+
+**현재 구현:**
+```cpp
+// Logger - 전역 접근 허용 (Engine Root 계층)
+Logger::GetInstance().Log(...);
+
+// Input - 명시적 전달 (Window가 소유)
+window->GetInput().IsKeyPressed(KeyCode::Escape);
+
+// Math - 완전한 독립성 (Utility 계층)
+Vector3 result = Add(v1, v2);  // 전역 상태 없음
+```
+
+### 테스트 가능성 고려
+```cpp
+// 의존성 주입으로 테스트 가능하게
+class PhysicsSystem
+{
+private:
+    Renderer* mRenderer;
+    
+public:
+    PhysicsSystem(Renderer* renderer) : mRenderer(renderer) {}
+    
+    void Update()
+    {
+        mRenderer->DebugDraw(mColliders);
+    }
+};
+```
+
+---
+
+## 15. 예외 처리 및 에러 핸들링
+
+### HRESULT 처리
+```cpp
+inline void ThrowIfFailed(HRESULT hr)
+{
+    if (FAILED(hr))
+    {
+        throw std::runtime_error("DirectX API call failed");
+    }
+}
+
+// 사용
+ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&mQueue)));
+```
+
+### 예외 사용 원칙
+- **초기화 실패**: 예외 throw
+- **런타임 에러**: 로깅 + 복구 또는 안전 종료
+- **게임 로직**: 예외 지양, 반환값 사용
+
+```cpp
+// 초기화
+void Renderer::Init()
+{
+    ThrowIfFailed(CreateDevice());
+}
+
+// 런타임
+bool ResourceManager::LoadTexture(const std::string& path)
+{
+    if (!std::filesystem::exists(path))
+    {
+        LOG_ERROR("Texture not found: {}", path);
+        return false;
+    }
+    return true;
+}
+```
+
+### noexcept 사용
+- 소멸자: 항상 `noexcept`
+- 이동 연산자: 가능하면 `noexcept`
+- 성능 중요 함수: `noexcept` 고려
 
 ---
 
