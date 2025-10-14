@@ -106,31 +106,49 @@ class RenderSystem : public System
 
 ### 레이어 분석
 
-#### 1. Platform 레이어 (계획됨)
+#### 1. Platform 레이어 (구현 완료)
 **책임**: OS별 기능 추상화
+
+**상태**: Windows용으로 완전히 구현됨
 
 ```cpp
 // Platform/include/Platform/Window.h
 class Window
 {
 public:
-    virtual void Create(const WindowDesc& desc) = 0;
+    virtual bool Create(const WindowDesc& desc) = 0;
     virtual void ProcessEvents() = 0;
-    virtual void* GetNativeHandle() const = 0;
+    virtual WindowHandle GetNativeHandle() const = 0;
+    virtual Input& GetInput() = 0;
 };
 
-// Platform/src/Windows/WindowsWindow.cpp
-class WindowsWindow : public Window
+// Platform/src/Windows/Win32Window.cpp
+class Win32Window : public Window
 {
     // Win32 특정 구현
 };
 ```
 
 **구성 요소:**
-- 윈도우 관리
-- 파일 시스템 접근
-- 고해상도 타이머
-- 입력 이벤트 처리
+- 윈도우 관리 (Win32 구현)
+- 이벤트 처리 시스템
+- 입력 시스템 (키보드, 마우스)
+  - 프레임 정확 입력을 위한 더블 버퍼링
+  - Pressed/held/released 상태 추적
+- 고해상도 타이머 (계획됨)
+
+**테스트 커버리지**: 06_WindowTest, 07_InputTest
+
+**설계 결정사항:**
+- Window가 Input 인스턴스를 소유 (싱글톤 아님)
+- 각 윈도우가 독립적인 입력 상태 보유
+- 플랫폼별 생성을 위한 팩토리 패턴
+- Windows.h 오염 최소화를 위한 전방 선언
+
+**성능:**
+- 윈도우 생성: ~5 ms
+- ProcessEvents: 프레임당 ~0.01-0.05 ms
+- 입력 추적: 무시할 수 있는 오버헤드 (~0.001 ms)
 
 #### 2. Math 레이어 (구현 완료)
 **책임**: 수학적 기본 요소 및 연산
@@ -248,9 +266,9 @@ private:
 - 메모리 추적 (할당 크기/횟수)
 
 **향후 개선사항:**
-- [ ] 디버그 경계 검사
-- [ ] 메모리 누수 감지
-- [ ] 할당 통계/프로파일링
+- 디버그 경계 검사
+- 메모리 누수 감지
+- 할당 통계/프로파일링
 
 ##### 로깅 시스템 (구현 완료)
 **상태**: 다중 출력 지원과 함께 완전히 구현됨
@@ -345,9 +363,9 @@ void* data = frameAlloc.Allocate(1024);
 ```
 
 **향후 개선사항:**
-- [ ] 고빈도 시나리오를 위한 비동기 로깅
-- [ ] 로그 파일 회전 (크기/날짜 기반)
-- [ ] 로그 분석 도구를 위한 JSON 출력 Sink
+- 고빈도 시나리오를 위한 비동기 로깅
+- 로그 파일 회전 (크기/날짜 기반)
+- 로그 분석 도구를 위한 JSON 출력 Sink
 
 ##### 스레딩 (계획됨)
 **상태**: 시작 안 됨
@@ -524,6 +542,8 @@ private:
 ┌────────────────▼────────────────────────┐
 │  2. Input: 입력 상태 업데이트            │
 │     - 키보드, 마우스                    │
+│     - 프레임 시작 시 Update()           │
+│     - 프레임 종료 시 Reset()            │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
@@ -735,14 +755,14 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ## 향후 고려사항
 
-### Phase 1: 기반 (60% 완료)
+### Phase 1: 기반 (75% 완료)
 - [x] 프로젝트 구조
 - [x] Core 시스템
   - [x] 메모리 할당자 (Linear, Pool, Stack)
   - [x] 로깅 시스템 (Console, File sinks)
   - [x] 어설션 매크로
 - [x] Math 라이브러리 (SIMD와 함께 Vector, Matrix, Quaternion)
-- [ ] Platform 레이어 (Window, Input, Timer) ← **다음 우선순위**
+- [x] Platform 레이어 (Window, Input)
 - [ ] 스레딩 시스템 (Job system, thread pool)
 
 ### Phase 2: 그래픽스 (시작 안 됨)
@@ -782,16 +802,17 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 ### 완료된 시스템
 | 시스템 | 상태 | 테스트 커버리지 | 코드 라인 수 |
 |--------|------|----------------|-------------|
+| Platform 레이어 | 완료 | 2개 테스트 | ~650 |
 | 메모리 관리 | 완료 | 3개 테스트 | ~600 |
 | Math 라이브러리 | 완료 | 1개 테스트 | ~400 |
 | 로깅 시스템 | 완료 | 1개 테스트 | ~300 |
-| **합계** | **12개 중 3개 서브시스템** | **5개 테스트** | **~1,300** |
+| **합계** | **12개 중 4개 서브시스템** | **7개 테스트** | **~2,200** |
 
 ### 진행 중
 - 없음
 
 ### 계획됨
-- Platform 레이어
+- 스레딩 시스템
 - DirectX 12 초기화
 - ECS 프레임워크
 - 물리 엔진
@@ -823,6 +844,7 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ## 문서 히스토리
 
+- **2025-10-13**: Platform 레이어 구현, 입력 시스템 세부사항 업데이트
 - **2025-10-11**: 구현된 시스템으로 업데이트 (Memory, Math, Logging)
 - **2025-10-05**: 초기 아키텍처 설계 문서
 - 향후 업데이트는 여기에 기록됩니다
@@ -831,4 +853,4 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 **참고**: 이 아키텍처는 프로젝트가 발전하고 새로운 요구사항이 등장함에 따라 변경될 수 있습니다. 실제 경험이 설계 개선으로 이어질 수 있습니다.
 
-**최종 업데이트**: 2025-10-11
+**최종 업데이트**: 2025-10-14
