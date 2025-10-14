@@ -15,71 +15,122 @@ DevMiniEngine은 DirectX 12를 기반으로 하는 개인 학습 및 포트폴�
 - **게임 엔진 기초**: 물리, AI, 지형 생성 등 핵심 엔진 시스템 구현
 - **포트폴리오 제작**: 실무 수준의 코드 품질과 문서화
 
+## 구현 현황
+
+### 완료된 시스템 (Phase 1: 기반 - 75% 완료)
+
+**Core 시스템**
+- 메모리 관리 시스템 (완전 구현)
+  - LinearAllocator: O(1) 범프 포인터 할당
+  - PoolAllocator: O(1) 고정 크기 객체 풀링
+  - StackAllocator: 마커를 사용한 LIFO 할당
+  - 테스트 커버리지: 01_MemoryTest, 02_PoolAllocatorTest, 03_StackAllocatorTest
+
+- 로깅 시스템 (완전 구현)
+  - 다중 출력 Sink 아키텍처 (Console, File)
+  - Mutex를 통한 스레드 안전 로깅
+  - 카테고리 기반 필터링 (Core, Graphics, Physics, AI, Audio, Input, Memory)
+  - 컬러 코딩된 콘솔 출력
+  - 테스트 커버리지: 05_LoggingTest
+
+**Math 라이브러리 (완전 구현)**
+- SIMD 최적화 벡터/행렬 연산 (DirectXMath 래퍼)
+- Vector2, Vector3, Vector4
+- Matrix3x3, Matrix4x4 (행 우선)
+- Quaternion 연산
+- Transform 유틸리티 (Translation, Rotation, Scaling)
+- 카메라 행렬 (LookAt, Perspective, Orthographic)
+- 테스트 커버리지: 04_MathTest
+
+**Platform 레이어 (완전 구현)**
+- Win32 윈도우 생성 및 관리
+- 이벤트 처리 시스템
+- 입력 시스템
+  - 키보드 상태 추적 (pressed/held/released)
+  - 마우스 상태 추적 (버튼, 위치, 휠)
+  - 프레임 정확도를 위한 더블 버퍼링
+- 테스트 커버리지: 06_WindowTest, 07_InputTest
+
+### 진행 중
+
+**Phase 4: DirectX 12 그래픽스**
+- 다음 우선순위: Device 초기화 및 기본 렌더링
+
+### 프로젝트 통계
+
+- 총 코드 라인 수: ~2,200
+- 구현된 모듈: 4/12 서브시스템
+- 테스트 커버리지: 7개 샘플 프로젝트
+- 컴파일러 경고: 0개 (Level 4)
+
 ## 주요 기능
 
-### 그래픽스
+### 그래픽스 (계획됨)
 - DirectX 12 기반 렌더링 시스템
 - RHI(Render Hardware Interface) 추상화 레이어
-- PBR(Physically Based Rendering) 지원 준비
+- PBR(Physically Based Rendering) 지원
 - 고수준 렌더링 시스템 (Material, Mesh, Camera)
 
-### ECS 아키텍처
+### ECS 아키텍처 (계획됨)
 - Entity 기반 게임 오브젝트 관리
 - Component 기반 데이터 구조
 - System 기반 로직 처리
 - 효율적인 메모리 레이아웃
 
-### 지형 시스템
-- 절차적 지형 생성 (Procedural Generation)
-- Height Map 기반 렌더링
-- LOD(Level of Detail) 지원 계획
-
-### 물리 엔진
-- 기본 충돌 감지 (Collision Detection)
-- 강체 역학 (Rigid Body Dynamics)
+### 물리 엔진 (계획됨)
+- 기본 충돌 감지
+- 강체 역학
 - Physics World 시뮬레이션
 
-### 게임 AI
+### 게임 AI (계획됨)
 - A* 길찾기 알고리즘
 - NavMesh 기반 내비게이션
-- Behavior Tree 지원 계획
 
 ## 프로젝트 구조
 
 ```
 DevMiniEngine/
 ├── Engine/                          # 엔진 코어
-│   ├── Core/                        # 기본 시스템 (메모리, 스레딩, 로깅)
-│   ├── Math/                        # 수학 라이브러리
-│   ├── ECS/                         # Entity Component System
-│   ├── Graphics/                    # 렌더링 시스템
-│   │   ├── RHI/                     # 렌더링 추상화 계층
+│   ├── Core/                        # 기본 시스템 (구현 완료)
+│   │   ├── Memory/                  # 커스텀 할당자들
+│   │   └── Logging/                 # 다중 출력 로깅
+│   ├── Math/                        # Math 라이브러리 (구현 완료)
+│   ├── Platform/                    # Platform 레이어 (구현 완료)
+│   │   ├── Windows/                 # Win32 구현
+│   │   └── Input/                   # 입력 시스템
+│   ├── ECS/                         # Entity Component System (계획됨)
+│   ├── Graphics/                    # 렌더링 시스템 (계획됨)
+│   │   ├── RHI/                     # 렌더링 추상화 레이어
 │   │   ├── DX12/                    # DirectX 12 구현
 │   │   └── Renderer/                # 고수준 렌더링
-│   ├── Physics/                     # 물리 엔진
-│   ├── Terrain/                     # 지형 시스템
-│   ├── AI/                          # 게임 AI
-│   ├── Scene/                       # 씬 관리
-│   └── Input/                       # 입력 처리
+│   ├── Physics/                     # 물리 엔진 (계획됨)
+│   ├── AI/                          # 게임 AI (계획됨)
+│   └── Scene/                       # 씬 관리 (계획됨)
 │
-├── Platform/                        # 플랫폼 계층 (Windows)
 ├── Samples/                         # 학습 샘플 프로젝트
-├── Tools/                           # 개발 도구
-├── Assets/                          # 리소스 (셰이더, 텍스처, 모델)
-├── Tests/                           # 단위 테스트
+│   ├── 01_MemoryTest/              # LinearAllocator 테스트
+│   ├── 02_PoolAllocatorTest/       # PoolAllocator 테스트
+│   ├── 03_StackAllocatorTest/      # StackAllocator 테스트
+│   ├── 04_MathTest/                # Math 라이브러리 테스트
+│   ├── 05_LoggingTest/             # 로깅 시스템 테스트
+│   ├── 06_WindowTest/              # 윈도우 생성 테스트
+│   └── 07_InputTest/               # 입력 시스템 테스트
+│
 ├── Docs/                            # 문서
-├── bin/                             # 빌드 출력물 (exe, lib, dll)
+│   ├── Architecture.md              # 상세 아키텍처 가이드
+│   ├── CodingConvention.md          # 코딩 표준
+│   └── DevelopmentLog.md            # 개발 진행 상황
+│
+├── bin/                             # 빌드 출력물
 │   ├── Debug/
 │   └── Release/
 │
-└── intermediate/                    # 중간 빌드 파일 (obj, pch)
-   ├── Debug/
-   └── Release/
+└── intermediate/                    # 중간 빌드 파일
 ```
 
 아키텍처 설계 및 모듈 의존성에 대한 자세한 내용은 [아키텍처 문서](./Docs/Architecture.md)를 참조하세요.
 
-## 빌드 및 실행 (예정)
+## 빌드 및 실행
 
 ### 요구 사항
 
@@ -112,135 +163,82 @@ DevMiniEngine.sln
 ### 샘플 실행
 
 ```bash
-# 샘플 프로젝트를 시작 프로젝트로 설정 후 실행
-bin/Debug/01_HelloTriangle.exe
+# 예시: 메모리 할당자 테스트 실행
+bin/Debug/01_MemoryTest.exe
+
+# 예시: 입력 시스템 테스트 실행
+bin/Debug/07_InputTest.exe
 ```
 
-## 학습 샘플 (예정)
+## 샘플 프로젝트
 
-| 샘플 | 설명 | 학습 내용 |
-|------|------|----------|
-| **01_MemoryTest** | LinearAllocator 테스트 | 메모리 할당자 기초 |
-| **02_PoolAllocatorTest** | PoolAllocator 테스트 | 고정 크기 객체 풀 |
-| **03_StackAllocatorTest** | StackAllocator 테스트 | 스택 기반 메모리 관리 |
-| **04_MathTest** | Math 라이브러리 테스트 | 벡터, 행렬, 쿼터니언 |
-| **05_LoggingTest** | Logging 시스템 테스트 | 구조화된 로깅, 멀티 출력 |
-| **06_WindowTest** | 윈도우 생성 | Win32 API, 이벤트 처리 |
-| **07_DX12Init** | DirectX 12 초기화 | Device, Command Queue 생성 |
-...
-| **XX_HelloTriangle** | 기본 삼각형 렌더링 | DirectX 12 기초, 렌더링 파이프라인 |
-| **XX_BasicLighting** | 조명 시스템 | Phong Shading, 노멀 매핑 |
-| **XX_TextureMapping** | 텍스처 적용 | 텍스처 샘플링, UV 매핑 |
-| **XX_ECS_Basics** | ECS 시스템 데모 | Entity, Component, System 개념 |
-| **XX_Physics_Demo** | 물리 시뮬레이션 | 충돌 감지, 강체 역학 |
-| **XX_Terrain_Demo** | 지형 생성 및 렌더링 | 절차적 생성, Height Map |
-| **XX_AI_Pathfinding** | AI 길찾기 | A* 알고리즘, NavMesh |
+| 샘플 | 상태 | 설명 | 학습 내용 |
+|------|------|------|----------|
+| 01_MemoryTest | 완료 | LinearAllocator 테스트 | 커스텀 메모리 할당 |
+| 02_PoolAllocatorTest | 완료 | PoolAllocator 테스트 | 객체 풀링 |
+| 03_StackAllocatorTest | 완료 | StackAllocator 테스트 | 스코프 할당 |
+| 04_MathTest | 완료 | Math 라이브러리 테스트 | SIMD 벡터, 행렬 |
+| 05_LoggingTest | 완료 | 로깅 시스템 테스트 | 구조화된 로깅 |
+| 06_WindowTest | 완료 | 윈도우 생성 | Win32 API, 이벤트 |
+| 07_InputTest | 완료 | 입력 처리 | 키보드, 마우스 추적 |
+| 08_DX12Init | 계획됨 | DirectX 12 초기화 | Device, command queue |
+| 09_HelloTriangle | 계획됨 | 기본 렌더링 | DirectX 12 파이프라인 |
 
 ## 기술 스택
 
 ### 핵심 기술
-- **C++20**: 최신 C++ 표준 활용
+- **C++20**: 최신 C++ 표준
 - **DirectX 12**: 저수준 그래픽스 API
 - **Win32 API**: Windows 플랫폼 인터페이스
-
-### 외부 라이브러리
-- **DirectXTK12**: DirectX 유틸리티 라이브러리
-- **ImGui**: 디버그 UI
-- **spdlog**: 고성능 로깅 라이브러리
+- **DirectXMath**: SIMD 최적화 수학 라이브러리
 
 ### 개발 도구
 - **Visual Studio 2022**: 주 개발 환경
 - **Git/GitHub**: 버전 관리
-- **RenderDoc**: 그래픽스 디버깅
+- **RenderDoc**: 그래픽스 디버깅 (계획됨)
 
 ## 문서
 
-- [아키텍처 가이드](./Docs/Architecture.md) - 엔진 설계 철학과 구조
+- [아키텍처 가이드](./Docs/Architecture.md) - 완전한 엔진 설계와 구조
 - [코딩 컨벤션](./Docs/CodingConvention.md) - 프로젝트 코딩 규칙
-- [개발 일지](./Docs/DevelopmentLog.md) - 개발 진행 상황 기록
-- [기술 노트](./Docs/TechnicalNotes/) - 구현 기술 상세 설명
-
-## 학습 자료 (예정)
-
-### ECS 아키텍처
-- [ECS 개념 정리](./Docs/TechnicalNotes/ECS_Basics.md)
-- [컴포넌트 설계 패턴](./Docs/TechnicalNotes/Component_Design.md)
-
-### 그래픽스
-- [DirectX 12 시작하기](./Docs/TechnicalNotes/DX12_Basics.md)
-- [렌더링 파이프라인](./Docs/TechnicalNotes/Render_Pipeline.md)
-
-### 물리 시뮬레이션
-- [충돌 감지 알고리즘](./Docs/TechnicalNotes/Collision_Detection.md)
-- [강체 역학 기초](./Docs/TechnicalNotes/Rigid_Body_Physics.md)
-
-## 개발 스크립트 (예정)
-
-```bash
-# 프로젝트 클린
-Scripts/clean.bat
-
-# 전체 빌드
-Scripts/build.bat
-
-# 프로젝트 파일 재생성 (필요 시)
-Scripts/generate_project.bat
-```
-
-## 테스트 (예정)
-
-```bash
-# 단위 테스트 실행
-bin/Debug/CoreTests.exe
-bin/Debug/ECSTests.exe
-bin/Debug/MathTests.exe
-```
-
-## 코딩 컨벤션 핵심 규칙
-
-### 네이밍
-- **클래스/함수**: `PascalCase`
-- **지역 변수**: `camelCase`
-- **멤버 변수**: `m` 접두어 + `PascalCase` (예: `mFrameIndex`)
-- **전역 변수**: `g` 접두어 + `PascalCase`
-
-### 스타일
-- 포인터는 타입과 붙임: `ID3D12Device* device`
-- `nullptr` 사용 (~~`NULL`~~ 금지)
-- 중괄호 `{}` 항상 사용
-- 초기화는 `=` 우선 사용
-
-### 메모리 관리
-- 스마트 포인터 우선: `std::unique_ptr`, `std::shared_ptr`
-- DirectX COM 객체: `Microsoft::WRL::ComPtr`
-- 읽기 전용 인자: `const T&`
-
-자세한 내용은 [코딩 컨벤션 문서](./Docs/CodingConvention.md)를 참조하세요.
+- [개발 일지](./Docs/DevelopmentLog.md) - 상세한 개발 히스토리
 
 ## 로드맵
 
-### Phase 0: 프로젝트 설정 (현재)
+### Phase 1: 기반 시스템 (75% 완료)
+- [x] 프로젝트 구조
+- [x] Core 시스템
+  - [x] 메모리 할당자 (Linear, Pool, Stack)
+  - [x] 로깅 시스템 (Console, File sinks)
+  - [x] 어설션 매크로
+- [x] Math 라이브러리 (SIMD와 함께 Vector, Matrix, Quaternion)
+- [x] Platform 레이어 (Window, Input)
+- [ ] 스레딩 시스템 (Job system, thread pool)
 
-### Phase 1: 기반 시스템 
+### Phase 2: 그래픽스 (시작 안 됨)
 - [ ] DirectX 12 초기화
 - [ ] 기본 렌더링 파이프라인
-- [ ] ECS 코어 시스템 구현
-- [ ] 수학 라이브러리 완성
+- [ ] 메시 및 텍스처 로딩
+- [ ] 카메라 시스템
 
-### Phase 2: 렌더링 확장
-- [ ] PBR 머티리얼 시스템
-- [ ] 그림자 매핑
-- [ ] 포스트 프로세싱
+### Phase 3: 고급 ECS (시작 안 됨)
+- [ ] ECS 코어 구현
+- [ ] 컴포넌트 쿼리
+- [ ] 시스템 의존성
+- [ ] 이벤트 시스템
 
-### Phase 3: 게임플레이 시스템
+### Phase 4: 게임플레이 시스템 (시작 안 됨)
 - [ ] 물리 엔진 통합
-- [ ] AI 시스템 구현
-- [ ] 지형 생성 시스템
+- [ ] 충돌 감지
+- [ ] AI 길찾기 (A*)
+- [ ] 지형 생성
 
-### Phase 4: 최적화 및 도구
-- [ ] 멀티스레딩 렌더링
-- [ ] 리소스 관리 최적화
-- [ ] 에디터 프로토타입
+## 코드 품질
+
+- 경고 레벨: 4 (최고)
+- 활성 경고: 0개
+- C++ 표준: C++20
+- 코드 스타일: CodingConvention.md를 통해 강제
 
 ## 기여
 
@@ -259,14 +257,17 @@ bin/Debug/MathTests.exe
 **rniman**
 - GitHub: [@rniman](https://github.com/rniman)
 - Email: shinmg00@gmail.com
-- Blog: [기술 블로그 URL](https://rniman.github.io/)
+- Blog: [기술 블로그](https://rniman.github.io/)
 
 ## 감사의 말
 
 - [DirectX 12 공식 문서](https://docs.microsoft.com/en-us/windows/win32/direct3d12/)
 - [Learn OpenGL](https://learnopengl.com/) - 그래픽스 개념 학습
 - [Game Programming Patterns](https://gameprogrammingpatterns.com/) - 디자인 패턴 참고
+- [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
 
 ---
+
+최종 업데이트: 2025-10-14
 
 ⭐ 이 프로젝트가 도움이 되었다면 Star를 눌러주세요!
