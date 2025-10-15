@@ -1,5 +1,189 @@
 # Development Log
 
+--- 
+
+## 2025-10-15 - Step 2: Device and Factory Initialization
+
+### Tasks
+- [x] Designed and implemented DX12Device class
+- [x] Created DXGI Factory
+- [x] Selected GPU Adapter (based on max VRAM)
+- [x] Created D3D12 Device (Feature Level check)
+- [x] Enabled Debug Layer (Debug builds)
+
+### Decisions
+
+**Class Design**
+- Did not use Singleton pattern (kept as regular class)
+- Explicit lifecycle management (Initialize/Shutdown)
+- Non-copyable
+
+**Adapter Selection Criteria**
+- Select GPU with largest dedicated video memory (VRAM)
+- Exclude Software Adapters
+- Verify D3D12 Device creation capability
+
+**Feature Level**
+- Try in order: 12.1 → 12.0 → 11.1 → 11.0
+- Use highest available level
+
+**Debug Layer**
+- Enable only in Debug builds
+- Set Break on CORRUPTION and ERROR
+- Pass Debug flags to Factory as well
+
+### Implementation
+
+**DX12Device Class**
+```cpp
+class DX12Device
+{
+public:
+    bool Initialize(bool enableDebugLayer = true);
+    void Shutdown();
+    
+    IDXGIFactory4* GetFactory() const;
+    ID3D12Device* GetDevice() const;
+    D3D_FEATURE_LEVEL GetFeatureLevel() const;
+    
+private:
+    bool EnableDebugLayer();
+    bool CreateFactory();
+    bool SelectAdapter();
+    bool CreateDevice();
+    
+    ComPtr<IDXGIFactory4> mFactory;
+    ComPtr<IDXGIAdapter1> mAdapter;
+    ComPtr<ID3D12Device> mDevice;
+    D3D_FEATURE_LEVEL mFeatureLevel;
+};
+```
+
+**Initialization Order**
+1. Enable Debug Layer (Debug builds)
+2. Create DXGI Factory
+3. Select GPU Adapter
+4. Create D3D12 Device
+
+**Log Output**
+- Selected GPU information (name, VRAM, system memory)
+- Supported Feature Level
+- Debug Layer activation status
+
+### Test Results
+
+**Execution Result**
+```
+[INFO] === 08_DX12Init Sample Started ===
+[INFO] Window created successfully
+[INFO] [DX12Device] Initializing DirectX 12 Device...
+[INFO] [DX12Device] Debug Layer enabled successfully
+[INFO] [DX12Device] DXGI Factory created successfully
+[INFO] [DX12Device] Found compatible adapter: NVIDIA GeForce RTX 3080
+[INFO] [DX12Device]   Dedicated Video Memory: 10.00 GB
+[INFO] [DX12Device] D3D12 Device created with Feature Level: 12.1
+[INFO] [DX12Device] DirectX 12 Device initialized successfully
+[INFO] Press ESC to exit
+```
+
+- [x] Debug Layer enabled successfully
+- [x] GPU information displayed correctly
+- [x] Device created successfully (Feature Level 12.1)
+- [x] Normal shutdown and resource cleanup verified
+
+### Issues Encountered
+
+**d3dx12.h Warnings**
+- Issue: C4324 (structure padding) warnings
+- Solution: Used `#pragma warning(push, 0)` to suppress warnings only for that header
+- Did not modify file as it's Microsoft official library
+
+### Notes
+- Phase 2 (Graphics) started
+- Next step: Command Queue creation
+- Device initialization complete, ready for GPU communication
+
+### Next Steps
+
+**Step 3: Command Queue Creation**
+- [ ] Implement DX12CommandQueue class
+- [ ] Create Direct Command Queue
+- [ ] Establish command execution foundation
+
+**Step 4: SwapChain Creation**
+- [ ] Implement DX12SwapChain class
+- [ ] Manage Back Buffer resources
+- [ ] Prepare Present functionality
+
+**Step 5: Descriptor Heap Creation**
+- [ ] Implement RTV Descriptor Heap
+- [ ] Create RTVs for Back Buffers
+
+**Step 6: First Rendering**
+- [ ] Record Command List
+- [ ] Clear screen (solid color background)
+- [ ] Implement Present
+
+
+---
+
+## 2025-10-15 - Step 1: Project Structure Design and Setup
+
+### Tasks
+- [x] Created Graphics module project (Static Library)
+- [x] Created 08_DX12Init sample project (Console Application)
+- [x] Integrated d3dx12.h helper library
+- [x] Completed basic build configuration and testing
+
+### Decisions
+
+**Graphics Module Structure**
+- Implemented as Static Library to maintain same hierarchy as Core, Math, Platform
+- RHI abstraction layer to be added later if needed
+
+**d3dx12.h Usage**
+- Included Microsoft official DirectX 12 helper library
+- Header-only library with no external dependencies
+- Simplifies struct initialization and improves code readability
+
+**Warning Handling**
+- Suppressed warnings for d3dx12.h as external library
+- Used `#pragma warning(push, 0)` to disable warnings only for that header
+
+### Implementation
+
+**Project Structure**
+```
+Engine/Graphics/
+├── include/Graphics/
+│   ├── DX12/
+│   │   └── d3dx12.h           # Microsoft official helper
+│   └── GraphicsTypes.h         # Common types, constants, macros
+└── src/
+    └── Graphics.cpp
+
+Samples/08_DX12Init/
+└── main.cpp                    # Window creation and input handling
+```
+
+**GraphicsTypes.h**
+- Includes DirectX 12 headers and library linking
+- d3dx12.h warning suppression (`#pragma warning(push, 0)`)
+- ComPtr type alias definition
+- FRAME_BUFFER_COUNT constant definition (Double buffering)
+- GRAPHICS_THROW_IF_FAILED macro definition
+
+**main.cpp**
+- Window creation (1280x720)
+- Input handling (ESC key exit)
+- Frame loop structure (Update → ProcessEvents → Reset)
+
+### Test Results
+- [x] Graphics.lib built successfully
+- [x] 08_DX12Init.exe built successfully (0 warnings)
+- [x] Window created normally
+- [x] ESC key exit working correctly
+
 ---
 
 ## 2025-10-13 - Input System Implementation
@@ -467,4 +651,4 @@
 
 ---
 
-**Last Updated**: 2025-10-05
+**Last Updated**: 2025-10-15
