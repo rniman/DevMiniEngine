@@ -1,63 +1,61 @@
-# DevMiniEngine Coding Convention
+# DevMiniEngine 코딩 컨벤션
 
-**[한국어](./CodingConvention.ko.md)** | **English**
+## 목차
 
-## Table of Contents
-
-1. [File and Directory Structure](#1-file-and-directory-structure)
-2. [Naming Conventions](#2-naming-conventions)
-3. [Code Style](#3-code-style)
-4. [Memory Management](#4-memory-management)
-5. [Constant Definitions](#5-constant-definitions)
-6. [const Usage Principles](#6-const-usage-principles)
-7. [Comment Guidelines](#7-comment-guidelines)
-8. [Namespaces](#8-namespaces)
-9. [Class Member Access](#9-class-member-access)
-10. [Function Parameter Alignment](#10-function-parameter-alignment)
-11. [Class Organization](#11-class-organization)
-12. [Function Access Levels](#12-function-access-levels)
-13. [Header File Includes](#13-header-file-includes)
-14. [Dependencies and Singleton Access](#14-dependencies-and-singleton-access)
-15. [Exception Handling and Error Management](#15-exception-handling-and-error-management)
-16. [Template Usage](#16-template-usage)
-17. [Performance Optimization](#17-performance-optimization)
-18. [Multithreading](#18-multithreading)
-19. [Anti-patterns](#19-anti-patterns)
+1. [파일 및 디렉토리 구조](#1-파일-및-디렉토리-구조)
+2. [네이밍 규칙](#2-네이밍-규칙)
+3. [코드 스타일](#3-코드-스타일)
+4. [메모리 관리](#4-메모리-관리)
+5. [상수 정의](#5-상수-정의)
+6. [const 사용 원칙](#6-const-사용-원칙)
+7. [주석 작성 규칙](#7-주석-작성-규칙)
+8. [네임스페이스](#8-네임스페이스)
+9. [클래스 멤버 접근](#9-클래스-멤버-접근)
+10. [함수 인자 정렬](#10-함수-인자-정렬)
+11. [클래스 구성](#11-클래스-구성)
+12. [함수 접근 수준](#12-함수-접근-수준)
+13. [헤더 파일 include](#13-헤더-파일-include)
+14. [의존성 및 싱글톤 접근](#14-의존성-및-싱글톤-접근)
+15. [예외 처리 및 에러 핸들링](#15-예외-처리-및-에러-핸들링)
+16. [템플릿 사용](#16-템플릿-사용)
+17. [성능 최적화](#17-성능-최적화)
+18. [멀티스레딩](#18-멀티스레딩)
+19. [안티패턴](#19-안티패턴)
 
 ---
 
-## 1. File and Directory Structure
+## 1. 파일 및 디렉토리 구조
 
-- Use `.h`, `.cpp` extensions
-- `pch.h`, `pch.cpp` → Precompiled headers
-- Organize directories by system/module (e.g., `Renderer/`, `Core/`, `Resource/`)
+- `.h`, `.cpp` 확장자 사용
+- `pch.h`, `pch.cpp` → 프리컴파일 헤더
+- 시스템/모듈 단위 디렉토리 구성 (예: `Renderer/`, `Core/`, `Resource/`)
 
 ---
 
-## 2. Naming Conventions
+## 2. 네이밍 규칙
 
-### Classes
+### 클래스
 - `PascalCase`
 
-### Functions
+### 함수
 - `PascalCase`
-- **Always start with a verb**
-- `bool` returning functions use meaningful prefixes: `Is`, `Has`, `Can`, `Should`
+- **항상 동사로 시작**
+- `bool` 반환 함수는 `Is`, `Has`, `Can`, `Should` 등 의미 있는 접두어 사용
 
-### Variables
-- Local variables: `camelCase`
-- Member variables: `m` prefix + `PascalCase`
-  - Example: `mFrameIndex`, `mDevice`
-- Static member variables: `s` prefix + `PascalCase`
+### 변수
+- 지역 변수: `camelCase`
+- 멤버 변수: `m` 접두어 + `PascalCase`
+  - 예: `mFrameIndex`, `mDevice`
+- 정적 멤버 변수: `s` 접두어 + `PascalCase`
 
-### Global Variables
-- `g` prefix + `PascalCase`
-  - Example: `gRenderer`, `gInputSystem`
+### 전역 변수
+- `g` 접두어 + `PascalCase`
+  - 예: `gRenderer`, `gInputSystem`
 
-### Struct Members
-- `camelCase`, no prefix
+### 구조체 멤버
+- `camelCase`, 접두어 없음
 
-### Enumerations
+### 열거형
 ```cpp
 enum class ResourceState
 {
@@ -66,38 +64,38 @@ enum class ResourceState
     CopyDest
 };
 ```
-- Enum class name: `PascalCase`
-- Enum members: `PascalCase`
-- Do not repeat enum name (type safety is guaranteed)
+- 열거형 클래스 이름: `PascalCase`
+- 열거형 멤버: `PascalCase`
+- 열거형 이름 반복 금지 (타입 안전성이 보장되므로)
 
 ---
 
-## 3. Code Style
+## 3. 코드 스타일
 
-### Basic Style
-- Always use braces `{}` (even for single-line if statements)
-- Attach pointer to type (`ID3D12Device* device`)
-- Use `nullptr`, never `NULL`
-- Use `auto` only when type is obvious
-- Avoid C-style arrays, prefer STL containers
-  - Fixed size: `std::array`
-  - Dynamic size: `std::vector`
+### 기본 스타일
+- 중괄호 `{}`는 항상 사용 (한 줄 if문도 예외 없음)
+- 포인터는 타입과 붙인다 (`ID3D12Device* device`)
+- `nullptr` 사용, `NULL` 금지
+- `auto`는 타입이 명확할 때만 사용
+- C 스타일 배열 지양, STL 컨테이너 우선
+  - 정적 크기: `std::array`
+  - 가변 크기: `std::vector`
 
-### Variable Initialization Rules (Simplified)
+### 변수 초기화 규칙 (단순화)
 
-**Basic Principle: Prefer `=` initialization**
+**기본 원칙: `=` 초기화 우선 사용**
 
 ```cpp
-// Default style
+// 기본 스타일
 int count = 0;
 float pi = 3.14f;
 auto result = Calculate();
 
-// Container initialization
+// 컨테이너 초기화
 std::vector<int> values = {1, 2, 3};
 std::array<float, 3> pos = {0.0f, 1.0f, 0.0f};
 
-// Member variables (in class definition)
+// 멤버 변수 (클래스 정의 시)
 class Renderer
 {
 private:
@@ -106,26 +104,26 @@ private:
 };
 ```
 
-**Exception: Use `{}` directly only for:**
-1. Aggregate initialization for structs
-2. Explicit constructor calls
+**예외: 다음 경우에만 `{}` 직접 사용**
+1. 집합 초기화(aggregate initialization)가 필요한 구조체
+2. explicit 생성자 호출 시
 
 ```cpp
-// Struct aggregate initialization
+// 구조체 집합 초기화
 Vertex vertex{position, normal, uv};
 
-// Explicit constructor
-std::vector<int> sizes(10);  // 10 elements, use parentheses
+// explicit 생성자
+std::vector<int> sizes(10);  // 10개 요소, 괄호 사용
 ```
 
-> Narrowing prevention is handled by compiler warnings (`/W4` or `/Wall`)
+> narrowing 방지는 컴파일러 경고(`/W4` 또는 `/Wall`)로 해결
 
-### Complex Object Initialization Style
+### 복합 객체 초기화 스타일
 
-- Line breaks recommended for multiple or complex items
+- 초기화 항목이 여러 개이거나 복잡한 경우 줄바꿈 권장
 
 ```cpp
-// Multiple items
+// 여러 항목일 경우
 std::array<CD3DX12_DESCRIPTOR_RANGE, 3> descriptorRanges = {
     CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0),
     CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0),
@@ -133,48 +131,48 @@ std::array<CD3DX12_DESCRIPTOR_RANGE, 3> descriptorRanges = {
 };
 ```
 
-> Trailing comma (,) recommended after last item (for version control convenience)
+> 마지막 항목 뒤에도 쉼표(,) 권장 (버전 관리 편의성)
 
 ---
 
-## 4. Memory Management
+## 4. 메모리 관리
 
-### Basic Principles
-- Minimize raw pointers, use references (`&`) actively
-- Read-only parameters default to `const T&`
-- Pass smart pointers as `const&` (avoid copy cost)
-- Use pointers only for null possibility or explicit ownership transfer
+### 기본 원칙
+- 로우 포인터 최소화, 참조(`&`) 적극 사용
+- 읽기 전용 인자는 `const T&` 기본
+- 스마트 포인터는 `const&`로 전달 (복사 비용 방지)
+- 포인터는 null 가능성 또는 명시적 소유권 전달 시에만 사용
 
-### Recommended Smart Pointers
-- `std::unique_ptr` (default choice)
-- `std::shared_ptr` (when sharing needed)
-- `Microsoft::WRL::ComPtr` (for DirectX COM objects)
+### 스마트 포인터 권장
+- `std::unique_ptr` (기본 선택)
+- `std::shared_ptr` (공유 필요 시)
+- `Microsoft::WRL::ComPtr` (DirectX COM 객체)
 
 ```cpp
 using Microsoft::WRL::ComPtr;
 ComPtr<ID3D12Device> mDevice;
 ```
 
-### Smart Pointer Parameter Passing
+### 스마트 포인터 파라미터 전달
 
-| Intent | Signature | Use Case |
-|--------|-----------|----------|
-| Observe only (no ownership) | `T*` or `T&` | **Most common**, when object existence is guaranteed |
-| Store internally (share ownership) | `shared_ptr<T>` | When reference count increase needed |
-| Transfer ownership | `unique_ptr<T>` | Transfer exclusive ownership |
-| Optional observation | `T*` | When null is possible |
+| 의도 | 시그니처 | 사용 시점 |
+|------|---------|----------|
+| 관찰만 함 (소유권 무관) | `T*` 또는 `T&` | **가장 일반적**, 객체 존재 보장 시 |
+| 내부에 저장 (소유권 공유) | `shared_ptr<T>` | 참조 카운트 증가 필요 시 |
+| 소유권 이전 | `unique_ptr<T>` | 단독 소유권 넘김 |
+| 옵셔널 관찰 | `T*` | null 가능성 있음 |
 
 ```cpp
-// Read-only access
+// 읽기만 할 때
 void Draw(const Mesh& mesh);
 
-// Share ownership
+// 소유권 공유
 void SetTexture(std::shared_ptr<Texture> texture)
 {
     mTexture = std::move(texture);
 }
 
-// Transfer ownership
+// 소유권 이전
 std::unique_ptr<Mesh> CreateMesh()
 {
     return std::make_unique<Mesh>();
@@ -183,131 +181,160 @@ std::unique_ptr<Mesh> CreateMesh()
 
 ---
 
-## 5. Constant Definitions
+## 5. 상수 정의
 
-### Basic Principles
-- Prohibit `#define`
-- Compile-time constants: `constexpr` (globals use **ALL_CAPS**)
-- Runtime constants: `const`
+### 기본 원칙
+- `#define` 금지
+- 컴파일 타임 상수: `constexpr` (전역은 **ALL_CAPS**)
+- 런타임 상수: `const`
 
 ```cpp
 constexpr int MAX_FRAME_COUNT = 3;
 constexpr float PI = 3.14159f;
 ```
 
-### Exceptions
-- External API macros allowed (`MAX_PATH`, `SUCCEEDED(hr)`, etc.)
-- **Do not use `enum` for constant definitions**
+### 예외
+- 외부 API 매크로는 허용 (`MAX_PATH`, `SUCCEEDED(hr)` 등)
+- **상수 정의 용도로 `enum` 사용 금지**
 
 ---
 
-## 6. const Usage Principles
+## 6. const 사용 원칙
 
-- Read-only parameters: `const T&`
-- Read-only member functions: `...() const`
-- Immutable local variables: `const` or `constexpr`
-- Clearly distinguish pointer target/self immutability
+- 읽기 전용 매개변수: `const T&`
+- 읽기 전용 멤버 함수: `...() const`
+- 불변 지역 변수: `const` 또는 `constexpr`
+- 포인터는 대상/자체 불변을 명확히 구분
 
 ---
 
-## 7. Comment Guidelines
+## 7. 주석 작성 규칙
 
-### Basic Principles
-- **Self-documenting code first** - Clear code over comments
-- Explain **Why** over What
-- **Minimal** - Only where necessary
-- Use TODO/FIXME tags
+### 언어 선택
+- 모든 주석은 한글로 작성합니다
+- 업계 표준 용어는 영어 그대로 사용 (예: ECS, RAII, PSO, DirectX)
+- 영어-한글 혼재는 지양합니다
 
-### When Comments Are Needed
-- Complex algorithms
-- Non-intuitive decisions (performance optimizations, etc.)
-- Public API constraints
-- Functions that can throw exceptions
+### 기본 원칙
+- **Self-documenting code 우선** - 주석보다 명확한 코드
+- **What보다 Why** 설명
+- **최소한으로** - 필요한 곳에만
+- TODO/FIXME 태그 활용
 
-### When Comments Are Unnecessary
-- Self-explanatory Getter/Setter
-- Constructor/Destructor (unless special reason)
-- Private internal implementation functions
-- When function name and parameters are clear
+### 주석이 필요한 경우
+- 복잡한 알고리즘
+- 비직관적인 결정 (성능 최적화 등)
+- Public API의 제약사항
+- 예외를 던질 수 있는 함수
 
-### Class and Function Comments
+### 주석이 불필요한 경우
+- 자명한 Getter/Setter
+- 생성자/소멸자 (특별한 이유 없으면)
+- Private 내부 구현 함수
+- 함수명과 파라미터로 의미가 명확한 경우
+
+### 클래스 및 함수 주석 (한글 버전)
 ```cpp
-// Class: Brief description only
+// 클래스: 간단한 설명만
 /**
- * @brief Linear allocator for frame-temporary data
- * Cannot free individual allocations. Use Reset().
+ * @brief 프레임 임시 데이터를 위한 선형 할당자
+ * 개별 할당 해제 불가. Reset() 사용 필요.
  */
 class LinearAllocator { ... };
 
-// Document complex functions only
+// 복잡한 함수만 문서화
 /**
- * @brief Renders triangles with custom transform
- * @note Requires active pipeline state
+ * @brief 커스텀 변환을 적용하여 삼각형 렌더링
+ * @note 활성화된 파이프라인 상태 필요
  */
 bool DrawTriangles(const Vertex* vertices, size_t count, const Matrix& transform);
 
-// No comment for obvious functions
+// 자명한 함수는 주석 없음
 size_t GetCapacity() const { return mSize; }
 
-// Inline comment for important behavior
-void Deallocate(void* ptr) override;  // No-op
+// 중요한 동작만 inline 주석
+void Deallocate(void* ptr) override;  // 아무 동작 안 함 (No-op)
 ```
 
-### TODO Tags
+### TODO 태그
 ```cpp
-// TODO: Add multithreaded rendering support
-// FIXME: Crash on window resize (Issue #42)
-// NOTE: Optimization needed - currently takes 100ms
-// HACK: Temporary solution, needs future revision
+// TODO: 멀티스레드 렌더링 지원 추가
+// FIXME: 창 크기 변경 시 크래시 발생 (Issue #42)
+// NOTE: 성능 최적화 필요 - 현재 100ms 소요
+// HACK: 임시 해결책, 추후 리팩토링 필요
 ```
 
-### Use Logging for Debug Information
-
+### 디버그 정보는 로깅으로
 ```cpp
-// Bad: Explaining state with comments
+// 나쁜 예: 주석으로 상태 설명
 void LinearAllocator::Allocate(size_t size)
 {
-    // Allocated 1024 bytes
+    // 1024 바이트 할당됨
     mOffset += size;
 }
 
-// Good: Use logging system
+// 좋은 예: 로깅 시스템 활용
 void LinearAllocator::Allocate(size_t size)
 {
-    LOG_TRACE("LinearAllocator allocated %zu bytes at offset %zu", size, mOffset);
+    LOG_TRACE("LinearAllocator: %zu 바이트 할당 (오프셋: %zu)", size, mOffset);
     mOffset += size;
 }
 ```
 
-### Comments to Avoid
+### 피해야 할 주석
 ```cpp
-// Stating the obvious
-i++;  // Increment i by 1
+// 나쁜 예: 당연한 것 설명
+i++;  // i를 1 증가
 
-// Explain why
-i++;  // Move to next frame index
+// 좋은 예: Why 설명
+i++;  // 다음 프레임 인덱스로 이동
 
-// Absolute statements
-// Perfect for all use cases
+// 나쁜 예: 절대적 표현
+// 모든 사용 사례에 완벽함
 
-// Specific statements
-// Well-suited for per-frame allocations (O(1) allocation)
+// 좋은 예: 구체적 표현
+// 프레임별 할당에 적합 (O(1) 할당 시간)
+```
+
+### 복잡한 로직 설명 예시
+```cpp
+// GPU 메모리 부족 시 fallback 처리
+// 1. 먼저 낮은 해상도 텍스처로 대체 시도
+// 2. 그래도 실패하면 기본 텍스처 사용
+// 3. 로그에 경고 메시지 기록
+if (!AllocateHighResTexture())
+{
+    if (!AllocateLowResTexture())
+    {
+        UseDefaultTexture();
+        LogWarning("텍스처 메모리 할당 실패 - 기본 텍스처 사용");
+    }
+}
+```
+
+### 레퍼런스 및 출처 표기
+```cpp
+// 참고: DirectX 12 Programming Guide Chapter 7
+// URL: https://docs.microsoft.com/en-us/windows/win32/direct3d12/
+// 
+// Tiled Resources 구현 참고
+// 논문: "Adaptive Scalable Texture Compression" (2016)
 ```
 
 ---
 
-## 8. Namespaces
+## 8. 네임스페이스
 
-- `using namespace std;` allowed
-- `using Microsoft::WRL::ComPtr;` declaration allowed
+- `using namespace std;` 허용
+- `using Microsoft::WRL::ComPtr;` 선언 허용
 
 ---
 
-## 9. Class Member Access
+## 9. 클래스 멤버 접근
 
-### Basic Principles
-- No direct access to `private` members
-- Use `SetX()`, `GetX()` accessors/mutators
+### 기본 원칙
+- `private` 멤버는 직접 접근 금지
+- `SetX()`, `GetX()` 접근자/설정자 사용
 
 ```cpp
 class Renderer
@@ -321,18 +348,18 @@ private:
 };
 ```
 
-### Smart Pointer Get() Allowed
+### 스마트 포인터 Get() 허용
 ```cpp
 ID3D12CommandQueue* GetCmdQueue() const { return mCommandQueue.Get(); }
 ```
 
 ---
 
-## 10. Function Parameter Alignment
+## 10. 함수 인자 정렬
 
-### Line Break Criteria
-- Recommended for 4+ parameters
-- Even with ≤3 parameters if complex types or comments needed
+### 줄바꿈 기준
+- 인자 4개 이상 시 줄바꿈 권장
+- 인자가 3개 이하라도 복잡한 타입이나 주석이 필요하면 줄바꿈
 
 ```cpp
 auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -342,7 +369,7 @@ auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 );
 ```
 
-### Function Definition Line Breaks
+### 함수 정의부 줄바꿈
 ```cpp
 void CommandQueue::Init(
     const ComPtr<ID3D12Device>& device,
@@ -356,26 +383,26 @@ void CommandQueue::Init(
 
 ---
 
-## 11. Class Organization
+## 11. 클래스 구성
 
-### Access Specifier Order
+### 접근 지정자 순서
 ```cpp
 public:
 protected:
 private:
 ```
 
-### Order Within Each Block
+### 각 블록 내 정렬 순서
 
 **public / protected:**
-1. Constructors, destructors
-2. Static creation functions (`Create()`, `GetInstance()`)
-3. Main API functions (`Init()`, `Render()`, `Update()`)
-4. Getters / Setters
+1. 생성자, 소멸자
+2. 정적 생성 함수 (`Create()`, `GetInstance()`)
+3. 주요 API 함수 (`Init()`, `Render()`, `Update()`)
+4. Getter / Setter
 
 **private:**
-1. Internal utility functions
-2. Member variables (at the bottom)
+1. 내부 유틸 함수
+2. 멤버 변수 (맨 아래)
 
 ```cpp
 class Example
@@ -402,37 +429,37 @@ private:
 };
 ```
 
-### Real Project Example
+### 실제 프로젝트 예시
 
 ```cpp
-// Input system - Frame cycle management
+// Input 시스템 - 프레임 사이클 관리
 class Input
 {
 public:
-    // Frame start
-    void Update();      // Save previous frame state
+    // 프레임 시작
+    void Update();      // 이전 프레임 상태 저장
     
-    // During frame
+    // 프레임 중간
     bool IsKeyPressed(KeyCode key) const;
     bool IsKeyDown(KeyCode key) const;
     
-    // Frame end
-    void Reset();       // Reset per-frame events
+    // 프레임 종료
+    void Reset();       // 프레임별 이벤트 초기화
     
 private:
     bool mKeyState[256];
-    bool mPrevKeyState[256];  // Double buffering
+    bool mPrevKeyState[256];  // 더블 버퍼링
 };
 ```
 
 ---
 
-## 12. Function Access Levels
+## 12. 함수 접근 수준
 
-### Basic Principles
-- External interface: `public`
-- Internal implementation only: `private`
-- For derived classes: `protected`
+### 기본 원칙
+- 외부 인터페이스: `public`
+- 내부 구현 전용: `private`
+- 파생 클래스용: `protected`
 
 ```cpp
 class SwapChain
@@ -448,42 +475,42 @@ private:
 
 ---
 
-## 13. Header File Includes
+## 13. 헤더 파일 include
 
-### Basic Principles
-- Prefer forward declarations in headers
-- Include only when implementation needed
+### 기본 원칙
+- 헤더에서는 전방 선언(forward declaration) 우선
+- 실제 구현 필요 시에만 include
 
 ```cpp
-// Forward declaration
+// 전방 선언
 class Device;
 class CommandQueue;
 
-// Include only when necessary
+// 필요 시에만 include
 #include <d3d12.h>
 ```
 
-### When Include is Necessary
-- Class size/layout information needed
-- Inheritance relationship definition
-- Template usage
-- Inline function implementation
+### include가 필요한 경우
+- 클래스 크기/레이아웃 정보 필요
+- 상속 관계 정의
+- 템플릿 사용
+- 인라인 함수 구현
 
-### Platform Layer Special Case
+### Platform 레이어 특수 사례
 
 ```cpp
-// Minimize Win32 API pollution with forward declarations
+// Win32 API 오염 최소화를 위한 전방 선언
 // Platform/include/Platform/Windows/Win32Window.h
-struct HWND__;      // Windows type forward declaration
+struct HWND__;      // Windows 타입 전방 선언
 struct HINSTANCE__;
 
 class Win32Window
 {
 private:
-    HWND__* mHwnd;  // Type-safe forward declaration instead of void* in header
+    HWND__* mHwnd;  // 헤더에서 void* 대신 타입 안전한 전방 선언
 };
 
-// Actual Windows.h include only in .cpp
+// 실제 Windows.h include는 .cpp에서만
 // Platform/src/Windows/Win32Window.cpp
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -491,40 +518,40 @@ private:
 
 ---
 
-## 14. Dependencies and Singleton Access
+## 14. 의존성 및 싱글톤 접근
 
-| Layer | Global Access | Description |
-|-------|--------------|-------------|
-| **Engine Root / App** | Allowed | Application initialization layer |
-| **Manager** | Limited | Explicit passing ideal, global access temporary |
-| **Component / Object** | Avoid | Pass explicitly via parameters |
-| **Utility / Math** | Forbidden | Maintain complete independence |
+| 계층 | 전역 접근 | 설명 |
+|------|---------|------|
+| **Engine Root / App** | 허용 | 애플리케이션 초기화 계층 |
+| **Manager** | 제한적 | 명시적 전달 이상적, 전역 접근은 임시 |
+| **Component / Object** | 지양 | 파라미터로 명시적 전달 |
+| **Utility / Math** | 금지 | 완전한 독립성 유지 |
 
 ```cpp
-// Component directly accessing singleton
+// Component가 직접 싱글톤 접근
 Renderer::GetInstance().Draw();
 
-// Explicit passing
+// 명시적 전달
 component->Render(renderer);
 ```
 
-### Real Project Examples
+### 실제 프로젝트 예시
 
-**Current Implementation:**
+**현재 구현:**
 ```cpp
-// Logger - Global access allowed (Engine Root layer)
+// Logger - 전역 접근 허용 (Engine Root 계층)
 Logger::GetInstance().Log(...);
 
-// Input - Explicit passing (Window owns it)
+// Input - 명시적 전달 (Window가 소유)
 window->GetInput().IsKeyPressed(KeyCode::Escape);
 
-// Math - Complete independence (Utility layer)
-Vector3 result = Add(v1, v2);  // No global state
+// Math - 완전한 독립성 (Utility 계층)
+Vector3 result = Add(v1, v2);  // 전역 상태 없음
 ```
 
-### Consider Testability
+### 테스트 가능성 고려
 ```cpp
-// Make testable with dependency injection
+// 의존성 주입으로 테스트 가능하게
 class PhysicsSystem
 {
 private:
@@ -542,9 +569,9 @@ public:
 
 ---
 
-## 15. Exception Handling and Error Management
+## 15. 예외 처리 및 에러 핸들링
 
-### HRESULT Handling
+### HRESULT 처리
 ```cpp
 inline void ThrowIfFailed(HRESULT hr)
 {
@@ -554,23 +581,23 @@ inline void ThrowIfFailed(HRESULT hr)
     }
 }
 
-// Usage
+// 사용
 ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&mQueue)));
 ```
 
-### Exception Usage Principles
-- **Initialization failure**: Throw exception
-- **Runtime error**: Logging + recovery or safe termination
-- **Game logic**: Avoid exceptions, use return values
+### 예외 사용 원칙
+- **초기화 실패**: 예외 throw
+- **런타임 에러**: 로깅 + 복구 또는 안전 종료
+- **게임 로직**: 예외 지양, 반환값 사용
 
 ```cpp
-// Initialization
+// 초기화
 void Renderer::Init()
 {
     ThrowIfFailed(CreateDevice());
 }
 
-// Runtime
+// 런타임
 bool ResourceManager::LoadTexture(const std::string& path)
 {
     if (!std::filesystem::exists(path))
@@ -582,22 +609,22 @@ bool ResourceManager::LoadTexture(const std::string& path)
 }
 ```
 
-### noexcept Usage
-- Destructors: Always `noexcept`
-- Move operators: `noexcept` if possible
-- Performance-critical functions: Consider `noexcept`
+### noexcept 사용
+- 소멸자: 항상 `noexcept`
+- 이동 연산자: 가능하면 `noexcept`
+- 성능 중요 함수: `noexcept` 고려
 
 ---
 
-## 16. Template Usage
+## 16. 템플릿 사용
 
-### Template Naming
+### 템플릿 네이밍
 ```cpp
-// Simple case
+// 간단한 경우
 template<typename T>
 class Array { };
 
-// When meaning is important
+// 의미 중요 시
 template<typename VertexType, typename IndexType>
 class Mesh { };
 
@@ -606,45 +633,45 @@ template<std::integral T>
 T Add(T a, T b);
 ```
 
-### Definition Location
-- Full definition in header (default)
-- Separate to cpp only when explicit instantiation needed
+### 정의 위치
+- 헤더에 전체 정의 (기본)
+- 명시적 인스턴스화 필요 시에만 cpp 분리
 
 ---
 
-## 17. Performance Optimization
+## 17. 성능 최적화
 
-### Minimize Copying
+### 복사 최소화
 ```cpp
-// Return const reference
+// const reference 반환
 const std::vector<Vertex>& GetVertices() const
 {
     return mVertices;
 }
 
-// Move semantics
+// 이동 의미론
 std::vector<Vertex> ExtractVertices()
 {
     return std::move(mVertices);
 }
 ```
 
-### Reserve and Emplace
+### Reserve와 Emplace
 ```cpp
 std::vector<Vertex> vertices;
-vertices.reserve(1000);  // Pre-allocate
-vertices.emplace_back(pos, normal, uv);  // Construct in-place
+vertices.reserve(1000);  // 사전 할당
+vertices.emplace_back(pos, normal, uv);  // 직접 생성
 ```
 
-### Inline Functions
-- Simple Getter/Setter inline in header
-- Only for simple logic ≤3 lines
+### 인라인 함수
+- 간단한 Getter/Setter는 헤더 인라인
+- 3줄 이하 간단 로직만
 
 ---
 
-## 18. Multithreading
+## 18. 멀티스레딩
 
-### Synchronization Primitives
+### 동기화 프리미티브
 ```cpp
 class ResourceManager
 {
@@ -668,14 +695,14 @@ public:
 };
 ```
 
-### Thread-safe Singleton
+### Thread-safe 싱글톤
 ```cpp
 class Engine
 {
 public:
     static Engine& GetInstance()
     {
-        static Engine instance;  // Thread-safe since C++11
+        static Engine instance;  // C++11 이후 thread-safe
         return instance;
     }
     
@@ -688,31 +715,31 @@ private:
 
 ---
 
-## 19. Anti-patterns
+## 19. 안티패턴
 
-### Macro Abuse
+### 매크로 남용
 ```cpp
-// Global access macro
+// 전역 접근 매크로
 #define DEVICE Engine::GetInstance().GetDevice()
 
-// Explicit passing
+// 명시적 전달
 void Init(Device* device);
 ```
 
-### Unnecessary Smart Pointers
+### 불필요한 스마트 포인터
 ```cpp
-// shared_ptr when ownership not needed
+// 소유권 필요 없는데 shared_ptr
 void Draw(const std::shared_ptr<Mesh>& mesh);
 
-// Reference is sufficient
+// 참조로 충분
 void Draw(const Mesh& mesh);
 ```
 
-### Meaningless Comments
+### 무의미한 주석
 ```cpp
-// Stating the obvious
-i++;  // Increment i by 1
+// 당연한 것 설명
+i++;  // i를 1 증가
 
-// Explain why
-i++;  // Move to next frame index
+// Why 설명
+i++;  // 다음 프레임 인덱스로 이동
 ```

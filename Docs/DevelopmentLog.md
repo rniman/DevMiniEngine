@@ -1,6 +1,10 @@
 # Development Log
 
-# Development Log - 08_DX12Init Sample (DirectX 12 Initialization)
+> **Note**: This log was written in English until 2025-10-15. 
+> From 2025-10-16 onwards, entries are written in Korean for better clarity and efficiency.
+> 
+> **참고**: 2025-10-15까지는 영어로 작성되었습니다. 
+> 2025-10-16부터는 명확성과 효율성을 위해 한글로 작성합니다.
 
 ---
 
