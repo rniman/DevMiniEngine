@@ -24,7 +24,7 @@ namespace Platform
         void ProcessEvents() override;
         bool ShouldClose() const override;
 
-        WindowHandle GetNativeHandle() const override;
+        HWND GetNativeHandle() const override;
         Core::uint32 GetWidth() const override;
         Core::uint32 GetHeight() const override;
         bool IsFullscreen() const override;

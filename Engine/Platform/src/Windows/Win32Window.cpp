@@ -138,9 +138,9 @@ namespace Platform
         return mShouldClose;
     }
 
-    WindowHandle Win32Window::GetNativeHandle() const
+    HWND Win32Window::GetNativeHandle() const
     {
-        return static_cast<WindowHandle>(mHwnd);
+        return mHwnd;
     }
 
     Core::uint32 Win32Window::GetWidth() const

@@ -5,13 +5,13 @@
 namespace Platform
 {
     //=============================================================================
-    // Platform-specific Types
+    // Platform-specific Types (10.15 delete) Only Window
     //=============================================================================
 
-    // Window handle (OS-specific)
-#ifdef _WIN32
-    using WindowHandle = void*;  // HWND wrapper
-#endif
+//    // Window handle (OS-specific)
+//#ifdef _WIN32
+//    using WindowHandle = void*;  // HWND wrapper
+//#endif
 
     //=============================================================================
     // Window Description

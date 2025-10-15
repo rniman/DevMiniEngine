@@ -7,6 +7,106 @@
 
 // Graphics headers
 #include "Graphics/DX12/DX12Device.h"
+#include "Graphics/DX12/DX12CommandQueue.h"
+#include "Graphics/DX12/DX12SwapChain.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"
+#include "Graphics/DX12/DX12CommandContext.h"
+
+
+// float r = 0.0f;
+// float g = 0.0f;
+// float b = 0.0f;
+
+// Helper function: Render one frame
+void RenderFrame(Graphics::DX12Device& device)
+{
+    auto* swapChain = device.GetSwapChain();
+    auto* graphicsQueue = device.GetGraphicsQueue();
+    auto* rtvHeap = device.GetRTVHeap();
+
+    // Get current back buffer index
+    Core::uint32 backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+    // Get command context for this frame
+    auto* cmdContext = device.GetCommandContext(backBufferIndex);
+    if (!cmdContext)
+    {
+        LOG_ERROR("Failed to get Command Context");
+        return;
+    }
+
+    // Reset command list
+    if (!cmdContext->Reset())
+    {
+        LOG_ERROR("Failed to reset Command Context");
+        return;
+    }
+
+    auto* cmdList = cmdContext->GetCommandList();
+    auto* backBuffer = swapChain->GetCurrentBackBuffer();
+
+    // Transition: PRESENT → RENDER_TARGET
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        backBuffer,
+        D3D12_RESOURCE_STATE_PRESENT,
+        D3D12_RESOURCE_STATE_RENDER_TARGET
+    );
+    cmdList->ResourceBarrier(1, &barrier);
+
+    // Get RTV handle
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUHandle(backBufferIndex);
+
+    // Clear render target
+    // const float clearColor[] = { r, g, b, 1.0f };  // #6495ED
+    // r += 0.0001f;
+    // g += 0.0002f;
+    // b += 0.0003f;
+       
+    // if (r > 1.0f) r = 0.0f;
+    // if (g > 1.0f) g = 0.0f;
+    // if (b > 1.0f) b = 0.0f;
+
+    // Cornflower Blue (기본)
+    const float clearColor[] = { 0.392f, 0.584f, 0.929f, 1.0f };
+    //// 빨강
+    //const float clearColor[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    //// 초록
+    //const float clearColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    //// 검정
+    //const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    //// 흰색
+    //const float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+    // Transition: RENDER_TARGET → PRESENT
+    barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        backBuffer,
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PRESENT
+    );
+    cmdList->ResourceBarrier(1, &barrier);
+
+    // Close command list
+    if (!cmdContext->Close())
+    {
+        LOG_ERROR("Failed to close Command List");
+        return;
+    }
+
+    // Execute command list
+    ID3D12CommandList* cmdLists[] = { cmdList };
+    graphicsQueue->ExecuteCommandLists(cmdLists, 1);
+
+    // Present
+    swapChain->Present(true);  // VSync enabled
+
+    // Move to next frame
+    swapChain->MoveToNextFrame();
+
+    // Wait for GPU (간단한 동기화 - 실제로는 Fence 사용)
+    graphicsQueue->WaitForIdle();
+}
 
 int main()
 {
@@ -43,14 +143,44 @@ int main()
         window->Destroy();
         return -1;
     }
-
     LOG_INFO("DirectX 12 Device initialized successfully");
-    LOG_INFO("Press ESC to exit");
 
-    // TODO: Step 3 - Command Queue 생성
-    // TODO: Step 4 - SwapChain 생성
-    // TODO: Step 5 - Descriptor Heap 생성
-    // TODO: Step 6 - 렌더링 루프
+    // Get Command Queue
+    auto* graphicsQueue = device.GetGraphicsQueue();
+    if (!graphicsQueue || !graphicsQueue->IsInitialized())
+    {
+        LOG_ERROR("Failed to get Graphics Command Queue");
+        device.Shutdown();
+        window->Destroy();
+        return -1;
+    }
+    LOG_INFO("Graphics Command Queue ready");
+
+    // Create SwapChain & Descriptor Heap
+    HWND hwnd = reinterpret_cast<HWND>(window->GetNativeHandle());
+    if (!device.CreateSwapChain(hwnd, windowDesc.width, windowDesc.height))
+    {
+        LOG_ERROR("Failed to create SwapChain");
+        device.Shutdown();
+        window->Destroy();
+        return -1;
+    }
+
+    auto* swapChain = device.GetSwapChain();
+    auto* rtvHeap = device.GetRTVHeap();
+
+    LOG_INFO(
+        "SwapChain ready (%u x %u, %u buffers)",
+        swapChain->GetWidth(),
+        swapChain->GetHeight(),
+        swapChain->GetBufferCount()
+    );
+
+    LOG_INFO("RTV Descriptor Heap ready (%u descriptors)", rtvHeap->GetNumDescriptors());
+
+    LOG_INFO("DirectX 12 initialization completed successfully!");
+    LOG_INFO("Rendering Cornflower Blue screen...");
+    LOG_INFO("Press ESC to exit");
 
     // Main loop
     while (!window->ShouldClose())
@@ -64,7 +194,8 @@ int main()
             break;
         }
 
-        // TODO: Render here
+        // Render frame
+        RenderFrame(device);
 
         input.Reset();
     }

@@ -4,6 +4,11 @@
 
 namespace Graphics
 {
+    class DX12CommandQueue;
+    class DX12SwapChain;
+    class DX12DescriptorHeap;
+    class DX12CommandContext;
+
     /**
      * @brief DirectX 12 Device 包府 努贰胶
      *
@@ -37,6 +42,12 @@ namespace Graphics
         bool IsInitialized() const { return mDevice != nullptr; }
         D3D_FEATURE_LEVEL GetFeatureLevel() const { return mFeatureLevel; }
 
+        DX12CommandQueue* GetGraphicsQueue() const { return mGraphicsQueue.get(); }
+        DX12SwapChain* GetSwapChain() const { return mSwapChain.get(); }
+        DX12DescriptorHeap* GetRTVHeap() const { return mRTVHeap.get(); }
+        DX12CommandContext* GetCommandContext(Core::uint32 index) const;
+
+        bool CreateSwapChain(HWND hwnd, Core::uint32 width, Core::uint32 height);
     private:
         /**
          * @brief Debug Layer 劝己拳
@@ -59,11 +70,36 @@ namespace Graphics
          * @return 积己 己傍 咯何
          */
         bool CreateDevice();
+        
+        /**
+         * @brief D3D12 CommandQueues 积己
+         * @return 积己 己傍 咯何
+         */
+        bool CreateCommandQueues();
+
+        /**
+         * @brief D3D12 DescriptorHeap 积己
+         * @return 积己 己傍 咯何
+         */
+        bool CreateDescriptorHeaps();
+
+        /**
+         * @brief RTV 积己
+         * @return 积己 己傍 咯何
+         */
+        bool CreateRenderTargetViews();
+
+        /**
+         * @brief CommandContext 积己
+         * @return 积己 己傍 咯何
+         */
+        bool CreateCommandContexts();
 
         /**
          * @brief Feature Level阑 巩磊凯肺 函券
          */
         const char* GetFeatureLevelString(D3D_FEATURE_LEVEL featureLevel) const;
+
 
     private:
         ComPtr<IDXGIFactory4> mFactory;         ///< DXGI Factory
@@ -71,6 +107,13 @@ namespace Graphics
         ComPtr<ID3D12Device> mDevice;           ///< D3D12 Device
         D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_11_0; ///< 瘤盔登绰 Feature Level
         bool mDebugLayerEnabled = false;        ///< Debug Layer 劝己拳 咯何
+
+        std::unique_ptr<DX12CommandQueue> mGraphicsQueue;
+        std::unique_ptr<DX12SwapChain> mSwapChain;
+        std::unique_ptr<DX12DescriptorHeap> mRTVHeap;
+
+        // 橇饭烙喊 Command Context (Double buffering)
+        std::array<std::unique_ptr<DX12CommandContext>, FRAME_BUFFER_COUNT> mCommandContexts;
     };
 
 } // namespace Graphics

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Graphics\DX12\DX12CommandContext.cpp" />
     <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp.cpp" />
     <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp.cpp" />
     <ClCompile Include="src\Graphics\DX12\DX12Device.cpp" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Graphics\DX12\d3dx12.h" />
+    <ClInclude Include="include\Graphics\DX12\DX12CommandContext.h" />
     <ClInclude Include="include\Graphics\DX12\DX12CommandQueue.h" />
     <ClInclude Include="include\Graphics\DX12\DX12DescriptorHeap.h" />
     <ClInclude Include="include\Graphics\DX12\DX12Device.h" />

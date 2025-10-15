@@ -1,4 +1,8 @@
 #include "Graphics/DX12/DX12Device.h"
+#include "Graphics/DX12/DX12CommandQueue.h"
+#include "Graphics/DX12/DX12SwapChain.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h" 
+#include "Graphics/DX12/DX12CommandContext.h"
 #include "Core/Logging/LogMacros.h"
 
 namespace Graphics
@@ -52,6 +56,13 @@ namespace Graphics
             return false;
         }
 
+        // Step 5: Create Command Queues
+        if (!CreateCommandQueues())
+        {
+            LOG_ERROR("[DX12Device] Failed to create Command Queues");
+            return false;
+        }
+
         LOG_INFO("[DX12Device] DirectX 12 Device initialized successfully");
         LOG_INFO("[DX12Device] Feature Level: %s", GetFeatureLevelString(mFeatureLevel));
 
@@ -67,12 +78,115 @@ namespace Graphics
 
         LOG_INFO("[DX12Device] Shutting down DirectX 12 Device...");
 
-        // Release resources in reverse order
+        // Wait for GPU to finish
+        if (mGraphicsQueue)
+        {
+            mGraphicsQueue->WaitForIdle();
+        }
+
+        // Shutdown in reverse order
+        for (auto& context : mCommandContexts)  // 추가
+        {
+            if (context)
+            {
+                context->Shutdown();
+                context.reset();
+            }
+        }
+
+        // Shutdown in reverse order
+        if (mRTVHeap)
+        {
+            mRTVHeap->Shutdown();
+            mRTVHeap.reset();
+        }
+
+        if (mSwapChain)
+        {
+            mSwapChain->Shutdown();
+            mSwapChain.reset();
+        }
+
+        // Shutdown command queues first
+        if (mGraphicsQueue)
+        {
+            mGraphicsQueue->Shutdown();
+            mGraphicsQueue.reset();
+        }
+
         mDevice.Reset();
         mAdapter.Reset();
         mFactory.Reset();
 
         LOG_INFO("[DX12Device] DirectX 12 Device shut down successfully");
+    }
+
+    DX12CommandContext* DX12Device::GetCommandContext(Core::uint32 index) const
+    {
+        if (index >= FRAME_BUFFER_COUNT)
+        {
+            LOG_ERROR("[DX12Device] Command Context index out of range: %u", index);
+            return nullptr;
+        }
+
+        return mCommandContexts[index].get();
+    }
+
+    bool DX12Device::CreateSwapChain(HWND hwnd, Core::uint32 width, Core::uint32 height)
+    {
+        if (!IsInitialized())
+        {
+            LOG_ERROR("[DX12Device] Device not initialized");
+            return false;
+        }
+
+        if (!mGraphicsQueue || !mGraphicsQueue->IsInitialized())
+        {
+            LOG_ERROR("[DX12Device] Graphics Command Queue not initialized");
+            return false;
+        }
+
+        LOG_INFO("[DX12Device] Creating SwapChain...");
+
+        // Step 1: Create SwapChain
+        mSwapChain = std::make_unique<DX12SwapChain>();
+        if (!mSwapChain->Initialize(
+            mFactory.Get(),
+            mGraphicsQueue->GetQueue(),
+            hwnd,
+            width,
+            height,
+            FRAME_BUFFER_COUNT
+        ))
+        {
+            LOG_ERROR("[DX12Device] Failed to create SwapChain");
+            mSwapChain.reset();
+            return false;
+        }
+
+        // Step 2: Create Descriptor Heaps
+        if (!CreateDescriptorHeaps())
+        {
+            LOG_ERROR("[DX12Device] Failed to create Descriptor Heaps");
+            return false;
+        }
+
+        // Step 3: Create Render Target Views
+        if (!CreateRenderTargetViews())
+        {
+            LOG_ERROR("[DX12Device] Failed to create Render Target Views");
+            return false;
+        }
+
+        // Step 4: Create Command Contexts
+        if (!CreateCommandContexts())
+        {
+            LOG_ERROR("[DX12Device] Failed to create Command Contexts");
+            return false;
+        }
+
+        LOG_INFO("[DX12Device] SwapChain created successfully");
+        return true;
     }
 
     //=============================================================================
@@ -239,6 +353,93 @@ namespace Graphics
 #endif
 
         LOG_INFO("[DX12Device] D3D12 Device created successfully");
+        return true;
+    }
+
+    bool DX12Device::CreateCommandQueues()
+    {
+        LOG_INFO("[DX12Device] Creating Command Queues...");
+
+        // Create Graphics Command Queue
+        mGraphicsQueue = std::make_unique<DX12CommandQueue>();
+        if (!mGraphicsQueue->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT))
+        {
+            LOG_ERROR("[DX12Device] Failed to create Graphics Command Queue");
+            return false;
+        }
+
+        LOG_INFO("[DX12Device] Command Queues created successfully");
+        return true;
+    }
+
+    bool DX12Device::CreateDescriptorHeaps()
+    {
+        LOG_INFO("[DX12Device] Creating Descriptor Heaps...");
+
+        // Create RTV Descriptor Heap
+        mRTVHeap = std::make_unique<DX12DescriptorHeap>();
+        if (!mRTVHeap->Initialize(
+            mDevice.Get(),
+            D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
+            FRAME_BUFFER_COUNT,
+            false 
+        )) // RTV는 Shader Visible 불필요
+        {
+            LOG_ERROR("[DX12Device] Failed to create RTV Descriptor Heap");
+            return false;
+        }
+
+        LOG_INFO("[DX12Device] Descriptor Heaps created successfully");
+        return true;
+    }
+
+    bool DX12Device::CreateRenderTargetViews()
+    {
+        if (!mSwapChain || !mRTVHeap)
+        {
+            LOG_ERROR("[DX12Device] SwapChain or RTV Heap not initialized");
+            return false;
+        }
+
+        LOG_INFO("[DX12Device] Creating Render Target Views...");
+
+        // Create RTV for each back buffer
+        for (Core::uint32 i = 0; i < FRAME_BUFFER_COUNT; ++i)
+        {
+            ID3D12Resource* backBuffer = mSwapChain->GetBackBuffer(i);
+            if (!backBuffer)
+            {
+                LOG_ERROR("[DX12Device] Failed to get Back Buffer %u", i);
+                return false;
+            }
+
+            D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = mRTVHeap->GetCPUHandle(i);
+            mDevice->CreateRenderTargetView(backBuffer, nullptr, rtvHandle);
+
+            LOG_INFO("[DX12Device] RTV created for Back Buffer %u", i);
+        }
+
+        LOG_INFO("[DX12Device] Render Target Views created successfully");
+        return true;
+    }
+
+    bool DX12Device::CreateCommandContexts()
+    {
+        LOG_INFO("[DX12Device] Creating Command Contexts...");
+
+        for (Core::uint32 i = 0; i < FRAME_BUFFER_COUNT; ++i)
+        {
+            mCommandContexts[i] = std::make_unique<DX12CommandContext>();
+            if (!mCommandContexts[i]->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT))
+            {
+                LOG_ERROR("[DX12Device] Failed to create Command Context %u", i);
+                return false;
+            }
+
+            LOG_INFO("[DX12Device] Command Context %u created", i);
+        }
+
+        LOG_INFO("[DX12Device] Command Contexts created successfully");
         return true;
     }
 

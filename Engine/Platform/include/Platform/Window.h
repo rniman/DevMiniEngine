@@ -3,6 +3,7 @@
 //#include "Platform/PlatformTypes.h"
 #include "Platform/Input.h"
 #include <functional>
+#include <Windows.h>
 
 namespace Platform
 {
@@ -35,7 +36,7 @@ namespace Platform
 
         virtual bool ShouldClose() const = 0;
 
-        virtual WindowHandle GetNativeHandle() const = 0;
+        virtual HWND GetNativeHandle() const = 0;
 
         virtual Core::uint32 GetWidth() const = 0;
         virtual Core::uint32 GetHeight() const = 0;
