@@ -424,7 +424,141 @@ private:
 };
 ```
 
-#### 5. Graphics 레이어 (계획됨)
+#### 5. Graphics 레이어 (부분 구현)
+
+**책임**: 렌더링 시스템 및 DirectX 12 추상화
+
+**상태**: DirectX 12 초기화 완료, 고수준 렌더링 계획됨
+
+**구현된 컴포넌트:**
+
+##### DirectX 12 초기화 (완료)
+
+**DX12Device**
+```cpp
+// Graphics/include/Graphics/DX12/DX12Device.h
+class DX12Device
+{
+public:
+    bool Initialize();
+    ID3D12Device* GetDevice() const { return mDevice.Get(); }
+    
+private:
+    ComPtr mDevice;
+    ComPtr mFactory;
+};
+```
+
+- DXGI Factory4 생성 및 GPU 어댑터 선택
+- Feature Level 감지 (12.1 → 11.0)
+- Debug Layer 활성화 (Debug 빌드)
+- 테스트: 08_DX12Init
+
+**DX12CommandQueue**
+```cpp
+// Graphics/include/Graphics/DX12/DX12CommandQueue.h
+class DX12CommandQueue
+{
+public:
+    bool Initialize(ID3D12Device* device);
+    void ExecuteCommandLists(ID3D12CommandList** lists, UINT count);
+    void WaitForIdle();
+    
+private:
+    ComPtr mQueue;
+    ComPtr mFence;
+    UINT64 mFenceValue = 0;
+};
+```
+
+- Direct Command Queue 생성
+- Fence를 통한 GPU 동기화
+- 커맨드 리스트 실행 관리
+
+**DX12SwapChain**
+```cpp
+// Graphics/include/Graphics/DX12/DX12SwapChain.h
+class DX12SwapChain
+{
+public:
+    bool Initialize(IDXGIFactory4* factory, ID3D12CommandQueue* queue, 
+                   HWND hwnd, UINT width, UINT height);
+    void Present();
+    UINT GetCurrentBackBufferIndex() const;
+    
+private:
+    ComPtr mSwapChain;
+    static constexpr UINT BufferCount = 2;
+};
+```
+
+- FLIP_DISCARD 스왑 효과를 사용한 더블 버퍼링
+- Tearing 지원
+- 백 버퍼 리소스 관리
+
+**DX12DescriptorHeap**
+```cpp
+// Graphics/include/Graphics/DX12/DX12DescriptorHeap.h
+class DX12DescriptorHeap
+{
+public:
+    bool Initialize(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, 
+                   UINT numDescriptors);
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT index) const;
+    
+private:
+    ComPtr mHeap;
+    UINT mDescriptorSize = 0;
+};
+```
+
+- RTV Descriptor Heap 관리
+- CPU/GPU 디스크립터 핸들 계산
+
+**DX12CommandContext**
+```cpp
+// Graphics/include/Graphics/DX12/DX12CommandContext.h
+class DX12CommandContext
+{
+public:
+    bool Initialize(ID3D12Device* device, UINT bufferCount);
+    void Reset(UINT frameIndex);
+    void Close();
+    void TransitionBarrier(ID3D12Resource* resource, 
+                          D3D12_RESOURCE_STATES before,
+                          D3D12_RESOURCE_STATES after);
+    
+private:
+    std::vector<ComPtr> mAllocators;
+    ComPtr mCommandList;
+};
+```
+
+- 프레임별 Command Allocator 관리
+- Command List 기록 및 리셋
+- Resource Barrier를 통한 리소스 상태 전환
+
+**테스트 커버리지**: 08_DX12Init
+
+**구현 하이라이트:**
+- 첫 렌더링 성공: Cornflower Blue 클리어 스크린
+- Feature Level에 따른 유연한 초기화
+- 프레임당 독립적인 Command Allocator (더블 버퍼링)
+- 로깅 시스템과 완전 통합
+
+**설계 결정사항:**
+- ComPtr을 사용한 자동 참조 카운팅
+- 프레임별 리소스 분리 (CPU/GPU 병렬성)
+- Resource Barrier 명시적 관리
+- 에러 처리를 위한 HRESULT 검사
+
+**다음 단계 (계획됨):**
+- Vertex Buffer 생성 및 관리
+- Shader 컴파일 파이프라인
+- Pipeline State Object (PSO) 생성
+- 삼각형 렌더링
+
+##### RHI 레이어 (계획됨)
 
 **RHI (Render Hardware Interface):**
 ```cpp
@@ -451,9 +585,9 @@ class DX12Device : public Device
 ├──────────────────────────────────┤
 │   Render Graph (계획됨)          │ ← Frame graph, pass 순서
 ├──────────────────────────────────┤
-│         RHI 레이어               │ ← API 추상화
+│         RHI 레이어 (계획됨)      │ ← API 추상화
 ├──────────────────────────────────┤
-│      DirectX 12 API              │ ← 저수준 구현
+│      DirectX 12 API (부분 구현)  │ ← 저수준 구현 (초기화 완료)
 └──────────────────────────────────┘
 ```
 
@@ -753,7 +887,7 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ## 향후 고려사항
 
-### Phase 1: 기반 (75% 완료)
+### Phase 1: 기반 (100% 완료)
 - [x] 프로젝트 구조
 - [x] Core 시스템
   - [x] 메모리 할당자 (Linear, Pool, Stack)
@@ -761,11 +895,10 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
   - [x] 어설션 매크로
 - [x] Math 라이브러리 (SIMD와 함께 Vector, Matrix, Quaternion)
 - [x] Platform 레이어 (Window, Input)
-- [ ] 스레딩 시스템 (Job system, thread pool)
 
-### Phase 2: 그래픽스 (시작 안 됨)
-- [ ] DirectX 12 초기화
-- [ ] 기본 렌더링 파이프라인
+### Phase 2: 그래픽스 (25% 완료)
+- [x] DirectX 12 초기화
+- [ ] 기본 렌더링 파이프라인 (Vertex Buffer, Shader, PSO)
 - [ ] 메시 및 텍스처 로딩
 - [ ] 카메라 시스템
 
@@ -787,9 +920,9 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 - [ ] 포스트 프로세싱
 - [ ] Render graph
 
-### Phase 6: 툴 (시작 안 됨)
-- [ ] 에셋 파이프라인
-- [ ] 리소스 핫 리로딩
+### Phase 6: 향후 계획
+- [ ] 스레딩 시스템 (Job system, thread pool)
+- [ ] 툴 (에셋 파이프라인, 리소스 핫 리로딩)
 - [ ] ImGui 디버그 UI
 - [ ] 기본 에디터 프로토타입
 
@@ -804,14 +937,16 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 | 메모리 관리 | 완료 | 3개 테스트 | ~600 |
 | Math 라이브러리 | 완료 | 1개 테스트 | ~400 |
 | 로깅 시스템 | 완료 | 1개 테스트 | ~300 |
-| **합계** | **12개 중 4개 서브시스템** | **7개 테스트** | **~2,200** |
+| DirectX 12 초기화 | 완료 | 1개 테스트 | ~800 |
+| **합계** | **12개 중 5개 서브시스템** | **8개 테스트** | **~3,000** |
 
 ### 진행 중
-- 없음
+- 삼각형 렌더링 (Vertex Buffer, Shader 컴파일, PSO)
 
 ### 계획됨
 - 스레딩 시스템
-- DirectX 12 초기화
+- RHI 추상화 레이어
+- 고수준 렌더링 시스템
 - ECS 프레임워크
 - 물리 엔진
 - AI 시스템
@@ -842,13 +977,13 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 
 ## 문서 히스토리
 
+- **2025-10-15**: DirectX 12 초기화 완료 (Device, CommandQueue, SwapChain, DescriptorHeap, CommandContext)
 - **2025-10-13**: Platform 레이어 구현, 입력 시스템 세부사항 업데이트
 - **2025-10-11**: 구현된 시스템으로 업데이트 (Memory, Math, Logging)
 - **2025-10-05**: 초기 아키텍처 설계 문서
-- 향후 업데이트는 여기에 기록됩니다
 
 ---
 
 **참고**: 이 아키텍처는 프로젝트가 발전하고 새로운 요구사항이 등장함에 따라 변경될 수 있습니다. 실제 경험이 설계 개선으로 이어질 수 있습니다.
 
-**최종 업데이트**: 2025-10-14
+**최종 업데이트**: 2025-10-15
