@@ -82,23 +82,40 @@ enum class ResourceState
   - 정적 크기: `std::array`
   - 가변 크기: `std::vector`
 
+---
+
 ### 변수 초기화 규칙
 
-**왜 `=` 초기화를 우선하는가?**
-- 가독성: 전통적이고 익숙한 문법
-- 암시적 변환 허용: 자연스러운 타입 변환
-- 일관성: 대부분의 케이스에 적용 가능
+#### 초기화 철학
 
-**기본 원칙: `=` 초기화 우선 사용**
+**왜 `=` 초기화를 우선하는가?**
+- **가독성**: 전통적이고 익숙한 문법
+- **의도 명확**: 값 대입이라는 의도가 분명
+- **암시적 변환 허용**: 자연스러운 타입 변환
+- **일관성**: 대부분의 케이스에 적용 가능
+
+> **핵심 원칙**: "명시적 생성자 호출이 필요한 경우를 제외하고는 `=` 초기화 우선"
+
+---
+
+#### 초기화 스타일 우선순위
+
+##### 1순위: 단순 값 초기화 - `=` 사용
+
 ```cpp
-// 기본 스타일
+// 기본 타입
 int count = 0;
 float pi = 3.14f;
-auto result = Calculate();
+double epsilon = 1e-6;
+bool enabled = true;
 
-// 컨테이너 초기화
-std::vector<int> values = {1, 2, 3};
-std::array<float, 3> pos = {0.0f, 1.0f, 0.0f};
+// 문자열
+std::string name = "DevEngine";
+const char* title = "Game Window";
+
+// auto 초기화
+auto result = Calculate();
+auto device = CreateDevice();
 
 // 멤버 변수 (클래스 정의 시)
 class Renderer
@@ -106,52 +123,272 @@ class Renderer
 private:
     UINT mFrameIndex = 0;
     float mDeltaTime = 0.0f;
+    bool mInitialized = false;
 };
 ```
 
-**`{}` 초기화가 필요한 경우**
+---
+
+##### 2순위: 집합 초기화 - `= {}` 조합
+
 ```cpp
-// 1. 집합 초기화 (POD 구조체)
+// 컨테이너 초기화 리스트
+std::vector<int> values = {1, 2, 3, 4, 5};
+std::array<float, 3> position = {0.0f, 1.0f, 0.0f};
+
+// POD 구조체 (Plain Old Data)
 struct Vertex 
 {
-    Vector3 position;
-    Vector3 normal;
-    Vector2 uv;
+    float x, y, z;
+    float r, g, b;
 };
-Vertex vertex{pos, norm, texCoord};  // 순서대로 초기화
+Vertex vertex = {0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f};
 
-// 2. 컨테이너 초기화 리스트 (= 와 함께)
-std::vector values = {1, 2, 3};
-
-// 3. 명시적 생성자 호출
-explicit MyClass(int size);
-MyClass obj{100};  // explicit이므로 {} 필요
+// 멤버 변수 배열 초기화
+class Material
+{
+private:
+    std::array<float, 4> mAmbient = {0.2f, 0.2f, 0.2f, 1.0f};
+    std::vector<Texture*> mTextures = {};  // 빈 벡터
+};
 ```
 
-**피해야 할 패턴**
+---
+
+##### 3순위: 생성자 호출 - `{}` 단독 사용
+
+**언제 사용:**
+- `explicit` 생성자 호출 시
+- 클래스 타입의 명시적 초기화
+- 복합 객체를 직접 생성할 때
+
 ```cpp
-// Most Vexing Parse 문제
-Widget w();  // 함수 선언으로 해석됨!
-Widget w{};  // 객체 생성 (안전)
-Widget w = Widget();  // 객체 생성 (명확, 권장)
+// explicit 생성자
+class Allocator
+{
+public:
+    explicit Allocator(size_t size);  // explicit 키워드
+};
+
+Allocator allocator{1024};  // {} 필요
+// Allocator allocator = 1024;  // ❌ 컴파일 에러
+
+// 클래스 타입 직접 생성
+Vector3 position{0.0f, 1.0f, 0.0f};
+Matrix4x4 transform{Matrix4x4::Identity()};
+
+// 복합 객체 생성
+ComPtr<ID3D12Device> device{CreateDevice()};
 ```
 
-> **Note**: narrowing 방지는 컴파일러 경고(`/W4` 또는 `/Wall`)로 해결
+---
 
-### 복합 객체 초기화 스타일
+#### 복합 객체 초기화 패턴
 
-- 초기화 항목이 여러 개이거나 복잡한 경우 줄바꿈 권장
+##### 패턴 1: 외부 변수 선언은 `=` 사용
 
 ```cpp
-// 여러 항목일 경우
+// 추천: 외부 선언에는 = 사용
 std::array<CD3DX12_DESCRIPTOR_RANGE, 3> descriptorRanges = {
-    CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0),
-    CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0),
-    CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0),
+    CD3DX12_DESCRIPTOR_RANGE{D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0},
+    CD3DX12_DESCRIPTOR_RANGE{D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0},
+    CD3DX12_DESCRIPTOR_RANGE{D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0},
 };
 ```
 
-> 마지막 항목 뒤에도 쉼표(,) 권장 (버전 관리 편의성)
+**규칙:**
+- 변수 선언: `=` 사용 (일관성)
+- 내부 원소: `{}` 사용 (명시적 생성자 호출)
+
+---
+
+##### 패턴 2: 여러 줄 초기화 시 줄바꿈
+
+```cpp
+// 여러 항목일 경우 줄바꿈 권장
+std::vector<Vertex> vertices = {
+    Vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+    Vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+    Vertex{{ 0.0f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+};
+
+// 파이프라인 상태 정의처럼 복잡한 구조체
+D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};  // 먼저 제로 초기화
+psoDesc.InputLayout = {inputElements, elementCount};
+psoDesc.pRootSignature = rootSignature.Get();
+psoDesc.VS = vertexShader;
+psoDesc.PS = pixelShader;
+// ... 나머지 멤버 설정
+```
+
+> **팁**: 마지막 항목 뒤에도 쉼표(,) 추가 권장 (버전 관리 diff 최소화)
+
+---
+
+#### 피해야 할 패턴
+
+##### 안티패턴 1: Most Vexing Parse
+
+```cpp
+// ❌ 함수 선언으로 해석됨!
+Widget widget();
+
+// ✅ 해결책 1: = 초기화
+Widget widget = Widget();
+
+// ✅ 해결책 2: {} 초기화
+Widget widget{};
+
+// ✅ 해결책 3: 직접 호출 (C++11+)
+Widget widget;
+```
+
+---
+
+##### 안티패턴 2: 불필요한 {} 남용
+
+```cpp
+// ❌ 가독성 떨어짐
+int count{0};
+float pi{3.14f};
+std::string name{"Engine"};
+
+// ✅ 단순한 값은 = 사용
+int count = 0;
+float pi = 3.14f;
+std::string name = "Engine";
+```
+
+---
+
+##### 안티패턴 3: 혼재된 스타일
+
+```cpp
+// ❌ 일관성 없음
+class BadExample
+{
+private:
+    int mCount{0};           // {} 사용
+    float mDelta = 0.0f;     // = 사용
+    bool mEnabled{false};    // {} 사용
+    std::string mName = "";  // = 사용
+};
+
+// ✅ 일관된 스타일
+class GoodExample
+{
+private:
+    int mCount = 0;
+    float mDelta = 0.0f;
+    bool mEnabled = false;
+    std::string mName = "";
+};
+```
+
+---
+
+#### 초기화 결정 플로우차트
+
+```
+초기화할 변수가 있는가?
+    ↓
+┌───────────────────────────────────┐
+│ explicit 생성자인가?               │
+│ YES → {} 사용                     │
+│ NO  → 다음 단계                   │
+└─────────────┬─────────────────────┘
+              ↓
+┌───────────────────────────────────┐
+│ 복합 객체 생성인가?                │
+│ (클래스 생성자 직접 호출)          │
+│ YES → {} 사용                     │
+│ NO  → 다음 단계                   │
+└─────────────┬─────────────────────┘
+              ↓
+┌───────────────────────────────────┐
+│ 집합 초기화인가?                   │
+│ (리스트로 여러 값)                 │
+│ YES → = {} 조합                   │
+│ NO  → 다음 단계                   │
+└─────────────┬─────────────────────┘
+              ↓
+┌───────────────────────────────────┐
+│ 단순 값 초기화                     │
+│ → = 사용                          │
+└───────────────────────────────────┘
+```
+
+---
+
+#### 실전 예시 모음
+
+```cpp
+class InitializationExample
+{
+public:
+    void DemonstrateInitialization()
+    {
+        // 1. 단순 값: = 사용
+        int frameCount = 0;
+        float deltaTime = 0.016f;
+        
+        // 2. 집합 초기화: = {} 조합
+        std::vector<int> indices = {0, 1, 2, 2, 1, 3};
+        std::array<float, 4> clearColor = {0.1f, 0.1f, 0.1f, 1.0f};
+        
+        // 3. explicit 생성자: {} 사용
+        std::unique_ptr<Allocator> allocator{new Allocator(1024)};
+        
+        // 4. 클래스 타입: {} 사용
+        Vector3 position{0.0f, 1.0f, 0.0f};
+        
+        // 5. 복합 객체 배열: = {} 조합
+        std::array<Vector3, 3> triangle = {
+            Vector3{-0.5f, -0.5f, 0.0f},
+            Vector3{ 0.5f, -0.5f, 0.0f},
+            Vector3{ 0.0f,  0.5f, 0.0f},
+        };
+    }
+
+private:
+    // 멤버 변수: = 우선
+    UINT mWidth = 1280;
+    UINT mHeight = 720;
+    bool mVSync = true;
+    
+    // 컨테이너: = {} 조합
+    std::vector<ComPtr<ID3D12Resource>> mBuffers = {};
+    std::array<float, 16> mViewMatrix = {};
+};
+```
+
+---
+
+### 체크리스트
+
+초기화 코드를 작성할 때:
+
+- [ ] 단순 값 초기화는 `=`를 사용했는가?
+- [ ] 집합 초기화는 `= {}`를 사용했는가?
+- [ ] `explicit` 생성자는 `{}`만 사용했는가?
+- [ ] 클래스 내에서 일관된 스타일을 유지하는가?
+- [ ] Most Vexing Parse 문제를 피했는가?
+- [ ] 불필요한 `{}` 남용을 피했는가?
+
+---
+
+### 요약
+
+| 상황 | 사용 문법 | 예시 |
+|------|----------|------|
+| **단순 값** | `=` | `int x = 0;` |
+| **집합 초기화** | `= {}` | `std::vector<int> v = {1,2,3};` |
+| **explicit 생성자** | `{}` | `Allocator alloc{1024};` |
+| **클래스 타입** | `{}` | `Vector3 pos{0,1,0};` |
+| **복합 객체 배열** | `= {}` + 내부 `{}` | `std::array<T, 3> arr = {T{}, T{}, T{}};` |
+
+**기억할 것:**
+> "기본은 `=`, 명시적 생성이 필요할 때만 `{}`"
 
 ---
 
@@ -3169,6 +3406,16 @@ void Render()
 
 **기억할 것:**
 > "매크로는 최후의 수단. 가능하면 inline 함수를 사용하라."
+
+---
+
+### 향후 계획
+
+DirectX 12 렌더링 코드가 증가하면 다음 매크로 패턴 추가 예정:
+- HRESULT 에러 핸들링 (DX12_THROW_IF_FAILED)
+- PIX 이벤트 마킹 (DX12_BEGIN_EVENT)
+- 리소스 네이밍 (DX12_SET_NAME)
+```
 
 ---
 
