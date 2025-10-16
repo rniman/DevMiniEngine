@@ -1276,4 +1276,52 @@ ThrowIfFailed(hr, "Failed to create device");
 
 ---
 
+### 헤더 가드
+- `#pragma once` 사용 (간결하고 에러 방지)
+- `#ifndef` 가드 지양 (레거시)
+
+```cpp
+// 권장
+#pragma once
+
+// 지양
+#ifndef MY_HEADER_H
+#define MY_HEADER_H
+// ...
+#endif
+```
+
+---
+
+### 매크로 네이밍
+- 함수형 매크로: `ALL_CAPS` with underscore
+  - 예: `LOG_INFO`, `CORE_ASSERT`, `CHECK_HRESULT`
+- 조건부 컴파일: `ALL_CAPS`
+  - 예: `NDEBUG`, `_DEBUG`, `USE_SIMD`
+
+---
+
+### 매크로 사용 지침
+- `#define` 상수 금지 → `constexpr` 사용
+- 디버그 전용 매크로는 Release에서 `((void)0)`으로 치환
+- 여러 줄 매크로는 `\` 로 정렬
+
+```cpp
+// 좋은 예: 여러 줄 매크로 정렬
+#define LOG_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::Core, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+// Release 최적화
+#ifdef NDEBUG
+#define LOG_TRACE(format, ...) ((void)0)
+#define LOG_DEBUG(format, ...) ((void)0)
+#endif
+```
+
+---
+
 **최종 업데이트**: 2025-10-17

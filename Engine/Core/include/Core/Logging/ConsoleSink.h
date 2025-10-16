@@ -7,7 +7,9 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief Console output sink with color support
+         * @brief 콘솔 출력 Sink
+         *
+         * @note Windows Console API를 사용한 컬러 출력 지원
          */
         class ConsoleSink : public LogSink
         {
@@ -20,7 +22,6 @@ namespace Core
         private:
             void SetConsoleColor(LogLevel level);
             void ResetConsoleColor();
-
             std::string FormatLogMessage(const LogMessage& msg);
 
             bool mUseColors;

@@ -8,20 +8,22 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief Log severity levels
+         * @brief 로그 심각도 레벨
+         *
+         * @note Release 빌드에서 Trace/Debug는 컴파일 시점에 제거됨
          */
         enum class LogLevel
         {
-            Trace,    // Detailed trace information
-            Debug,    // Debugging information  
-            Info,     // General information
-            Warn,     // Warning messages
-            Error,    // Error messages
-            Fatal     // Fatal errors (program termination)
+            Trace,
+            Debug,
+            Info,
+            Warn,
+            Error,
+            Fatal
         };
 
         /**
-         * @brief Log categories for filtering
+         * @brief 로그 카테고리
          */
         enum class LogCategory
         {
@@ -35,7 +37,7 @@ namespace Core
         };
 
         /**
-         * @brief Log message structure
+         * @brief 로그 메시지 구조체
          */
         struct LogMessage
         {
@@ -58,7 +60,7 @@ namespace Core
         };
 
         /**
-         * @brief Convert log level to string
+         * @brief 로그 레벨을 문자열로 변환
          */
         inline const char* LogLevelToString(LogLevel level)
         {
@@ -75,7 +77,7 @@ namespace Core
         }
 
         /**
-         * @brief Convert log category to string
+         * @brief 로그 카테고리를 문자열로 변환
          */
         inline const char* LogCategoryToString(LogCategory category)
         {
