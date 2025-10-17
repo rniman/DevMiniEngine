@@ -2,7 +2,8 @@
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h" 
 #include <cstdlib>
-#include <cassert>
+
+using namespace std;
 
 namespace Core
 {
@@ -17,7 +18,7 @@ namespace Core
             CORE_VERIFY(size > 0, "LinearAllocator size must be greater than 0");
 
             // Allocate aligned memory
-            mMemory = std::malloc(size);
+            mMemory = malloc(size);
             
             CORE_VERIFY(mMemory, "Failed to allocate memory for LinearAllocator");
 
@@ -29,7 +30,7 @@ namespace Core
             if (mMemory)
             {
                 LOG_TRACE("LinearAllocator destroyed: %zu bytes allocated, %zu allocations", mOffset, mAllocationCount);
-                std::free(mMemory);
+                free(mMemory);
                 mMemory = nullptr;
             }
         }
@@ -39,21 +40,17 @@ namespace Core
             CORE_ASSERT(size > 0, "Allocation size must be greater than 0");
             CORE_ASSERT((alignment & (alignment - 1)) == 0, "Alignment must be power of 2");
 
-            // Calculate aligned offset
-            void* currentPtr = static_cast<char*>(mMemory) + mOffset;
-            void* alignedPtr = AlignPointer(currentPtr, alignment);
-            size_t padding = static_cast<char*>(alignedPtr) - static_cast<char*>(currentPtr);
+            void* const currentPtr = static_cast<char*>(mMemory) + mOffset;
+            void* const alignedPtr = AlignPointer(currentPtr, alignment);
+            const size_t padding = static_cast<char*>(alignedPtr) - static_cast<char*>(currentPtr);
 
-            // Check if we have enough space
             if (mOffset + padding + size > mSize)
             {
                 LOG_ERROR("LinearAllocator out of memory: requested %zu bytes, available %zu bytes", size, mSize - mOffset);
-                // Out of memory
                 CORE_ASSERT(false, "LinearAllocator out of memory");
                 return nullptr;
             }
 
-            // Update offset and return pointer
             mOffset += padding + size;
             mAllocationCount++;
 
@@ -62,9 +59,8 @@ namespace Core
 
         void LinearAllocator::Deallocate(void* ptr)
         {
-            // Linear allocator cannot free individual allocations
-            // Use Reset() to free all memory at once
-            (void)ptr;  // Unused
+            // LinearAllocator는 개별 해제 불가 - Reset()으로 전체 해제만 가능
+            (void)ptr;
         }
 
         void LinearAllocator::Reset()

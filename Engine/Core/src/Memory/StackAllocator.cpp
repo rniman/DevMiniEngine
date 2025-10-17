@@ -3,6 +3,8 @@
 #include "Core/Logging/LogMacros.h" 
 #include <cstdlib>
 
+using namespace std;
+
 namespace Core
 {
     namespace Memory
@@ -15,11 +17,11 @@ namespace Core
         {
             CORE_VERIFY(size > 0, "StackAllocator size must be greater than 0");
 
-            mMemory = std::malloc(size);
+            mMemory = malloc(size);
 
             CORE_VERIFY(mMemory, "Failed to allocate memory for StackAllocator");
          
-            LOG_FATAL("StackAllocator created: %zu bytes", size);
+            LOG_TRACE("StackAllocator created: %zu bytes", size);
         }
 
         StackAllocator::~StackAllocator()
@@ -27,7 +29,7 @@ namespace Core
             if (mMemory)
             {
                 LOG_TRACE("StackAllocator destroyed: %zu bytes peak, %zu allocations", mOffset, mAllocationCount);
-                std::free(mMemory);
+                free(mMemory);
                 mMemory = nullptr;
             }
         }
@@ -37,15 +39,12 @@ namespace Core
             CORE_ASSERT(size > 0, "Allocation size must be greater than 0");
             CORE_ASSERT((alignment & (alignment - 1)) == 0, "Alignment must be power of 2");
 
-            // Calculate aligned data position
-            void* currentPtr = static_cast<char*>(mMemory) + mOffset;
-            void* alignedPtr = AlignPointer(currentPtr, alignment);
+            char* const currentPtr = static_cast<char*>(mMemory) + mOffset;
+            void* const alignedPtr = AlignPointer(currentPtr, alignment);
 
-            // Calculate padding needed for alignment
-            size_t padding = static_cast<char*>(alignedPtr) - static_cast<char*>(currentPtr);
-            size_t totalSize = padding + size;
+            const size_t padding = static_cast<char*>(alignedPtr) - currentPtr;
+            const size_t totalSize = padding + size;
 
-            // Check if we have enough space
             if (mOffset + totalSize > mSize)
             {
                 LOG_ERROR("StackAllocator out of memory: requested %zu bytes, available %zu bytes", size, mSize - mOffset);
@@ -53,7 +52,6 @@ namespace Core
                 return nullptr;
             }
 
-            // Update offset and count
             mOffset += totalSize;
             mAllocationCount++;
 
@@ -62,9 +60,9 @@ namespace Core
 
         void StackAllocator::Deallocate(void* ptr)
         {
-            // Stack allocator cannot free individual allocations
-            // Use FreeToMarker() or Reset()
-            (void)ptr;  // Unused
+            // StackAllocator는 LIFO 패턴만 지원 - 개별 해제 불가
+            // 특정 지점까지 해제: FreeToMarker(), 전체 해제: Reset()
+            (void)ptr;
         }
 
         void StackAllocator::Reset()
@@ -80,18 +78,12 @@ namespace Core
 
             if (marker < mOffset)
             {
-                size_t freedBytes = mOffset - marker;
-
+                const size_t freedBytes = mOffset - marker;
                 LOG_TRACE("StackAllocator freed to marker: %zu bytes freed", freedBytes);
-
                 mOffset = marker;
 
-                // NOTE: Cannot accurately track allocation count with markers
-                // Reset to 0 as approximation
-                if (marker == 0)
-                {
-                    mAllocationCount = 0;
-                }
+                // NOTE: 마커 기반 해제에서는 정확한 할당 카운트 추적 불가능
+                // Reset()에서만 카운트를 0으로 초기화
             }
         }
 

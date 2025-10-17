@@ -1,5 +1,7 @@
 #include "Core/Logging/Logger.h"
 
+using namespace std;
+
 namespace Core
 {
     namespace Logging
@@ -13,44 +15,44 @@ namespace Core
         void Logger::Log(
             LogLevel level,
             LogCategory category,
-            const std::string& message,
-            const char* file,
+            const string& message,
+            const char* file,  // 이미 const
             int line
         )
         {
-            // Level filtering
             if (level < mMinLevel)
             {
                 return;
             }
 
-            // Create log message
-            LogMessage msg(level, category, message, file, line);
+            const LogMessage msg(level, category, message, file, line);
 
-            // Thread-safe output to all sinks
-            std::lock_guard<std::mutex> lock(mMutex);
+            lock_guard<mutex> lock(mMutex);
 
-            for (auto& sink : mSinks)
+            // TODO: 고빈도 로깅 시나리오를 위한 비동기 큐 고려
+            // 현재: 동기식 (단순하고 안전)
+            // 향후: 비동기 큐 (고성능)
+            for (const auto& sink : mSinks)
             {
                 sink->Write(msg);
             }
         }
 
-        void Logger::AddSink(std::unique_ptr<LogSink> sink)
+        void Logger::AddSink(unique_ptr<LogSink> sink)
         {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mSinks.push_back(std::move(sink));
+            lock_guard<mutex> lock(mMutex);
+            mSinks.push_back(move(sink));
         }
 
         void Logger::ClearSinks()
         {
-            std::lock_guard<std::mutex> lock(mMutex);
+            lock_guard<mutex> lock(mMutex);
             mSinks.clear();
         }
 
         void Logger::Flush()
         {
-            std::lock_guard<std::mutex> lock(mMutex);
+            lock_guard<mutex> lock(mMutex);
 
             for (auto& sink : mSinks)
             {

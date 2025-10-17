@@ -8,6 +8,8 @@
     #include <Windows.h>
 #endif
 
+using namespace std;
+
 namespace Core
 {
     namespace Logging
@@ -27,7 +29,7 @@ namespace Core
                 SetConsoleColor(msg.level);
             }
 
-            std::cout << FormatLogMessage(msg) << std::endl;
+            cout << FormatLogMessage(msg) << endl;
 
             if (mUseColors)
             {
@@ -35,28 +37,24 @@ namespace Core
             }
         }
 
-        std::string ConsoleSink::FormatLogMessage(const LogMessage& msg)
+        string ConsoleSink::FormatLogMessage(const LogMessage& msg)
         {
-            std::stringstream ss;
+            stringstream ss;
 
-            // Timestamp
-            auto time = std::chrono::system_clock::to_time_t(msg.timestamp);
-            std::tm tm;
+            auto time = chrono::system_clock::to_time_t(msg.timestamp);
+            tm tm;
             localtime_s(&tm, &time);
 
-            ss << "[" << std::put_time(&tm, "%H:%M:%S") << "] ";
+            ss << "[" << put_time(&tm, "%H:%M:%S") << "] ";
 
-            // Level
             ss << "[" << LogLevelToString(msg.level) << "] ";
 
-            // Category
             ss << "[" << LogCategoryToString(msg.category) << "] ";
 
-            // Message
             ss << msg.message;
 
-            // File & Line (Debug only)
 #ifdef _DEBUG
+            // 디버그 빌드에서만 파일 위치 표시로 빠른 문제 추적 지원
             ss << " (" << msg.file << ":" << msg.line << ")";
 #endif
 

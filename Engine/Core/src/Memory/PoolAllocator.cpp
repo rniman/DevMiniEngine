@@ -3,6 +3,8 @@
 #include "Core/Logging/LogMacros.h"
 #include <cstdlib>
 
+using namespace std;
+
 namespace Core
 {
     namespace Memory
@@ -17,12 +19,11 @@ namespace Core
             CORE_VERIFY(chunkSize >= sizeof(void*), "Chunk size must be at least pointer size");
             CORE_VERIFY(chunkCount > 0, "Chunk count must be greater than 0");
 
-            // Align chunk size to pointer size for free-list
+            // Free-list 구현을 위해 각 청크가 최소한 포인터를 저장할 수 있어야 함
             mChunkSize = AlignSize(chunkSize, sizeof(void*));
 
-            // Allocate memory block
             const size_t totalSize = mChunkSize * mChunkCount;
-            mMemory = std::malloc(totalSize);
+            mMemory = malloc(totalSize);
 
             CORE_VERIFY(mMemory, "Failed to allocate memory for PoolAllocator");
 
@@ -44,7 +45,7 @@ namespace Core
                     LOG_TRACE("PoolAllocator destroyed cleanly");
                 }
 
-                std::free(mMemory);
+                free(mMemory);
                 mMemory = nullptr;
             }
         }
@@ -61,7 +62,6 @@ namespace Core
                 return nullptr;
             }
 
-            // Pop from free-list
             void* chunk = mFreeList;
             mFreeList = *reinterpret_cast<void**>(mFreeList);
             mAllocatedChunks++;
@@ -76,10 +76,11 @@ namespace Core
                 return;
             }
 
-            CORE_ASSERT(ptr >= mMemory && ptr < static_cast<char*>(mMemory) + (mChunkSize * mChunkCount),
-                "Pointer does not belong to this pool");
+            CORE_ASSERT(
+                ptr >= mMemory && ptr < static_cast<char*>(mMemory) + (mChunkSize * mChunkCount),
+                "Pointer does not belong to this pool"
+            );
 
-            // Push to free-list
             *reinterpret_cast<void**>(ptr) = mFreeList;
             mFreeList = ptr;
             mAllocatedChunks--;
@@ -93,19 +94,21 @@ namespace Core
 
         void PoolAllocator::InitializeFreeList()
         {
+            // Free-list는 사용 가능한 청크들을 연결 리스트로 관리
+            // 각 청크의 시작 부분에 다음 청크의 포인터를 저장
             mFreeList = mMemory;
 
-            // Link all chunks in free-list
+            // 각 청크를 다음 청크에 연결하여 free-list 구성
             char* current = static_cast<char*>(mMemory);
             for (size_t i = 0; i < mChunkCount - 1; ++i)
             {
-                void** currentAsPtr = reinterpret_cast<void**>(current);
+                void** const currentAsPtr = reinterpret_cast<void**>(current);
                 *currentAsPtr = current + mChunkSize;
                 current += mChunkSize;
             }
 
-            // Last chunk points to nullptr
-            void** lastChunk = reinterpret_cast<void**>(current);
+            // 마지막 청크는 nullptr로 리스트 종료
+            void** const lastChunk = reinterpret_cast<void**>(current);
             *lastChunk = nullptr;
         }
 

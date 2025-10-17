@@ -21,7 +21,8 @@ namespace Core
          *
          * @note 스레드 안전하지 않음
          * @note 마커는 반드시 LIFO 순서로 해제해야 함
-         * @warning 잘못된 순서로 FreeToMarker 호출 시 예상치 못한 동작 발생
+         * @warning FreeToMarker는 LIFO 순서로만 호출해야 함 (최신 마커부터 해제)
+         * @warning 순서를 지키지 않으면 메모리 누수 또는 잘못된 해제 발생 가능
          */
         class StackAllocator : public Allocator
         {
@@ -67,12 +68,24 @@ namespace Core
             Marker GetMarker() const { return mOffset; }
 
             /**
-             * @brief 마커 이후의 모든 할당 해제
+             * @brief 특정 마커 위치로 스택을 되돌림
              *
-             * @param marker 되돌릴 스택 위치 (GetMarker()로 획득)
+             * @param marker 되돌릴 스택 위치 (GetMarker()로 사전 획득한 값)
              *
-             * @note LIFO 순서를 준수해야 함 (역순 해제)
+             * 사용 예:
+             *   auto marker1 = stack.GetMarker();
+             *   void* data1 = stack.Allocate(100);
+             *
+             *   auto marker2 = stack.GetMarker();
+             *   void* data2 = stack.Allocate(200);
+             *
+             *   stack.FreeToMarker(marker2);  // data2 해제
+             *   stack.FreeToMarker(marker1);  // data1 해제
+             *
+             * @note LIFO 순서 필수: marker2 → marker1 순서로 해제해야 함
+             * @note 할당 카운트는 업데이트되지 않음 (근사값으로 유지)
              * @warning marker > mOffset인 경우 assertion 실패
+             * @warning 잘못된 순서 (marker1 → marker2)로 호출하면 안 됨
              */
             void FreeToMarker(Marker marker);
 
@@ -99,11 +112,13 @@ namespace Core
             size_t GetAllocatedSize() const override { return mOffset; }
 
             /**
-             * @brief 현재 할당 횟수
-             * 
-             * @return 활성 할당 개수
+             * @brief 누적 할당 횟수 (근사값)
              *
-             * @note FreeToMarker 호출 시 정확한 추적이 불가능하여 근사값일 수 있음
+             * @return 대략적인 할당 횟수
+             *
+             * @note FreeToMarker()는 할당 카운트를 업데이트하지 않으므로 부정확할 수 있음
+             * @note 정확한 카운트는 Reset() 호출 시에만 보장됨
+             * @warning 이 값은 디버깅 참고용으로만 사용하세요
              */
             size_t GetAllocationCount() const override { return mAllocationCount; }
 
@@ -120,10 +135,10 @@ namespace Core
             size_t GetFreeSpace() const { return mSize - mOffset; }
 
         private:
-            void* mMemory;              // 메모리 블록 시작 주소
-            size_t mSize;               // 전체 크기
-            size_t mOffset;             // 현재 오프셋 (스택 포인터)
-            size_t mAllocationCount;    // 할당 횟수 (근사값)
+            void* mMemory;
+            size_t mSize;
+            size_t mOffset;             // 다음 할당 위치 (마커로도 사용됨)
+            size_t mAllocationCount;    // 근사값 (FreeToMarker 시 부정확)
         };
 
     } // namespace Memory
