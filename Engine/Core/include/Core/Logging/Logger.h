@@ -13,7 +13,7 @@ namespace Core
     {
         /**
          * @brief 메인 로깅 시스템 (싱글톤)
-         *
+         * 
          * @note 스레드 안전: 여러 스레드에서 동시 호출 가능
          * @note 매크로 사용 권장 (LOG_INFO, LOG_ERROR 등)
          */
@@ -24,7 +24,7 @@ namespace Core
 
             /**
              * @brief 로그 메시지 기록
-             *
+             * 
              * @note 최소 로그 레벨보다 낮은 메시지는 필터링됨
              */
             void Log(
@@ -37,6 +37,7 @@ namespace Core
 
             /**
              * @brief 출력 대상(Sink) 추가
+             * 
              * @param sink 추가할 LogSink (소유권 이전)
              */
             void AddSink(std::unique_ptr<LogSink> sink);

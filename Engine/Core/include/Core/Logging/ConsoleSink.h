@@ -8,7 +8,7 @@ namespace Core
     {
         /**
          * @brief 콘솔 출력 Sink
-         *
+         * 
          * @note Windows Console API를 사용한 컬러 출력 지원
          */
         class ConsoleSink : public LogSink

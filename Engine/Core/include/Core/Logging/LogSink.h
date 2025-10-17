@@ -8,7 +8,7 @@ namespace Core
     {
         /**
          * @brief 로그 출력 대상을 위한 기본 인터페이스
-         *
+         * 
          * @note 새로운 출력 대상 추가 시 이 클래스를 상속하여 구현
          */
         class LogSink

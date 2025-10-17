@@ -8,7 +8,7 @@ namespace Core
 {
     namespace Logging
     {
-        // Helper to extract filename from path
+        // 전체 경로에서 파일명만 추출 (예: "C:\Project\main.cpp" -> "main.cpp")
         inline const char* GetFileName(const char* path)
         {
             const char* file = strrchr(path, '\\');
@@ -16,7 +16,7 @@ namespace Core
             return file ? file + 1 : path;
         }
 
-        // Format helper (printf-style)
+        // printf 스타일 문자열 포맷팅 (최대 1024바이트)
         template<typename... Args>
         std::string FormatLog(const char* format, Args... args)
         {
@@ -25,7 +25,7 @@ namespace Core
             return std::string(buffer);
         }
 
-        // No-args version
+        // 오버플로우 방지를 위한 인자 없는 오버로드
         inline std::string FormatLog(const char* format)
         {
             return std::string(format);
@@ -34,11 +34,12 @@ namespace Core
     } // namespace Logging
 } // namespace Core
 
-//=============================================================================
-// Logging Macros
-//=============================================================================
+//-----------------------------------------------------------------------------
+// 로깅 매크로
+//-----------------------------------------------------------------------------
+// NOTE: LOG_TRACE/LOG_DEBUG는 Release 빌드에서 컴파일 제외 (성능 최적화)
 
-// Core macros
+// Core 카테고리 매크로
 #define LOG_TRACE(format, ...) \
     Core::Logging::Logger::GetInstance().Log( \
         Core::Logging::LogLevel::Trace, \
@@ -81,7 +82,7 @@ namespace Core
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
-// Category-specific macros
+// 특정 카테고리 매크로
 #define LOG_GRAPHICS_INFO(format, ...) \
     Core::Logging::Logger::GetInstance().Log( \
         Core::Logging::LogLevel::Info, \
@@ -96,7 +97,7 @@ namespace Core
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
-// Remove from release build (optional)
+// Release 빌드 최적화: Trace/Debug 로그 제거
 #ifdef NDEBUG
 #undef LOG_TRACE
 #undef LOG_DEBUG

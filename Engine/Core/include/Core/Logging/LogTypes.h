@@ -9,7 +9,7 @@ namespace Core
     {
         /**
          * @brief 로그 심각도 레벨
-         *
+         * 
          * @note Release 빌드에서 Trace/Debug는 컴파일 시점에 제거됨
          */
         enum class LogLevel
