@@ -420,8 +420,9 @@ void Update()
 ### 기본 원칙
 
 **프로젝트 네임스페이스**
-- 현재 프로젝트는 글로벌 네임스페이스 사용
-- 학습 목적 프로젝트이므로 네임스페이스 오버헤드 최소화
+- 모듈별 네임스페이스 사용 (Core, Graphics, Physics 등)
+- 네임스페이스 중첩 최대 2단계까지 권장
+- 예: `Core::Memory`, `Graphics::D3D12`, `Physics::Collision`
 
 **헤더 파일 규칙 (엄격)**
 ```cpp
@@ -429,6 +430,7 @@ void Update()
 
 // ❌ 금지: using namespace는 절대 사용 불가
 // using namespace std;
+// using namespace Graphics;
 
 // ✅ 허용: 명시적 타입 사용
 std::vector<int> GetData() const;
@@ -445,9 +447,9 @@ using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 // ✅ 허용: using namespace
 using namespace std;
-using Microsoft::WRL::ComPtr;
+using namespace Graphics;
 
-vector<int> MyClass::GetData() const
+vector<int> Device::GetData() const
 {
     return mData;
 }
@@ -455,21 +457,161 @@ vector<int> MyClass::GetData() const
 
 ---
 
+### 네임스페이스 구조
+
+#### 모듈별 네임스페이스(예시)
+```cpp
+// Core 모듈
+namespace Core
+{
+    class Types { };
+    class Time { };
+}
+
+namespace Core::Memory
+{
+    class LinearAllocator { };
+    class PoolAllocator { };
+}
+
+namespace Core::Logging
+{
+    class Logger { };
+    enum class LogLevel { };
+}
+
+// Graphics 모듈
+namespace Graphics
+{
+    class Device { };
+    class SwapChain { };
+}
+
+namespace Graphics::D3D12
+{
+    class CommandQueue { };
+    class DescriptorHeap { };
+}
+
+// Physics 모듈
+namespace Physics
+{
+    class RigidBody { };
+}
+
+namespace Physics::Collision
+{
+    class CollisionDetector { };
+    struct AABB { };
+}
+```
+
+#### 중첩 제한
+```cpp
+// ✅ 좋은 예: 2단계 중첩
+namespace Graphics::D3D12
+{
+    class Device { };
+}
+
+// ⚠️ 피해야 할 예: 과도한 중첩
+namespace Engine::Graphics::D3D12::Impl::Details
+{
+    // 너무 깊음
+}
+
+// ✅ 해결책: 의미 있는 2단계로 재구성
+namespace Graphics::Internal
+{
+    // 내부 구현
+}
+```
+
+---
+
+### 헤더 파일에서 네임스페이스 사용
+
+```cpp
+// Device.h
+#pragma once
+#include <vector>
+#include <string>
+
+template<typename T>
+using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+namespace Graphics
+{
+    class Device
+    {
+    public:
+        // 명시적 std:: 사용
+        std::vector<std::string> GetAdapterNames() const;
+        std::shared_ptr<CommandQueue> CreateCommandQueue();
+        
+        // ComPtr 별칭 사용
+        ComPtr<ID3D12Device> GetD3D12Device() const;
+        
+    private:
+        std::vector<std::string> mAdapterNames;
+        ComPtr<ID3D12Device> mDevice;
+    };
+    
+} // namespace Graphics
+```
+
+---
+
+### 구현 파일에서 네임스페이스 사용
+
+```cpp
+// Device.cpp
+#include "Graphics/Device.h"
+
+// .cpp에서는 자유롭게 using 사용
+using namespace std;
+
+namespace Graphics
+{
+    vector<string> Device::GetAdapterNames() const
+    {
+        vector<string> names;
+        for (const auto& name : mAdapterNames)
+        {
+            names.push_back(name);
+        }
+        return names;
+    }
+    
+    ComPtr<ID3D12Device> Device::GetD3D12Device() const
+    {
+        return mDevice;
+    }
+    
+} // namespace Graphics
+```
+
+---
+
 ### 왜 헤더에서 using namespace를 금지하는가?
+
 ```cpp
 // ❌ 나쁜 예: 헤더에서 using namespace
-// MyClass.h
+// Device.h
 #pragma once
 using namespace std;
 
-class MyClass
+namespace Graphics
 {
-public:
-    vector<int> GetData() const;  // std::인지 불명확
-};
+    class Device
+    {
+    public:
+        vector<int> GetData() const;  // std::인지 불명확
+    };
+}
 
 // 다른 파일에서 include 시 의도치 않게 std 전체가 노출됨
-#include "MyClass.h"
+#include "Graphics/Device.h"
 vector<int> data;  // 혼란 발생
 ```
 
@@ -480,55 +622,53 @@ vector<int> data;  // 혼란 발생
 
 ---
 
-### 올바른 사용 패턴
-```cpp
-// Device.h
-#pragma once
-#include <memory>
-#include <vector>
+### 익명 네임스페이스 (구현 파일 전용)
 
-template<typename T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-class Device
-{
-public:
-    // 명시적 std::
-    std::vector<std::string> GetAdapterNames() const;
-    std::shared_ptr<CommandQueue> CreateCommandQueue();
-    
-    // ComPtr 별칭 사용
-    ComPtr<ID3D12Device> GetD3D12Device() const;
-};
-```
 ```cpp
 // Device.cpp
-#include "Device.h"
+#include "Graphics/Device.h"
 
-// .cpp에서는 자유롭게 사용
 using namespace std;
 
-vector<string> Device::GetAdapterNames() const
+namespace Graphics
 {
-    vector<string> names;
-    for (const auto& name : mAdapterNames)
+    namespace  // 익명 네임스페이스 - 파일 내부에서만 사용
     {
-        names.push_back(name);
+        constexpr uint32_t MAX_ADAPTERS = 8;
+        
+        bool IsHardwareAdapter(IDXGIAdapter1* adapter)
+        {
+            // ...
+        }
     }
-    return names;
-}
+    
+    bool Device::Initialize()
+    {
+        // 익명 네임스페이스의 함수 사용
+        if (IsHardwareAdapter(mAdapter.Get()))
+        {
+            // ...
+        }
+        return true;
+    }
+    
+} // namespace Graphics
 ```
 
 ---
 
 ### 요약
 
-| 위치 | using namespace | 명시적 타입 | 타입 별칭 |
-|------|----------------|------------|----------|
-| **헤더 파일 (.h)** | ❌ 금지 | ✅ 필수 | ✅ 허용 |
-| **구현 파일 (.cpp)** | ✅ 허용 | ✅ 선택 | ✅ 허용 |
+| 위치 | using namespace | 명시적 타입 | 타입 별칭 | 네임스페이스 중첩 |
+|------|----------------|------------|----------|------------------|
+| **헤더 파일 (.h)** | ❌ 금지 | ✅ 필수 | ✅ 허용 | 최대 2단계 권장 |
+| **구현 파일 (.cpp)** | ✅ 허용 | ✅ 선택 | ✅ 허용 | 자유 |
+| **익명 네임스페이스** | - | - | - | .cpp 전용 |
 
-**원칙**: 헤더는 남을 위해 명시적으로, 구현은 나를 위해 편하게
+**원칙**: 
+- 헤더는 남을 위해 명시적으로
+- 구현은 나를 위해 편하게
+- 모듈별로 네임스페이스 구분하여 코드 구조 명확화
   
 ---
 
