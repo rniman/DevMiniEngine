@@ -307,22 +307,22 @@ constexpr float PI = 3.14159f;
 1. **Self-documenting code 우선** - 주석보다 명확한 코드가 최선
 2. **최소주의** - 코드로 표현 불가능한 것만 주석으로
 3. **What보다 Why** - 무엇을 하는지보다 왜 하는지 설명
-
-### 언어 선택
-- 모든 주석은 한글로 작성
-- 업계 표준 용어는 영어 그대로 사용 (예: ECS, RAII, PSO, DirectX)
+4. **한글 작성** - 모든 주석은 한글로 작성 (업계 표준 용어는 영어 유지)
 
 ---
 
-### Public API 문서화
+### Public API 문서화 - Doxygen 스타일
+
+**헤더 파일(.h)의 public 인터페이스에만 적용**
 ```cpp
 /**
  * @brief 프레임 임시 데이터를 위한 선형 할당자
  * 
+ * 상세 설명이 필요한 경우 여기에 작성
+ * 
  * @param size 할당할 바이트 크기
  * @param alignment 정렬 요구사항 (기본: 16)
  * @return 할당된 메모리 포인터, 실패 시 nullptr
- * @throws std::bad_alloc 메모리 부족 시
  * 
  * @note 스레드 안전하지 않음
  * @warning 할당된 메모리는 Reset() 전까지 유효
@@ -330,16 +330,37 @@ constexpr float PI = 3.14159f;
 void* Allocate(size_t size, size_t alignment = 16);
 ```
 
-**문서화가 불필요한 경우**:
+**필수 태그**: `@brief`, `@param`, `@return`  
+**선택 태그**: `@note`, `@warning`, `@throws`
+
+**예외**: 다음의 경우 `@param`, `@return` 생략 가능
+- 매개변수/반환값 이름이 목적을 완전히 설명하는 경우
+- Getter/Setter 같은 자명한 함수
+
+---
+
+### 문서화가 불필요한 경우
+
+다음은 Doxygen 주석을 생략합니다:
 ```cpp
-// 자명한 함수는 주석 없음
+// 1. 자명한 Getter/Setter
 size_t GetCapacity() const { return mCapacity; }
 void SetEnabled(bool enabled) { mEnabled = enabled; }
+
+// 2. Override 함수 (기본 클래스에 문서화되어 있는 경우)
+void Update() override;
+
+// 3. private 헬퍼 함수 중 이름이 명확한 경우
+private:
+    void SortByPriority();
+    void ClearExpiredEntries();
 ```
 
 ---
 
-### 구현 설명 주석
+### 구현 파일(.cpp) 주석 - // 스타일
+
+**복잡한 로직이나 의도 설명에만 사용**
 ```cpp
 void RenderSystem::Update()
 {
@@ -347,38 +368,33 @@ void RenderSystem::Update()
     mFenceValue++;
     
     // CRITICAL: 이전 프레임 완료 대기 (병목 가능)
-    // TODO: Triple buffering으로 개선 필요
     WaitForPreviousFrame();
 }
 ```
 
-**좋은 주석**: 비직관적인 알고리즘, 성능 최적화 이유, 임시 해결책 설명
-**나쁜 주석**: 코드 그대로 반복
+**좋은 주석**: 비직관적인 알고리즘, 최적화 이유, 제약사항  
+**나쁜 주석**: 코드를 그대로 반복하는 설명
 ```cpp
-// ❌ 나쁜 예
+// ❌ 나쁜 예: 코드 반복
 i++;  // i를 1 증가시킨다
 
-// ✅ 좋은 예
+// ✅ 좋은 예: 의도 설명
 i++;  // 다음 프레임 인덱스로 이동
 ```
 
 ---
 
-### 복잡한 로직 설명
+### 복잡한 알고리즘 설명
 ```cpp
 // Separating Axis Theorem (SAT)를 이용한 OBB 충돌 검사
-// 참고: Real-Time Collision Detection (Christer Ericson, 2005) Chapter 4.4
+// 참고: Real-Time Collision Detection (Christer Ericson) Chapter 4.4
 bool CheckOBBCollision(const OBB& a, const OBB& b)
 {
     // 15개 분리축 검사 (면 법선 6개 + 엣지 교차 9개)
-    ...
-}
-
-// 선형 탐색 사용 (O(n))
-// 이유: 평균 엔티티 수 < 100이므로 해시맵보다 캐시 효율 좋음
-for (auto& entity : mEntities)
-{
-    ...
+    for (int i = 0; i < 15; ++i)
+    {
+        ...
+    }
 }
 ```
 
@@ -386,16 +402,18 @@ for (auto& entity : mEntities)
 
 ### TODO 태그
 ```cpp
-// FIXME: [P0] 즉시 수정 필요 - 메모리 누수 발생 (Issue #42)
 // TODO: [P1] 다음 스프린트 - 멀티스레드 렌더링 지원
+// FIXME: [P0] 즉시 수정 필요 - 메모리 누수 발생 (Issue #42)
 // OPTIMIZE: [P2] 성능 개선 - 현재 100ms, 목표 16ms
-// HACK: [P2] 임시 해결책 - DX12 버그 우회, SDK 업데이트 시 제거
-// NOTE: [정보] 이 함수는 메인 스레드에서만 호출 가능
+// HACK: [P2] 임시 해결책 - DX12 버그 우회
+// NOTE: 이 함수는 메인 스레드에서만 호출 가능
 ```
+
+**우선순위**: P0(긴급) > P1(높음) > P2(중간) > P3(낮음)
 
 ---
 
-### 디버깅은 로깅으로
+### 디버깅은 로깅 시스템 사용
 ```cpp
 // ❌ 나쁜 예: 주석으로 디버깅
 void Update()
@@ -408,10 +426,21 @@ void Update()
 // ✅ 좋은 예: 로깅 시스템
 void Update()
 {
-    LOG_TRACE("LinearAllocator: Offset=%zu, Capacity=%zu", mOffset, mCapacity);
+    LOG_TRACE("Allocator: Offset=%zu, Capacity=%zu", mOffset, mCapacity);
     mOffset += size;
 }
 ```
+
+---
+
+### 요약
+
+| 위치 | 스타일 | 사용 시점 |
+|------|--------|----------|
+| **헤더 public** | `/** */` Doxygen | Public API만 |
+| **헤더 private** | 주석 생략 | 이름이 명확하면 불필요 |
+| **구현 파일** | `//` 일반 주석 | 복잡한 로직, Why 설명 |
+| **TODO 태그** | `// TODO:` | 향후 작업 표시 |
 
 ---
 
