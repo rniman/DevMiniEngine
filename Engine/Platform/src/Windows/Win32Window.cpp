@@ -4,7 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-// Link with Windows libraries
+// Windows 라이브러리 링크
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 
@@ -36,14 +36,14 @@ namespace Platform
         mHeight = desc.height;
         mIsFullscreen = desc.fullscreen;
 
-        // 1. Register window class
+        // 1. 윈도우 클래스 등록
         if (!RegisterWindowClass())
         {
             LOG_ERROR("Failed to register window class");
             return false;
         }
 
-        // 2. Calculate window rectangle
+        // 2. 윈도우 사각형 계산
         DWORD style = WS_OVERLAPPEDWINDOW;
         DWORD exStyle = WS_EX_APPWINDOW;
 
@@ -57,36 +57,38 @@ namespace Platform
             style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
         }
 
-        // Adjust for client area size
+        // 클라이언트 영역 크기 조정
         RECT rect = { 0, 0, static_cast<LONG>(mWidth), static_cast<LONG>(mHeight) };
         AdjustWindowRectEx(&rect, style, FALSE, exStyle);
 
         int windowWidth = rect.right - rect.left;
         int windowHeight = rect.bottom - rect.top;
 
-        // Center window on screen
+        // 화면 중앙에 윈도우 배치
         int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         int screenHeight = GetSystemMetrics(SM_CYSCREEN);
         int windowX = (screenWidth - windowWidth) / 2;
         int windowY = (screenHeight - windowHeight) / 2;
 
-        // 3. Convert title to wide string
+        // 3. 타이틀을 와이드 문자열로 변환
         int wideLength = MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, nullptr, 0);
         std::wstring wideTitle(wideLength, L'\0');
         MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, &wideTitle[0], wideLength);
 
-        // 4. Create window
+        // 4. 윈도우 생성
         mHwnd = reinterpret_cast<HWND__*>(CreateWindowExW(
             exStyle,
             CLASS_NAME,
             wideTitle.c_str(),
             style,
-            windowX, windowY,
-            windowWidth, windowHeight,
-            nullptr,        // No parent window
-            nullptr,        // No menu
+            windowX,
+            windowY,
+            windowWidth,
+            windowHeight,
+            nullptr,        // 부모 윈도우 없음
+            nullptr,        // 메뉴 없음
             reinterpret_cast<HINSTANCE>(mHInstance),
-            this            // Pass 'this' pointer to WM_CREATE
+            this            // WM_CREATE에서 사용할 'this' 포인터
         ));
 
         if (!mHwnd)
@@ -96,7 +98,7 @@ namespace Platform
             return false;
         }
 
-        // 5. Show window
+        // 5. 윈도우 표시
         ShowWindow(reinterpret_cast<HWND>(mHwnd), SW_SHOW);
         UpdateWindow(reinterpret_cast<HWND>(mHwnd));
 
@@ -120,7 +122,7 @@ namespace Platform
     {
         MSG msg = {};
 
-        // Non-blocking message processing
+        // 논블로킹 메시지 처리
         while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
@@ -160,7 +162,7 @@ namespace Platform
 
     Input& Win32Window::GetInput()
     {
-        return mInput; 
+        return mInput;
     }
 
     void Win32Window::SetEventCallback(EventCallback callback)
@@ -219,17 +221,18 @@ namespace Platform
         HWND__* hwnd,
         unsigned int msg,
         unsigned long long wParam,
-        long long lParam)
+        long long lParam
+    )
     {
         Win32Window* window = nullptr;
 
         if (msg == WM_CREATE)
         {
-            // Get 'this' pointer from CreateWindowEx
+            // WM_CREATE에서 CreateWindowEx의 마지막 인자로 전달된 'this' 포인터 복구
             CREATESTRUCTW* pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
             window = reinterpret_cast<Win32Window*>(pCreate->lpCreateParams);
 
-            // Store in window's user data
+            // 이후 메시지에서 사용하기 위해 윈도우의 GWLP_USERDATA에 저장
             SetWindowLongPtrW(
                 reinterpret_cast<HWND>(hwnd),
                 GWLP_USERDATA,
@@ -240,7 +243,7 @@ namespace Platform
         }
         else
         {
-            // Retrieve stored 'this' pointer
+            // 다른 메시지에서는 저장된 'this' 포인터 가져오기
             window = reinterpret_cast<Win32Window*>(GetWindowLongPtrW(reinterpret_cast<HWND>(hwnd), GWLP_USERDATA));
         }
 
@@ -270,124 +273,128 @@ namespace Platform
             return 0;
         }
 
-        case WM_DESTROY:
-        {
-            PostQuitMessage(0);
-            return 0;
-        }
+		case WM_DESTROY:
+		{
+			PostQuitMessage(0);
+			return 0;
+		}
 
-        case WM_SIZE:
-        {
-            UINT width = LOWORD(lParam);
-            UINT height = HIWORD(lParam);
+		case WM_SIZE:
+		{
+			UINT width = LOWORD(lParam);
+			UINT height = HIWORD(lParam);
 
-            if (width != mWidth || height != mHeight)
-            {
-                mWidth = width;
-                mHeight = height;
+			if (width != mWidth || height != mHeight)
+			{
+				mWidth = width;
+				mHeight = height;
 
-                LOG_INFO("Window resized: %dx%d", width, height);
+				LOG_INFO("Window resized: %dx%d", width, height);
 
-                if (mEventCallback)
-                {
-                    mEventCallback(WindowEvent::Resize);
-                }
-            }
-            return 0;
-        }
+				if (mEventCallback)
+				{
+					mEventCallback(WindowEvent::Resize);
+				}
+			}
+			return 0;
+		}
 
-        case WM_SETFOCUS:
-            if (mEventCallback)
-            {
-                mEventCallback(WindowEvent::Focus);
-            }
-            return 0;
+		case WM_SETFOCUS:
+		{
+			if (mEventCallback)
+			{
+				mEventCallback(WindowEvent::Focus);
+			}
+			return 0;
+		}
 
-        case WM_KILLFOCUS:
-            if (mEventCallback)
-            {
-                mEventCallback(WindowEvent::LostFocus);
-            }
-            return 0;
+		case WM_KILLFOCUS:
+		{
+			if (mEventCallback)
+			{
+				mEventCallback(WindowEvent::LostFocus);
+			}
+			return 0;
+		}
 
-        //=============================================================================
-        // Keyboard Messages
-        //=============================================================================
-        case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-        {
-            KeyCode key = static_cast<KeyCode>(wParam);
-            mInput.OnKeyDown(key);
-            return 0;
-        }
+		//=============================================================================
+		// 키보드 메시지
+		//=============================================================================
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+		{
+			KeyCode key = static_cast<KeyCode>(wParam);
+			mInput.OnKeyDown(key);
+			return 0;
+		}
 
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
-            KeyCode key = static_cast<KeyCode>(wParam);
-            mInput.OnKeyUp(key);
-            return 0;
-        }
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+		{
+			KeyCode key = static_cast<KeyCode>(wParam);
+			mInput.OnKeyUp(key);
+			return 0;
+		}
 
-        //=============================================================================
-        // Mouse Messages
-        //=============================================================================
-        case WM_MOUSEMOVE:
-        {
-            int xPos = static_cast<int>(static_cast<short>(LOWORD(lParam)));
-            int yPos = static_cast<int>(static_cast<short>(HIWORD(lParam)));
-            mInput.OnMouseMove(xPos, yPos);
-            return 0;
-        }
+		//=============================================================================
+		// 마우스 메시지
+		//=============================================================================
+		case WM_MOUSEMOVE:
+		{
+			// LOWORD/HIWORD는 부호 확장을 하지 않으므로 short로 명시적 캐스팅 필요
+			int xPos = static_cast<int>(static_cast<short>(LOWORD(lParam)));
+			int yPos = static_cast<int>(static_cast<short>(HIWORD(lParam)));
+			mInput.OnMouseMove(xPos, yPos);
+			return 0;
+		}
 
-        case WM_LBUTTONDOWN:
-        {
-            mInput.OnMouseButtonDown(MouseButton::Left);
-            return 0;
-        }
+		case WM_LBUTTONDOWN:
+		{
+			mInput.OnMouseButtonDown(MouseButton::Left);
+			return 0;
+		}
 
-        case WM_LBUTTONUP:
-        {
-            mInput.OnMouseButtonUp(MouseButton::Left);
-            return 0;
-        }
+		case WM_LBUTTONUP:
+		{
+			mInput.OnMouseButtonUp(MouseButton::Left);
+			return 0;
+		}
 
-        case WM_RBUTTONDOWN:
-        {
-            mInput.OnMouseButtonDown(MouseButton::Right);
-            return 0;
-        }
+		case WM_RBUTTONDOWN:
+		{
+			mInput.OnMouseButtonDown(MouseButton::Right);
+			return 0;
+		}
 
-        case WM_RBUTTONUP:
-        {
-            mInput.OnMouseButtonUp(MouseButton::Right);
-            return 0;
-        }
+		case WM_RBUTTONUP:
+		{
+			mInput.OnMouseButtonUp(MouseButton::Right);
+			return 0;
+		}
 
-        case WM_MBUTTONDOWN:
-        {
-            mInput.OnMouseButtonDown(MouseButton::Middle);
-            return 0;
-        }
+		case WM_MBUTTONDOWN:
+		{
+			mInput.OnMouseButtonDown(MouseButton::Middle);
+			return 0;
+		}
 
-        case WM_MBUTTONUP:
-        {
-            mInput.OnMouseButtonUp(MouseButton::Middle);
-            return 0;
-        }
+		case WM_MBUTTONUP:
+		{
+			mInput.OnMouseButtonUp(MouseButton::Middle);
+			return 0;
+		}
 
-        case WM_MOUSEWHEEL:
-        {
-            int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-            float normalizedDelta = static_cast<float>(delta) / WHEEL_DELTA;
-            mInput.OnMouseWheel(normalizedDelta);
-            return 0;
-        }
+		case WM_MOUSEWHEEL:
+		{
+			int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+			float normalizedDelta = static_cast<float>(delta) / WHEEL_DELTA;
+			mInput.OnMouseWheel(normalizedDelta);
+			return 0;
+		}
 
-
-        default:
-            return DefWindowProcW(reinterpret_cast<HWND>(mHwnd), msg, wParam, lParam);
-        }
+		default:
+			return DefWindowProcW(reinterpret_cast<HWND>(mHwnd), msg, wParam, lParam);
+		}
     }
 
 } // namespace Platform

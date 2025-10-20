@@ -6,7 +6,7 @@ namespace Platform
     Input::Input()
         : mMouseWheelDelta(0.0f)
     {
-        // Initialize all states to false
+        // 모든 상태를 false로 초기화
         std::memset(mKeyState, 0, sizeof(mKeyState));
         std::memset(mPrevKeyState, 0, sizeof(mPrevKeyState));
         std::memset(mMouseButtonState, 0, sizeof(mMouseButtonState));
@@ -18,7 +18,7 @@ namespace Platform
 
     void Input::Update()
     {
-        // Copy current state to previous state
+        // 현재 상태를 이전 상태로 복사 (더블 버퍼링)
         std::memcpy(mPrevKeyState, mKeyState, sizeof(mKeyState));
         std::memcpy(mPrevMouseButtonState, mMouseButtonState, sizeof(mMouseButtonState));
 
@@ -27,12 +27,12 @@ namespace Platform
 
     void Input::Reset()
     {
-        // Reset frame-specific state
+        // 프레임별 상태 리셋 (마우스 휠 등)
         mMouseWheelDelta = 0.0f;
     }
 
     //=============================================================================
-    // Keyboard Input
+    // 키보드 입력
     //=============================================================================
 
     bool Input::IsKeyDown(KeyCode key) const
@@ -69,7 +69,7 @@ namespace Platform
     }
 
     //=============================================================================
-    // Mouse Input
+    // 마우스 입력
     //=============================================================================
 
     bool Input::IsMouseButtonDown(MouseButton button) const
@@ -105,12 +105,12 @@ namespace Platform
         return !mMouseButtonState[index] && mPrevMouseButtonState[index];
     }
 
-    Core::Math::Vector2 Input::GetMousePosition() const
+    Math::Vector2 Input::GetMousePosition() const
     {
         return mMousePosition;
     }
 
-    Core::Math::Vector2 Input::GetMouseDelta() const
+    Math::Vector2 Input::GetMouseDelta() const
     {
         return { mMousePosition.x - mPrevMousePosition.x, mMousePosition.y - mPrevMousePosition.y };
     }
@@ -121,7 +121,7 @@ namespace Platform
     }
 
     //=============================================================================
-    // Internal Update Methods
+    // 내부 업데이트 메서드
     //=============================================================================
 
     void Input::OnKeyDown(KeyCode key)
