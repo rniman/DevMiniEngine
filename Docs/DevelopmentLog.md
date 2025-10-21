@@ -8,6 +8,83 @@
 
 ---
 
+## 2025-10-22 - Vertex/Index Buffer 및 Shader 컴파일 시스템 구현
+
+### Tasks
+- [x] DX12VertexBuffer/IndexBuffer 클래스 구현
+- [x] DX12ShaderCompiler 클래스 구현
+- [x] BasicShader.hlsl 작성
+
+### Decisions
+
+**버퍼 클래스 분리**
+- VertexBuffer와 IndexBuffer를 별도 클래스로 구현
+- 이유: DirectX 12 View 구조 차이, 타입 안전성, 확장성SS
+
+**Upload Buffer 패턴**
+- DEFAULT Heap (GPU) + UPLOAD Heap (CPU→GPU 전송) 조합
+- Upload Buffer를 멤버로 보관 (Command List 실행 완료까지 유지)
+
+**셰이더 컴파일**
+- 런타임 컴파일 방식 채택 (빠른 반복 개발)
+- CSO 로딩은 향후 최적화 단계에서 구현
+- Shader Model 5.1 사용
+
+**HLSL 파일 위치**
+- 샘플별 독립 `Shaders/` 폴더: `Samples/09_HelloTriangle/Shaders/`
+
+### Implementation
+
+**프로젝트 구조**
+```
+Engine/Graphics/
+├── include/Graphics/DX12/
+│   ├── DX12VertexBuffer.h
+│   ├── DX12IndexBuffer.h
+│   └── DX12ShaderCompiler.h
+└── src/DX12/
+    ├── DX12VertexBuffer.cpp
+    ├── DX12IndexBuffer.cpp
+    └── DX12ShaderCompiler.cpp
+
+Samples/09_HelloTriangle/Shaders/
+└── BasicShader.hlsl
+```
+
+**DX12VertexBuffer/IndexBuffer**
+- `Initialize()`: CPU 데이터를 GPU로 업로드 (UpdateSubresources 사용)
+- `GetView()`: Buffer View 반환
+- IndexBuffer는 R16_UINT/R32_UINT 포맷 지원
+
+**DX12ShaderCompiler**
+- `CompileFromFile()`: HLSL 파일 컴파일 (#include 지원)
+- `CompileFromString()`: 인라인 코드 컴파일
+- `CreateBytecode()`: PSO용 바이트코드 생성
+- Debug/Release 플래그 자동 설정
+
+**HLSL 설정 (Visual Studio)**
+- 항목 형식: 추가 도구 안 함
+- 출력에 복사: 새 버전이면 복사
+- 작업 디렉토리: $(OutDir)
+
+### Code Statistics
+- 헤더: ~150 lines, 구현: ~300 lines, HLSL: ~40 lines
+- 경고: 0 (Level 4)
+
+### Issues Encountered
+- Upload Buffer 생명주기: 멤버 변수로 보관하여 해결
+- Include 경로: LogMacros.h 사용
+- HLSL 파일 복사: "출력에 복사" 설정
+- std::string 로그 경고(C4840): printf 스타일 포맷에서 `.c_str()` 사용으로 해결
+
+### Next Steps
+- [ ] Root Signature 생성
+- [ ] Pipeline State Object (PSO) 생성
+- [ ] Input Layout 정의
+- [ ] 09_HelloTriangle 샘플 완성
+
+---
+
 ## 2025-10-15 - DirectX 12 Initialization Complete
 
 ### Overview
