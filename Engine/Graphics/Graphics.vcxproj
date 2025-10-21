@@ -20,10 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\DX12\DX12CommandContext.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp.cpp" />
+    <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp" />
+    <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp" />
     <ClCompile Include="src\Graphics\DX12\DX12Device.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12SwapChain.cpp.cpp" />
+    <ClCompile Include="src\Graphics\DX12\DX12SwapChain.cpp" />
     <ClCompile Include="src\Graphics\Graphics.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,21 +1,12 @@
 #include "Graphics/DX12/DX12SwapChain.h"
 #include "Core/Logging/LogMacros.h"
 
-
 namespace Graphics
 {
-    //=============================================================================
-    // Constructor / Destructor
-    //=============================================================================
-
     DX12SwapChain::~DX12SwapChain()
     {
         Shutdown();
     }
-
-    //=============================================================================
-    // Public Methods
-    //=============================================================================
 
     bool DX12SwapChain::Initialize(
         IDXGIFactory4* factory,
@@ -46,14 +37,14 @@ namespace Graphics
         mFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
         mCurrentBackBufferIndex = 0;
 
-        // Step 1: Create SwapChain
+        // 1단계: SwapChain 생성
         if (!CreateSwapChain(factory, commandQueue, hwnd))
         {
             LOG_ERROR("[DX12SwapChain] Failed to create SwapChain");
             return false;
         }
 
-        // Step 2: Get Back Buffer resources
+        // 2단계: Back Buffer 리소스 획득
         if (!GetBackBufferResources())
         {
             LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer resources");
@@ -73,10 +64,10 @@ namespace Graphics
 
         LOG_INFO("[DX12SwapChain] Shutting down SwapChain...");
 
-        // Release back buffers
+        // Back Buffer 해제
         ReleaseBackBuffers();
 
-        // Release swap chain
+        // SwapChain 해제
         mSwapChain.Reset();
 
         LOG_INFO("[DX12SwapChain] SwapChain shut down successfully");
@@ -90,11 +81,19 @@ namespace Graphics
             return;
         }
 
-        // Present: vSync ? 1 : 0
-        // Flags: Allow tearing if vSync is disabled
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+        // VSync 간격 설정
         UINT syncInterval = vSync ? 1 : 0;
-        UINT presentFlags = (!vSync && mSwapChain->GetDesc1(&swapChainDesc) == S_OK) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+
+        // Tearing 플래그 설정
+        UINT presentFlags = 0;
+        if (!vSync)
+        {
+            DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+            if (mSwapChain->GetDesc1(&swapChainDesc) == S_OK)
+            {
+                presentFlags = DXGI_PRESENT_ALLOW_TEARING;
+            }
+        }
 
         HRESULT hr = mSwapChain->Present(syncInterval, presentFlags);
         if (FAILED(hr))
@@ -149,17 +148,17 @@ namespace Graphics
 
         if (width == mWidth && height == mHeight)
         {
-            // No resize needed
+            // 리사이즈 불필요
             return true;
         }
 
         LOG_INFO("[DX12SwapChain] Resizing SwapChain from %u x %u to %u x %u",
             mWidth, mHeight, width, height);
 
-        // Release back buffers
+        // Back Buffer 해제
         ReleaseBackBuffers();
 
-        // Resize swap chain buffers
+        // SwapChain 버퍼 리사이즈
         HRESULT hr = mSwapChain->ResizeBuffers(
             mBufferCount,
             width,
@@ -177,7 +176,7 @@ namespace Graphics
         mWidth = width;
         mHeight = height;
 
-        // Get new back buffer resources
+        // 새로운 Back Buffer 리소스 획득
         if (!GetBackBufferResources())
         {
             LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer resources after resize");
@@ -188,10 +187,6 @@ namespace Graphics
         return true;
     }
 
-    //=============================================================================
-    // Private Methods
-    //=============================================================================
-
     bool DX12SwapChain::CreateSwapChain(
         IDXGIFactory4* factory,
         ID3D12CommandQueue* commandQueue,
@@ -200,7 +195,7 @@ namespace Graphics
     {
         LOG_INFO("[DX12SwapChain] Creating SwapChain...");
 
-        // SwapChain description
+        // SwapChain 설정
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
         swapChainDesc.Width = mWidth;
         swapChainDesc.Height = mHeight;
@@ -215,7 +210,7 @@ namespace Graphics
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-        // Create swap chain
+        // SwapChain 생성
         ComPtr<IDXGISwapChain1> swapChain1;
         HRESULT hr = factory->CreateSwapChainForHwnd(
             commandQueue,
@@ -232,10 +227,10 @@ namespace Graphics
             return false;
         }
 
-        // Disable Alt+Enter full screen toggle
+        // Alt+Enter 전체화면 전환 비활성화
         factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 
-        // Query IDXGISwapChain3 interface
+        // IDXGISwapChain3 인터페이스 쿼리
         hr = swapChain1.As(&mSwapChain);
         if (FAILED(hr))
         {
@@ -243,7 +238,7 @@ namespace Graphics
             return false;
         }
 
-        // Get initial back buffer index
+        // 초기 Back Buffer 인덱스 가져오기
         mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 
         LOG_INFO("[DX12SwapChain] SwapChain created successfully");
@@ -265,7 +260,7 @@ namespace Graphics
                 return false;
             }
 
-            // Set debug name
+            // 디버그 이름 설정
             wchar_t name[32];
             swprintf_s(name, L"BackBuffer[%u]", i);
             mBackBuffers[i]->SetName(name);

@@ -3,18 +3,10 @@
 
 namespace Graphics
 {
-    //=============================================================================
-    // Constructor / Destructor
-    //=============================================================================
-
     DX12CommandContext::~DX12CommandContext()
     {
         Shutdown();
     }
-
-    //=============================================================================
-    // Public Methods
-    //=============================================================================
 
     bool DX12CommandContext::Initialize(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
     {
@@ -24,9 +16,11 @@ namespace Graphics
             return false;
         }
 
+        LOG_INFO("[DX12CommandContext] Initializing Command Context...");
+
         mType = type;
 
-        // Create Command Allocator
+        // Command Allocator 생성
         HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&mCommandAllocator));
         if (FAILED(hr))
         {
@@ -34,7 +28,7 @@ namespace Graphics
             return false;
         }
 
-        // Create Command List
+        // Command List 생성
         hr = device->CreateCommandList(
             0,
             type,
@@ -42,16 +36,16 @@ namespace Graphics
             nullptr,
             IID_PPV_ARGS(&mCommandList)
         );
-
         if (FAILED(hr))
         {
             LOG_ERROR("[DX12CommandContext] Failed to create Command List (HRESULT: 0x%08X)", hr);
             return false;
         }
 
-        // Close command list (생성 시 열린 상태)
+        // Command List는 생성 시 Open 상태이므로 닫아야 함
         mCommandList->Close();
 
+        LOG_INFO("[DX12CommandContext] Command Context initialized successfully");
         return true;
     }
 
@@ -62,8 +56,12 @@ namespace Graphics
             return;
         }
 
+        LOG_INFO("[DX12CommandContext] Shutting down Command Context...");
+
         mCommandList.Reset();
         mCommandAllocator.Reset();
+
+        LOG_INFO("[DX12CommandContext] Command Context shut down successfully");
     }
 
     bool DX12CommandContext::Reset()

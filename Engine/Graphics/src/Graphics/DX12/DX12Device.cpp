@@ -7,24 +7,16 @@
 
 namespace Graphics
 {
-    //=============================================================================
-    // Constructor / Destructor
-    //=============================================================================
-
     DX12Device::~DX12Device()
     {
         Shutdown();
     }
 
-    //=============================================================================
-    // Public Methods
-    //=============================================================================
-
     bool DX12Device::Initialize(bool enableDebugLayer)
     {
         LOG_INFO("[DX12Device] Initializing DirectX 12 Device...");
 
-        // Step 1: Enable Debug Layer (Debug 빌드에서만)
+        // 1단계: Debug Layer 활성화 (Debug 빌드에서만)
 #if defined(_DEBUG)
         if (enableDebugLayer)
         {
@@ -35,28 +27,28 @@ namespace Graphics
         }
 #endif
 
-        // Step 2: Create DXGI Factory
+        // 2단계: DXGI Factory 생성
         if (!CreateFactory())
         {
             LOG_ERROR("[DX12Device] Failed to create DXGI Factory");
             return false;
         }
 
-        // Step 3: Select GPU Adapter
+        // 3단계: GPU Adapter 선택
         if (!SelectAdapter())
         {
             LOG_ERROR("[DX12Device] Failed to select GPU Adapter");
             return false;
         }
 
-        // Step 4: Create D3D12 Device
+        // 4단계: D3D12 Device 생성
         if (!CreateDevice())
         {
             LOG_ERROR("[DX12Device] Failed to create D3D12 Device");
             return false;
         }
 
-        // Step 5: Create Command Queues
+        // 5단계: Command Queue 생성
         if (!CreateCommandQueues())
         {
             LOG_ERROR("[DX12Device] Failed to create Command Queues");
@@ -78,14 +70,15 @@ namespace Graphics
 
         LOG_INFO("[DX12Device] Shutting down DirectX 12 Device...");
 
-        // Wait for GPU to finish
+        // GPU 작업 완료 대기
         if (mGraphicsQueue)
         {
             mGraphicsQueue->WaitForIdle();
         }
 
-        // Shutdown in reverse order
-        for (auto& context : mCommandContexts)  // 추가
+        // 역순으로 리소스 해제
+        // Command Context
+        for (auto& context : mCommandContexts)
         {
             if (context)
             {
@@ -94,26 +87,28 @@ namespace Graphics
             }
         }
 
-        // Shutdown in reverse order
+        // RTV Heap
         if (mRTVHeap)
         {
             mRTVHeap->Shutdown();
             mRTVHeap.reset();
         }
 
+        // SwapChain
         if (mSwapChain)
         {
             mSwapChain->Shutdown();
             mSwapChain.reset();
         }
 
-        // Shutdown command queues first
+        // Command Queue
         if (mGraphicsQueue)
         {
             mGraphicsQueue->Shutdown();
             mGraphicsQueue.reset();
         }
 
+        // DirectX 객체
         mDevice.Reset();
         mAdapter.Reset();
         mFactory.Reset();
@@ -148,7 +143,7 @@ namespace Graphics
 
         LOG_INFO("[DX12Device] Creating SwapChain...");
 
-        // Step 1: Create SwapChain
+        // 1단계: SwapChain 생성
         mSwapChain = std::make_unique<DX12SwapChain>();
         if (!mSwapChain->Initialize(
             mFactory.Get(),
@@ -164,21 +159,21 @@ namespace Graphics
             return false;
         }
 
-        // Step 2: Create Descriptor Heaps
+        // 2단계: Descriptor Heap 생성
         if (!CreateDescriptorHeaps())
         {
             LOG_ERROR("[DX12Device] Failed to create Descriptor Heaps");
             return false;
         }
 
-        // Step 3: Create Render Target Views
+        // 3단계: Render Target View 생성
         if (!CreateRenderTargetViews())
         {
             LOG_ERROR("[DX12Device] Failed to create Render Target Views");
             return false;
         }
 
-        // Step 4: Create Command Contexts
+        // 4단계: Command Context 생성
         if (!CreateCommandContexts())
         {
             LOG_ERROR("[DX12Device] Failed to create Command Contexts");
@@ -188,10 +183,6 @@ namespace Graphics
         LOG_INFO("[DX12Device] SwapChain created successfully");
         return true;
     }
-
-    //=============================================================================
-    // Private Methods - Initialization Steps
-    //=============================================================================
 
     bool DX12Device::EnableDebugLayer()
     {
@@ -224,7 +215,7 @@ namespace Graphics
 
         UINT factoryFlags = 0;
 
-        // Debug 빌드에서 Debug Layer가 활성화된 경우 Factory에도 Debug 플래그 추가
+        // Debug 빌드에서 Debug 플래그 추가
 #if defined(_DEBUG)
         if (mDebugLayerEnabled)
         {
@@ -252,29 +243,28 @@ namespace Graphics
         SIZE_T maxDedicatedVideoMemory = 0;
         UINT adapterIndex = 0;
 
-        // 모든 Adapter를 순회하며 가장 큰 전용 비디오 메모리를 가진 Adapter 선택
+        // 최대 VRAM을 가진 Adapter 선택
         while (mFactory->EnumAdapters1(adapterIndex, &adapter) != DXGI_ERROR_NOT_FOUND)
         {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
 
-            // Software Adapter는 제외
+            // Software Adapter 제외
             if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
             {
                 adapterIndex++;
                 continue;
             }
 
-            // D3D12 Device 생성 가능 여부 확인
+            // Device 생성 가능 여부 및 VRAM 크기 확인
             if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
             {
-                // 더 큰 전용 비디오 메모리를 가진 Adapter 선택
                 if (desc.DedicatedVideoMemory > maxDedicatedVideoMemory)
                 {
                     maxDedicatedVideoMemory = desc.DedicatedVideoMemory;
                     mAdapter = adapter;
 
-                    // Adapter 정보 로그 출력
+                    // Adapter 정보 출력
                     char adapterName[128];
                     size_t convertedChars = 0;
                     wcstombs_s(&convertedChars, adapterName, sizeof(adapterName), desc.Description, _TRUNCATE);
@@ -303,7 +293,7 @@ namespace Graphics
     {
         LOG_INFO("[DX12Device] Creating D3D12 Device...");
 
-        // 지원 가능한 Feature Level 목록 (높은 것부터 시도)
+        // Feature Level 목록 (높은 순서)
         D3D_FEATURE_LEVEL featureLevels[] = {
             D3D_FEATURE_LEVEL_12_1,
             D3D_FEATURE_LEVEL_12_0,
@@ -313,7 +303,7 @@ namespace Graphics
 
         HRESULT hr = E_FAIL;
 
-        // 가장 높은 Feature Level부터 시도
+        // 최대 Feature Level 감지
         for (D3D_FEATURE_LEVEL featureLevel : featureLevels)
         {
             hr = D3D12CreateDevice(
@@ -336,14 +326,14 @@ namespace Graphics
             return false;
         }
 
-        // Debug 빌드에서 추가 디버그 정보 설정
+        // Debug 빌드 전용: Info Queue 설정
 #if defined(_DEBUG)
         if (mDebugLayerEnabled)
         {
             ComPtr<ID3D12InfoQueue> infoQueue;
             if (SUCCEEDED(mDevice.As(&infoQueue)))
             {
-                // Break on severe errors
+                // 심각한 에러 발생 시 중단
                 infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
                 infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
 
@@ -360,7 +350,7 @@ namespace Graphics
     {
         LOG_INFO("[DX12Device] Creating Command Queues...");
 
-        // Create Graphics Command Queue
+        // Graphics Command Queue 생성
         mGraphicsQueue = std::make_unique<DX12CommandQueue>();
         if (!mGraphicsQueue->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT))
         {
@@ -376,14 +366,14 @@ namespace Graphics
     {
         LOG_INFO("[DX12Device] Creating Descriptor Heaps...");
 
-        // Create RTV Descriptor Heap
+        // RTV Descriptor Heap 생성 (Shader Visible 불필요)
         mRTVHeap = std::make_unique<DX12DescriptorHeap>();
         if (!mRTVHeap->Initialize(
             mDevice.Get(),
             D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
             FRAME_BUFFER_COUNT,
-            false 
-        )) // RTV는 Shader Visible 불필요
+            false
+        ))
         {
             LOG_ERROR("[DX12Device] Failed to create RTV Descriptor Heap");
             return false;
@@ -403,7 +393,7 @@ namespace Graphics
 
         LOG_INFO("[DX12Device] Creating Render Target Views...");
 
-        // Create RTV for each back buffer
+        // 백 버퍼를 위한 RTV 생성
         for (Core::uint32 i = 0; i < FRAME_BUFFER_COUNT; ++i)
         {
             ID3D12Resource* backBuffer = mSwapChain->GetBackBuffer(i);
@@ -443,19 +433,20 @@ namespace Graphics
         return true;
     }
 
-    //=============================================================================
-    // Helper Methods
-    //=============================================================================
-
     const char* DX12Device::GetFeatureLevelString(D3D_FEATURE_LEVEL featureLevel) const
     {
         switch (featureLevel)
         {
-        case D3D_FEATURE_LEVEL_12_1: return "12.1";
-        case D3D_FEATURE_LEVEL_12_0: return "12.0";
-        case D3D_FEATURE_LEVEL_11_1: return "11.1";
-        case D3D_FEATURE_LEVEL_11_0: return "11.0";
-        default: return "Unknown";
+        case D3D_FEATURE_LEVEL_12_1:
+            return "12.1";
+        case D3D_FEATURE_LEVEL_12_0:
+            return "12.0";
+        case D3D_FEATURE_LEVEL_11_1:
+            return "11.1";
+        case D3D_FEATURE_LEVEL_11_0:
+            return "11.0";
+        default:
+            return "Unknown";
         }
     }
 

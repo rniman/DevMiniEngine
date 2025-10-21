@@ -1,9 +1,9 @@
 #pragma once
-
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
+    // Forward declarations
     class DX12CommandQueue;
     class DX12SwapChain;
     class DX12DescriptorHeap;
@@ -12,7 +12,18 @@ namespace Graphics
     /**
      * @brief DirectX 12 Device 관리 클래스
      *
-     * GPU와의 인터페이스를 담당하며, Factory, Adapter, Device를 관리합니다.
+     * GPU와의 인터페이스를 담당하며 모든 DirectX 12 리소스의 생성을 관리합니다.
+     *
+     * 초기화 순서:
+     * 1. Debug Layer 활성화 (선택적)
+     * 2. DXGI Factory 생성
+     * 3. GPU Adapter 선택 (최대 VRAM 기준)
+     * 4. D3D12 Device 생성
+     * 5. Command Queue 생성
+     * 6. Descriptor Heap 생성
+     * 7. Command Context 생성
+     *
+     * @note SwapChain은 별도로 CreateSwapChain()을 호출하여 생성
      */
     class DX12Device
     {
@@ -26,94 +37,85 @@ namespace Graphics
 
         /**
          * @brief Device 초기화
-         * @param enableDebugLayer Debug Layer 활성화 여부 (Debug 빌드에서만 사용)
+         *
+         * @param enableDebugLayer Debug Layer 활성화 여부 (Debug 빌드에서만 유효)
          * @return 초기화 성공 여부
+         *
+         * @note Debug Layer는 성능 오버헤드가 있으므로 Release 빌드에서는 비활성화 권장
          */
         bool Initialize(bool enableDebugLayer = true);
 
         /**
-         * @brief Device 종료 및 리소스 해제
+         * @brief Device 종료 및 모든 리소스 해제
+         *
+         * 리소스는 역순으로 해제됩니다:
+         * 1. Command Context
+         * 2. SwapChain
+         * 3. Descriptor Heap
+         * 4. Command Queue
+         * 5. Device, Adapter, Factory
+         *
+         * @note GPU 유휴 대기 후 호출하는 것을 권장합니다
          */
         void Shutdown();
 
+        /**
+         * @brief 스왑 체인 생성 및 초기화
+         *
+         * @param hwnd 렌더링 대상 윈도우 핸들
+         * @param width 백 버퍼 너비
+         * @param height 백 버퍼 높이
+         * @return 생성 성공 여부
+         *
+         * @note Initialize() 호출 후에만 사용 가능
+         * @note RTV(Render Target View)도 함께 생성됩니다
+         * @warning 기존 스왑 체인이 있으면 실패합니다
+         */
+        bool CreateSwapChain(HWND hwnd, Core::uint32 width, Core::uint32 height);
+
+        // Getters
         IDXGIFactory4* GetFactory() const { return mFactory.Get(); }
         IDXGIAdapter1* GetAdapter() const { return mAdapter.Get(); }
         ID3D12Device* GetDevice() const { return mDevice.Get(); }
-        bool IsInitialized() const { return mDevice != nullptr; }
         D3D_FEATURE_LEVEL GetFeatureLevel() const { return mFeatureLevel; }
-
         DX12CommandQueue* GetGraphicsQueue() const { return mGraphicsQueue.get(); }
         DX12SwapChain* GetSwapChain() const { return mSwapChain.get(); }
         DX12DescriptorHeap* GetRTVHeap() const { return mRTVHeap.get(); }
         DX12CommandContext* GetCommandContext(Core::uint32 index) const;
+        bool IsInitialized() const { return mDevice != nullptr; }
 
-        bool CreateSwapChain(HWND hwnd, Core::uint32 width, Core::uint32 height);
     private:
-        /**
-         * @brief Debug Layer 활성화
-         */
+        // 초기화 헬퍼 (호출 순서대로 정렬)
         bool EnableDebugLayer();
-
-        /**
-         * @brief DXGI Factory 생성
-         */
         bool CreateFactory();
-
-        /**
-         * @brief 최적의 GPU Adapter 선택
-         * @return 선택 성공 여부
-         */
         bool SelectAdapter();
-
-        /**
-         * @brief D3D12 Device 생성
-         * @return 생성 성공 여부
-         */
         bool CreateDevice();
-        
-        /**
-         * @brief D3D12 CommandQueues 생성
-         * @return 생성 성공 여부
-         */
         bool CreateCommandQueues();
-
-        /**
-         * @brief D3D12 DescriptorHeap 생성
-         * @return 생성 성공 여부
-         */
         bool CreateDescriptorHeaps();
-
-        /**
-         * @brief RTV 생성
-         * @return 생성 성공 여부
-         */
         bool CreateRenderTargetViews();
-
-        /**
-         * @brief CommandContext 생성
-         * @return 생성 성공 여부
-         */
         bool CreateCommandContexts();
 
-        /**
-         * @brief Feature Level을 문자열로 변환
-         */
+        // 유틸리티 함수
         const char* GetFeatureLevelString(D3D_FEATURE_LEVEL featureLevel) const;
 
+        // 멤버 변수
 
-    private:
-        ComPtr<IDXGIFactory4> mFactory;         ///< DXGI Factory
-        ComPtr<IDXGIAdapter1> mAdapter;         ///< GPU Adapter
-        ComPtr<ID3D12Device> mDevice;           ///< D3D12 Device
-        D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_11_0; ///< 지원되는 Feature Level
-        bool mDebugLayerEnabled = false;        ///< Debug Layer 활성화 여부
+        // Core DirectX 12 Objects
+        ComPtr<IDXGIFactory4> mFactory;
+        ComPtr<IDXGIAdapter1> mAdapter;
+        ComPtr<ID3D12Device> mDevice;
 
+        // Graphics Pipeline Components
         std::unique_ptr<DX12CommandQueue> mGraphicsQueue;
         std::unique_ptr<DX12SwapChain> mSwapChain;
         std::unique_ptr<DX12DescriptorHeap> mRTVHeap;
-
-        // 프레임별 Command Context (Double buffering)
         std::array<std::unique_ptr<DX12CommandContext>, FRAME_BUFFER_COUNT> mCommandContexts;
+
+        // Properties
+        D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+
+        // Flags
+        bool mDebugLayerEnabled = false;
     };
 
 } // namespace Graphics

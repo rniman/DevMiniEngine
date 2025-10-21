@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
-using namespace Core::Math;
+using namespace Math;
 
 void PrintVector3(const char* name, const Vector3& v)
 {

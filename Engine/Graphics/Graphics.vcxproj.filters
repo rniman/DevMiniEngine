@@ -17,16 +17,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp.cpp">
+    <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp.cpp">
+    <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\DX12\DX12Device.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\DX12\DX12SwapChain.cpp.cpp">
+    <ClCompile Include="src\Graphics\DX12\DX12SwapChain.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\Graphics.cpp">

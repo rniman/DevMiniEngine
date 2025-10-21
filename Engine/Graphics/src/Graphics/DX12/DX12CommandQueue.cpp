@@ -3,18 +3,10 @@
 
 namespace Graphics
 {
-    //=============================================================================
-    // Constructor / Destructor
-    //=============================================================================
-
     DX12CommandQueue::~DX12CommandQueue()
     {
         Shutdown();
     }
-
-    //=============================================================================
-    // Public Methods
-    //=============================================================================
 
     bool DX12CommandQueue::Initialize(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
     {
@@ -30,7 +22,7 @@ namespace Graphics
         mNextFenceValue = 1;
         mFenceEvent = nullptr;
 
-        // Step 1: Create Command Queue
+        // 1단계: Command Queue 생성
         D3D12_COMMAND_QUEUE_DESC queueDesc = {};
         queueDesc.Type = type;
         queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
@@ -46,7 +38,7 @@ namespace Graphics
 
         LOG_INFO("[DX12CommandQueue] Command Queue created successfully");
 
-        // Step 2: Create Fence
+        // 2단계: Fence 생성
         if (!CreateFence(device))
         {
             LOG_ERROR("[DX12CommandQueue] Failed to create Fence");
@@ -66,24 +58,25 @@ namespace Graphics
 
         LOG_INFO("[DX12CommandQueue] Shutting down Command Queue...");
 
-        // Wait for all GPU work to complete
+        // 모든 GPU 작업 완료 대기
         WaitForIdle();
 
-        // Close fence event
+        // Fence 이벤트 닫기
         if (mFenceEvent)
         {
             CloseHandle(mFenceEvent);
             mFenceEvent = nullptr;
         }
 
-        // Release resources
+        // 리소스 해제
         mFence.Reset();
         mCommandQueue.Reset();
 
         LOG_INFO("[DX12CommandQueue] Command Queue shut down successfully");
     }
 
-    void DX12CommandQueue::ExecuteCommandLists(ID3D12CommandList* const* ppCommandLists,
+    void DX12CommandQueue::ExecuteCommandLists(
+        ID3D12CommandList* const* commandLists,
         Core::uint32 numCommandLists)
     {
         if (!IsInitialized())
@@ -92,16 +85,16 @@ namespace Graphics
             return;
         }
 
-        if (!ppCommandLists || numCommandLists == 0)
+        if (!commandLists || numCommandLists == 0)
         {
             LOG_WARN("[DX12CommandQueue] No command lists to execute");
             return;
         }
 
-        // Execute command lists
-        mCommandQueue->ExecuteCommandLists(numCommandLists, ppCommandLists);
+        // Command List 실행
+        mCommandQueue->ExecuteCommandLists(numCommandLists, commandLists);
 
-        // Signal fence
+        // Fence 신호 전송
         mCommandQueue->Signal(mFence.Get(), mNextFenceValue);
         mNextFenceValue++;
     }
@@ -114,7 +107,7 @@ namespace Graphics
             return false;
         }
 
-        // Signal current fence value
+        // 현재 Fence 값 신호 전송
         Core::uint64 fenceValueToWaitFor = mNextFenceValue;
         HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueToWaitFor);
         if (FAILED(hr))
@@ -125,7 +118,7 @@ namespace Graphics
 
         mNextFenceValue++;
 
-        // Wait if GPU hasn't completed up to this fence value
+        // GPU가 이 Fence 값까지 완료하지 않았으면 대기
         if (mFence->GetCompletedValue() < fenceValueToWaitFor)
         {
             hr = mFence->SetEventOnCompletion(fenceValueToWaitFor, mFenceEvent);
@@ -151,15 +144,11 @@ namespace Graphics
         return mFence->GetCompletedValue();
     }
 
-    //=============================================================================
-    // Private Methods
-    //=============================================================================
-
     bool DX12CommandQueue::CreateFence(ID3D12Device* device)
     {
         LOG_INFO("[DX12CommandQueue] Creating Fence...");
 
-        // Create fence
+        // Fence 생성
         HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence));
         if (FAILED(hr))
         {
@@ -167,7 +156,7 @@ namespace Graphics
             return false;
         }
 
-        // Create fence event
+        // Fence 이벤트 생성
         mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (!mFenceEvent)
         {
@@ -183,10 +172,14 @@ namespace Graphics
     {
         switch (type)
         {
-        case D3D12_COMMAND_LIST_TYPE_DIRECT:  return "Direct (Graphics)";
-        case D3D12_COMMAND_LIST_TYPE_COMPUTE: return "Compute";
-        case D3D12_COMMAND_LIST_TYPE_COPY:    return "Copy";
-        default: return "Unknown";
+        case D3D12_COMMAND_LIST_TYPE_DIRECT:
+            return "Direct (Graphics)";
+        case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+            return "Compute";
+        case D3D12_COMMAND_LIST_TYPE_COPY:
+            return "Copy";
+        default:
+            return "Unknown";
         }
     }
 

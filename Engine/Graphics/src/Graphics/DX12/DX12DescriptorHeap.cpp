@@ -3,18 +3,10 @@
 
 namespace Graphics
 {
-    //=============================================================================
-    // Constructor / Destructor
-    //=============================================================================
-
     DX12DescriptorHeap::~DX12DescriptorHeap()
     {
         Shutdown();
     }
-
-    //=============================================================================
-    // Public Methods
-    //=============================================================================
 
     bool DX12DescriptorHeap::Initialize(
         ID3D12Device* device,
@@ -34,18 +26,20 @@ namespace Graphics
             return false;
         }
 
-        LOG_INFO("[DX12DescriptorHeap] Initializing Descriptor Heap (%s, %u descriptors)...",
-            GetDescriptorHeapTypeString(type), numDescriptors);
+        LOG_INFO(
+            "[DX12DescriptorHeap] Initializing Descriptor Heap (%s, %u descriptors)...",
+            GetDescriptorHeapTypeString(type), 
+            numDescriptors
+        );
 
         mType = type;
         mNumDescriptors = numDescriptors;
 
-        // Create descriptor heap
+        // Descriptor Heap 생성
         D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
         heapDesc.Type = type;
         heapDesc.NumDescriptors = numDescriptors;
-        heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-            : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         heapDesc.NodeMask = 0;
 
         HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mHeap));
@@ -55,10 +49,10 @@ namespace Graphics
             return false;
         }
 
-        // Get descriptor size
+        // Descriptor 크기 가져오기
         mDescriptorSize = device->GetDescriptorHandleIncrementSize(type);
 
-        // Get start handles
+        // 시작 핸들 가져오기
         mCPUStart = mHeap->GetCPUDescriptorHandleForHeapStart();
         if (shaderVisible)
         {
@@ -126,19 +120,20 @@ namespace Graphics
         return handle;
     }
 
-    //=============================================================================
-    // Private Methods
-    //=============================================================================
-
     const char* DX12DescriptorHeap::GetDescriptorHeapTypeString(D3D12_DESCRIPTOR_HEAP_TYPE type) const
     {
         switch (type)
         {
-        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV: return "CBV/SRV/UAV";
-        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:     return "Sampler";
-        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:         return "RTV";
-        case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:         return "DSV";
-        default: return "Unknown";
+        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+            return "CBV/SRV/UAV";
+        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+            return "Sampler";
+        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
+            return "RTV";
+        case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
+            return "DSV";
+        default:
+            return "Unknown";
         }
     }
 
