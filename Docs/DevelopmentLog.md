@@ -8,80 +8,102 @@
 
 ---
 
-## 2025-10-22 - Vertex/Index Buffer 및 Shader 컴파일 시스템 구현
+## 2025-10-22 - Vertex/Index Buffer 및 Shader 컴파일 시스템 (재시작)
+
+### Overview
+이전 Vertex/Index Buffer 구현을 롤백하고 설계부터 재구상. 동기화 구조 개선 이후 더 나은 아키텍처로 재시작.
 
 ### Tasks
-- [x] DX12VertexBuffer/IndexBuffer 클래스 구현
-- [x] DX12ShaderCompiler 클래스 구현
-- [x] BasicShader.hlsl 작성
+- [ ] DX12VertexBuffer/IndexBuffer 클래스 구현
+- [ ] DX12ShaderCompiler 클래스 구현
+- [ ] BasicShader.hlsl 작성
+- [ ] 09_HelloTriangle 샘플 생성
 
 ### Decisions
 
 **버퍼 클래스 분리**
-- VertexBuffer와 IndexBuffer를 별도 클래스로 구현
-- 이유: DirectX 12 View 구조 차이, 타입 안전성, 확장성SS
+- VertexBuffer와 IndexBuffer 별도 구현
+- 이유: View 구조 차이, 타입 안전성
 
 **Upload Buffer 패턴**
-- DEFAULT Heap (GPU) + UPLOAD Heap (CPU→GPU 전송) 조합
-- Upload Buffer를 멤버로 보관 (Command List 실행 완료까지 유지)
+- DEFAULT Heap + UPLOAD Heap 조합
+- Upload Buffer를 멤버로 보관 (Command List 실행까지 유지)
 
 **셰이더 컴파일**
-- 런타임 컴파일 방식 채택 (빠른 반복 개발)
-- CSO 로딩은 향후 최적화 단계에서 구현
-- Shader Model 5.1 사용
+- 런타임 컴파일 (빠른 반복 개발)
+- Shader Model 5.1
 
-**HLSL 파일 위치**
-- 샘플별 독립 `Shaders/` 폴더: `Samples/09_HelloTriangle/Shaders/`
+### Next Steps
+1. DX12VertexBuffer 구현
+2. DX12IndexBuffer 구현
+3. DX12ShaderCompiler 구현
+4. BasicShader.hlsl 작성
+5. 09_HelloTriangle 통합 테스트
+
+---
+
+## 2025-10-22 - DirectX 12 초기화 구조 개선
+
+### Tasks
+- [x] Device RTV Descriptor Heap → SwapChain 이동
+- [x] Factory 버전 쿼리 (Factory5, Factory6) 추가
+- [x] WaitForIdle 제거, WaitForFenceValue 동기화로 전환
+- [x] Frame Resource 개념 도입 (Fence Value 추적)
+- [x] 이중 인덱싱 시스템 정립
+
+### Decisions
+
+**RTV Descriptor Heap 소유권 이동**
+- Device → SwapChain으로 이동
+- 이유: 백 버퍼와 RTV의 생명주기 일치, 책임 분리
+
+**동기화 전략 변경**
+- WaitForIdle → WaitForFenceValue
+- 기대 효과: CPU 유휴 시간 최소화, CPU-GPU 병렬 작업, 프레임 지연 감소
+
+**이중 인덱싱**
+- `currentFrameIndex`: CPU 순차 인덱스 (Context, Fence)
+- `backBufferIndex`: GPU 비순차 인덱스 (RTV, Back Buffer)
 
 ### Implementation
 
-**프로젝트 구조**
+**렌더링 루프 구조**
+```cpp
+// main 함수에서 관리 (향후 FrameResource 클래스화 예정)
+uint64 frameResource[FRAME_BUFFER_COUNT] = {};
+uint32 currentFrameIndex = 0;
+
+while (running)
+{
+    // 1. CPU 대기
+    mQueue->WaitForFenceValue(frameResource[currentFrameIndex]);
+    
+    // 2. 백 버퍼 인덱스 획득
+    uint32 backBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+    
+    // 3-5. 명령 기록 및 제출
+    // ...
+    
+    // 6. Fence Value 저장
+    frameResource[currentFrameIndex] = mQueue->Signal();
+    
+    // 7. 인덱스 갱신
+    mSwapChain->MoveToNextFrame();
+    currentFrameIndex = (currentFrameIndex + 1) % FRAME_BUFFER_COUNT;
+}
 ```
-Engine/Graphics/
-├── include/Graphics/DX12/
-│   ├── DX12VertexBuffer.h
-│   ├── DX12IndexBuffer.h
-│   └── DX12ShaderCompiler.h
-└── src/DX12/
-    ├── DX12VertexBuffer.cpp
-    ├── DX12IndexBuffer.cpp
-    └── DX12ShaderCompiler.cpp
-
-Samples/09_HelloTriangle/Shaders/
-└── BasicShader.hlsl
-```
-
-**DX12VertexBuffer/IndexBuffer**
-- `Initialize()`: CPU 데이터를 GPU로 업로드 (UpdateSubresources 사용)
-- `GetView()`: Buffer View 반환
-- IndexBuffer는 R16_UINT/R32_UINT 포맷 지원
-
-**DX12ShaderCompiler**
-- `CompileFromFile()`: HLSL 파일 컴파일 (#include 지원)
-- `CompileFromString()`: 인라인 코드 컴파일
-- `CreateBytecode()`: PSO용 바이트코드 생성
-- Debug/Release 플래그 자동 설정
-
-**HLSL 설정 (Visual Studio)**
-- 항목 형식: 추가 도구 안 함
-- 출력에 복사: 새 버전이면 복사
-- 작업 디렉토리: $(OutDir)
 
 ### Code Statistics
-- 헤더: ~150 lines, 구현: ~300 lines, HLSL: ~40 lines
-- 경고: 0 (Level 4)
+- 주요 수정 파일: DX12Device, DX12SwapChain, DX12CommandQueue, 08_DXInit
 
 ### Issues Encountered
-- Upload Buffer 생명주기: 멤버 변수로 보관하여 해결
-- Include 경로: LogMacros.h 사용
-- HLSL 파일 복사: "출력에 복사" 설정
-- std::string 로그 경고(C4840): printf 스타일 포맷에서 `.c_str()` 사용으로 해결
+- 인덱스 혼동: currentFrameIndex와 backBufferIndex 용도 명확화로 해결
+- Fence Value 초기화: frameResource 배열 0 초기화
 
 ### Next Steps
-- [ ] Root Signature 생성
-- [ ] Pipeline State Object (PSO) 생성
-- [ ] Input Layout 정의
-- [ ] 09_HelloTriangle 샘플 완성
+- [ ] Vertex/Index Buffer 구현
+- [ ] Shader 컴파일 시스템
+- [ ] Root Signature, PSO 생성
 
 ---
 
