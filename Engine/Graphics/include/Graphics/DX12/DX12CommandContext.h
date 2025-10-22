@@ -63,7 +63,7 @@ namespace Graphics
         ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
         // Properties
-        D3D12_COMMAND_LIST_TYPE mType;
+        D3D12_COMMAND_LIST_TYPE mType = D3D12_COMMAND_LIST_TYPE_DIRECT;
     };
 
 } // namespace Graphics

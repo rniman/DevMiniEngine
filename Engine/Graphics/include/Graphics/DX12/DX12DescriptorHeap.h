@@ -74,13 +74,13 @@ namespace Graphics
 		
 		// Descriptor Heap Resources
 		ComPtr<ID3D12DescriptorHeap> mHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE mCPUStart;
-		D3D12_GPU_DESCRIPTOR_HANDLE mGPUStart;
+		D3D12_CPU_DESCRIPTOR_HANDLE mCPUStart{};
+		D3D12_GPU_DESCRIPTOR_HANDLE mGPUStart{};
 
 		// Heap Properties
-		Core::uint32 mDescriptorSize;
-		Core::uint32 mNumDescriptors;
-		D3D12_DESCRIPTOR_HEAP_TYPE mType;
+		Core::uint32 mDescriptorSize = 0;
+		Core::uint32 mNumDescriptors = 0;
+		D3D12_DESCRIPTOR_HEAP_TYPE mType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	};
 
 } // namespace Graphics

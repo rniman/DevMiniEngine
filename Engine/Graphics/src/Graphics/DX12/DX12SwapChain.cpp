@@ -9,15 +9,17 @@ namespace Graphics
     }
 
     bool DX12SwapChain::Initialize(
+        ID3D12Device* device,
         IDXGIFactory4* factory,
         ID3D12CommandQueue* commandQueue,
         HWND hwnd,
         Core::uint32 width,
         Core::uint32 height,
-        Core::uint32 bufferCount
+        Core::uint32 bufferCount,
+        bool tearingAllowed
     )
     {
-        if (!factory || !commandQueue || !hwnd)
+        if (!device || !factory || !commandQueue || !hwnd)
         {
             LOG_ERROR("[DX12SwapChain] Invalid parameters");
             return false;
@@ -36,6 +38,7 @@ namespace Graphics
         mBufferCount = bufferCount;
         mFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
         mCurrentBackBufferIndex = 0;
+        mTearingAllowed = tearingAllowed;
 
         // 1단계: SwapChain 생성
         if (!CreateSwapChain(factory, commandQueue, hwnd))
@@ -51,6 +54,20 @@ namespace Graphics
             return false;
         }
 
+        // 3단계: Descriptor Heap 생성
+        if (!CreateDescriptorHeaps(device))
+        {
+            LOG_ERROR("[DX12SwapChain] Failed to create Descriptor Heaps");
+            return false;
+        }
+
+        // 4단계: Render Target View 생성
+        if (!CreateRenderTargetViews(device))
+        {
+            LOG_ERROR("[DX12SwapChain] Failed to create Render Target Views");
+            return false;
+        }
+
         LOG_INFO("[DX12SwapChain] SwapChain initialized successfully");
         return true;
     }
@@ -63,6 +80,13 @@ namespace Graphics
         }
 
         LOG_INFO("[DX12SwapChain] Shutting down SwapChain...");
+
+        // RTV Heap
+        if (mRTVHeap)
+        {
+            mRTVHeap->Shutdown();
+            mRTVHeap.reset();
+        }
 
         // Back Buffer 해제
         ReleaseBackBuffers();
@@ -83,16 +107,12 @@ namespace Graphics
 
         // VSync 간격 설정
         UINT syncInterval = vSync ? 1 : 0;
-
         // Tearing 플래그 설정
         UINT presentFlags = 0;
-        if (!vSync)
+        
+        if (!vSync && mTearingAllowed) // mIsTearingAllowed는 멤버 변수
         {
-            DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-            if (mSwapChain->GetDesc1(&swapChainDesc) == S_OK)
-            {
-                presentFlags = DXGI_PRESENT_ALLOW_TEARING;
-            }
+            presentFlags = DXGI_PRESENT_ALLOW_TEARING;
         }
 
         HRESULT hr = mSwapChain->Present(syncInterval, presentFlags);
@@ -208,7 +228,10 @@ namespace Graphics
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+        if (mTearingAllowed)
+        {
+            swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+        }
 
         // SwapChain 생성
         ComPtr<IDXGISwapChain1> swapChain1;
@@ -267,6 +290,57 @@ namespace Graphics
         }
 
         LOG_INFO("[DX12SwapChain] Back Buffer resources acquired (%u buffers)", mBufferCount);
+        return true;
+    }
+
+    bool DX12SwapChain::CreateDescriptorHeaps(ID3D12Device* device)
+    {
+        LOG_INFO("[DX12SwapChain] Creating Descriptor Heaps...");
+
+        // RTV Descriptor Heap 생성 (Shader Visible 불필요)
+        mRTVHeap = std::make_unique<DX12DescriptorHeap>();
+        if (!mRTVHeap->Initialize(
+            device,
+            D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
+            FRAME_BUFFER_COUNT,
+            false
+        ))
+        {
+            LOG_ERROR("[DX12SwapChain] Failed to create RTV Descriptor Heap");
+            return false;
+        }
+
+        LOG_INFO("[DX12SwapChain] Descriptor Heaps created successfully");
+        return true;
+    }
+
+    bool DX12SwapChain::CreateRenderTargetViews(ID3D12Device* device)
+    {
+        if (!mSwapChain || !mRTVHeap)
+        {
+            LOG_ERROR("[DX12SwapChain] SwapChain or RTV Heap not initialized");
+            return false;
+        }
+
+        LOG_INFO("[DX12SwapChain] Creating Render Target Views...");
+
+        // 백 버퍼를 위한 RTV 생성
+        for (Core::uint32 i = 0; i < FRAME_BUFFER_COUNT; ++i)
+        {
+            ID3D12Resource* backBuffer = GetBackBuffer(i);
+            if (!backBuffer)
+            {
+                LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer %u", i);
+                return false;
+            }
+
+            D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = mRTVHeap->GetCPUHandle(i);
+            device->CreateRenderTargetView(backBuffer, nullptr, rtvHandle);
+
+            LOG_INFO("[DX12SwapChain] RTV created for Back Buffer %u", i);
+        }
+
+        LOG_INFO("[DX12SwapChain] Render Target Views created successfully");
         return true;
     }
 

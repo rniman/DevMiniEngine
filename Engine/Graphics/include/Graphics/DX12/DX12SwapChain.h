@@ -1,5 +1,5 @@
 #pragma once
-#include "Graphics/GraphicsTypes.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"
 
 namespace Graphics
 {
@@ -31,12 +31,14 @@ namespace Graphics
 		 * @return 초기화 성공 여부
 		 */
 		bool Initialize(
+			ID3D12Device* device,
 			IDXGIFactory4* factory,
 			ID3D12CommandQueue* commandQueue,
 			HWND hwnd,
 			Core::uint32 width,
 			Core::uint32 height,
-			Core::uint32 bufferCount = FRAME_BUFFER_COUNT
+			Core::uint32 bufferCount = FRAME_BUFFER_COUNT,
+			bool tearingAllowed = false
 		);
 
 		void Shutdown();
@@ -61,6 +63,7 @@ namespace Graphics
 		IDXGISwapChain3* GetSwapChain() const { return mSwapChain.Get(); }
 		ID3D12Resource* GetCurrentBackBuffer() const;
 		ID3D12Resource* GetBackBuffer(Core::uint32 index) const;
+		DX12DescriptorHeap* GetRTVHeap() const { return mRTVHeap.get(); }
 		Core::uint32 GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
 		Core::uint32 GetBufferCount() const { return mBufferCount; }
 		Core::uint32 GetWidth() const { return mWidth; }
@@ -75,6 +78,8 @@ namespace Graphics
 			HWND hwnd
 		);
 		bool GetBackBufferResources();
+		bool CreateDescriptorHeaps(ID3D12Device* device);
+		bool CreateRenderTargetViews(ID3D12Device* device);
 		void ReleaseBackBuffers();
 
 		// 멤버 변수
@@ -82,6 +87,7 @@ namespace Graphics
 		// DirectX Resources
 		ComPtr<IDXGISwapChain3> mSwapChain;
 		std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
+		std::unique_ptr<DX12DescriptorHeap> mRTVHeap;
 
 		// SwapChain Properties
 		Core::uint32 mCurrentBackBufferIndex;
@@ -89,6 +95,7 @@ namespace Graphics
 		Core::uint32 mWidth;
 		Core::uint32 mHeight;
 		DXGI_FORMAT mFormat;
+		bool mTearingAllowed = false;
 	};
 
 } // namespace Graphics

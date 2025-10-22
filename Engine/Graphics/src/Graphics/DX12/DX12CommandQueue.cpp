@@ -75,28 +75,32 @@ namespace Graphics
         LOG_INFO("[DX12CommandQueue] Command Queue shut down successfully");
     }
 
-    void DX12CommandQueue::ExecuteCommandLists(
+    Core::uint64 DX12CommandQueue::ExecuteCommandLists(
         ID3D12CommandList* const* commandLists,
         Core::uint32 numCommandLists)
     {
         if (!IsInitialized())
         {
             LOG_ERROR("[DX12CommandQueue] Command Queue not initialized");
-            return;
+            return mNextFenceValue;
         }
 
         if (!commandLists || numCommandLists == 0)
         {
             LOG_WARN("[DX12CommandQueue] No command lists to execute");
-            return;
+            return mNextFenceValue;
         }
 
+        const Core::uint64 fenceValueToSignal = mNextFenceValue;
+        
         // Command List 실행
         mCommandQueue->ExecuteCommandLists(numCommandLists, commandLists);
 
         // Fence 신호 전송
         mCommandQueue->Signal(mFence.Get(), mNextFenceValue);
         mNextFenceValue++;
+
+        return fenceValueToSignal;
     }
 
     bool DX12CommandQueue::WaitForIdle()
@@ -130,6 +134,54 @@ namespace Graphics
 
             WaitForSingleObject(mFenceEvent, INFINITE);
         }
+
+        return true;
+    }
+
+    bool DX12CommandQueue::WaitForFenceValue(Core::uint64 valueToWaitFor)
+    {
+        // 1. 유효성 검사 (큐 초기화)
+        if (!IsInitialized())
+        {
+            LOG_ERROR("[DX12CommandQueue] Command Queue not initialized");
+            return false;
+        }
+
+        // 2. 유효성 검사 (이벤트 핸들)
+        if (mFenceEvent == nullptr)
+        {
+            LOG_ERROR("[DX12CommandQueue] Fence Event handle is null. (Did CreateEvent fail in Initialize?)");
+            return false;
+        }
+
+        // 3. 유효성 검사 (값)
+        // 0은 FrameResource의 초기값일 수 있으며, mNextFenceValue는 1부터 시작하므로
+        // 0을 기다리는 것은 의미가 없습니다.
+        if (valueToWaitFor == 0)
+        {
+            return true; // 기다릴 것이 없음
+        }
+
+        // 4. [최적화] GPU가 이미 이 값을 통과했는지 확인
+        // GetCompletedValue()는 스레드에 안전하며 빠릅니다.
+        if (mFence->GetCompletedValue() >= valueToWaitFor)
+        {
+            return true; // 이미 완료됨, CPU를 대기시킬 필요 없음
+        }
+
+        // 5. [대기] GPU가 아직 도달하지 못함. CPU 스레드를 재웁니다.
+
+        // GPU가 'valueToWaitFor' 값에 도달하면 mFenceEvent를 시그널(Signal)하도록 설정
+        HRESULT hr = mFence->SetEventOnCompletion(valueToWaitFor, mFenceEvent);
+        if (FAILED(hr))
+        {
+            LOG_ERROR("[DX12CommandQueue] Failed to set fence event (HRESULT: 0x%08X)", hr);
+            return false;
+        }
+
+        // 이벤트가 시그널될 때까지 CPU 스레드를 (효율적으로) 대기시킴
+        // (INFINITE는 무한 대기를 의미)
+        WaitForSingleObject(mFenceEvent, INFINITE);
 
         return true;
     }

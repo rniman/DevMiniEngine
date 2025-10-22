@@ -34,14 +34,23 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief Command List 실행
+		 * @brief Command List 실행 및 Fence 시그널
+		 *
+		 * GPU에 작업 목록을 제출하고, 이 작업이 완료되었음을 식별하기 위한
+		 * 새로운 Fence 값을 큐에 삽입(Signal)합니다.
 		 *
 		 * @param commandLists 실행할 Command List 배열
 		 * @param numCommandLists Command List 개수
 		 *
-		 * @note 즉시 GPU에 제출되며, Fence를 통한 동기화가 필요합니다
+		 * @return (Core::uint64) 이 작업 배치를 식별하는 고유한 Fence 값 (작업 영수증)
+		 *
+		 * @note 호출자(예: Renderer)는 이 반환된 Fence 값을
+		 * 반드시 FrameResource 같은 곳에 저장해야 합니다.
+		 *
+		 * @note 이 값은 나중에 이 프레임에서 사용한 리소스(예: Command Allocator)를
+		 * 안전하게 재사용하기 전에, GPU 작업 완료를 기다리는 데 사용됩니다.
 		 */
-		void ExecuteCommandLists(
+		Core::uint64 ExecuteCommandLists(
 			ID3D12CommandList* const* commandLists,
 			Core::uint32 numCommandLists
 		);
@@ -55,6 +64,20 @@ namespace Graphics
 		 * @note Queue에 제출된 모든 작업이 완료될 때까지 대기합니다
 		 */
 		bool WaitForIdle();
+
+		/**
+		 * @brief 특정 Fence 값에 도달할 때까지 GPU를 기다립니다.
+		 *
+		 * WaitForIdle()과 달리, 큐의 모든 작업이 아닌
+		 * 'valueToWaitFor'로 식별되는 특정 작업까지만 기다립니다.
+		 *
+		 * @param valueToWaitFor 기다릴 대상 Fence 값 (ExecuteCommandLists가 반환한 값).
+		 * @return 성공 여부
+		 *
+		 * @note 이 함수는 CPU-GPU 파이프라인 동기화의 핵심이며,
+		 * CPU가 GPU를 추월하지 않도록 보장합니다.
+		 */
+		bool WaitForFenceValue(Core::uint64 valueToWaitFor);
 
 		/**
 		 * @brief Fence 값 획득 (현재 완료된 GPU 작업)
@@ -80,11 +103,11 @@ namespace Graphics
 		// DirectX Resources
 		ComPtr<ID3D12CommandQueue> mCommandQueue;
 		ComPtr<ID3D12Fence> mFence;
-		HANDLE mFenceEvent;
+		HANDLE mFenceEvent = nullptr;
 
 		// Synchronization State
-		Core::uint64 mNextFenceValue;
-		D3D12_COMMAND_LIST_TYPE mType;
+		Core::uint64 mNextFenceValue = 0;
+		D3D12_COMMAND_LIST_TYPE mType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	};
 
 } // namespace Graphics
