@@ -12,13 +12,13 @@
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 
+#include "Graphics/DX12/DX12Renderer.h"
 
 // float r = 0.0f;
 // float g = 0.0f;
 // float b = 0.0f;
 
-Core::uint64 frameResource[Graphics::FRAME_BUFFER_COUNT] = {};
-Core::uint32 currentFrameIndex = 0;
+Graphics::DX12Renderer renderer{};
 
 // Helper function: Render one frame
 void RenderFrame(Graphics::DX12Device& device)
@@ -31,10 +31,11 @@ void RenderFrame(Graphics::DX12Device& device)
     Core::uint32 backBufferIndex = swapChain->GetCurrentBackBufferIndex();
     
     // 현재 Back Buffer에 대한 GPU의 사용이 끝났는지 확인합니다.
-    graphicsQueue->WaitForFenceValue(frameResource[currentFrameIndex]);
+    
+    graphicsQueue->WaitForFenceValue(renderer.GetCurrentFrameFenceValue());
 
     // Get command context for this frame
-    auto* cmdContext = device.GetCommandContext(currentFrameIndex);
+    auto* cmdContext = device.GetCommandContext(renderer.GetCurrentFrameIndex());
     if (!cmdContext)
     {
         LOG_ERROR("Failed to get Command Context");
@@ -102,7 +103,8 @@ void RenderFrame(Graphics::DX12Device& device)
 
     // Execute command list
     ID3D12CommandList* cmdLists[] = { cmdList };
-    frameResource[currentFrameIndex] = graphicsQueue->ExecuteCommandLists(cmdLists, 1);
+    Core::uint64 fenceValue = graphicsQueue->ExecuteCommandLists(cmdLists, 1);
+    renderer.SetCurrentFrameFenceValue(fenceValue);
 
     // Present
     swapChain->Present(true);  // VSync enabled
@@ -110,9 +112,9 @@ void RenderFrame(Graphics::DX12Device& device)
     // Move to next frame
     swapChain->MoveToNextFrame();
 
-    currentFrameIndex = (currentFrameIndex + 1) % Graphics::FRAME_BUFFER_COUNT;
-    // Wait for GPU (간단한 동기화 - 실제로는 Fence 사용) -> 사용 최소화로 변경
-    // graphicsQueue->WaitForIdle();
+    renderer.MoveFrameIndex();
+
+    //LOG_INFO("renderer.mCurrentFrameIndex: %u", renderer.GetCurrentFrameIndex());
 }
 
 int main()

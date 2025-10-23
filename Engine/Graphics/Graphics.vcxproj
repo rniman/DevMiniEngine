@@ -23,7 +23,15 @@
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12DescriptorHeap.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12Device.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12IndexBuffer.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12Renderer.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12SwapChain.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12VertexBuffer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,7 +40,15 @@
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12DescriptorHeap.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12Device.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12IndexBuffer.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12Renderer.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12SwapChain.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12VertexBuffer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\include\Graphics\GraphicsTypes.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

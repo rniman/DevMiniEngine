@@ -35,6 +35,15 @@
     <ClCompile Include="..\src\Graphics\Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12VertexBuffer.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12Renderer.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12IndexBuffer.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Graphics\DX12\d3dx12.h">
@@ -57,6 +66,15 @@
     </ClInclude>
     <ClInclude Include="..\include\Graphics\GraphicsTypes.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12VertexBuffer.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12Renderer.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12IndexBuffer.h">
+      <Filter>Header Files\DX12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

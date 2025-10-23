@@ -17,7 +17,8 @@
 
 // 프로젝트 헤더
 #include "Core/Types.h"
-#include "Core/Logging/Logger.h"
+#include "Core/Assert.h"
+#include "Core/Logging/LogMacros.h"
 
 // DirectX 12 라이브러리 링크
 #pragma comment(lib, "d3d12.lib")
@@ -59,4 +60,21 @@ namespace Graphics
 			} \
 		} while(0)
 
+// 1. GRAPHICS_ASSERT: 내부 로직 검증 (Debug만, Release에서 제거)
+#ifdef _DEBUG
+    #define GRAPHICS_ASSERT(condition, message) \
+        assert((condition) && (message))
+#else
+    #define GRAPHICS_ASSERT(condition, message) ((void)0)
+#endif
+
+// 2. GRAPHICS_VERIFY: API 검증 (항상 검사, 예외 발생)
+#define GRAPHICS_VERIFY(condition, message) \
+    do { \
+        if (!(condition)) { \
+            throw std::runtime_error(message); \
+        } \
+    } while(0)
+
 } // namespace Graphics
+
