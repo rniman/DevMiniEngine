@@ -19,21 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Graphics\DX12\DX12CommandContext.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12Device.cpp" />
-    <ClCompile Include="src\Graphics\DX12\DX12SwapChain.cpp" />
-    <ClCompile Include="src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12DescriptorHeap.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12Device.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12SwapChain.cpp" />
+    <ClCompile Include="..\src\Graphics\Graphics.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Graphics\DX12\d3dx12.h" />
-    <ClInclude Include="include\Graphics\DX12\DX12CommandContext.h" />
-    <ClInclude Include="include\Graphics\DX12\DX12CommandQueue.h" />
-    <ClInclude Include="include\Graphics\DX12\DX12DescriptorHeap.h" />
-    <ClInclude Include="include\Graphics\DX12\DX12Device.h" />
-    <ClInclude Include="include\Graphics\DX12\DX12SwapChain.h" />
-    <ClInclude Include="include\Graphics\GraphicsTypes.h" />
+    <ClInclude Include="..\include\Graphics\DX12\d3dx12.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12DescriptorHeap.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12Device.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12SwapChain.h" />
+    <ClInclude Include="..\include\Graphics\GraphicsTypes.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -101,6 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -115,6 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,7 +130,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\Core\include;$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,7 +146,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\Core\include;$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

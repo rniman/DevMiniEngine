@@ -17,46 +17,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Graphics\DX12\DX12CommandQueue.cpp">
+    <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\DX12\DX12DescriptorHeap.cpp">
+    <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\DX12\DX12Device.cpp">
+    <ClCompile Include="..\src\Graphics\DX12\DX12DescriptorHeap.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\DX12\DX12SwapChain.cpp">
+    <ClCompile Include="..\src\Graphics\DX12\DX12Device.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\Graphics.cpp">
+    <ClCompile Include="..\src\Graphics\DX12\DX12SwapChain.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\Graphics.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Graphics\DX12\DX12CommandContext.cpp">
-      <Filter>Source Files\DX12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Graphics\DX12\DX12CommandQueue.h">
+    <ClInclude Include="..\include\Graphics\DX12\d3dx12.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="include\Graphics\DX12\DX12DescriptorHeap.h">
+    <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="include\Graphics\DX12\DX12Device.h">
+    <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="include\Graphics\DX12\DX12SwapChain.h">
+    <ClInclude Include="..\include\Graphics\DX12\DX12DescriptorHeap.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="include\Graphics\GraphicsTypes.h">
+    <ClInclude Include="..\include\Graphics\DX12\DX12Device.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12SwapChain.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\GraphicsTypes.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Graphics\DX12\d3dx12.h">
-      <Filter>Header Files\DX12</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Graphics\DX12\DX12CommandContext.h">
-      <Filter>Header Files\DX12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

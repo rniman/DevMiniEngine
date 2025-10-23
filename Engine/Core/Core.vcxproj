@@ -19,29 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Core.cpp" />
-    <ClCompile Include="src\Logging\ConsoleSink.cpp" />
-    <ClCompile Include="src\Logging\FileSink.cpp" />
-    <ClCompile Include="src\Logging\Logger.cpp" />
-    <ClCompile Include="src\Memory\Allocator.cpp" />
-    <ClCompile Include="src\Memory\LinearAllocator.cpp" />
-    <ClCompile Include="src\Memory\PoolAllocator.cpp" />
-    <ClCompile Include="src\Memory\StackAllocator.cpp" />
+    <ClInclude Include="..\include\Core\Assert.h" />
+    <ClInclude Include="..\include\Core\Logging\ConsoleSink.h" />
+    <ClInclude Include="..\include\Core\Logging\FileSink.h" />
+    <ClInclude Include="..\include\Core\Logging\Logger.h" />
+    <ClInclude Include="..\include\Core\Logging\LogMacros.h" />
+    <ClInclude Include="..\include\Core\Logging\LogSink.h" />
+    <ClInclude Include="..\include\Core\Logging\LogTypes.h" />
+    <ClInclude Include="..\include\Core\Memory\Allocator.h" />
+    <ClInclude Include="..\include\Core\Memory\LinearAllocator.h" />
+    <ClInclude Include="..\include\Core\Memory\MemoryConfig.h" />
+    <ClInclude Include="..\include\Core\Memory\PoolAllocator.h" />
+    <ClInclude Include="..\include\Core\Memory\StackAllocator.h" />
+    <ClInclude Include="..\include\Core\Types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Core\Assert.h" />
-    <ClInclude Include="include\Core\Logging\ConsoleSink.h" />
-    <ClInclude Include="include\Core\Logging\FileSink.h" />
-    <ClInclude Include="include\Core\Logging\Logger.h" />
-    <ClInclude Include="include\Core\Logging\LogMacros.h" />
-    <ClInclude Include="include\Core\Logging\LogSink.h" />
-    <ClInclude Include="include\Core\Logging\LogTypes.h" />
-    <ClInclude Include="include\Core\Memory\Allocator.h" />
-    <ClInclude Include="include\Core\Memory\LinearAllocator.h" />
-    <ClInclude Include="include\Core\Memory\MemoryConfig.h" />
-    <ClInclude Include="include\Core\Memory\PoolAllocator.h" />
-    <ClInclude Include="include\Core\Memory\StackAllocator.h" />
-    <ClInclude Include="include\Core\Types.h" />
+    <ClCompile Include="..\src\Core\Core.cpp" />
+    <ClCompile Include="..\src\Core\Logging\ConsoleSink.cpp" />
+    <ClCompile Include="..\src\Core\Logging\FileSink.cpp" />
+    <ClCompile Include="..\src\Core\Logging\Logger.cpp" />
+    <ClCompile Include="..\src\Core\Memory\Allocator.cpp" />
+    <ClCompile Include="..\src\Core\Memory\LinearAllocator.cpp" />
+    <ClCompile Include="..\src\Core\Memory\PoolAllocator.cpp" />
+    <ClCompile Include="..\src\Core\Memory\StackAllocator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -109,6 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,6 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +138,7 @@
       <PreprocessorDefinitions>_DEBUG;CORE_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,7 +154,7 @@
       <PreprocessorDefinitions>NDEBUG;CORE_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
