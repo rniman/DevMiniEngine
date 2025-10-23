@@ -8,6 +8,157 @@
 
 ---
 
+## 2025-10-23 - Vertex Buffer, Index Buffer 및 최소 Renderer 구현
+
+### 작업 내용
+- [x] DX12VertexBuffer 클래스 구현
+- [x] DX12IndexBuffer 클래스 구현
+- [x] DX12Renderer 클래스 구현 (최소 구조)
+- [x] DX12CommandQueue에 Fence 관리 통합
+- [x] 코딩 컨벤션 적용 (주석, 네이밍)
+
+### 설계 결정
+
+**버퍼 업로드 전략**
+- Default Heap (GPU 전용) + Upload Heap (임시) 패턴 사용
+- WaitForIdle()로 즉시 동기화 (학습 단계에 적합)
+- GPU 복사 완료 후 Upload Buffer 즉시 해제
+- 향후: DX12ResourceUploader 패턴으로 배치 업로드 개선 예정
+
+**인덱스 포맷 지원**
+- 16bit (R16_UINT)와 32bit (R32_UINT) 모두 지원
+- 65,535개 미만 버텍스는 16bit 권장
+- 초기화 시점에 포맷 검증
+
+**리소스 상태 전이**
+- VertexBuffer: COPY_DEST → VERTEX_AND_CONSTANT_BUFFER
+- IndexBuffer: COPY_DEST → INDEX_BUFFER
+- 복사 작업 후 명시적 Barrier 필요
+
+**프레임 동기화 구조**
+- DX12Renderer가 프레임별 Fence 값 배열로 관리
+- Ring Buffer 방식으로 프레임 인덱스 순환 (0→1→2→0)
+- 상수 버퍼 추가 시 FrameResource 구조체로 확장 예정
+
+**CommandQueue Fence 통합**
+- ExecuteCommandLists()가 Fence 값 반환
+- WaitForIdle() - 모든 작업 완료 대기
+- WaitForFenceValue() - 특정 Fence 값 대기
+- 단일 Fence 이벤트 핸들 사용
+
+### 구현 내용
+
+**DX12VertexBuffer**
+```cpp
+class DX12VertexBuffer
+{
+    ComPtr<ID3D12Resource> mVertexBuffer;   // Default Heap
+    ComPtr<ID3D12Resource> mUploadBuffer;   // Upload Heap (임시)
+    D3D12_VERTEX_BUFFER_VIEW mVertexBufferView;
+};
+```
+
+**DX12IndexBuffer**
+```cpp
+class DX12IndexBuffer
+{
+    ComPtr<ID3D12Resource> mIndexBuffer;
+    D3D12_INDEX_BUFFER_VIEW mIndexBufferView;
+    DXGI_FORMAT mIndexFormat;  // R16_UINT 또는 R32_UINT
+};
+```
+
+**DX12Renderer (최소 구조)**
+```cpp
+class DX12Renderer
+{
+    std::array<Core::uint64, FRAME_BUFFER_COUNT> mFrameFenceValues = {0};
+    Core::uint32 mCurrentFrameIndex = 0;
+};
+```
+
+**초기화 흐름**
+1. Default Heap에 버퍼 생성 (GPU 전용)
+2. Upload Heap에 임시 버퍼 생성
+3. Map/Unmap으로 CPU 데이터 복사
+4. GPU 복사 명령 기록
+5. 리소스 상태 전이 (Barrier)
+6. Command List 실행 및 완료 대기
+7. Upload Buffer 해제
+8. Buffer View 초기화
+
+### 발생한 이슈
+
+**Upload Buffer 생명 주기**
+- 고민: Shutdown()까지 유지 vs 즉시 해제
+- 결정: WaitForIdle() 후 즉시 해제
+- 이유: 단순하고 안전하며 메모리 효율적
+
+**Fence 값 추적 설계**
+- 고민: FrameResource 구조체 vs 단순 배열
+- 결정: 현재는 단순 배열 사용
+- 이유: 현재는 Fence 값만 필요, 조기 추상화 방지
+
+**리소스 상태 전이**
+- COPY_DEST에서 사용 상태로 전이 필수
+- Debug Layer가 누락된 전이 감지
+- VertexBuffer와 IndexBuffer는 서로 다른 최종 상태 필요
+
+### 학습 내용
+
+**DirectX 12 리소스 관리**
+- 모든 것이 명시적: 할당, 상태, 생명 주기
+- Default Heap + Upload Heap 패턴이 표준
+- GPU 복사 완료 후 Upload 리소스 해제 가능
+
+**CPU-GPU 동기화**
+- Fence 값은 "작업 영수증" 역할
+- WaitForIdle()은 단순하지만 CPU 차단 (학습 단계 적합)
+- 프레임별 Fence로 CPU-GPU 병렬화 가능 (향후 최적화)
+
+**버퍼 타입 유사성**
+- VertexBuffer와 IndexBuffer는 90% 동일 구현
+- 주요 차이: View 구조체, 상태, 데이터 포맷
+- 향후 Template/Base 클래스로 중복 제거 가능
+
+### 코드 통계
+- 새 클래스: 3개 (DX12VertexBuffer, DX12IndexBuffer, DX12Renderer)
+- 수정 클래스: 1개 (DX12CommandQueue)
+- 빌드 경고: 0개
+
+### 참고 사항
+
+**현재 상태**
+- 지오메트리 데이터를 GPU로 업로드 가능
+- 렌더링 루프를 위한 Fence 동기화 준비 완료
+- 실제 렌더링은 아직 불가 (Root Signature, PSO, Shader 필요)
+
+**성능 고려사항**
+- 현재: WaitForIdle()로 CPU 완전 차단
+- 삼각형 업로드: < 1ms (GPU 동기화 포함)
+- 향후: DX12ResourceUploader 패턴으로 배치 업로드 최적화
+
+### 다음 단계
+
+**Phase 2: Graphics (50% 완료)**
+- [x] DirectX 12 초기화
+- [x] Fence 관리가 통합된 Command Queue
+- [x] Vertex Buffer 구현
+- [x] Index Buffer 구현
+- [x] 최소 Renderer 구조
+- [ ] Root Signature (파이프라인 인터페이스)
+- [ ] Pipeline State Object (PSO)
+- [ ] Shader 컴파일 (HLSL)
+- [ ] Input Layout 정의
+- [ ] 첫 삼각형 렌더링 (09_HelloTriangle 샘플)
+
+**즉시 다음: Root Signature**
+- 셰이더 파라미터 레이아웃 정의
+- Descriptor Table (향후: 텍스처, 상수 버퍼)
+- Root Constants (향후: Draw별 데이터)
+
+---
+
 ## 2025-10-22 - Vertex/Index Buffer 및 Shader 컴파일 시스템 (재시작)
 
 ### Overview
@@ -964,4 +1115,4 @@ Samples/08_DX12Init/
 
 ---
 
-**최종 업데이트**: 2025-10-23
+**최종 업데이트**: 2025-10-24
