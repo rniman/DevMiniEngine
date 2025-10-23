@@ -156,7 +156,7 @@ Implemented complete DirectX 12 initialization pipeline from Device creation to 
 ### Project Structure
 
 ```
-Engine/Graphics/
+Engine/
 ├── include/Graphics/
 │   ├── DX12/
 │   │   ├── d3dx12.h                    # Microsoft helper library
@@ -964,4 +964,4 @@ Samples/08_DX12Init/
 
 ---
 
-**최종 업데이트**: 2025-10-22
+**최종 업데이트**: 2025-10-23

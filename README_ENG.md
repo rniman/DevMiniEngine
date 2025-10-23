@@ -2,18 +2,18 @@
 
 **[한국어](./README.md)** | **English**
 
-**A Learning-Focused Mini Game Engine Based on DirectX 12**
+**DirectX 12-based Learning Mini Game Engine**
 
 ## Project Overview
 
-DevMiniEngine is a personal learning and portfolio project built on DirectX 12. It aims to explore and implement ECS (Entity Component System) architecture and modern C++ design patterns.
+DevMiniEngine is a personal learning and portfolio game engine project based on DirectX 12. It was created to learn and experiment with ECS (Entity Component System) architecture and modern C++ design patterns.
 
 ### Main Goals
 
-- **ECS Architecture Learning**: Implementing data-oriented design and entity-component systems
-- **Modern Graphics Technology**: Building contemporary rendering pipelines with DirectX 12
-- **Game Engine Fundamentals**: Implementing core engine systems including physics, AI, and terrain generation
-- **Portfolio Development**: Maintaining production-quality code and comprehensive documentation
+- **ECS Architecture Learning**: Implementation of data-oriented design and entity-component systems
+- **Modern Graphics Technology**: Building modern rendering pipelines using DirectX 12
+- **Game Engine Fundamentals**: Implementation of core engine systems including physics, AI, and terrain generation
+- **Portfolio Creation**: Production-level code quality and documentation
 
 ## Implementation Status
 
@@ -21,16 +21,16 @@ DevMiniEngine is a personal learning and portfolio project built on DirectX 12. 
 
 **Phase 1: Foundation Systems (100% Complete)**
 
-**Core Systems**
+**Core System**
 - Memory Management System
-  - LinearAllocator: O(1) bump-pointer allocation
+  - LinearAllocator: O(1) bump pointer allocation
   - PoolAllocator: O(1) fixed-size object pooling
-  - StackAllocator: LIFO allocation with markers
+  - StackAllocator: LIFO allocation using markers
   - Test Coverage: 01_MemoryTest, 02_PoolAllocatorTest, 03_StackAllocatorTest
 
 - Logging System
-  - Multi-output sink architecture (Console, File)
-  - Thread-safe logging with mutex protection
+  - Multi-output Sink architecture (Console, File)
+  - Thread-safe logging with Mutex
   - Category-based filtering (Core, Graphics, Physics, AI, Audio, Input, Memory)
   - Color-coded console output
   - Test Coverage: 05_LoggingTest
@@ -50,7 +50,7 @@ DevMiniEngine is a personal learning and portfolio project built on DirectX 12. 
 - Input system
   - Keyboard state tracking (pressed/held/released)
   - Mouse state tracking (buttons, position, wheel)
-  - Double buffering for frame-accurate input
+  - Double buffering for frame accuracy
 - Test Coverage: 06_WindowTest, 07_InputTest
 
 **Phase 2: DirectX 12 Graphics (25% Complete)**
@@ -60,7 +60,7 @@ DevMiniEngine is a personal learning and portfolio project built on DirectX 12. 
 - DX12CommandQueue: Command Queue creation and GPU synchronization
 - DX12SwapChain: Double-buffered SwapChain creation
 - DX12DescriptorHeap: RTV Descriptor Heap management
-- DX12CommandContext: Command Allocator/List management and Resource Barriers
+- DX12CommandContext: Command Allocator/List management and Resource Barrier
 - First rendering success (Clear screen)
 - Test Coverage: 08_DX12Init
 
@@ -78,15 +78,15 @@ DevMiniEngine is a personal learning and portfolio project built on DirectX 12. 
 
 ## Key Features
 
-### Graphics (Partially Implemented)
+### Graphics (Partial Implementation)
 - DirectX 12-based rendering system (initialization complete)
   - Device and Command Queue creation
   - SwapChain and Descriptor Heap management
   - Command List recording and execution
-  - Resource state transitions via Resource Barriers
-- RHI (Render Hardware Interface) abstraction layer (Planned)
-- PBR (Physically Based Rendering) support (Planned)
-- High-level rendering systems (Material, Mesh, Camera) (Planned)
+  - Resource state transitions via Resource Barrier
+- RHI (Render Hardware Interface) abstraction layer (planned)
+- PBR (Physically Based Rendering) support (planned)
+- High-level rendering system (Material, Mesh, Camera) (planned)
 
 ### ECS Architecture (Planned)
 - Entity-based game object management
@@ -107,45 +107,85 @@ DevMiniEngine is a personal learning and portfolio project built on DirectX 12. 
 ```
 DevMiniEngine/
 ├── Engine/                          # Engine Core
-│   ├── Core/                        # Base Systems (Complete)
-│   │   ├── Memory/                  # Custom Allocators
-│   │   └── Logging/                 # Multi-output Logging
-│   ├── Math/                        # Math Library (Complete)
-│   ├── Platform/                    # Platform Layer (Complete)
-│   │   ├── Windows/                 # Win32 Implementation
-│   │   └── Input/                   # Input System
-│   ├── Graphics/                    # Rendering System (Partial)
-│   │   ├── RHI/                     # Rendering Abstraction Layer (Planned)
-│   │   ├── DX12/                    # DirectX 12 Implementation (Init Complete)
-│   │   └── Renderer/                # High-level Rendering (Planned)
-│   ├── ECS/                         # Entity Component System (Planned)
-│   ├── Physics/                     # Physics Engine (Planned)
-│   ├── AI/                          # Game AI (Planned)
-│   └── Scene/                       # Scene Management (Planned)
+│   ├── include/                     # Public headers for all modules
+│   │   ├── Core/                    # Core headers
+│   │   │   ├── Memory/              # Memory management headers
+│   │   │   └── Logging/             # Logging system headers
+│   │   ├── Math/                    # Math library headers
+│   │   ├── Platform/                # Platform layer headers
+│   │   │   ├── Windows/             # Win32 headers
+│   │   │   └── Input/               # Input system headers
+│   │   ├── Graphics/                # Graphics headers
+│   │   │   ├── DX12/                # DirectX 12 headers
+│   │   │   ├── RHI/                 # RHI headers (planned)
+│   │   │   └── Renderer/            # High-level rendering headers (planned)
+│   │   ├── ECS/                     # ECS headers (planned)
+│   │   ├── Physics/                 # Physics engine headers (planned)
+│   │   ├── AI/                      # Game AI headers (planned)
+│   │   └── Scene/                   # Scene management headers (planned)
+│   │
+│   ├── src/                         # Implementation for all modules
+│   │   ├── Core/                    # Core implementation
+│   │   │   ├── Memory/              # Memory management implementation
+│   │   │   └── Logging/             # Logging system implementation
+│   │   ├── Math/                    # Math library implementation
+│   │   ├── Platform/                # Platform layer implementation
+│   │   │   ├── Windows/             # Win32 implementation
+│   │   │   └── Input/               # Input system implementation
+│   │   ├── Graphics/                # Graphics implementation
+│   │   │   ├── DX12/                # DirectX 12 implementation
+│   │   │   ├── RHI/                 # RHI implementation (planned)
+│   │   │   └── Renderer/            # High-level rendering implementation (planned)
+│   │   ├── ECS/                     # ECS implementation (planned)
+│   │   ├── Physics/                 # Physics engine implementation (planned)
+│   │   ├── AI/                      # Game AI implementation (planned)
+│   │   └── Scene/                   # Scene management implementation (planned)
+│   │
+│   ├── Core/                        # Core module project
+│   │   └── Core.vcxproj
+│   ├── Math/                        # Math module project
+│   │   └── Math.vcxproj
+│   ├── Platform/                    # Platform module project
+│   │   └── Platform.vcxproj
+│   ├── Graphics/                    # Graphics module project
+│   │   └── Graphics.vcxproj
+│   │
+│   ├── Sandbox/                     # Sandbox game project
+│   │   ├── Assets/                  # Game assets
+│   │   ├── Source/                  # Game source
+│   │   └── Sandbox.vcxproj
+│   │
+│   └── DemoGame/                    # Demo game project (planned)
+│       ├── Assets/
+│       ├── Source/
+│       └── DemoGame.vcxproj
 │
-├── Samples/                         # Learning Sample Projects
-│   ├── 01_MemoryTest/              # LinearAllocator Test
-│   ├── 02_PoolAllocatorTest/       # PoolAllocator Test
-│   ├── 03_StackAllocatorTest/      # StackAllocator Test
-│   ├── 04_MathTest/                # Math Library Test
-│   ├── 05_LoggingTest/             # Logging System Test
-│   ├── 06_WindowTest/              # Window Creation Test
-│   ├── 07_InputTest/               # Input System Test
-│   └── 08_DX12Init/                # DirectX 12 Initialization Test
+├── Samples/                         # Learning sample projects
+│   ├── 01_MemoryTest/               # LinearAllocator test
+│   ├── 02_PoolAllocatorTest/        # PoolAllocator test
+│   ├── 03_StackAllocatorTest/       # StackAllocator test
+│   ├── 04_MathTest/                 # Math library test
+│   ├── 05_LoggingTest/              # Logging system test
+│   ├── 06_WindowTest/               # Window creation test
+│   ├── 07_InputTest/                # Input system test
+│   └── 08_DX12Init/                 # DirectX 12 initialization test
 │
 ├── Docs/                            # Documentation
-│   ├── Architecture.md              # Detailed Architecture Guide
-│   ├── CodingConvention.md          # Coding Standards
-│   └── DevelopmentLog.md            # Development History
+│   ├── Sample
+│   │   └── 08_DX12Init.md           # 08_DX12Init Sample Documentation
+│   │
+│   ├── Architecture.md              # Detailed architecture guide
+│   ├── CodingConvention.md          # Coding standards
+│   └── DevelopmentLog.md            # Development history
 │
-├── bin/                             # Build Output
+├── bin/                             # Build output
 │   ├── Debug/
 │   └── Release/
 │
-└── intermediate/                    # Intermediate Build Files
+└── intermediate/                    # Intermediate build files
 ```
 
-For detailed information on architecture design and module dependencies, see [Architecture Documentation](./Docs/Architecture.md).
+For detailed architecture design and module dependencies, see the [Architecture Document](./Docs/Architecture.md).
 
 ## Build and Run
 
@@ -154,7 +194,7 @@ For detailed information on architecture design and module dependencies, see [Ar
 - **OS**: Windows 10/11 (64-bit)
 - **IDE**: Visual Studio 2022 or later
 - **SDK**: Windows 10 SDK (10.0.19041.0 or later)
-- **DirectX**: DirectX 12 compatible GPU
+- **DirectX**: DirectX 12 capable GPU
 
 ### Build Instructions
 
@@ -175,9 +215,9 @@ DevMiniEngine.sln
    - `Release` - For release (optimizations enabled)
 
 4. **Build**
-   - `Ctrl + Shift + B` or `Build > Build Solution` from menu
+   - `Ctrl + Shift + B` or from menu `Build > Build Solution`
 
-### Running Samples
+### Run Samples
 ```bash
 # Example: Run memory allocator test
 bin/Debug/01_MemoryTest.exe
@@ -188,22 +228,22 @@ bin/Debug/08_DX12Init.exe
 
 ## Sample Projects
 
-| Sample | Status | Description | Learning Topics |
-|--------|--------|-------------|-----------------|
-| 01_MemoryTest | Complete | LinearAllocator Test | Custom Memory Allocation |
-| 02_PoolAllocatorTest | Complete | PoolAllocator Test | Object Pooling |
-| 03_StackAllocatorTest | Complete | StackAllocator Test | Scope Allocation |
-| 04_MathTest | Complete | Math Library Test | SIMD Vectors, Matrices |
-| 05_LoggingTest | Complete | Logging System Test | Structured Logging |
-| 06_WindowTest | Complete | Window Creation | Win32 API, Events |
-| 07_InputTest | Complete | Input Handling | Keyboard, Mouse Tracking |
-| 08_DX12Init | Complete | DirectX 12 Init | Device, SwapChain, Clear |
-| 09_HelloTriangle | Planned | Basic Rendering | Vertex Buffer, Shader, PSO |
+| Sample | Status | Description | Learning Content |
+|--------|--------|-------------|------------------|
+| 01_MemoryTest | Complete | LinearAllocator test | Custom memory allocation |
+| 02_PoolAllocatorTest | Complete | PoolAllocator test | Object pooling |
+| 03_StackAllocatorTest | Complete | StackAllocator test | Scope allocation |
+| 04_MathTest | Complete | Math library test | SIMD vectors, matrices |
+| 05_LoggingTest | Complete | Logging system test | Structured logging |
+| 06_WindowTest | Complete | Window creation | Win32 API, events |
+| 07_InputTest | Complete | Input handling | Keyboard, mouse tracking |
+| 08_DX12Init | Complete | DirectX 12 initialization | Device, SwapChain, Clear |
+| 09_HelloTriangle | Planned | Basic rendering | Vertex Buffer, Shader, PSO |
 
 ## Tech Stack
 
 ### Core Technologies
-- **C++20**: Latest C++ standard
+- **C++20**: Modern C++ standard
 - **DirectX 12**: Low-level graphics API
 - **Win32 API**: Windows platform interface
 - **DirectXMath**: SIMD-optimized math library
@@ -211,68 +251,68 @@ bin/Debug/08_DX12Init.exe
 ### Development Tools
 - **Visual Studio 2022**: Primary development environment
 - **Git/GitHub**: Version control
-- **RenderDoc**: Graphics debugging (Planned)
-- **PIX**: DirectX 12 profiling (Planned)
+- **RenderDoc**: Graphics debugging (planned)
+- **PIX**: DirectX 12 profiling (planned)
 
 ## Documentation
 
 - [Architecture Guide](./Docs/Architecture.md) - Complete engine design and structure
-- [Coding Convention](./Docs/CodingConvention.md) - Project coding standards
+- [Coding Convention](./Docs/CodingConvention.md) - Project coding rules
 - [Development Log](./Docs/DevelopmentLog.md) - Detailed development history
 
 ## Roadmap
 
-### Phase 1: Foundation Systems (100% Complete)
-- [x] Project Structure
-- [x] Core Systems
-  - [x] Memory Allocators (Linear, Pool, Stack)
-  - [x] Logging System (Console, File sinks)
-  - [x] Assertion Macros
-- [x] Math Library (Vector, Matrix, Quaternion with SIMD)
-- [x] Platform Layer (Window, Input)
+### Phase 1: Foundation (100% Complete)
+- [x] Project structure
+- [x] Core system
+  - [x] Memory allocators (Linear, Pool, Stack)
+  - [x] Logging system (Console, File sinks)
+  - [x] Assertion macros
+- [x] Math library (Vector, Matrix, Quaternion with SIMD)
+- [x] Platform layer (Window, Input)
 
 ### Phase 2: Graphics (25% Complete)
-- [x] DirectX 12 Initialization
-- [ ] Basic Rendering Pipeline (Vertex Buffer, Shader, PSO)
-- [ ] Mesh and Texture Loading
-- [ ] Camera System
+- [x] DirectX 12 initialization
+- [ ] Basic rendering pipeline (Vertex Buffer, Shader, PSO)
+- [ ] Mesh and texture loading
+- [ ] Camera system
 
 ### Phase 3: Advanced ECS (Not Started)
-- [ ] ECS Core Implementation
-- [ ] Component Queries
-- [ ] System Dependencies
-- [ ] Event System
+- [ ] ECS core implementation
+- [ ] Component queries
+- [ ] System dependencies
+- [ ] Event system
 
 ### Phase 4: Gameplay Systems (Not Started)
-- [ ] Physics Engine Integration
-- [ ] Collision Detection
-- [ ] AI Pathfinding (A*)
-- [ ] Terrain Generation
+- [ ] Physics engine integration
+- [ ] Collision detection
+- [ ] AI pathfinding (A*)
+- [ ] Terrain generation
 
 ### Phase 5: Future Plans
-- [ ] Threading System (Job system, thread pool)
-- [ ] PBR Materials
-- [ ] Shadow Mapping
+- [ ] Threading system (Job system, thread pool)
+- [ ] PBR materials
+- [ ] Shadow mapping
 - [ ] Post-processing
 
 ## Code Quality
 
-- Warning Level: 4 (Highest)
+- Warning Level: 4 (Maximum)
 - Active Warnings: 0
 - C++ Standard: C++20
-- Code Style: Enforced via CodingConvention.md
+- Code Style: Enforced through CodingConvention.md
 
 ## Contributing
 
-This is a personal learning project, but feedback and suggestions are always welcome!
+This project is for personal learning purposes, but feedback and suggestions are always welcome!
 
-### Feedback Methods
+### How to Provide Feedback
 - **Issues**: Bug reports or feature suggestions
 - **Discussions**: Technical questions or idea sharing
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE).
+This project is open-sourced under the [MIT License](./LICENSE).
 
 ## Developer
 
@@ -287,6 +327,7 @@ This project is licensed under the [MIT License](./LICENSE).
 - [Learn OpenGL](https://learnopengl.com/) - Graphics concepts
 - [Game Programming Patterns](https://gameprogrammingpatterns.com/) - Design patterns
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
+- [3D Game Programming with DirectX 12 by Frank Luna](http://www.d3dcoder.net/)
 
 ---
 

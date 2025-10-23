@@ -107,42 +107,82 @@ DevMiniEngine은 DirectX 12를 기반으로 하는 개인 학습 및 포트폴�
 ```
 DevMiniEngine/
 ├── Engine/                          # 엔진 코어
-│   ├── Core/                        # 기본 시스템 (구현 완료)
-│   │   ├── Memory/                  # 커스텀 할당자들
-│   │   └── Logging/                 # 다중 출력 로깅
-│   ├── Math/                        # Math 라이브러리 (구현 완료)
-│   ├── Platform/                    # Platform 레이어 (구현 완료)
-│   │   ├── Windows/                 # Win32 구현
-│   │   └── Input/                   # 입력 시스템
-│   ├── Graphics/                    # 렌더링 시스템 (부분 구현)
-│   │   ├── RHI/                     # 렌더링 추상화 레이어 (계획됨)
-│   │   ├── DX12/                    # DirectX 12 구현 (초기화 완료)
-│   │   └── Renderer/                # 고수준 렌더링 (계획됨)
-│   ├── ECS/                         # Entity Component System (계획됨)
-│   ├── Physics/                     # 물리 엔진 (계획됨)
-│   ├── AI/                          # 게임 AI (계획됨)
-│   └── Scene/                       # 씬 관리 (계획됨)
+│   ├── include/                     # 모든 모듈의 public 헤더
+│   │   ├── Core/                    # Core 헤더
+│   │   │   ├── Memory/              # 메모리 관리 헤더
+│   │   │   └── Logging/             # 로깅 시스템 헤더
+│   │   ├── Math/                    # Math 라이브러리 헤더
+│   │   ├── Platform/                # Platform 레이어 헤더
+│   │   │   ├── Windows/             # Win32 헤더
+│   │   │   └── Input/               # 입력 시스템 헤더
+│   │   ├── Graphics/                # 그래픽스 헤더
+│   │   │   ├── DX12/                # DirectX 12 헤더
+│   │   │   ├── RHI/                 # RHI 헤더 (계획됨)
+│   │   │   └── Renderer/            # 고수준 렌더링 헤더 (계획됨)
+│   │   ├── ECS/                     # ECS 헤더 (계획됨)
+│   │   ├── Physics/                 # 물리 엔진 헤더 (계획됨)
+│   │   ├── AI/                      # 게임 AI 헤더 (계획됨)
+│   │   └── Scene/                   # 씬 관리 헤더 (계획됨)
+│   │
+│   ├── src/                         # 모든 모듈의 구현
+│   │   ├── Core/                    # Core 구현
+│   │   │   ├── Memory/              # 메모리 관리 구현
+│   │   │   └── Logging/             # 로깅 시스템 구현
+│   │   ├── Math/                    # Math 라이브러리 구현
+│   │   ├── Platform/                # Platform 레이어 구현
+│   │   │   ├── Windows/             # Win32 구현
+│   │   │   └── Input/               # 입력 시스템 구현
+│   │   ├── Graphics/                # 그래픽스 구현
+│   │   │   ├── DX12/                # DirectX 12 구현
+│   │   │   ├── RHI/                 # RHI 구현 (계획됨)
+│   │   │   └── Renderer/            # 고수준 렌더링 구현 (계획됨)
+│   │   ├── ECS/                     # ECS 구현 (계획됨)
+│   │   ├── Physics/                 # 물리 엔진 구현 (계획됨)
+│   │   ├── AI/                      # 게임 AI 구현 (계획됨)
+│   │   └── Scene/                   # 씬 관리 구현 (계획됨)
+│   │
+│   ├── Core/                        # Core 모듈 프로젝트
+│   │   └── Core.vcxproj
+│   ├── Math/                        # Math 모듈 프로젝트
+│   │   └── Math.vcxproj
+│   ├── Platform/                    # Platform 모듈 프로젝트
+│   │   └── Platform.vcxproj
+│   ├── Graphics/                    # Graphics 모듈 프로젝트
+│   │   └── Graphics.vcxproj
+│   │
+│   ├── Sandbox/                     # 샌드박스 게임 프로젝트
+│   │   ├── Assets/                  # 게임 에셋
+│   │   ├── Source/                  # 게임 소스
+│   │   └── Sandbox.vcxproj
+│   │
+│   └── DemoGame/                    # 데모 게임 프로젝트 (계획됨)
+│       ├── Assets/
+│       ├── Source/
+│       └── DemoGame.vcxproj
 │
 ├── Samples/                         # 학습 샘플 프로젝트
-│   ├── 01_MemoryTest/              # LinearAllocator 테스트
-│   ├── 02_PoolAllocatorTest/       # PoolAllocator 테스트
-│   ├── 03_StackAllocatorTest/      # StackAllocator 테스트
-│   ├── 04_MathTest/                # Math 라이브러리 테스트
-│   ├── 05_LoggingTest/             # 로깅 시스템 테스트
-│   ├── 06_WindowTest/              # 윈도우 생성 테스트
-│   ├── 07_InputTest/               # 입력 시스템 테스트
-│   └── 08_DX12Init/                # DirectX 12 초기화 테스트
+│   ├── 01_MemoryTest/               # LinearAllocator 테스트
+│   ├── 02_PoolAllocatorTest/        # PoolAllocator 테스트
+│   ├── 03_StackAllocatorTest/       # StackAllocator 테스트
+│   ├── 04_MathTest/                 # Math 라이브러리 테스트
+│   ├── 05_LoggingTest/              # 로깅 시스템 테스트
+│   ├── 06_WindowTest/               # 윈도우 생성 테스트
+│   ├── 07_InputTest/                # 입력 시스템 테스트
+│   └── 08_DX12Init/                 # DirectX 12 초기화 테스트
 │
 ├── Docs/                            # 문서
+│   ├── Sample
+│   │   └── 08_DX12Init.md           # 08_DX12Init 샘플 문서
+│   │
 │   ├── Architecture.md              # 상세 아키텍처 가이드
 │   ├── CodingConvention.md          # 코딩 표준
 │   └── DevelopmentLog.md            # 개발 진행 상황
-│
+│ 
 ├── bin/                             # 빌드 출력물
-│   ├── Debug/
-│   └── Release/
-│
-└── intermediate/                    # 중간 빌드 파일
+│   ├── Debug
+│   └── Release
+│ 
+└── intermediate/                   # 중간 빌드 파일
 ```
 
 아키텍처 설계 및 모듈 의존성에 대한 자세한 내용은 [아키텍처 문서](./Docs/Architecture.md)를 참조하세요.
@@ -287,9 +327,10 @@ bin/Debug/08_DX12Init.exe
 - [Learn OpenGL](https://learnopengl.com/) - 그래픽스 개념 학습
 - [Game Programming Patterns](https://gameprogrammingpatterns.com/) - 디자인 패턴 참고
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
+- [3D Game Programming with DirectX 12 by Frank Luna](http://www.d3dcoder.net/)
 
 ---
 
-최종 업데이트: 2025-10-15
+최종 업데이트: 2025-10-23
 
 ⭐ 이 프로젝트가 도움이 되었다면 Star를 눌러주세요!

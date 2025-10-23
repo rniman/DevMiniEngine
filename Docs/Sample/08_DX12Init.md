@@ -333,7 +333,9 @@ factory->QueryInterface(IID_PPV_ARGS(&factory6));
 
 ### Graphics 모듈
 ```
-Engine/Graphics/
+Engine/
+├── Graphics/
+│   └── Graphics.vcxproj
 ├── include/Graphics/
 │   ├── DX12/
 │   │   ├── DX12Device.h              # Device, Factory, Adapter
