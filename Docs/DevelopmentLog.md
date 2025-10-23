@@ -10,14 +10,14 @@
 
 ## 2025-10-23 - Vertex Buffer, Index Buffer 및 최소 Renderer 구현
 
-### 작업 내용
+### Tasks
 - [x] DX12VertexBuffer 클래스 구현
 - [x] DX12IndexBuffer 클래스 구현
 - [x] DX12Renderer 클래스 구현 (최소 구조)
 - [x] DX12CommandQueue에 Fence 관리 통합
 - [x] 코딩 컨벤션 적용 (주석, 네이밍)
 
-### 설계 결정
+### Decisions
 
 **버퍼 업로드 전략**
 - Default Heap (GPU 전용) + Upload Heap (임시) 패턴 사용
@@ -46,7 +46,7 @@
 - WaitForFenceValue() - 특정 Fence 값 대기
 - 단일 Fence 이벤트 핸들 사용
 
-### 구현 내용
+### Implementation
 
 **DX12VertexBuffer**
 ```cpp
@@ -87,7 +87,7 @@ class DX12Renderer
 7. Upload Buffer 해제
 8. Buffer View 초기화
 
-### 발생한 이슈
+### Issues Encountered
 
 **Upload Buffer 생명 주기**
 - 고민: Shutdown()까지 유지 vs 즉시 해제
@@ -104,7 +104,7 @@ class DX12Renderer
 - Debug Layer가 누락된 전이 감지
 - VertexBuffer와 IndexBuffer는 서로 다른 최종 상태 필요
 
-### 학습 내용
+### Lessons Learned
 
 **DirectX 12 리소스 관리**
 - 모든 것이 명시적: 할당, 상태, 생명 주기
@@ -121,12 +121,12 @@ class DX12Renderer
 - 주요 차이: View 구조체, 상태, 데이터 포맷
 - 향후 Template/Base 클래스로 중복 제거 가능
 
-### 코드 통계
+### Code Statistics
 - 새 클래스: 3개 (DX12VertexBuffer, DX12IndexBuffer, DX12Renderer)
 - 수정 클래스: 1개 (DX12CommandQueue)
 - 빌드 경고: 0개
 
-### 참고 사항
+### Notes
 
 **현재 상태**
 - 지오메트리 데이터를 GPU로 업로드 가능
@@ -138,7 +138,7 @@ class DX12Renderer
 - 삼각형 업로드: < 1ms (GPU 동기화 포함)
 - 향후: DX12ResourceUploader 패턴으로 배치 업로드 최적화
 
-### 다음 단계
+### Next Steps
 
 **Phase 2: Graphics (50% 완료)**
 - [x] DirectX 12 초기화
