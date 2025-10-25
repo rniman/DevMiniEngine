@@ -44,6 +44,15 @@
     <ClCompile Include="..\src\Graphics\DX12\DX12IndexBuffer.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12GraphicsRootSignature.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12ShaderCompiler.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12PipelineState.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Graphics\DX12\d3dx12.h">
@@ -74,6 +83,15 @@
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Graphics\DX12\DX12IndexBuffer.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12GraphicsRootSignature.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12ShaderCompiler.h">
+      <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12PipelineState.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
   </ItemGroup>

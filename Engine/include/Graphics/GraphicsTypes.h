@@ -9,6 +9,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl/client.h>
+#include <d3dcompiler.h>
 
 // d3dx12.h - DirectX 12 헬퍼 라이브러리 (외부 라이브러리 경고 비활성화)
 #pragma warning(push, 0)
@@ -24,6 +25,7 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 namespace Graphics
 {
@@ -62,19 +64,19 @@ namespace Graphics
 
 // 1. GRAPHICS_ASSERT: 내부 로직 검증 (Debug만, Release에서 제거)
 #ifdef _DEBUG
-    #define GRAPHICS_ASSERT(condition, message) \
-        assert((condition) && (message))
+	#define GRAPHICS_ASSERT(condition, message) \
+		assert((condition) && (message))
 #else
-    #define GRAPHICS_ASSERT(condition, message) ((void)0)
+	#define GRAPHICS_ASSERT(condition, message) ((void)0)
 #endif
 
 // 2. GRAPHICS_VERIFY: API 검증 (항상 검사, 예외 발생)
 #define GRAPHICS_VERIFY(condition, message) \
-    do { \
-        if (!(condition)) { \
-            throw std::runtime_error(message); \
-        } \
-    } while(0)
+	do { \
+		if (!(condition)) { \
+			throw std::runtime_error(message); \
+		} \
+	} while(0)
 
 } // namespace Graphics
 
