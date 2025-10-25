@@ -8,6 +8,79 @@
 
 ---
 
+## 2025-10-26 - 첫 삼각형 렌더링 완성
+
+### Tasks
+- [x] Root Signature 구현
+- [x] Pipeline State Object (PSO) 구현
+- [x] Shader 컴파일 시스템 (HLSL)
+- [x] Input Layout 정의
+- [x] 09_HelloTriangle 샘플 완성
+
+### Decisions
+
+**Root Signature**
+- Empty Root Signature (파라미터 없음)
+- INPUT_ASSEMBLER 플래그로 Vertex Input 활성화
+
+**PSO 구성**
+- Rasterizer: 백페이스 컬링, Solid Fill
+- Blend: 알파 블렌딩 비활성화
+- Depth: 깊이 테스트 비활성화
+- Shader Model 5.1 (런타임 컴파일)
+
+**Input Layout**
+- POSITION: FLOAT3, COLOR: FLOAT4
+
+### Issues Encountered
+
+**셰이더 경로** - 작업 디렉토리 조정으로 해결  
+**Vertex Stride** - sizeof 사용, POSITION(12) + COLOR(16)
+
+### Code Statistics
+- 새 클래스: 3개 (RootSignature, PipelineState, ShaderCompiler)
+- 새 샘플: 1개 (09_HelloTriangle)
+- 추가 코드: ~600줄
+- 빌드 경고: 0개
+
+### Visual Confirmation
+- 삼각형 렌더링 성공 (빨강-초록-파랑 색상 보간)
+
+### Next Steps
+
+**Phase 2: Graphics (66% 완료)**
+- [x] DirectX 12 초기화
+- [x] Vertex/Index Buffer
+- [x] Root Signature & PSO
+- [x] 첫 삼각형 렌더링
+- [ ] 코드 구조 개선
+- [ ] Constant Buffer
+- [ ] 텍스처 시스템
+
+**즉시 다음: 코드 구조 개선**
+
+현재 main이 너무 많은 초기화 직접 처리 → 리소스 관리 클래스 필요
+
+1. **DX12Mesh 클래스** - VertexBuffer + IndexBuffer 통합
+2. **DX12RenderResources 클래스** - PSO, RootSig, Shader 통합
+
+**Constant Buffer 단계:**
+
+3. **DX12Material 클래스** - PSO, RootSig, Shader, CBV 통합
+
+**최종 목표 구조:**
+```cpp
+DX12Material basicMaterial;  // PSO, RootSig, Shader, CBV
+DX12Mesh triangleMesh;       // Vertex, Index Buffer
+
+basicMaterial.SetMatrix("MVP", mvpMatrix);
+basicMaterial.Bind(cmdList);
+triangleMesh.Bind(cmdList);
+triangleMesh.Draw(cmdList);
+```
+
+---
+
 ## 2025-10-23 - Vertex Buffer, Index Buffer 및 최소 Renderer 구현
 
 ### Tasks
@@ -1115,4 +1188,4 @@ Samples/08_DX12Init/
 
 ---
 
-**최종 업데이트**: 2025-10-24
+**최종 업데이트**: 2025-10-26
