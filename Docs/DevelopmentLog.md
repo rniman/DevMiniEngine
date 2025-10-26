@@ -8,6 +8,44 @@
 
 ---
 
+## 2025-10-26 - Mesh/Material 추상화 및 PSO 캐싱 시스템
+
+### Overview
+HelloTriangle 샘플의 하드코딩된 렌더링 코드를 Mesh, Material, DX12PipelineStateCache 클래스로 리팩토링.
+
+### Implementation
+
+**Mesh 클래스**
+- DX12VertexBuffer, DX12IndexBuffer, D3D12_INPUT_LAYOUT_DESC 소유
+- 자신의 정점 레이아웃에 대한 완전한 책임
+
+**Material 클래스**
+- 렌더링 상태(Blend, Rasterizer, DepthStencil) 정의
+- 셰이더 경로와 엔트리 포인트 저장
+- GPU 리소스 생성하지 않음
+
+**DX12PipelineStateCache 클래스**
+- Material Hash + Input Layout Hash + Root Signature로 PSO 캐싱
+- GetOrCreatePipelineState() 패턴으로 중복 생성 방지
+
+### Benefits
+- 명확한 책임 분리 (Mesh, Material, PSO 관리)
+- PSO 캐싱으로 런타임 생성 오버헤드 감소
+- 확장 가능한 구조 (다양한 Mesh/Material 조합 지원)
+
+### Lessons Learned
+- Mesh가 Input Layout을 직접 소유하여 정점 타입 불일치 방지
+- PSO 생성 비용이 크므로 캐싱이 필수적
+- 하드코딩 → 패턴 파악 → 추상화 순서의 점진적 리팩토링 효과적
+
+### Next Steps
+- [ ] Constant Buffer
+- [ ] 카메라 시스템
+- [ ] 텍스처 로딩
+- [ ] 기본 조명
+
+---
+
 ## 2025-10-26 - 첫 삼각형 렌더링 완성
 
 ### Tasks
