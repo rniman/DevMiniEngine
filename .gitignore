@@ -450,3 +450,6 @@ intermediate/
 # External dependencies (if not using submodules)
 external/*
 !external/.gitkeep
+
+# Add 25.10.26
+Memo.md

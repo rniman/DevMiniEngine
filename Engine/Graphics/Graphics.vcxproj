@@ -25,7 +25,7 @@
     <ClCompile Include="..\src\Graphics\DX12\DX12Device.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12GraphicsRootSignature.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12IndexBuffer.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12PipelineState.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12PipelineStateCache.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12Renderer.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12ShaderCompiler.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12SwapChain.cpp" />
@@ -36,6 +36,8 @@
       </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\Graphics\Material.cpp" />
+    <ClCompile Include="..\src\Graphics\Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Graphics\DX12\d3dx12.h" />
@@ -45,7 +47,7 @@
     <ClInclude Include="..\include\Graphics\DX12\DX12Device.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12GraphicsRootSignature.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12IndexBuffer.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12PipelineState.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12PipelineStateCache.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12Renderer.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12ShaderCompiler.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12SwapChain.h" />
@@ -56,6 +58,8 @@
       </ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\include\Graphics\GraphicsTypes.h" />
+    <ClInclude Include="..\include\Graphics\Material.h" />
+    <ClInclude Include="..\include\Graphics\Mesh.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

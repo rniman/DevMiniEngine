@@ -2,5 +2,5 @@
 
 namespace Graphics
 {
-    // Module initialization (if needed)
+	// Module initialization (if needed)
 } // namespace Graphics

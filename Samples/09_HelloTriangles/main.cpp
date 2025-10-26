@@ -1,3 +1,4 @@
+ï»¿// main.cpp (ìˆ˜ì • ë²„ì „)
 #include "Platform/Window.h"
 #include "Platform/PlatformTypes.h"
 #include "Platform/Input.h"
@@ -6,204 +7,108 @@
 #include "Core/Logging/LogMacros.h"
 
 // Graphics headers
+#include "Graphics/Mesh.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12SwapChain.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Graphics/DX12/DX12Renderer.h"
-#include "Graphics/DX12/DX12VertexBuffer.h"
-#include "Graphics/DX12/DX12IndexBuffer.h"
 #include "Graphics/DX12/DX12GraphicsRootSignature.h"
-#include "Graphics/DX12/DX12PipelineState.h"
 #include "Graphics/DX12/DX12ShaderCompiler.h"
+#include "Graphics/DX12/DX12PipelineStateCache.h"
+#include "Graphics/Material.h"
 
 using namespace Microsoft::WRL;
 
+
+// ============================================================================
+// í•¨ìˆ˜ ì„ ì–¸
+// ============================================================================
+
 /**
- * @brief ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÆ®¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
- *
- * ·¡½ºÅÍ¶óÀÌÀú, ºí·»µå, ±íÀÌ-½ºÅÙ½Ç »óÅÂ¸¦ ¼³Á¤ÇÏ°í ¼ÎÀÌ´õ¸¦ ÄÄÆÄÀÏÇÏ¿©
- * PSO¸¦ »ı¼ºÇÕ´Ï´Ù.
+ * @brief ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´íŠ¸ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
  */
 bool InitializePipelineState(
 	Graphics::DX12Device& device,
 	Graphics::DX12GraphicsRootSignature& rootSignature,
-	const D3D12_INPUT_LAYOUT_DESC& inputLayoutDesc,
 	Graphics::DX12ShaderCompiler& shaderCompiler,
-	Graphics::DX12PipelineState& pipelineState
+	Graphics::Mesh& mesh,
+	Graphics::Material& material,
+	Graphics::DX12PipelineStateCache& DX12PipelineStateCache
 )
 {
 	LOG_INFO("Initializing Pipeline State...");
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc{};
-	pipelineStateDesc.pRootSignature = rootSignature.Get();
-	pipelineStateDesc.InputLayout = inputLayoutDesc;
-
-	// Vertex Shader ÄÄÆÄÀÏ
-	ComPtr<ID3DBlob> vertexShaderBlob;
-	if (!shaderCompiler.CompileFromFile(
-		L"BasicShader.hlsl",
-		"VSMain",
-		"vs_5_1",
-		vertexShaderBlob.GetAddressOf()))
+	// DX12PipelineStateCache ì´ˆê¸°í™”
+	if (!DX12PipelineStateCache.Initialize(device.GetDevice(), &shaderCompiler))
 	{
-		LOG_ERROR("Failed to compile Vertex Shader");
+		LOG_ERROR("Failed to initialize DX12PipelineStateCache");
 		return false;
 	}
-	pipelineStateDesc.VS.pShaderBytecode = vertexShaderBlob->GetBufferPointer();
-	pipelineStateDesc.VS.BytecodeLength = vertexShaderBlob->GetBufferSize();
 
-	// Pixel Shader ÄÄÆÄÀÏ
-	ComPtr<ID3DBlob> pixelShaderBlob;
-	if (!shaderCompiler.CompileFromFile(
-		L"BasicShader.hlsl",
-		"PSMain",
-		"ps_5_1",
-		pixelShaderBlob.GetAddressOf()))
-	{
-		LOG_ERROR("Failed to compile Pixel Shader");
-		return false;
-	}
-	pipelineStateDesc.PS.pShaderBytecode = pixelShaderBlob->GetBufferPointer();
-	pipelineStateDesc.PS.BytecodeLength = pixelShaderBlob->GetBufferSize();
+	// PSO ìƒì„± (ìºì‹œì— ì €ì¥ë¨)
+	ID3D12PipelineState* pipelineState = DX12PipelineStateCache.GetOrCreatePipelineState(
+		material,
+		rootSignature.Get(),
+		mesh.GetInputLayout()
+	);
 
-	// Rasterizer State: ¼Ö¸®µå ¸ğµå, ÈÄ¸é ÄÃ¸µ
-	pipelineStateDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-	pipelineStateDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-	pipelineStateDesc.RasterizerState.FrontCounterClockwise = FALSE;
-	pipelineStateDesc.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-	pipelineStateDesc.RasterizerState.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-	pipelineStateDesc.RasterizerState.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-	pipelineStateDesc.RasterizerState.DepthClipEnable = TRUE;
-	pipelineStateDesc.RasterizerState.MultisampleEnable = FALSE;
-	pipelineStateDesc.RasterizerState.AntialiasedLineEnable = FALSE;
-	pipelineStateDesc.RasterizerState.ForcedSampleCount = 0;
-	pipelineStateDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-	// Blend State: ¾ËÆÄ ºí·»µù ºñÈ°¼ºÈ­
-	pipelineStateDesc.BlendState.AlphaToCoverageEnable = FALSE;
-	pipelineStateDesc.BlendState.IndependentBlendEnable = FALSE;
-
-	const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTargetBlendDesc =
-	{
-		FALSE,                              // BlendEnable
-		FALSE,                              // LogicOpEnable
-		D3D12_BLEND_ONE,                    // SrcBlend
-		D3D12_BLEND_ZERO,                   // DestBlend
-		D3D12_BLEND_OP_ADD,                 // BlendOp
-		D3D12_BLEND_ONE,                    // SrcBlendAlpha
-		D3D12_BLEND_ZERO,                   // DestBlendAlpha
-		D3D12_BLEND_OP_ADD,                 // BlendOpAlpha
-		D3D12_LOGIC_OP_NOOP,                // LogicOp
-		D3D12_COLOR_WRITE_ENABLE_ALL        // RenderTargetWriteMask
-	};
-
-	for (UINT i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
-	{
-		pipelineStateDesc.BlendState.RenderTarget[i] = defaultRenderTargetBlendDesc;
-	}
-
-	// Depth-Stencil State: ±íÀÌ Å×½ºÆ® ºñÈ°¼ºÈ­ (2D ·»´õ¸µ)
-	pipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
-	pipelineStateDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	pipelineStateDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-	pipelineStateDesc.DepthStencilState.StencilEnable = FALSE;
-	pipelineStateDesc.DepthStencilState.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-	pipelineStateDesc.DepthStencilState.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-
-	const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp =
-	{
-		D3D12_STENCIL_OP_KEEP,              // StencilFailOp
-		D3D12_STENCIL_OP_KEEP,              // StencilDepthFailOp
-		D3D12_STENCIL_OP_KEEP,              // StencilPassOp
-		D3D12_COMPARISON_FUNC_ALWAYS        // StencilFunc
-	};
-
-	pipelineStateDesc.DepthStencilState.FrontFace = defaultStencilOp;
-	pipelineStateDesc.DepthStencilState.BackFace = defaultStencilOp;
-
-	// Sample ¼³Á¤
-	pipelineStateDesc.SampleMask = UINT_MAX;
-	pipelineStateDesc.SampleDesc.Count = 1;
-	pipelineStateDesc.SampleDesc.Quality = 0;
-
-	// Primitive Topology ¹× Render Target ¼³Á¤
-	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	pipelineStateDesc.NumRenderTargets = 1;
-	pipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	pipelineStateDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
-
-	bool success = pipelineState.Initialize(device.GetDevice(), pipelineStateDesc);
-
-	if (success)
+	if (pipelineState)
 	{
 		LOG_INFO("Pipeline State initialized successfully");
+		return true;
 	}
 	else
 	{
 		LOG_ERROR("Failed to initialize Pipeline State");
+		return false;
 	}
-
-	return success;
 }
 
 /**
- * @brief »ï°¢Çü ·»´õ¸µÀ» À§ÇÑ ¸®¼Ò½º¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
- *
- * Vertex Buffer, Index Buffer, Root Signature, Pipeline State¸¦ »ı¼ºÇÕ´Ï´Ù.
+ * @brief ì‚¼ê°í˜• ë Œë”ë§ì„ ìœ„í•œ ë¦¬ì†ŒìŠ¤ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
  */
 bool InitializeForTriangle(
 	Graphics::DX12Device& device,
 	Graphics::DX12Renderer& renderer,
-	Graphics::DX12VertexBuffer& vertexBuffer,
-	Graphics::DX12IndexBuffer& indexBuffer,
+	Graphics::Mesh& mesh,
 	Graphics::DX12GraphicsRootSignature& rootSignature,
-	Graphics::DX12PipelineState& pipelineState,
-	Graphics::DX12ShaderCompiler& shaderCompiler
+	Graphics::DX12ShaderCompiler& shaderCompiler,
+	Graphics::Material& material,
+	Graphics::DX12PipelineStateCache& pipelineStateCache
 )
 {
 	LOG_INFO("Initializing Triangle Resources...");
 
-	// »ï°¢Çü Á¤Á¡ µ¥ÀÌÅÍ: À§Ä¡¿Í »ö»ó
+	// ì‚¼ê°í˜• ì •ì  ë°ì´í„°: ìœ„ì¹˜ì™€ ìƒ‰ìƒ
 	Graphics::BasicVertex triangleVertices[] =
 	{
-		{ Math::Vector3(0.0f,  0.5f, 0.0f), Math::Vector4(1.0f, 0.0f, 0.0f, 1.0f) },  // »ó´Ü - »¡°­
-		{ Math::Vector3(0.5f, -0.5f, 0.0f), Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f) },  // ¿ìÇÏ´Ü - ÃÊ·Ï
-		{ Math::Vector3(-0.5f, -0.5f, 0.0f), Math::Vector4(0.0f, 0.0f, 1.0f, 1.0f) }   // ÁÂÇÏ´Ü - ÆÄ¶û
+		{ Math::Vector3(0.0f,  0.5f, 0.0f), Math::Vector4(1.0f, 0.0f, 0.0f, 1.0f) },  // ìƒë‹¨ - ë¹¨ê°•
+		{ Math::Vector3(0.5f, -0.5f, 0.0f), Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f) },  // ìš°í•˜ë‹¨ - ì´ˆë¡
+		{ Math::Vector3(-0.5f, -0.5f, 0.0f), Math::Vector4(0.0f, 0.0f, 1.0f, 1.0f) }   // ì¢Œí•˜ë‹¨ - íŒŒë‘
 	};
 
 	Core::uint16 triangleIndices[] = { 0, 1, 2 };
 
-	// Vertex Buffer »ı¼º
-	if (!vertexBuffer.Initialize(
+	// Mesh ì´ˆê¸°í™”
+	if (!mesh.Initialize(
 		device.GetDevice(),
 		device.GetGraphicsQueue(),
 		device.GetCommandContext(renderer.GetCurrentFrameIndex()),
 		triangleVertices,
 		3,
-		sizeof(Graphics::BasicVertex)))
-	{
-		LOG_ERROR("Failed to initialize Vertex Buffer");
-		return false;
-	}
-	LOG_INFO("Vertex Buffer created (3 vertices)");
-
-	// Index Buffer »ı¼º
-	if (!indexBuffer.Initialize(
-		device.GetDevice(),
-		device.GetGraphicsQueue(),
-		device.GetCommandContext(renderer.GetCurrentFrameIndex()),
 		triangleIndices,
-		3,
-		DXGI_FORMAT_R16_UINT))
+		3
+	))
 	{
-		LOG_ERROR("Failed to initialize Index Buffer");
+		LOG_ERROR("Failed to create mesh");
 		return false;
 	}
-	LOG_INFO("Index Buffer created (3 indices)");
 
-	// Root Signature »ı¼º
+	LOG_INFO("Mesh created successfully");
+
+	// Root Signature ìƒì„±
 	if (!rootSignature.Initialize(device.GetDevice()))
 	{
 		LOG_ERROR("Failed to initialize Root Signature");
@@ -211,39 +116,15 @@ bool InitializeForTriangle(
 	}
 	LOG_INFO("Root Signature created");
 
-	// Input Layout Á¤ÀÇ
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	D3D12_INPUT_ELEMENT_DESC elements[] =
-	{
-		{
-			"POSITION",
-			0,
-			DXGI_FORMAT_R32G32B32_FLOAT,
-			0,
-			0,
-			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-			0
-		},
-		{
-			"COLOR",
-			0,
-			DXGI_FORMAT_R32G32B32A32_FLOAT,
-			0,
-			12,  // sizeof(Vector3)
-			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-			0
-		}
-	};
-	inputLayoutDesc.pInputElementDescs = elements;
-	inputLayoutDesc.NumElements = 2;
-
-	// Pipeline State »ı¼º
+	// Pipeline State ìƒì„±
 	if (!InitializePipelineState(
 		device,
 		rootSignature,
-		inputLayoutDesc,
 		shaderCompiler,
-		pipelineState))
+		mesh,
+		material,
+		pipelineStateCache
+	))
 	{
 		return false;
 	}
@@ -253,17 +134,15 @@ bool InitializeForTriangle(
 }
 
 /**
- * @brief ÇÁ·¹ÀÓÀ» ·»´õ¸µÇÕ´Ï´Ù.
- *
- * Ä¿¸Çµå ¸®½ºÆ®¸¦ ±â·ÏÇÏ°í ½ÇÇàÇÏ¿© È­¸é¿¡ »ï°¢ÇüÀ» ±×¸³´Ï´Ù.
+ * @brief í”„ë ˆì„ì„ ë Œë”ë§í•©ë‹ˆë‹¤.
  */
 void RenderFrame(
 	Graphics::DX12Device& device,
 	Graphics::DX12Renderer& renderer,
-	Graphics::DX12VertexBuffer& vertexBuffer,
-	Graphics::DX12IndexBuffer& indexBuffer,
+	Graphics::Mesh& mesh,
 	Graphics::DX12GraphicsRootSignature& rootSignature,
-	Graphics::DX12PipelineState& pipelineState
+	Graphics::Material& material,
+	Graphics::DX12PipelineStateCache& DX12PipelineStateCache
 )
 {
 	auto* swapChain = device.GetSwapChain();
@@ -271,10 +150,10 @@ void RenderFrame(
 	auto* rtvHeap = swapChain->GetRTVHeap();
 	Core::uint32 backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	// GPU°¡ ÇöÀç ¹é ¹öÆÛ »ç¿ëÀ» ¿Ï·áÇÒ ¶§±îÁö ´ë±â
+	// GPUê°€ í˜„ì¬ ë°± ë²„í¼ ì‚¬ìš©ì„ ì™„ë£Œí•  ë•Œê¹Œì§€ ëŒ€ê¸°
 	graphicsQueue->WaitForFenceValue(renderer.GetCurrentFrameFenceValue());
 
-	// ÇöÀç ÇÁ·¹ÀÓÀÇ Command Context °¡Á®¿À±â
+	// í˜„ì¬ í”„ë ˆì„ì˜ Command Context ê°€ì ¸ì˜¤ê¸°
 	auto* cmdContext = device.GetCommandContext(renderer.GetCurrentFrameIndex());
 	if (!cmdContext)
 	{
@@ -282,7 +161,7 @@ void RenderFrame(
 		return;
 	}
 
-	// Command List ¸®¼Â
+	// Command List ë¦¬ì…‹
 	if (!cmdContext->Reset())
 	{
 		LOG_ERROR("Failed to reset Command Context");
@@ -292,7 +171,7 @@ void RenderFrame(
 	auto* cmdList = cmdContext->GetCommandList();
 	auto* backBuffer = swapChain->GetCurrentBackBuffer();
 
-	// ¸®¼Ò½º ÀüÀÌ: PRESENT ¡æ RENDER_TARGET
+	// ë¦¬ì†ŒìŠ¤ ì „ì´: PRESENT â†’ RENDER_TARGET
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		backBuffer,
 		D3D12_RESOURCE_STATE_PRESENT,
@@ -300,17 +179,17 @@ void RenderFrame(
 	);
 	cmdList->ResourceBarrier(1, &barrier);
 
-	// Render Target View ÇÚµé °¡Á®¿À±â
+	// Render Target View í•¸ë“¤ ê°€ì ¸ì˜¤ê¸°
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUHandle(backBufferIndex);
 
-	// È­¸é Å¬¸®¾î (Cornflower Blue)
+	// í™”ë©´ í´ë¦¬ì–´ (Cornflower Blue)
 	const float clearColor[] = { 0.392f, 0.584f, 0.929f, 1.0f };
 	cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
-	// Render Target ¼³Á¤
+	// Render Target ì„¤ì •
 	cmdList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	// ºäÆ÷Æ® ¼³Á¤
+	// ë·°í¬íŠ¸ ì„¤ì •
 	D3D12_VIEWPORT viewport{};
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
@@ -320,7 +199,7 @@ void RenderFrame(
 	viewport.MaxDepth = 1.0f;
 	cmdList->RSSetViewports(1, &viewport);
 
-	// ½ÃÀú ·ºÆ® ¼³Á¤
+	// ì‹œì € ë ‰íŠ¸ ì„¤ì •
 	D3D12_RECT scissorRect{};
 	scissorRect.left = 0;
 	scissorRect.top = 0;
@@ -328,24 +207,30 @@ void RenderFrame(
 	scissorRect.bottom = static_cast<LONG>(swapChain->GetHeight());
 	cmdList->RSSetScissorRects(1, &scissorRect);
 
-	// Pipeline State ¹× Root Signature ¼³Á¤
+	// Pipeline State ë° Root Signature ì„¤ì •
 	cmdList->SetGraphicsRootSignature(rootSignature.Get());
-	cmdList->SetPipelineState(pipelineState.Get());
 
-	// Vertex Buffer ¹× Index Buffer ¼³Á¤
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = vertexBuffer.GetVertexBufferView();
-	cmdList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	ID3D12PipelineState* pipelineState = DX12PipelineStateCache.GetOrCreatePipelineState(
+		material,
+		rootSignature.Get(),
+		mesh.GetInputLayout()
+	);
 
-	D3D12_INDEX_BUFFER_VIEW indexBufferView = indexBuffer.GetIndexBufferView();
-	cmdList->IASetIndexBuffer(&indexBufferView);
+	if (!pipelineState)
+	{
+		LOG_ERROR("Failed to get Pipeline State");
+		return;
+	}
 
-	// Primitive Topology ¼³Á¤
+	cmdList->SetPipelineState(pipelineState);
+
+	// Primitive Topology ì„¤ì •
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// »ï°¢Çü ±×¸®±â
-	cmdList->DrawIndexedInstanced(3, 1, 0, 0, 0);
+	// ì‚¼ê°í˜• ê·¸ë¦¬ê¸°
+	mesh.Draw(cmdList);
 
-	// ¸®¼Ò½º ÀüÀÌ: RENDER_TARGET ¡æ PRESENT
+	// ë¦¬ì†ŒìŠ¤ ì „ì´: RENDER_TARGET â†’ PRESENT
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		backBuffer,
 		D3D12_RESOURCE_STATE_RENDER_TARGET,
@@ -353,35 +238,35 @@ void RenderFrame(
 	);
 	cmdList->ResourceBarrier(1, &barrier);
 
-	// Command List ´İ±â
+	// Command List ë‹«ê¸°
 	if (!cmdContext->Close())
 	{
 		LOG_ERROR("Failed to close Command List");
 		return;
 	}
 
-	// Command List ½ÇÇà
+	// Command List ì‹¤í–‰
 	ID3D12CommandList* cmdLists[] = { cmdList };
 	Core::uint64 fenceValue = graphicsQueue->ExecuteCommandLists(cmdLists, 1);
 	renderer.SetCurrentFrameFenceValue(fenceValue);
 
-	// È­¸é¿¡ Ç¥½Ã
+	// í™”ë©´ì— í‘œì‹œ
 	swapChain->Present(true);
 
-	// ´ÙÀ½ ÇÁ·¹ÀÓÀ¸·Î ÀÌµ¿
+	// ë‹¤ìŒ í”„ë ˆì„ìœ¼ë¡œ ì´ë™
 	swapChain->MoveToNextFrame();
 	renderer.MoveFrameIndex();
 }
 
 int main()
 {
-	// ·Î±ë ½Ã½ºÅÛ ÃÊ±âÈ­
+	// ë¡œê¹… ì‹œìŠ¤í…œ ì´ˆê¸°í™”
 	auto& logger = Core::Logging::Logger::GetInstance();
 	logger.AddSink(std::make_unique<Core::Logging::ConsoleSink>(true));
 
 	LOG_INFO("=== 09_HelloTriangle Sample Started ===");
 
-	// À©µµ¿ì »ı¼º
+	// ìœˆë„ìš° ìƒì„±
 	Platform::WindowDesc windowDesc;
 	windowDesc.title = "09_HelloTriangle - DevMiniEngine";
 	windowDesc.width = 1280;
@@ -400,7 +285,7 @@ int main()
 	HWND hwnd = static_cast<HWND>(window->GetNativeHandle());
 	auto& input = window->GetInput();
 
-	// DirectX 12 µğ¹ÙÀÌ½º ÃÊ±âÈ­
+	// DirectX 12 ë””ë°”ì´ìŠ¤ ì´ˆê¸°í™”
 	Graphics::DX12Renderer renderer{};
 	Graphics::DX12Device device;
 
@@ -412,7 +297,7 @@ int main()
 	}
 	LOG_INFO("DirectX 12 Device initialized");
 
-	// SwapChain »ı¼º
+	// SwapChain ìƒì„±
 	if (!device.CreateSwapChain(hwnd, windowDesc.width, windowDesc.height))
 	{
 		LOG_ERROR("Failed to create SwapChain");
@@ -422,22 +307,23 @@ int main()
 	}
 	LOG_INFO("SwapChain created");
 
-	// ·»´õ¸µ ¸®¼Ò½º ¼±¾ğ
-	Graphics::DX12VertexBuffer vertexBuffer;
-	Graphics::DX12IndexBuffer indexBuffer;
+	// ë Œë”ë§ ë¦¬ì†ŒìŠ¤ ì„ ì–¸
+	Graphics::Mesh mesh;
 	Graphics::DX12GraphicsRootSignature rootSignature;
-	Graphics::DX12PipelineState pipelineState;
 	Graphics::DX12ShaderCompiler shaderCompiler;
+	Graphics::Material material;
+	Graphics::DX12PipelineStateCache DX12PipelineStateCache;
 
-	// »ï°¢Çü ¸®¼Ò½º ÃÊ±âÈ­
+	// ì‚¼ê°í˜• ë¦¬ì†ŒìŠ¤ ì´ˆê¸°í™”
 	if (!InitializeForTriangle(
 		device,
 		renderer,
-		vertexBuffer,
-		indexBuffer,
+		mesh,
 		rootSignature,
-		pipelineState,
-		shaderCompiler))
+		shaderCompiler,
+		material,
+		DX12PipelineStateCache
+	))
 	{
 		LOG_ERROR("Failed to initialize Triangle Resources");
 		device.Shutdown();
@@ -448,7 +334,7 @@ int main()
 	LOG_INFO("DirectX 12 initialization completed successfully!");
 	LOG_INFO("Press ESC to exit");
 
-	// ¸ŞÀÎ ·çÇÁ
+	// ë©”ì¸ ë£¨í”„
 	while (!window->ShouldClose())
 	{
 		input.Update();
@@ -463,10 +349,10 @@ int main()
 		RenderFrame(
 			device,
 			renderer,
-			vertexBuffer,
-			indexBuffer,
+			mesh,
 			rootSignature,
-			pipelineState
+			material,
+			DX12PipelineStateCache
 		);
 
 		input.Reset();

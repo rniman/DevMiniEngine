@@ -50,7 +50,13 @@
     <ClCompile Include="..\src\Graphics\DX12\DX12ShaderCompiler.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Graphics\DX12\DX12PipelineState.cpp">
+    <ClCompile Include="..\src\Graphics\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12PipelineStateCache.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
   </ItemGroup>
@@ -91,7 +97,13 @@
     <ClInclude Include="..\include\Graphics\DX12\DX12ShaderCompiler.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Graphics\DX12\DX12PipelineState.h">
+    <ClInclude Include="..\include\Graphics\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12PipelineStateCache.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
   </ItemGroup>
