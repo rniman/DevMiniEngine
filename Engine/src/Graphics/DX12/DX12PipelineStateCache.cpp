@@ -62,7 +62,7 @@ namespace Graphics
 		auto it = mPSOCache.find(key);
 		if (it != mPSOCache.end())
 		{
-			LOG_DEBUG("DX12PipelineStateCache: PSO cache hit (Material hash: %zu)", key.materialHash);
+			// LOG_DEBUG("DX12PipelineStateCache: PSO cache hit (Material hash: %zu)", key.materialHash);
 			return it->second.Get();
 		}
 

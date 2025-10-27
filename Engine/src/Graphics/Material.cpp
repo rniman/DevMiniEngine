@@ -65,7 +65,7 @@ namespace Graphics
 		mRasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
 		mRasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
 		mRasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-		mRasterizerDesc.DepthClipEnable = TRUE;
+		mRasterizerDesc.DepthClipEnable = FALSE;
 		mRasterizerDesc.MultisampleEnable = FALSE;
 		mRasterizerDesc.AntialiasedLineEnable = FALSE;
 		mRasterizerDesc.ForcedSampleCount = 0;
