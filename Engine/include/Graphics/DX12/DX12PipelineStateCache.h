@@ -19,7 +19,7 @@ namespace Graphics
 	{
 	public:
 		DX12PipelineStateCache() = default;
-		~DX12PipelineStateCache() = default;
+		~DX12PipelineStateCache();
 
 		DX12PipelineStateCache(const DX12PipelineStateCache&) = delete;
 		DX12PipelineStateCache& operator=(const DX12PipelineStateCache&) = delete;

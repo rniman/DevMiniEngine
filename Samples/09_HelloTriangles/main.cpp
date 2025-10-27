@@ -14,7 +14,7 @@
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Graphics/DX12/DX12Renderer.h"
-#include "Graphics/DX12/DX12GraphicsRootSignature.h"
+#include "Graphics/DX12/DX12RootSignature.h"
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Graphics/DX12/DX12PipelineStateCache.h"
 #include "Graphics/Material.h"
@@ -31,7 +31,7 @@ using namespace Microsoft::WRL;
  */
 bool InitializePipelineState(
 	Graphics::DX12Device& device,
-	Graphics::DX12GraphicsRootSignature& rootSignature,
+	Graphics::DX12RootSignature& rootSignature,
 	Graphics::DX12ShaderCompiler& shaderCompiler,
 	Graphics::Mesh& mesh,
 	Graphics::Material& material,
@@ -50,7 +50,7 @@ bool InitializePipelineState(
 	// PSO 생성 (캐시에 저장됨)
 	ID3D12PipelineState* pipelineState = DX12PipelineStateCache.GetOrCreatePipelineState(
 		material,
-		rootSignature.Get(),
+		rootSignature.GetRootSignature(),
 		mesh.GetInputLayout()
 	);
 
@@ -73,7 +73,7 @@ bool InitializeForTriangle(
 	Graphics::DX12Device& device,
 	Graphics::DX12Renderer& renderer,
 	Graphics::Mesh& mesh,
-	Graphics::DX12GraphicsRootSignature& rootSignature,
+	Graphics::DX12RootSignature& rootSignature,
 	Graphics::DX12ShaderCompiler& shaderCompiler,
 	Graphics::Material& material,
 	Graphics::DX12PipelineStateCache& pipelineStateCache
@@ -109,7 +109,7 @@ bool InitializeForTriangle(
 	LOG_INFO("Mesh created successfully");
 
 	// Root Signature 생성
-	if (!rootSignature.Initialize(device.GetDevice()))
+	if (!rootSignature.InitializeEmpty(device.GetDevice()))
 	{
 		LOG_ERROR("Failed to initialize Root Signature");
 		return false;
@@ -140,7 +140,7 @@ void RenderFrame(
 	Graphics::DX12Device& device,
 	Graphics::DX12Renderer& renderer,
 	Graphics::Mesh& mesh,
-	Graphics::DX12GraphicsRootSignature& rootSignature,
+	Graphics::DX12RootSignature& rootSignature,
 	Graphics::Material& material,
 	Graphics::DX12PipelineStateCache& DX12PipelineStateCache
 )
@@ -208,11 +208,11 @@ void RenderFrame(
 	cmdList->RSSetScissorRects(1, &scissorRect);
 
 	// Pipeline State 및 Root Signature 설정
-	cmdList->SetGraphicsRootSignature(rootSignature.Get());
+	cmdList->SetGraphicsRootSignature(rootSignature.GetRootSignature());
 
 	ID3D12PipelineState* pipelineState = DX12PipelineStateCache.GetOrCreatePipelineState(
 		material,
-		rootSignature.Get(),
+		rootSignature.GetRootSignature(),
 		mesh.GetInputLayout()
 	);
 
@@ -309,7 +309,7 @@ int main()
 
 	// 렌더링 리소스 선언
 	Graphics::Mesh mesh;
-	Graphics::DX12GraphicsRootSignature rootSignature;
+	Graphics::DX12RootSignature rootSignature;
 	Graphics::DX12ShaderCompiler shaderCompiler;
 	Graphics::Material material;
 	Graphics::DX12PipelineStateCache DX12PipelineStateCache;
@@ -326,6 +326,11 @@ int main()
 	))
 	{
 		LOG_ERROR("Failed to initialize Triangle Resources");
+
+		DX12PipelineStateCache.Shutdown();
+		mesh.Shutdown();
+		rootSignature.Shutdown();
+
 		device.Shutdown();
 		window->Destroy();
 		return -1;

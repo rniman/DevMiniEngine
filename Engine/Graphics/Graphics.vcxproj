@@ -21,9 +21,10 @@
   <ItemGroup>
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12ConstantBuffer.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12DescriptorHeap.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12Device.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12GraphicsRootSignature.cpp" />
+    <ClCompile Include="..\src\Graphics\DX12\DX12RootSignature.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12IndexBuffer.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12PipelineStateCache.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12Renderer.cpp" />
@@ -43,9 +44,10 @@
     <ClInclude Include="..\include\Graphics\DX12\d3dx12.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12ConstantBuffer.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12DescriptorHeap.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12Device.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12GraphicsRootSignature.h" />
+    <ClInclude Include="..\include\Graphics\DX12\DX12RootSignature.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12IndexBuffer.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12PipelineStateCache.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12Renderer.h" />

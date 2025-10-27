@@ -8,6 +8,10 @@ using namespace std;
 
 namespace Graphics
 {
+	DX12PipelineStateCache::~DX12PipelineStateCache()
+	{
+		Shutdown();
+	}
 
 	bool DX12PipelineStateCache::Initialize(ID3D12Device* device, DX12ShaderCompiler* shaderCompiler)
 	{

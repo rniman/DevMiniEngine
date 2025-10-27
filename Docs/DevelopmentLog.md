@@ -8,6 +8,73 @@
 
 ---
 
+## 2025-10-27 - Constant Buffer 및 Root Signature 리팩토링
+
+### Tasks
+- [x] DX12ConstantBuffer 클래스 구현
+- [x] DX12GraphicsRootSignature → DX12RootSignature로 리네이밍
+- [x] Root Signature Initialize 함수 개선
+
+### Decisions
+
+**DX12ConstantBuffer 설계**
+- Upload Heap 사용으로 CPU 직접 업데이트 가능
+- 프레임별 독립 메모리 영역 (256바이트 정렬)
+- 초기화 시 Map, 프로그램 종료까지 유지
+- CPU-GPU 병렬 처리: CPU가 프레임 N 업데이트 중 GPU는 프레임 N-1 렌더링
+
+**타입 안전성**
+- `UpdateTyped<T>()` 템플릿 헬퍼 추가
+- `static_assert`로 `is_trivially_copyable` 컴파일 타임 검증
+- 기존 `Update()`는 동적 크기 버퍼용으로 유지
+
+**Root Signature 개선**
+- 클래스 이름 단순화
+- Version 1.1 명시, Static Sampler 지원 추가
+- `InitializeEmpty()` 헬퍼 함수 추가
+- 재초기화 시 경고 후 기존 리소스 해제
+
+### Implementation
+
+**DX12ConstantBuffer 구조**
+```cpp
+class DX12ConstantBuffer
+{
+    bool Initialize(ID3D12Device* device, size_t bufferSize, uint32 frameCount);
+    void Update(uint32 frameIndex, const void* data, size_t dataSize);
+    
+    template<typename T>
+    void UpdateTyped(uint32 frameIndex, const T& data)
+    {
+        static_assert(std::is_trivially_copyable_v<T>);
+        Update(frameIndex, &data, sizeof(T));
+    }
+    
+    D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress(uint32 frameIndex) const;
+};
+```
+
+**메모리 레이아웃(예시)**
+```
+[Frame 0: 256B][Frame 1: 256B][Frame 2: 256B]
+  CPU 업데이트    GPU 읽기        대기 중
+```
+
+### Lessons Learned
+- static_assert로 컴파일 타임 타입 검증 → GPU 업로드 실패 사전 방지
+- Upload Heap은 Write-Combined 메모리 (memcpy 후 자동 GPU 전달)
+- 템플릿 전체 클래스보다 헬퍼 함수로 타입 안전성과 유연성 양립
+
+### Next Steps
+- [ ] Constant Buffer를 사용한 동적 렌더링 (회전하는 삼각형)
+- [ ] Root Signature에 CBV 바인딩
+- [ ] DX12DescriptorHeap 개선 (CBV/SRV/UAV 통합)
+- [ ] 카메라 시스템
+- [ ] 텍스처 로딩
+- [ ] 기본 조명
+
+---
+
 ## 2025-10-26 - Mesh/Material 추상화 및 PSO 캐싱 시스템
 
 ### Overview
