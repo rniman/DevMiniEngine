@@ -8,6 +8,61 @@
 
 ---
 
+## 2025-10-27 - CBV를 이용한 회전 렌더링 완성
+
+### Tasks
+- [x] 10_RotatingTriangle 샘플 구현
+- [x] Constant Buffer View (CBV) 바인딩
+- [x] Root Signature에 CBV 파라미터 추가
+- [x] HLSL cbuffer 사용법 학습
+- [x] Z축 회전 애니메이션
+
+### Decisions
+
+**MVP 행렬 전략**
+- 현재: Model만 사용 (회전)
+- View: 항등 행렬
+- Projection: 항등 행렬 (2D)
+- 향후: 원근 투영 + 카메라 추가 예정
+
+**Constant Buffer 사용**
+- 프레임별 업데이트 (매 프레임 회전 각도 변경)
+- CPU→GPU 데이터 전송 성공
+- Upload Heap 기반 동적 업데이트
+
+### Implementation
+
+**Root Signature (CBV 포함)**
+```cpp
+CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+rootParameters[0].InitAsConstantBufferView(0, 0, 
+    D3D12_ROOT_DESCRIPTOR_FLAG_NONE, 
+    D3D12_SHADER_VISIBILITY_VERTEX);
+```
+
+**HLSL Shader (cbuffer 사용)**
+```hlsl
+cbuffer MVPConstants : register(b0)
+{
+    float4x4 MVP;
+};
+```
+
+### Lessons Learned
+- CBV는 Descriptor Heap 없이 직접 GPU 주소로 바인딩 가능
+- Root Parameter로 CBV를 사용하면 간단하지만 Root Signature 크기 증가
+- 프레임별 Constant Buffer 업데이트가 CPU-GPU 동기화 핵심
+- Z축 회전 시 종횡비 문제 → 향후 Projection 행렬로 해결 필요
+
+### Next Steps
+- [ ] 카메라 시스템 (View 행렬)
+- [ ] 원근 투영 (Projection 행렬)
+- [ ] 텍스처 로딩 및 샘플링
+- [ ] Depth Buffer & Depth Test
+- [ ] 여러 객체 렌더링 (다중 Draw Call)
+
+---
+
 ## 2025-10-27 - Constant Buffer 및 Root Signature 리팩토링
 
 ### Tasks
