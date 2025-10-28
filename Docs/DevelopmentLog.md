@@ -8,6 +8,58 @@
 
 ---
 
+## 2025-10-28 - 카메라 시스템 구현 완성
+
+### Tasks
+- [x] Camera 베이스 클래스 (View 행렬 공통 로직)
+- [x] PerspectiveCamera (FOV 기반 원근 투영)
+- [x] OrthographicCamera (크기 기반 직교 투영)
+- [x] 11_CameraTest 샘플 검증
+
+### Decisions
+
+**아키텍처**
+- Camera 추상 클래스로 View 행렬 관리 통합
+- 투영 방식만 PerspectiveCamera/OrthographicCamera에서 구현
+- Dirty Flag 패턴으로 불필요한 재계산 방지
+
+**주요 기능**
+- SetLookAt(position, target, up) 방식
+- 카메라 이동/회전 헬퍼 (MoveForward, RotateYaw 등)
+- DirectXMath 기반 SIMD 최적화
+
+### Implementation
+
+```cpp
+class Camera
+{
+protected:
+    Vector3 mPosition, mTarget, mUpVector;
+    Matrix4x4 mViewMatrix, mProjectionMatrix, mViewProjectionMatrix;
+    bool mViewDirty = true, mProjectionDirty = true;
+    
+public:
+    virtual void UpdateProjectionMatrix() = 0;
+    void UpdateViewMatrix();
+    void SetLookAt(const Vector3& position, const Vector3& target, const Vector3& up);
+};
+```
+
+### Lessons Learned
+- View/Projection 독립적 Dirty Flag로 효율적 업데이트
+- **Left-Handed 좌표계** 사용 (DirectX 표준, Forward = +Z)
+- 동일 위치의 Perspective/Orthographic은 동일한 View 행렬 생성
+
+### Next Steps
+- [ ] MVP 행렬 통합 (12_CameraRendering)
+- [ ] 3D 큐브 회전 렌더링
+- [ ] 카메라 컨트롤러 (향후)
+- [ ] 텍스처 로딩 및 샘플링
+- [ ] Depth Buffer & Depth Test
+- [ ] 여러 객체 렌더링 (다중 Draw Call)
+
+---
+
 ## 2025-10-27 - CBV를 이용한 회전 렌더링 완성
 
 ### Tasks
