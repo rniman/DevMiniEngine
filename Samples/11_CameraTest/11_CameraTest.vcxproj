@@ -18,62 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\Graphics\Camera\Camera.cpp" />
-    <ClCompile Include="..\src\Graphics\Camera\OrthographicCamera.cpp" />
-    <ClCompile Include="..\src\Graphics\Camera\PerspectiveCamera.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12ConstantBuffer.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12DescriptorHeap.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12Device.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12RootSignature.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12IndexBuffer.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12PipelineStateCache.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12Renderer.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12ShaderCompiler.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12SwapChain.cpp" />
-    <ClCompile Include="..\src\Graphics\DX12\DX12VertexBuffer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\src\Graphics\Graphics.cpp" />
-    <ClCompile Include="..\src\Graphics\Material.cpp" />
-    <ClCompile Include="..\src\Graphics\Mesh.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\Graphics\Camera\Camera.h" />
-    <ClInclude Include="..\include\Graphics\Camera\OrthographicCamera.h" />
-    <ClInclude Include="..\include\Graphics\Camera\PerspectiveCamera.h" />
-    <ClInclude Include="..\include\Graphics\DX12\d3dx12.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12ConstantBuffer.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12DescriptorHeap.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12Device.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12RootSignature.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12IndexBuffer.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12PipelineStateCache.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12Renderer.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12ShaderCompiler.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12SwapChain.h" />
-    <ClInclude Include="..\include\Graphics\DX12\DX12VertexBuffer.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\include\Graphics\GraphicsTypes.h" />
-    <ClInclude Include="..\include\Graphics\Material.h" />
-    <ClInclude Include="..\include\Graphics\Mesh.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f1ab72ef-77af-4cdc-a6cf-ee061480bddb}</ProjectGuid>
-    <RootNamespace>Graphics</RootNamespace>
+    <ProjectGuid>{82201c8f-ca63-4651-9d12-a6269dea6a2b}</ProjectGuid>
+    <RootNamespace>My11CameraTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -91,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -121,6 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)intermediate\$(Configuration)\$(ProjectName)\</IntDir>
@@ -131,10 +88,11 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -144,12 +102,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -187,6 +146,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Core\Core.vcxproj">
+      <Project>{3ea077be-cd29-4842-b740-1d746785c778}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Engine\Graphics\Graphics.vcxproj">
+      <Project>{f1ab72ef-77af-4cdc-a6cf-ee061480bddb}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

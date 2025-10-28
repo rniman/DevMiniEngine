@@ -285,6 +285,16 @@ namespace Math
         return out;
     }
 
+    inline Matrix4x4 MatrixLookToLH(const Vector3& eye, const Vector3& direction, const Vector3& up)
+    {
+        VectorSIMD eyeVec = LoadVector3(eye);
+        VectorSIMD dirVec = LoadVector3(direction);
+        VectorSIMD upVec = LoadVector3(up);
+        Matrix4x4 out;
+        StoreMatrix(out, DirectX::XMMatrixLookToLH(eyeVec, dirVec, upVec));
+        return out;
+    }
+
     inline Matrix4x4 MatrixPerspectiveFovLH(float fovY, float aspect, float nearZ, float farZ)
     {
         Matrix4x4 out;
@@ -296,6 +306,30 @@ namespace Math
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixOrthographicLH(width, height, nearZ, farZ));
+        return out;
+    }
+
+    //=============================================================================
+    // 벡터/행렬 변환
+    //=============================================================================
+
+    // 축 기반 회전 행렬 생성 (Vector3 버전)
+    inline Matrix4x4 MatrixRotationAxis(const Vector3& axis, float angle)
+    {
+        VectorSIMD axisVec = LoadVector3(axis);
+        Matrix4x4 out;
+        StoreMatrix(out, DirectX::XMMatrixRotationAxis(axisVec, angle));
+        return out;
+    }
+
+    // 벡터를 행렬로 변환 (Normal 변환용)
+    inline Vector3 Vector3TransformNormal(const Vector3& v, const Matrix4x4& m)
+    {
+        VectorSIMD vec = LoadVector3(v);
+        MatrixSIMD mat = LoadMatrix(m);
+        VectorSIMD result = DirectX::XMVector3TransformNormal(vec, mat);
+        Vector3 out;
+        StoreVector3(out, result);
         return out;
     }
 

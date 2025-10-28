@@ -15,6 +15,12 @@
     <Filter Include="Source Files\DX12">
       <UniqueIdentifier>{14c7942a-5417-4d87-ae0b-5ed716494d39}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Camera">
+      <UniqueIdentifier>{8e34b5c8-5175-4880-a272-49a1051278a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Camera">
+      <UniqueIdentifier>{ef559efc-fc34-42f3-a194-107f5306c2a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp">
@@ -61,6 +67,15 @@
     </ClCompile>
     <ClCompile Include="..\src\Graphics\DX12\DX12ConstantBuffer.cpp">
       <Filter>Source Files\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\Camera\Camera.cpp">
+      <Filter>Source Files\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\Camera\PerspectiveCamera.cpp">
+      <Filter>Source Files\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Graphics\Camera\OrthographicCamera.cpp">
+      <Filter>Source Files\Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +126,15 @@
     </ClInclude>
     <ClInclude Include="..\include\Graphics\DX12\DX12ConstantBuffer.h">
       <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\Camera\Camera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\Camera\PerspectiveCamera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\Camera\OrthographicCamera.h">
+      <Filter>Header Files\Camera</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
