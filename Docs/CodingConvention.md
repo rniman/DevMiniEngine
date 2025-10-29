@@ -22,6 +22,7 @@
 18. [멀티스레딩](#18-멀티스레딩)
 19. [안티패턴](#19-안티패턴)
 20. [전처리 지시자 및 매크로](#20-전처리-지시자-및-매크로)
+21. [기본 타입 사용 규칙](#21-기본-타입-사용-규칙)
 
 ---
 
@@ -1493,4 +1494,189 @@ ThrowIfFailed(hr, "Failed to create device");
 
 ---
 
-**최종 업데이트**: 2025-10-17
+## 21. 기본 타입 사용 규칙
+
+### 타입 정의 (Core::Types.h)
+
+프로젝트는 플랫폼 독립성과 일관성을 위해 `Types.h`에서 정의된 타입을 사용합니다.
+
+#### 정수 타입
+```cpp
+// 부호 있는 정수
+Core::int8   // -128 ~ 127
+Core::int16  // -32,768 ~ 32,767
+Core::int32  // -2,147,483,648 ~ 2,147,483,647
+Core::int64  // 64비트 부호 있는 정수
+
+// 부호 없는 정수
+Core::uint8   // 0 ~ 255
+Core::uint16  // 0 ~ 65,535
+Core::uint32  // 0 ~ 4,294,967,295
+Core::uint64  // 64비트 부호 없는 정수
+```
+
+#### 부동소수점 타입
+```cpp
+Core::float32  // 32비트 부동소수점 (IEEE 754)
+Core::float64  // 64비트 부동소수점 (IEEE 754)
+```
+
+#### 메모리 및 크기 타입
+```cpp
+Core::size_t  // 메모리 크기, 배열 크기, 오프셋 (플랫폼 종속)
+Core::byte    // 원시 바이트 데이터 (숫자 연산 X)
+```
+
+---
+
+### 사용 원칙
+
+#### 1. 엔진 내부 코드
+**모든 엔진 코드는 `Core::` 타입 사용**
+```cpp
+// ✅ 좋은 예
+Core::uint32 frameIndex = 0;
+Core::float32 deltaTime = 0.016f;
+Core::int32 vertexCount = 1024;
+
+// ❌ 나쁜 예
+int frameIndex = 0;           // 크기 플랫폼 종속
+unsigned int count = 0;       // 가독성 떨어짐
+float deltaTime = 0.016f;     // float32인지 불명확
+```
+
+#### 2. API 경계 (External API Boundary)
+**외부 API와의 경계에서는 `static_cast<타입>()` 사용**
+
+외부 API(Win32, DirectX 등)는 고유 타입을 사용하므로, API 호출 시점에 명시적 변환이 필요합니다.
+```cpp
+// DirectX 12 API 예시
+void DX12SwapChain::Initialize(Core::uint32 width, Core::uint32 height)
+{
+    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    
+    // API 경계에서 static_cast<타입>()로 명시적 변환
+    desc.Width = static_cast<UINT>(width);
+    desc.Height = static_cast<UINT>(height);
+    desc.BufferCount = static_cast<UINT>(FRAME_BUFFER_COUNT);
+}
+
+// Win32 API 예시
+void Window::Create(Core::int32 x, Core::int32 y, Core::uint32 width, Core::uint32 height)
+{
+    mHwnd = CreateWindowEx(
+        0, mClassName, mTitle, WS_OVERLAPPEDWINDOW,
+        static_cast<int>(x),
+        static_cast<int>(y),
+        static_cast<int>(width),
+        static_cast<int>(height),
+        nullptr, nullptr, mInstance, this
+    );
+}
+```
+
+#### 3. 상수 및 리터럴
+```cpp
+// 정수 상수
+constexpr Core::uint32 MAX_FRAME_COUNT = 3;
+constexpr Core::int32 DEFAULT_WIDTH = 1280;
+
+// 부동소수점 상수 (접미사 명시)
+constexpr Core::float32 PI = 3.14159f;          // float32는 f
+constexpr Core::float64 EPSILON = 1e-10;        // float64는 접미사 없음
+
+// 큰 상수는 밑줄로 구분
+constexpr Core::uint64 MAX_MEMORY = 1'073'741'824;  // 1GB
+```
+
+#### 4. 루프 카운터
+```cpp
+// 배열 크기나 인덱스는 size_t
+for (Core::size_t i = 0; i < vertices.size(); ++i)
+{
+    ProcessVertex(vertices[i]);
+}
+
+// 명확한 범위가 있는 경우 uint32
+for (Core::uint32 frameIndex = 0; frameIndex < MAX_FRAME_COUNT; ++frameIndex)
+{
+    ResetFrameResources(frameIndex);
+}
+```
+
+---
+
+### 타입 선택 가이드
+
+| 용도 | 타입 | 예시 |
+|------|------|------|
+| **일반 카운터/인덱스** | `Core::uint32` | `Core::uint32 triangleCount = 0;` |
+| **메모리 크기/배열 인덱스** | `Core::size_t` | `Core::size_t bufferSize = 1024;` |
+| **플래그/비트마스크** | `Core::uint32/uint64` | `Core::uint32 flags = FLAG_A \| FLAG_B;` |
+| **좌표/위치 (부호 필요)** | `Core::int32` | `Core::int32 mouseX = -100;` |
+| **수학 연산** | `Core::float32` | `Core::float32 deltaTime = 0.016f;` |
+| **고정밀 계산** | `Core::float64` | `Core::float64 preciseTime = 0.0;` |
+
+---
+
+### 금지 사항
+```cpp
+// ❌ 표준 타입 직접 사용 금지
+int count;           // Core::int32 사용
+unsigned int flags;  // Core::uint32 사용
+float time;          // Core::float32 사용
+long long value;     // Core::int64 사용
+
+// ❌ 플랫폼별 타입 금지 (API 경계 제외)
+DWORD frameIndex;    // Core::uint32 + static_cast<타입>() 사용
+UINT width;          // Core::uint32 + static_cast<타입>() 사용
+```
+
+---
+
+### 종합 예시
+```cpp
+class DX12VertexBuffer
+{
+public:
+    void Initialize(
+        ID3D12Device* device,
+        const void* vertexData,
+        Core::size_t vertexSize,
+        Core::uint32 vertexCount
+    )
+    {
+        // 내부 연산은 Core 타입
+        Core::size_t bufferSize = vertexSize * vertexCount;
+        
+        // API 호출 시 static_cast<타입>()
+        D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(
+            static_cast<UINT64>(bufferSize)
+        );
+        
+        mVertexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        mVertexBufferView.StrideInBytes = static_cast<UINT>(vertexSize);
+        
+        // 내부 저장은 Core 타입
+        mVertexCount = vertexCount;
+    }
+
+private:
+    Core::uint32 mVertexCount = 0;
+};
+```
+
+---
+
+### 요약
+
+| 상황 | 사용 방법 | 예시 |
+|------|----------|------|
+| **엔진 내부** | `Core::` 타입 | `Core::uint32 count` |
+| **API 경계** | `static_cast<타입>()` | `static_cast<UINT>(count)` |
+| **상수 정의** | `constexpr Core::` | `constexpr Core::uint32 MAX = 3` |
+| **표준 타입** | **사용 금지** | ~~`int`, `unsigned`, `float`~~ |
+
+---
+
+**최종 업데이트**: 2025-10-29
