@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics

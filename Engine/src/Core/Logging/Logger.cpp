@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Core/Logging/Logger.h"
 
 using namespace std;

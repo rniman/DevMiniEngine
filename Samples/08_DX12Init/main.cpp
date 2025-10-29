@@ -5,6 +5,16 @@
 #include "Core/Logging/ConsoleSink.h"
 #include "Core/Logging/LogMacros.h"
 
+#include <d3d12.h>
+#include <dxgi1_6.h>
+
+#pragma warning(push, 0)
+#include "Graphics/DX12/d3dx12.h"
+#pragma warning(pop)
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+
 // Graphics headers
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
@@ -28,7 +38,7 @@ void RenderFrame(Graphics::DX12Device& device)
     auto* rtvHeap = swapChain->GetRTVHeap();
 
     // Get current back buffer index
-    Core::uint32 backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+    Core::uint32 backBufferIndex = static_cast<Core::uint32>(swapChain->GetCurrentBackBufferIndex());
     
     // 현재 Back Buffer에 대한 GPU의 사용이 끝났는지 확인합니다.
     

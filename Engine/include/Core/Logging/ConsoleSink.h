@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Core/Types.h"
 #include "Core/Logging/LogSink.h"
+#include <string>
 
 namespace Core
 {

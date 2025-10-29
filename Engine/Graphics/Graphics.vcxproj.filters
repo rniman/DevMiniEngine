@@ -77,6 +77,9 @@
     <ClCompile Include="..\src\Graphics\Camera\OrthographicCamera.cpp">
       <Filter>Source Files\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Graphics\DX12\d3dx12.h">
@@ -135,6 +138,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Graphics\Camera\OrthographicCamera.h">
       <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

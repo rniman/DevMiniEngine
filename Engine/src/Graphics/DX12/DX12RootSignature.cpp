@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12RootSignature.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -29,9 +30,9 @@ namespace Graphics
 		// Root Signature Desc 1.1 »ý¼º
 		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSigDesc;
 		rootSigDesc.Init_1_1(
-			numParameters,
+			static_cast<UINT>(numParameters),
 			parameters,
-			numStaticSamplers,
+			static_cast<UINT>(numStaticSamplers),
 			staticSamplers,
 			flags
 		);
@@ -77,7 +78,8 @@ namespace Graphics
 
 		LOG_INFO(
 			"Root Signature created successfully (%u parameters, %u samplers)",
-			numParameters, numStaticSamplers
+			numParameters,
+			numStaticSamplers
 		);
 
 		return true;

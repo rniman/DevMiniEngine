@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Types.h"
 #include "Core/Memory/Allocator.h"
 
 namespace Core
@@ -132,7 +133,7 @@ namespace Core
              * @brief 남은 여유 공간
              * @return 할당 가능한 바이트 수 (대략적, 패딩 미포함)
              */
-            size_t GetFreeSpace() const { return mSize - mOffset; }
+            size_t GetAvailableSize() const { return mSize - mOffset; }
 
         private:
             void* mMemory;

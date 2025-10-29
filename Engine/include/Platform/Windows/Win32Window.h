@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Types.h"
+#include "Platform/PlatformTypes.h"
 #include "Platform/Window.h"
 #include "Platform/Input.h"
 
@@ -43,18 +45,18 @@ namespace Platform
         void UnregisterWindowClass();
 
         // Win32 메시지 핸들러 (정적 - OS 콜백)
-        static long long __stdcall WindowProc(
+        static LRESULT CALLBACK WindowProc(
             HWND__* hwnd,
-            unsigned int msg,
-            unsigned long long wParam,
-            long long lParam
+            UINT msg,
+            WPARAM wParam,
+            LPARAM lParam
         );
-
+        
         // 인스턴스 메시지 핸들러
-        long long HandleMessage(
-            unsigned int msg,
-            unsigned long long wParam,
-            long long lParam
+        LRESULT  HandleMessage(
+            UINT msg,
+            WPARAM wParam,
+            LPARAM lParam
         );
 
         // 멤버 변수

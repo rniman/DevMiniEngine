@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12SwapChain.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -142,7 +143,7 @@ namespace Graphics
 		return mBackBuffers[mCurrentBackBufferIndex].Get();
 	}
 
-	ID3D12Resource* DX12SwapChain::GetBackBuffer(Core::uint32 index) const
+	ID3D12Resource* DX12SwapChain::GetBackBuffer(size_t index) const
 	{
 		if (!IsInitialized() || index >= mBackBuffers.size())
 		{
@@ -172,17 +173,22 @@ namespace Graphics
 			return true;
 		}
 
-		LOG_INFO("[DX12SwapChain] Resizing SwapChain from %u x %u to %u x %u",
-			mWidth, mHeight, width, height);
+		LOG_INFO(
+			"[DX12SwapChain] Resizing SwapChain from %u x %u to %u x %u",
+			mWidth,
+			mHeight,
+			width,
+			height
+		);
 
 		// Back Buffer 해제
 		ReleaseBackBuffers();
 
 		// SwapChain 버퍼 리사이즈
 		HRESULT hr = mSwapChain->ResizeBuffers(
-			mBufferCount,
-			width,
-			height,
+			static_cast<UINT>(mBufferCount),
+			static_cast<UINT>(width),
+			static_cast<UINT>(height),
 			mFormat,
 			DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
 		);
@@ -217,14 +223,14 @@ namespace Graphics
 
 		// SwapChain 설정
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-		swapChainDesc.Width = mWidth;
-		swapChainDesc.Height = mHeight;
+		swapChainDesc.Width = static_cast<UINT>(mWidth);
+		swapChainDesc.Height = static_cast<UINT>(mHeight);
 		swapChainDesc.Format = mFormat;
 		swapChainDesc.Stereo = FALSE;
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = mBufferCount;
+		swapChainDesc.BufferCount = static_cast<UINT>(mBufferCount);
 		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -262,7 +268,7 @@ namespace Graphics
 		}
 
 		// 초기 Back Buffer 인덱스 가져오기
-		mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+		mCurrentBackBufferIndex = static_cast<uint32>(mSwapChain->GetCurrentBackBufferIndex());
 
 		LOG_INFO("[DX12SwapChain] SwapChain created successfully");
 		return true;
@@ -271,12 +277,12 @@ namespace Graphics
 	bool DX12SwapChain::GetBackBufferResources()
 	{
 		LOG_INFO("[DX12SwapChain] Getting Back Buffer resources...");
+		size_t bufferCount = static_cast<size_t>(mBufferCount);
+		mBackBuffers.resize(bufferCount);
 
-		mBackBuffers.resize(mBufferCount);
-
-		for (Core::uint32 i = 0; i < mBufferCount; ++i)
+		for (size_t i = 0; i < bufferCount; ++i)
 		{
-			HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mBackBuffers[i]));
+			HRESULT hr = mSwapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&mBackBuffers[i]));
 			if (FAILED(hr))
 			{
 				LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer %u (HRESULT: 0x%08X)", i, hr);
@@ -285,11 +291,11 @@ namespace Graphics
 
 			// 디버그 이름 설정
 			wchar_t name[32];
-			swprintf_s(name, L"BackBuffer[%u]", i);
+			swprintf_s(name, L"BackBuffer[%llu]", i);
 			mBackBuffers[i]->SetName(name);
 		}
 
-		LOG_INFO("[DX12SwapChain] Back Buffer resources acquired (%u buffers)", mBufferCount);
+		LOG_INFO("[DX12SwapChain] Back Buffer resources acquired (%u buffers)", bufferCount);
 		return true;
 	}
 
@@ -327,7 +333,7 @@ namespace Graphics
 		// 백 버퍼를 위한 RTV 생성
 		for (Core::uint32 i = 0; i < FRAME_BUFFER_COUNT; ++i)
 		{
-			ID3D12Resource* backBuffer = GetBackBuffer(i);
+			ID3D12Resource* backBuffer = GetBackBuffer(static_cast<size_t>(i));
 			if (!backBuffer)
 			{
 				LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer %u", i);

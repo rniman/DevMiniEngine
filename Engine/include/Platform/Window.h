@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Core/Types.h"
+#include "Platform/PlatformTypes.h"
 #include "Platform/Input.h"
 #include <functional>
+#include <memory>
 
 // Windows 타입 전방 선언 (Windows.h 오염 방지)
 struct HWND__;
@@ -93,6 +96,6 @@ namespace Platform
      * @brief 플랫폼별 윈도우 생성
      * @return 플랫폼에 맞는 Window 구현 (Windows: Win32Window)
      */
-    Core::UniquePtr<Window> CreatePlatformWindow();
+    std::unique_ptr<Window> CreatePlatformWindow();
 
 } // namespace Platform

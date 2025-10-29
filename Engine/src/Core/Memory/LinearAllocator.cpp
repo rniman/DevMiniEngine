@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "Core/Memory/LinearAllocator.h"
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h" 
-#include <cstdlib>
 
 using namespace std;
 
@@ -43,14 +43,14 @@ namespace Core
             void* const currentPtr = static_cast<char*>(mMemory) + mOffset;
             void* const alignedPtr = AlignPointer(currentPtr, alignment);
             const size_t padding = static_cast<char*>(alignedPtr) - static_cast<char*>(currentPtr);
-
+            
             if (mOffset + padding + size > mSize)
             {
                 LOG_ERROR("LinearAllocator out of memory: requested %zu bytes, available %zu bytes", size, mSize - mOffset);
                 CORE_ASSERT(false, "LinearAllocator out of memory");
                 return nullptr;
             }
-
+            
             mOffset += padding + size;
             mAllocationCount++;
 

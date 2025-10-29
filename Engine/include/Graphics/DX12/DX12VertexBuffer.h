@@ -1,6 +1,6 @@
 #pragma once
 #include "Graphics/GraphicsTypes.h"
-#include "Math/MathTypes.h"
+#include <d3d12.h> 
 
 namespace Graphics
 {
@@ -43,8 +43,8 @@ namespace Graphics
 			DX12CommandQueue* commandQueue,
 			DX12CommandContext* commandContext,
 			const void* vertexData,
-			Core::uint32 vertexCount,
-			Core::uint32 vertexStride
+			size_t vertexCount,
+			size_t vertexStride
 		);
 
 		void Shutdown();
@@ -55,7 +55,7 @@ namespace Graphics
 		 * @return D3D12_VERTEX_BUFFER_VIEW 구조체
 		 */
 		D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return mVertexBufferView; }
-		Core::uint32 GetVertexCount() const { return mVertexCount; }
+		size_t GetVertexCount() const { return mVertexCount; }
 		bool IsInitialized() const { return mVertexBuffer != nullptr; }
 
 	private:
@@ -66,7 +66,7 @@ namespace Graphics
 		 * @param bufferSize 버퍼 크기 (바이트)
 		 * @return 성공 시 true, 실패 시 false
 		 */
-		bool CreateVertexBuffer(ID3D12Device* device, UINT bufferSize);
+		bool CreateVertexBuffer(ID3D12Device* device, size_t bufferSize);
 
 		/**
 		 * @brief Upload Heap에 임시 업로드 버퍼를 생성합니다
@@ -75,13 +75,13 @@ namespace Graphics
 		 * @param bufferSize 버퍼 크기 (바이트)
 		 * @return 성공 시 true, 실패 시 false
 		 */
-		bool CreateUploadBuffer(ID3D12Device* device, UINT bufferSize);
+		bool CreateUploadBuffer(ID3D12Device* device, size_t bufferSize);
 
-		ComPtr<ID3D12Resource> mVertexBuffer;              // GPU 전용 버텍스 버퍼 (Default Heap)
-		ComPtr<ID3D12Resource> mUploadBuffer;              // CPU→GPU 업로드 버퍼 (Upload Heap)
-		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView = {};  // 렌더링에 사용할 View
-		Core::uint32 mVertexCount = 0;                    // 버텍스 개수
-		Core::uint32 mVertexStride = 0;                   // 버텍스 하나의 크기 (바이트)
+		ComPtr<ID3D12Resource> mVertexBuffer;				// GPU 전용 버텍스 버퍼 (Default Heap)
+		ComPtr<ID3D12Resource> mUploadBuffer;				// CPU→GPU 업로드 버퍼 (Upload Heap)
+		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView = {};	// 렌더링에 사용할 View
+		size_t mVertexCount = 0;							// 버텍스 개수
+		size_t mVertexStride = 0;							// 버텍스 하나의 크기 (바이트)
 	};
 
 } // namespace Graphics

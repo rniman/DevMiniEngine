@@ -1,103 +1,74 @@
 #pragma once
 
+/**
+ * @file Types.h
+ *  엔진 전역 기본 타입 정의
+ *
+ * 플랫폼 독립적인 고정 크기 정수 타입과 부동소수점 타입을 정의합니다.
+ * 모든 엔진 코드는 표준 타입(int, unsigned 등) 대신 이 타입들을 사용합니다.
+ */
+
 #include <cstdint>
-#include <memory>
-#include <vector>
-#include <array>
-#include <string>
-#include <unordered_map>
-#include <map>
+#include <cstddef>
 
 namespace Core
 {
     //=============================================================================
-    // 기본 정수 타입
+    // 부호 있는 정수 타입
     //=============================================================================
+
+    // 8비트 부호 있는 정수 (-128 ~ 127)
     using int8 = std::int8_t;
+
+    // 16비트 부호 있는 정수 (-32,768 ~ 32,767)
     using int16 = std::int16_t;
+
+    // 32비트 부호 있는 정수 (-2,147,483,648 ~ 2,147,483,647)
     using int32 = std::int32_t;
+
+    // 64비트 부호 있는 정수
     using int64 = std::int64_t;
 
+    //=============================================================================
+    // 부호 없는 정수 타입
+    //=============================================================================
+
+    // 8비트 부호 없는 정수 (0 ~ 255)
     using uint8 = std::uint8_t;
+
+    // 16비트 부호 없는 정수 (0 ~ 65,535)
     using uint16 = std::uint16_t;
+
+    // 32비트 부호 없는 정수 (0 ~ 4,294,967,295)
     using uint32 = std::uint32_t;
+
+    // 64비트 부호 없는 정수
     using uint64 = std::uint64_t;
 
     //=============================================================================
     // 부동소수점 타입
     //=============================================================================
+
+    // 32비트 부동소수점 (IEEE 754)
     using float32 = float;
+
+    // 64비트 부동소수점 (IEEE 754)
     using float64 = double;
 
     //=============================================================================
-    // 크기 및 포인터 타입
+    // 메모리 및 크기 관련 타입
     //=============================================================================
+
+    // 메모리 크기, 배열 크기, 오프셋 등에 사용 (플랫폼에 따라 크기가 다름)
+    // 32비트: 4바이트, 64비트: 8바이트
     using size_t = std::size_t;
-    using ptrdiff_t = std::ptrdiff_t;
 
     //=============================================================================
-    // 문자열 타입
-    //=============================================================================
-    using String = std::string;
-    using WString = std::wstring;  // Windows Unicode
-
-    //=============================================================================
-    // 스마트 포인터
-    //=============================================================================
-    template<typename T>
-    using UniquePtr = std::unique_ptr<T>;
-
-    template<typename T>
-    using SharedPtr = std::shared_ptr<T>;
-
-    template<typename T>
-    using WeakPtr = std::weak_ptr<T>;
-
-    //=============================================================================
-    // 컨테이너
-    //=============================================================================
-    template<typename T>
-    using Vector = std::vector<T>;
-
-    template<typename T, size_t N>
-    using Array = std::array<T, N>;
-
-    template<typename Key, typename Value>
-    using HashMap = std::unordered_map<Key, Value>;
-
-    template<typename Key, typename Value>
-    using Map = std::map<Key, Value>;
-
-    //=============================================================================
-    // 헬퍼 함수
+    // 바이트 타입
     //=============================================================================
 
-    /**
-     * @brief UniquePtr 생성 헬퍼
-     *
-     * @tparam T 생성할 객체 타입
-     * @tparam Args 생성자 인자 타입들
-     * @param args 생성자에 전달할 인자들
-     * @return 생성된 UniquePtr<T>
-     */
-    template<typename T, typename... Args>
-    UniquePtr<T> MakeUnique(Args&&... args)
-    {
-        return std::make_unique<T>(std::forward<Args>(args)...);
-    }
-
-    /**
-     * @brief SharedPtr 생성 헬퍼
-     *
-     * @tparam T 생성할 객체 타입
-     * @tparam Args 생성자 인자 타입들
-     * @param args 생성자에 전달할 인자들
-     * @return 생성된 SharedPtr<T>
-     */
-    template<typename T, typename... Args>
-    SharedPtr<T> MakeShared(Args&&... args)
-    {
-        return std::make_shared<T>(std::forward<Args>(args)...);
-    }
+    // 원시 바이트 데이터 (메모리, 파일, 네트워크 등)
+    // 숫자 연산이 아닌 바이트 단위 조작에 사용
+    using byte = std::byte;
 
 } // namespace Core

@@ -1,8 +1,8 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12PipelineStateCache.h"
-#include "Graphics/Material.h"
-#include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Core/Logging/Logger.h"
-#include <functional>
+#include "Graphics/DX12/DX12ShaderCompiler.h"
+#include "Graphics/Material.h"
 
 using namespace std;
 
@@ -124,7 +124,7 @@ namespace Graphics
 
 		// Sample 설정
 		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.SampleDesc.Count = material.GetSampleCount();
+		psoDesc.SampleDesc.Count = static_cast<UINT>(material.GetSampleCount());
 		psoDesc.SampleDesc.Quality = material.GetSampleQuality();
 
 		// PSO 생성

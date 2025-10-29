@@ -1,6 +1,8 @@
+#include "pch.h"
+#include <fstream>
+
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Core/Logging/LogMacros.h"
-#include <fstream>
 
 using namespace std;
 

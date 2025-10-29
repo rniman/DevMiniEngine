@@ -1,5 +1,7 @@
 #pragma once
 #include "Graphics/GraphicsTypes.h"
+#include <array>
+#include <memory>
 
 namespace Graphics
 {

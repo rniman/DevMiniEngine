@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -38,7 +39,7 @@ namespace Graphics
 		// Descriptor Heap »ý¼º
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 		heapDesc.Type = type;
-		heapDesc.NumDescriptors = numDescriptors;
+		heapDesc.NumDescriptors = static_cast<UINT>(numDescriptors);
 		heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		heapDesc.NodeMask = 0;
 

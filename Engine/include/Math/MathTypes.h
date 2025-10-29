@@ -1,6 +1,7 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include "Core/Types.h"
 
 namespace Math
 {
@@ -41,11 +42,11 @@ namespace Math
     // 공통 상수
     //=============================================================================
 
-    constexpr float PI = 3.14159265358979323846f;
-    constexpr float TWO_PI = 6.28318530717958647692f;
-    constexpr float HALF_PI = 1.57079632679489661923f;
-    constexpr float DEG_TO_RAD = 0.01745329251994329576f;
-    constexpr float RAD_TO_DEG = 57.2957795130823208767f;
+    constexpr Core::float32 PI = 3.14159265358979323846f;
+    constexpr Core::float32 TWO_PI = 6.28318530717958647692f;
+    constexpr Core::float32 HALF_PI = 1.57079632679489661923f;
+    constexpr Core::float32 DEG_TO_RAD = 0.01745329251994329576f;
+    constexpr Core::float32 RAD_TO_DEG = 57.2957795130823208767f;
 
     //=============================================================================
     // 변환 헬퍼 함수

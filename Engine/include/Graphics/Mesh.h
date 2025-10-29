@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Math/MathTypes.h"
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/DX12/DX12VertexBuffer.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
-#include "Math/MathTypes.h"
 
 namespace Graphics
 {
@@ -88,9 +88,9 @@ namespace Graphics
 			DX12CommandQueue* commandQueue,
 			DX12CommandContext* commandContext,
 			const BasicVertex* vertices,
-			Core::uint32 vertexCount,
-			const Core::uint16* indices = nullptr,
-			Core::uint32 indexCount = 0
+			size_t vertexCount,
+			const uint16* indices = nullptr,
+			size_t indexCount = 0
 		);
 
 		void Shutdown();
@@ -107,8 +107,8 @@ namespace Graphics
 		void Draw(ID3D12GraphicsCommandList* commandList);
 
 		// Getters
-		Core::uint32 GetVertexCount() const { return mVertexBuffer.GetVertexCount(); }
-		Core::uint32 GetIndexCount() const { return mIndexBuffer.GetIndexCount(); }
+		size_t GetVertexCount() const { return mVertexBuffer.GetVertexCount(); }
+		size_t GetIndexCount() const { return mIndexBuffer.GetIndexCount(); }
 		bool IsInitialized() const { return mInitialized; }
 		bool HasIndexBuffer() const { return mIndexBuffer.IsInitialized(); }
 		D3D12_INPUT_LAYOUT_DESC GetInputLayout() const { return mInputLayout; }

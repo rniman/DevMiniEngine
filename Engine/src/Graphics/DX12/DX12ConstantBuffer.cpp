@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12ConstantBuffer.h"
 #include "Core/Logging/LogMacros.h"
 #include "Core/Assert.h"
@@ -46,7 +47,7 @@ namespace Graphics
 		D3D12_HEAP_PROPERTIES heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 
 		// 버퍼 리소스 설정
-		D3D12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(totalBufferSize);
+		D3D12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(static_cast<UINT64>(totalBufferSize));
 
 		// Upload Heap에 Constant Buffer 생성
 		HRESULT hr = device->CreateCommittedResource(

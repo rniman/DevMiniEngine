@@ -1,6 +1,6 @@
+#include "pch.h"
 #include "Core/Logging/FileSink.h"
-#include <iomanip>
-#include <sstream>
+
 
 using namespace std;
 

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/Camera/Camera.h"
 #include "Math/MathUtils.h"
 

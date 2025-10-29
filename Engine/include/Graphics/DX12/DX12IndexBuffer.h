@@ -43,7 +43,7 @@ namespace Graphics
 			DX12CommandQueue* commandQueue,
 			DX12CommandContext* commandContext,
 			const void* indexData,
-			Core::uint32 indexCount,
+			size_t indexCount,
 			DXGI_FORMAT indexFormat = DXGI_FORMAT_R16_UINT
 		);
 
@@ -55,7 +55,7 @@ namespace Graphics
 		 * @return D3D12_INDEX_BUFFER_VIEW 구조체
 		 */
 		D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const { return mIndexBufferView; }
-		Core::uint32 GetIndexCount() const { return mIndexCount; }
+		size_t GetIndexCount() const { return mIndexCount; }
 		bool IsInitialized() const { return mIndexBuffer != nullptr; }
 
 	private:
@@ -66,7 +66,7 @@ namespace Graphics
 		 * @param bufferSize 버퍼 크기 (바이트)
 		 * @return 성공 시 true, 실패 시 false
 		 */
-		bool CreateIndexBuffer(ID3D12Device* device, UINT bufferSize);
+		bool CreateIndexBuffer(ID3D12Device* device, size_t bufferSize);
 
 		/**
 		 * @brief Upload Heap에 임시 업로드 버퍼를 생성합니다
@@ -75,12 +75,12 @@ namespace Graphics
 		 * @param bufferSize 버퍼 크기 (바이트)
 		 * @return 성공 시 true, 실패 시 false
 		 */
-		bool CreateUploadBuffer(ID3D12Device* device, UINT bufferSize);
+		bool CreateUploadBuffer(ID3D12Device* device, size_t bufferSize);
 
 		ComPtr<ID3D12Resource> mIndexBuffer;              // GPU 전용 인덱스 버퍼 (Default Heap)
 		ComPtr<ID3D12Resource> mUploadBuffer;             // CPU→GPU 업로드 버퍼 (Upload Heap)
 		D3D12_INDEX_BUFFER_VIEW mIndexBufferView = {};   // 렌더링에 사용할 View
-		Core::uint32 mIndexCount = 0;                    // 인덱스 개수
+		size_t mIndexCount = 0;                    // 인덱스 개수
 		DXGI_FORMAT mIndexFormat = DXGI_FORMAT_UNKNOWN;  // 인덱스 포맷 (R16_UINT 또는 R32_UINT)
 	};
 

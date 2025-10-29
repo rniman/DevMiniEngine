@@ -1,8 +1,9 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12VertexBuffer.h"
 #include "Graphics/DX12/d3dx12.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
-#include <Core/Logging/LogMacros.h>
+#include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {
@@ -17,8 +18,8 @@ namespace Graphics
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
 		const void* vertexData,
-		Core::uint32 vertexCount,
-		Core::uint32 vertexStride
+		size_t vertexCount,
+		size_t vertexStride
 	)
 	{
 		if (!device || !commandQueue || !commandContext || !vertexData)
@@ -32,7 +33,7 @@ namespace Graphics
 		mVertexCount = vertexCount;
 		mVertexStride = vertexStride;
 
-		const UINT bufferSize = vertexCount * vertexStride;
+		const size_t bufferSize = vertexCount * vertexStride;
 
 		// Default Heap에 버텍스 버퍼 생성 (GPU 전용 메모리)
 		if (!CreateVertexBuffer(device, bufferSize))
@@ -69,7 +70,7 @@ namespace Graphics
 		commandList->CopyBufferRegion(
 			mVertexBuffer.Get(), 0,
 			mUploadBuffer.Get(), 0,
-			bufferSize
+			static_cast<UINT64>(bufferSize)
 		);
 
 		// COPY_DEST → VERTEX_AND_CONSTANT_BUFFER 상태 전이
@@ -92,12 +93,14 @@ namespace Graphics
 
 		// 렌더링에 사용할 View 초기화
 		mVertexBufferView.BufferLocation = mVertexBuffer->GetGPUVirtualAddress();
-		mVertexBufferView.SizeInBytes = bufferSize;
-		mVertexBufferView.StrideInBytes = mVertexStride;
+		mVertexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+		mVertexBufferView.StrideInBytes = static_cast<UINT>(mVertexStride);
 
 		LOG_INFO(
 			"[DX12VertexBuffer] Initialized successfully (Count: %u, Stride: %u, GPU Address: 0x%llX)",
-			vertexCount, vertexStride, mVertexBufferView.BufferLocation
+			vertexCount,
+			vertexStride, 
+			mVertexBufferView.BufferLocation
 		);
 
 		// TODO: [Future Optimization] DX12ResourceUploader 패턴으로 리팩토링
@@ -151,7 +154,7 @@ namespace Graphics
 		LOG_INFO("[DX12VertexBuffer] Vertex Buffer shut down successfully");
 	}
 
-	bool DX12VertexBuffer::CreateVertexBuffer(ID3D12Device* device, UINT bufferSize)
+	bool DX12VertexBuffer::CreateVertexBuffer(ID3D12Device* device, size_t bufferSize)
 	{
 		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
@@ -174,7 +177,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool DX12VertexBuffer::CreateUploadBuffer(ID3D12Device* device, UINT bufferSize)
+	bool DX12VertexBuffer::CreateUploadBuffer(ID3D12Device* device, size_t bufferSize)
 	{
 		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
 		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);

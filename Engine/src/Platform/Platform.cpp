@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Platform/Window.h"
 
 // ÇÃ·§Æûº° ±¸ÇöÃ¼
@@ -7,10 +8,10 @@
 
 namespace Platform
 {
-    Core::UniquePtr<Window> CreatePlatformWindow()
+    std::unique_ptr<Window> CreatePlatformWindow()
     {
 #ifdef _WIN32
-        return Core::MakeUnique<Win32Window>();
+        return std::make_unique<Win32Window>();
 #else
 #error "Unsupported platform: Only Windows is currently supported"
         return nullptr;

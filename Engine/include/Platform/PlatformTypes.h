@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Types.h"
+#include "string"
 
 namespace Platform
 {
@@ -10,7 +11,7 @@ namespace Platform
 
     struct WindowDesc
     {
-        Core::String title = "DevMiniEngine";
+        std::string title = "DevMiniEngine";
         Core::uint32 width = 1280;
         Core::uint32 height = 720;
         bool fullscreen = false;

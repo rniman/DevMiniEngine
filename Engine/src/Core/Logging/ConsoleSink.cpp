@@ -1,12 +1,5 @@
+#include "pch.h"
 #include "Core/Logging/ConsoleSink.h"
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <Windows.h>
-#endif
 
 using namespace std;
 

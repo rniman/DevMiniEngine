@@ -62,9 +62,9 @@ namespace Graphics
 		// Getters
 		IDXGISwapChain3* GetSwapChain() const { return mSwapChain.Get(); }
 		ID3D12Resource* GetCurrentBackBuffer() const;
-		ID3D12Resource* GetBackBuffer(Core::uint32 index) const;
+		ID3D12Resource* GetBackBuffer(size_t index) const;
 		DX12DescriptorHeap* GetRTVHeap() const { return mRTVHeap.get(); }
-		Core::uint32 GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
+		size_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
 		Core::uint32 GetBufferCount() const { return mBufferCount; }
 		Core::uint32 GetWidth() const { return mWidth; }
 		Core::uint32 GetHeight() const { return mHeight; }
@@ -90,7 +90,7 @@ namespace Graphics
 		std::unique_ptr<DX12DescriptorHeap> mRTVHeap;
 
 		// SwapChain Properties
-		Core::uint32 mCurrentBackBufferIndex;
+		size_t mCurrentBackBufferIndex;
 		Core::uint32 mBufferCount;
 		Core::uint32 mWidth;
 		Core::uint32 mHeight;

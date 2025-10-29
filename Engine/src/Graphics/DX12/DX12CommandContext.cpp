@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Core/Logging/LogMacros.h"
 

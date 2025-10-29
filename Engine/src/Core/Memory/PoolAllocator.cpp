@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "Core/Memory/PoolAllocator.h"
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h"
-#include <cstdlib>
 
 using namespace std;
 

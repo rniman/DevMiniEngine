@@ -1,12 +1,7 @@
+#include "pch.h"
 #include "Platform/Windows/Win32Window.h"
 #include "Core/Logging/LogMacros.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-// Windows 라이브러리 링크
-#pragma comment(lib, "user32.lib")
-#pragma comment(lib, "gdi32.lib")
 
 namespace Platform
 {
@@ -61,17 +56,17 @@ namespace Platform
         RECT rect = { 0, 0, static_cast<LONG>(mWidth), static_cast<LONG>(mHeight) };
         AdjustWindowRectEx(&rect, style, FALSE, exStyle);
 
-        int windowWidth = rect.right - rect.left;
-        int windowHeight = rect.bottom - rect.top;
+        Core::int32 windowWidth = rect.right - rect.left;
+        Core::int32 windowHeight = rect.bottom - rect.top;
 
         // 화면 중앙에 윈도우 배치
-        int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-        int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-        int windowX = (screenWidth - windowWidth) / 2;
-        int windowY = (screenHeight - windowHeight) / 2;
+        Core::int32 screenWidth = GetSystemMetrics(SM_CXSCREEN);
+        Core::int32 screenHeight = GetSystemMetrics(SM_CYSCREEN);
+        Core::int32 windowX = (screenWidth - windowWidth) / 2;
+        Core::int32 windowY = (screenHeight - windowHeight) / 2;
 
         // 3. 타이틀을 와이드 문자열로 변환
-        int wideLength = MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, nullptr, 0);
+        Core::int32 wideLength = MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, nullptr, 0);
         std::wstring wideTitle(wideLength, L'\0');
         MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, &wideTitle[0], wideLength);
 
@@ -217,11 +212,11 @@ namespace Platform
         }
     }
 
-    long long __stdcall Win32Window::WindowProc(
+    LRESULT CALLBACK Win32Window::WindowProc(
         HWND__* hwnd,
-        unsigned int msg,
-        unsigned long long wParam,
-        long long lParam
+        UINT msg,
+        WPARAM wParam,
+        LPARAM lParam
     )
     {
         Win32Window* window = nullptr;
@@ -255,10 +250,11 @@ namespace Platform
         return DefWindowProcW(reinterpret_cast<HWND>(hwnd), msg, wParam, lParam);
     }
 
-    long long Win32Window::HandleMessage(
-        unsigned int msg,
-        unsigned long long wParam,
-        long long lParam)
+    LRESULT Win32Window::HandleMessage(
+        UINT msg,
+        WPARAM wParam,
+        LPARAM lParam
+    )
     {
         switch (msg)
         {
@@ -281,8 +277,8 @@ namespace Platform
 
 		case WM_SIZE:
 		{
-			UINT width = LOWORD(lParam);
-			UINT height = HIWORD(lParam);
+            Core::uint32 width = LOWORD(lParam);
+            Core::uint32 height = HIWORD(lParam);
 
 			if (width != mWidth || height != mHeight)
 			{
@@ -341,11 +337,16 @@ namespace Platform
 		//=============================================================================
 		case WM_MOUSEMOVE:
 		{
-			// LOWORD/HIWORD는 부호 확장을 하지 않으므로 short로 명시적 캐스팅 필요
-			int xPos = static_cast<int>(static_cast<short>(LOWORD(lParam)));
-			int yPos = static_cast<int>(static_cast<short>(HIWORD(lParam)));
-			mInput.OnMouseMove(xPos, yPos);
-			return 0;
+            // LOWORD/HIWORD는 unsigned short 반환
+            // signed short로 변환하여 음수 좌표 처리
+            Core::int32 xPos = static_cast<Core::int32>(
+                static_cast<Core::int16>(LOWORD(lParam))
+                );
+            Core::int32 yPos = static_cast<Core::int32>(
+                static_cast<Core::int16>(HIWORD(lParam))
+                );
+            mInput.OnMouseMove(xPos, yPos);
+            return 0;
 		}
 
 		case WM_LBUTTONDOWN:
@@ -386,8 +387,8 @@ namespace Platform
 
 		case WM_MOUSEWHEEL:
 		{
-			int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-			float normalizedDelta = static_cast<float>(delta) / WHEEL_DELTA;
+			Core::int32 delta = GET_WHEEL_DELTA_WPARAM(wParam);
+			Core::float32 normalizedDelta = static_cast<Core::float32>(delta) / WHEEL_DELTA;
 			mInput.OnMouseWheel(normalizedDelta);
 			return 0;
 		}

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/Camera/OrthographicCamera.h"
 #include "Math/MathUtils.h"
 #include "Core/Logging/LogMacros.h"

@@ -14,7 +14,7 @@ int main()
     std::cout << "Created StackAllocator with 1024 bytes" << std::endl;
     std::cout << "Initial state:" << std::endl;
     std::cout << "  - Allocated: " << stack.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << stack.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << stack.GetAvailableSize() << " bytes" << std::endl;
     std::cout << std::endl;
 
     // Test 1: Basic allocation
@@ -22,7 +22,7 @@ int main()
     void* ptr1 = stack.Allocate(100, sizeof(void*));
     std::cout << "  - Pointer: " << ptr1 << std::endl;
     std::cout << "  - Allocated: " << stack.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << stack.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << stack.GetAvailableSize() << " bytes" << std::endl;
     std::cout << std::endl;
 
     // Test 2: Nested allocations with marker
@@ -42,7 +42,7 @@ int main()
     std::cout << "Test 3: Free to marker" << std::endl;
     stack.FreeToMarker(marker1);
     std::cout << "  - After FreeToMarker: " << stack.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << stack.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << stack.GetAvailableSize() << " bytes" << std::endl;
     std::cout << std::endl;
 
     // Test 4: Multiple scope levels

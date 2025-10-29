@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Memory/MemoryConfig.h"
 #include "Core/Types.h"
+#include "Core/Memory/MemoryConfig.h"
 
 namespace Core
 {

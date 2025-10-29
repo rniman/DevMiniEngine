@@ -1,59 +1,146 @@
+ï»¿// Engine/include/Core/Assert.h
 #pragma once
+
+/**
+ * @file Assert.h
+ * @brief ëŸ°íƒ€ì„ ì¡°ê±´ ê²€ì¦ ë§¤í¬ë¡œ
+ */
 
 #include <cassert>
 #include <stdexcept>
+#include <cstdio>
+#include <string>
+
+namespace Core
+{
+	namespace Detail
+	{
+		/**
+		 * @brief í¬ë§· ë¬¸ìì—´ì„ std::stringìœ¼ë¡œ ë³€í™˜
+		 * @param format printf ìŠ¤íƒ€ì¼ í¬ë§· ë¬¸ìì—´
+		 * @param ... ê°€ë³€ ì¸ì
+		 * @return í¬ë§·íŒ…ëœ ë¬¸ìì—´
+		 */
+		inline std::string FormatString(const char* format, ...)
+		{
+			char buffer[2048];
+
+			va_list args;
+			va_start(args, format);
+			std::vsnprintf(buffer, sizeof(buffer), format, args);
+			va_end(args);
+
+			return std::string(buffer);
+		}
+	}
+}
 
 //=============================================================================
-// ¾î¼³¼Ç ¸ÅÅ©·Î
+// ì–´ì„¤ì…˜ ë§¤í¬ë¡œ
 //=============================================================================
 
 /**
- * @brief µğ¹ö±× Àü¿ë ¾î¼³¼Ç
+ * @brief ë””ë²„ê·¸ ì „ìš© ì–´ì„¤ì…˜
  *
- * Debug ºôµå¿¡¼­´Â Ç¥ÁØ assert »ç¿ë, Release ºôµå¿¡¼­´Â ¿¹¿Ü ¹ß»ı.
- * "Àı´ë ¹ß»ıÇÏÁö ¾Ê¾Æ¾ß ÇÏ´Â" Á¶°Ç °ËÁõ¿¡ »ç¿ë.
+ * Debug ë¹Œë“œì—ì„œëŠ” í‘œì¤€ assert ì‚¬ìš©, Release ë¹Œë“œì—ì„œëŠ” ì˜ˆì™¸ ë°œìƒ.
+ * "ì ˆëŒ€ ë°œìƒí•˜ì§€ ì•Šì•„ì•¼ í•˜ëŠ”" ì¡°ê±´ ê²€ì¦ì— ì‚¬ìš©.
  *
- * @param condition °ËÁõÇÒ Á¶°Ç
- * @param message ½ÇÆĞ ½Ã Ç¥½ÃÇÒ ¸Ş½ÃÁö
+ * @param condition ê²€ì¦í•  ì¡°ê±´
+ * @param ... í¬ë§· ë¬¸ìì—´ ë° ì¸ì (printf ìŠ¤íƒ€ì¼)
  *
- * @note Debug ºôµå: assert·Î Áï½Ã Áß´Ü (µğ¹ö°Å ¿¬°á)
- * @note Release ºôµå: std::runtime_error ¿¹¿Ü ¹ß»ı
+ * @note Debug ë¹Œë“œ: assertë¡œ ì¦‰ì‹œ ì¤‘ë‹¨ (ë””ë²„ê±° ì—°ê²°)
+ * @note Release ë¹Œë“œ: std::runtime_error ì˜ˆì™¸ ë°œìƒ
  *
- * »ç¿ë ¿¹:
+ * ì‚¬ìš© ì˜ˆ:
  *   CORE_ASSERT(size > 0, "Size must be positive");
- *   CORE_ASSERT((alignment & (alignment - 1)) == 0, "Alignment must be power of 2");
+ *   CORE_ASSERT(index < count, "Index out of bounds: %zu >= %zu", index, count);
+ *   CORE_ASSERT(ptr != nullptr, "Null pointer: %s", GetDebugName());
  */
 #ifdef _DEBUG
-#define CORE_ASSERT(condition, message) \
-		assert((condition) && (message))
-#else
-#define CORE_ASSERT(condition, message) \
+#define CORE_ASSERT(condition, ...) \
 		do { \
 			if (!(condition)) { \
-				throw std::runtime_error(message); \
+				std::fprintf(stderr, "Assertion failed: "); \
+				std::fprintf(stderr, __VA_ARGS__); \
+				std::fprintf(stderr, "\n  Condition: %s\n", #condition); \
+				std::fprintf(stderr, "  File: %s:%d\n", __FILE__, __LINE__); \
+				std::fprintf(stderr, "  Function: %s\n", __FUNCTION__); \
+				assert(false && "CORE_ASSERT failed"); \
+			} \
+		} while(0)
+#else
+#define CORE_ASSERT(condition, ...) \
+		do { \
+			if (!(condition)) { \
+				std::string msg = Core::Detail::FormatString(__VA_ARGS__); \
+				throw std::runtime_error(msg); \
 			} \
 		} while(0)
 #endif
 
  /**
-  * @brief Ç×»ó °ËÁõÇÏ´Â ¾î¼³¼Ç
+  * @brief í•­ìƒ ê²€ì¦í•˜ëŠ” ì–´ì„¤ì…˜
   *
-  * Debug¿Í Release ºôµå ¸ğµÎ¿¡¼­ Ç×»ó °ËÁõ.
-  * "¿ÜºÎ ¿äÀÎÀ¸·Î ½ÇÆĞ °¡´ÉÇÑ" Á¶°Ç °ËÁõ¿¡ »ç¿ë.
+  * Debugì™€ Release ë¹Œë“œ ëª¨ë‘ì—ì„œ í•­ìƒ ê²€ì¦.
+  * "ì™¸ë¶€ ìš”ì¸ìœ¼ë¡œ ì‹¤íŒ¨ ê°€ëŠ¥í•œ" ì¡°ê±´ ê²€ì¦ì— ì‚¬ìš©.
   *
-  * @param condition °ËÁõÇÒ Á¶°Ç
-  * @param message ½ÇÆĞ ½Ã Ç¥½ÃÇÒ ¸Ş½ÃÁö
+  * @param condition ê²€ì¦í•  ì¡°ê±´
+  * @param ... í¬ë§· ë¬¸ìì—´ ë° ì¸ì (printf ìŠ¤íƒ€ì¼)
   *
-  * @note ¸ğµç ºôµå¿¡¼­ std::runtime_error ¿¹¿Ü ¹ß»ı
-  * @warning ¼º´É¿¡ ¹Î°¨ÇÑ ÇÖ ÆĞ½º¿¡¼­´Â »ç¿ë ÀÚÁ¦
+  * @note ëª¨ë“  ë¹Œë“œì—ì„œ std::runtime_error ì˜ˆì™¸ ë°œìƒ
+  * @warning ì„±ëŠ¥ì— ë¯¼ê°í•œ í•« íŒ¨ìŠ¤ì—ì„œëŠ” ì‚¬ìš© ìì œ
   *
-  * »ç¿ë ¿¹:
-  *   CORE_VERIFY(file != nullptr, "Failed to open file");
-  *   CORE_VERIFY(memory != nullptr, "Memory allocation failed");
+  * ì‚¬ìš© ì˜ˆ:
+  *   CORE_VERIFY(file != nullptr, "Failed to open file: %s", filename);
+  *   CORE_VERIFY(memory != nullptr, "Memory allocation failed: %zu bytes", size);
+  *   CORE_VERIFY(result == 0, "API call failed with error code: %d", result);
   */
-#define CORE_VERIFY(condition, message) \
+#define CORE_VERIFY(condition, ...) \
 	do { \
 		if (!(condition)) { \
-			throw std::runtime_error(message); \
+			std::string msg = Core::Detail::FormatString(__VA_ARGS__); \
+			std::fprintf(stderr, "Verification failed: %s\n", msg.c_str()); \
+			std::fprintf(stderr, "  Condition: %s\n", #condition); \
+			std::fprintf(stderr, "  File: %s:%d\n", __FILE__, __LINE__); \
+			throw std::runtime_error(msg); \
 		} \
 	} while(0)
+
+  //=============================================================================
+  // ì¶”ê°€ ìœ í‹¸ë¦¬í‹° ë§¤í¬ë¡œ
+  //=============================================================================
+
+  /**
+   * @brief êµ¬í˜„ë˜ì§€ ì•Šì€ ê¸°ëŠ¥ í‘œì‹œ
+   *
+   * ì‚¬ìš© ì˜ˆ:
+   *   void FutureFeature() {
+   *       CORE_NOT_IMPLEMENTED();
+   *   }
+   */
+#define CORE_NOT_IMPLEMENTED() \
+	CORE_ASSERT(false, "Not implemented: %s", __FUNCTION__)
+
+   /**
+	* @brief ë„ë‹¬í•´ì„œëŠ” ì•ˆ ë˜ëŠ” ì½”ë“œ í‘œì‹œ
+	*
+	* ì‚¬ìš© ì˜ˆ:
+	*   switch (type) {
+	*       case A: break;
+	*       case B: break;
+	*       default: CORE_UNREACHABLE();
+	*   }
+	*/
+#define CORE_UNREACHABLE() \
+	CORE_ASSERT(false, "Unreachable code: %s:%d", __FILE__, __LINE__)
+
+	/**
+	 * @brief í•­ìƒ ì‹¤íŒ¨í•˜ëŠ” ì–´ì„¤ì…˜
+	 *
+	 * ì‚¬ìš© ì˜ˆ:
+	 *   if (criticalError) {
+	 *       CORE_FAIL("Critical error: %s", errorMsg);
+	 *   }
+	 */
+#define CORE_FAIL(...) \
+	CORE_VERIFY(false, __VA_ARGS__)

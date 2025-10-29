@@ -40,13 +40,13 @@ namespace Graphics
 
 		// PSO 생성에 필요한 추가 설정
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE primitiveTopology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		UINT numRenderTargets = 1;
+		Core::uint32 numRenderTargets = 1;
 		DXGI_FORMAT rtvFormats[8] = { DXGI_FORMAT_R8G8B8A8_UNORM };  // 최대 8개
 		DXGI_FORMAT dsvFormat = DXGI_FORMAT_UNKNOWN;
 
 		// MSAA 설정
-		UINT sampleCount = 1;
-		UINT sampleQuality = 0;
+		Core::uint32 sampleCount = 1;
+		Core::uint32 sampleQuality = 0;
 	};
 
 	/**
@@ -91,11 +91,11 @@ namespace Graphics
 
 		// PSO 생성 시 필요한 추가 설정
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE GetPrimitiveTopology() const { return mPrimitiveTopology; }
-		UINT GetNumRenderTargets() const { return mNumRenderTargets; }
+		Core::uint32 GetNumRenderTargets() const { return mNumRenderTargets; }
 		const DXGI_FORMAT* GetRTVFormats() const { return mRTVFormats; }
 		DXGI_FORMAT GetDSVFormat() const { return mDSVFormat; }
-		UINT GetSampleCount() const { return mSampleCount; }
-		UINT GetSampleQuality() const { return mSampleQuality; }
+		Core::uint32 GetSampleCount() const { return mSampleCount; }
+		Core::uint32 GetSampleQuality() const { return mSampleQuality; }
 
 		/**
 		 * @brief Material 설정 기반 해시 값 계산
@@ -136,11 +136,11 @@ namespace Graphics
 
 		// PSO 생성 설정
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE mPrimitiveTopology;
-		UINT mNumRenderTargets;
+		Core::uint32 mNumRenderTargets;
 		DXGI_FORMAT mRTVFormats[8];  // D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT
 		DXGI_FORMAT mDSVFormat;
-		UINT mSampleCount;
-		UINT mSampleQuality;
+		Core::uint32 mSampleCount;
+		Core::uint32 mSampleQuality;
 
 		// 캐싱을 위한 해시 (지연 계산)
 		mutable size_t mCachedHash = 0;

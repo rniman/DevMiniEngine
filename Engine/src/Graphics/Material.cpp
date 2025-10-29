@@ -1,6 +1,6 @@
+#include "pch.h"
 #include "Graphics/Material.h"
 #include "Core/Logging/Logger.h"
-#include <functional>
 
 using namespace std;
 
@@ -36,7 +36,7 @@ namespace Graphics
 		mRasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
 		// RTV 포맷 복사
-		for (UINT i = 0; i < 8; ++i)
+		for (Core::uint32 i = 0; i < 8; ++i)
 		{
 			mRTVFormats[i] = desc.rtvFormats[i];
 		}
@@ -73,7 +73,7 @@ namespace Graphics
 
 		// RTV 포맷 기본값
 		mRTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-		for (UINT i = 1; i < 8; ++i)
+		for (Core::uint32 i = 1; i < 8; ++i)
 		{
 			mRTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 		}
@@ -130,7 +130,7 @@ namespace Graphics
 		}
 
 		// 나머지 렌더 타겟도 동일하게 설정
-		for (UINT i = 1; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+		for (Core::uint32 i = 1; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
 		{
 			blendDesc.RenderTarget[i] = rtBlend;
 		}
@@ -192,14 +192,14 @@ namespace Graphics
 		return mCachedHash;
 	}
 
-	size_t Material::HashString(const std::wstring& str)
+	size_t Material::HashString(const wstring& str)
 	{
-		return std::hash<std::wstring>()(str);
+		return std::hash<wstring>()(str);
 	}
 
-	size_t Material::HashString(const std::string& str)
+	size_t Material::HashString(const string& str)
 	{
-		return std::hash<std::string>()(str);
+		return std::hash<string>()(str);
 	}
 
 } // namespace Graphics

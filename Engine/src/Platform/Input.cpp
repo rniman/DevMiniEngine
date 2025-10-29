@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "Platform/Input.h"
-#include <cstring>
 
 namespace Platform
 {
@@ -115,7 +115,7 @@ namespace Platform
         return { mMousePosition.x - mPrevMousePosition.x, mMousePosition.y - mPrevMousePosition.y };
     }
 
-    float Input::GetMouseWheelDelta() const
+    Core::float32 Input::GetMouseWheelDelta() const
     {
         return mMouseWheelDelta;
     }
@@ -142,10 +142,10 @@ namespace Platform
         }
     }
 
-    void Input::OnMouseMove(int x, int y)
+    void Input::OnMouseMove(Core::int32 x, Core::int32 y)
     {
-        mMousePosition.x = static_cast<float>(x);
-        mMousePosition.y = static_cast<float>(y);
+        mMousePosition.x = static_cast<Core::float32>(x);
+        mMousePosition.y = static_cast<Core::float32>(y);
     }
 
     void Input::OnMouseButtonDown(MouseButton button)
@@ -166,7 +166,7 @@ namespace Platform
         }
     }
 
-    void Input::OnMouseWheel(float delta)
+    void Input::OnMouseWheel(Core::float32 delta)
     {
         mMouseWheelDelta = delta;
     }

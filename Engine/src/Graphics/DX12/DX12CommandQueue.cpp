@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -95,10 +96,10 @@ namespace Graphics
 		const Core::uint64 fenceValueToSignal = mNextFenceValue;
 		
 		// Command List 실행
-		mCommandQueue->ExecuteCommandLists(numCommandLists, commandLists);
+		mCommandQueue->ExecuteCommandLists(static_cast<UINT>(numCommandLists), commandLists);
 
 		// Fence 신호 전송
-		mCommandQueue->Signal(mFence.Get(), mNextFenceValue);
+		mCommandQueue->Signal(mFence.Get(), static_cast<UINT64>(mNextFenceValue));
 		mNextFenceValue++;
 
 		return fenceValueToSignal;
@@ -113,7 +114,7 @@ namespace Graphics
 		}
 
 		// 현재 Fence 값 신호 전송
-		Core::uint64 fenceValueToWaitFor = mNextFenceValue;
+		UINT64 fenceValueToWaitFor = static_cast<UINT64>(mNextFenceValue);
 		HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueToWaitFor);
 		if (FAILED(hr))
 		{
@@ -165,7 +166,7 @@ namespace Graphics
 
 		// 4. [최적화] GPU가 이미 이 값을 통과했는지 확인
 		// GetCompletedValue()는 스레드에 안전하며 빠릅니다.
-		if (mFence->GetCompletedValue() >= valueToWaitFor)
+		if (mFence->GetCompletedValue() >= static_cast<UINT64>(valueToWaitFor))
 		{
 			return true; // 이미 완료됨, CPU를 대기시킬 필요 없음
 		}
@@ -173,7 +174,7 @@ namespace Graphics
 		// 5. [대기] GPU가 아직 도달하지 못함. CPU 스레드를 재웁니다.
 
 		// GPU가 'valueToWaitFor' 값에 도달하면 mFenceEvent를 시그널(Signal)하도록 설정
-		HRESULT hr = mFence->SetEventOnCompletion(valueToWaitFor, mFenceEvent);
+		HRESULT hr = mFence->SetEventOnCompletion(static_cast<UINT64>(valueToWaitFor), mFenceEvent);
 		if (FAILED(hr))
 		{
 			LOG_ERROR("[DX12CommandQueue] Failed to set fence event (HRESULT: 0x%08X)", hr);

@@ -9,6 +9,16 @@
 #include "Math/MathUtils.h"
 
 // Graphics headers
+#include <d3d12.h>
+#include <dxgi1_6.h>
+
+#pragma warning(push, 0)
+#include "Graphics/DX12/d3dx12.h"
+#pragma warning(pop)
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+
 #include "Graphics/Mesh.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
@@ -210,7 +220,7 @@ void RenderFrame(
 	auto* swapChain = device.GetSwapChain();
 	auto* graphicsQueue = device.GetGraphicsQueue();
 	auto* rtvHeap = swapChain->GetRTVHeap();
-	Core::uint32 backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	Core::uint32 backBufferIndex = static_cast<Core::uint32>(swapChain->GetCurrentBackBufferIndex());
 	Core::uint32 frameIndex = renderer.GetCurrentFrameIndex();
 
 	// GPU가 현재 백 버퍼 사용을 완료할 때까지 대기

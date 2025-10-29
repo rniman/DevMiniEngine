@@ -32,7 +32,7 @@ namespace Core
                 LogCategory category,
                 const std::string& message,
                 const char* file,
-                int line
+                Core::int32 line
             );
 
             /**

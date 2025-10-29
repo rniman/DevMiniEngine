@@ -1,9 +1,71 @@
 #pragma once
 
+#include "Core/Types.h"
 #include "Math/MathTypes.h"
 
 namespace Math 
 {
+    //=============================================================================
+    // 부동소수점 비교 상수
+    //=============================================================================
+
+    /// @brief 기본 부동소수점 비교 임계값
+    constexpr Core::float32 EPSILON = 1e-6f;
+
+    /// @brief 더 엄격한 비교가 필요할 때
+    constexpr Core::float32 EPSILON_STRICT = 1e-8f;
+
+    /// @brief 덜 엄격한 비교 (렌더링 등)
+    constexpr Core::float32 EPSILON_LOOSE = 1e-4f;
+
+    //=============================================================================
+    // 부동소수점 비교 함수
+    //=============================================================================
+
+    /**
+     * @brief 부동소수점 값이 0에 가까운지 검사
+     * @param value 검사할 값
+     * @return 0에 가까우면 true
+     */
+    inline bool IsZero(Core::float32 value)
+    {
+        return (fabsf(value) < EPSILON);
+    }
+
+    /**
+     * @brief 부동소수점 값이 0에 가까운지 검사 (커스텀 epsilon)
+     * @param value 검사할 값
+     * @param epsilon 비교 임계값
+     * @return 0에 가까우면 true
+     */
+    inline bool IsZero(Core::float32 value, Core::float32 epsilon)
+    {
+        return (fabsf(value) < epsilon);
+    }
+
+    /**
+     * @brief 두 부동소수점 값이 거의 같은지 검사
+     * @param a 첫 번째 값
+     * @param b 두 번째 값
+     * @return 거의 같으면 true
+     */
+    inline bool IsEqual(Core::float32 a, Core::float32 b)
+    {
+        return IsZero(a - b);
+    }
+
+    /**
+     * @brief 두 부동소수점 값이 거의 같은지 검사 (커스텀 epsilon)
+     * @param a 첫 번째 값
+     * @param b 두 번째 값
+     * @param epsilon 비교 임계값
+     * @return 거의 같으면 true
+     */
+    inline bool IsEqual(Core::float32 a, Core::float32 b, Core::float32 epsilon)
+    {
+        return IsZero(a - b, epsilon);
+    }
+
     //=============================================================================
     // 벡터 연산
     //=============================================================================
@@ -28,7 +90,7 @@ namespace Math
         return out;
     }
 
-    inline Vector3 Multiply(const Vector3& v, float scalar)
+    inline Vector3 Multiply(const Vector3& v, Core::float32 scalar)
     {
         VectorSIMD vec = LoadVector3(v);
         VectorSIMD result = DirectX::XMVectorScale(vec, scalar);
@@ -37,7 +99,7 @@ namespace Math
         return out;
     }
 
-    inline float Dot(const Vector3& a, const Vector3& b)
+    inline Core::float32 Dot(const Vector3& a, const Vector3& b)
     {
         VectorSIMD va = LoadVector3(a);
         VectorSIMD vb = LoadVector3(b);
@@ -55,14 +117,14 @@ namespace Math
         return out;
     }
 
-    inline float Length(const Vector3& v)
+    inline Core::float32 Length(const Vector3& v)
     {
         VectorSIMD vec = LoadVector3(v);
         VectorSIMD result = DirectX::XMVector3Length(vec);
         return DirectX::XMVectorGetX(result);
     }
 
-    inline float LengthSquared(const Vector3& v)
+    inline Core::float32 LengthSquared(const Vector3& v)
     {
         VectorSIMD vec = LoadVector3(v);
         VectorSIMD result = DirectX::XMVector3LengthSq(vec);
@@ -78,12 +140,12 @@ namespace Math
         return out;
     }
 
-    inline float Distance(const Vector3& a, const Vector3& b)
+    inline Core::float32 Distance(const Vector3& a, const Vector3& b)
     {
         return Length(Subtract(b, a));
     }
 
-    inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
+    inline Vector3 Lerp(const Vector3& a, const Vector3& b, Core::float32 t)
     {
         VectorSIMD va = LoadVector3(a);
         VectorSIMD vb = LoadVector3(b);
@@ -137,7 +199,7 @@ namespace Math
     // 변환 행렬
     //=============================================================================
 
-    inline Matrix4x4 MatrixTranslation(float x, float y, float z)
+    inline Matrix4x4 MatrixTranslation(Core::float32 x, Core::float32 y, Core::float32 z)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixTranslation(x, y, z));
@@ -149,21 +211,21 @@ namespace Math
         return MatrixTranslation(v.x, v.y, v.z);
     }
 
-    inline Matrix4x4 MatrixRotationX(float angle)
+    inline Matrix4x4 MatrixRotationX(Core::float32 angle)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixRotationX(angle));
         return out;
     }
 
-    inline Matrix4x4 MatrixRotationY(float angle)
+    inline Matrix4x4 MatrixRotationY(Core::float32 angle)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixRotationY(angle));
         return out;
     }
 
-    inline Matrix4x4 MatrixRotationZ(float angle)
+    inline Matrix4x4 MatrixRotationZ(Core::float32 angle)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixRotationZ(angle));
@@ -172,7 +234,7 @@ namespace Math
 
     // Pitch, Yaw, Roll 복합 회전 (라디안)
     // 회전 적용 순서: Y(Yaw) → X(Pitch) → Z(Roll)
-    inline Matrix4x4 MatrixRotationRollPitchYaw(float pitch, float yaw, float roll)
+    inline Matrix4x4 MatrixRotationRollPitchYaw(Core::float32 pitch, Core::float32 yaw, Core::float32 roll)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll));
@@ -184,7 +246,7 @@ namespace Math
         return MatrixRotationRollPitchYaw(angles.x, angles.y, angles.z);
     }
 
-    inline Matrix4x4 MatrixScaling(float x, float y, float z)
+    inline Matrix4x4 MatrixScaling(Core::float32 x, Core::float32 y, Core::float32 z)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixScaling(x, y, z));
@@ -207,7 +269,7 @@ namespace Math
         return out;
     }
 
-    inline Quaternion QuaternionFromEuler(float pitch, float yaw, float roll)
+    inline Quaternion QuaternionFromEuler(Core::float32 pitch, Core::float32 yaw, Core::float32 roll)
     {
         VectorSIMD q = DirectX::XMQuaternionRotationRollPitchYaw(pitch, yaw, roll);
         Quaternion out;
@@ -215,7 +277,7 @@ namespace Math
         return out;
     }
 
-    inline Quaternion QuaternionFromAxisAngle(const Vector3& axis, float angle)
+    inline Quaternion QuaternionFromAxisAngle(const Vector3& axis, Core::float32 angle)
     {
         VectorSIMD axisVec = LoadVector3(axis);
         VectorSIMD q = DirectX::XMQuaternionRotationAxis(axisVec, angle);
@@ -243,7 +305,7 @@ namespace Math
         return out;
     }
 
-    inline Quaternion QuaternionSlerp(const Quaternion& a, const Quaternion& b, float t)
+    inline Quaternion QuaternionSlerp(const Quaternion& a, const Quaternion& b, Core::float32 t)
     {
         VectorSIMD qa = DirectX::XMLoadFloat4(&a);
         VectorSIMD qb = DirectX::XMLoadFloat4(&b);
@@ -295,14 +357,14 @@ namespace Math
         return out;
     }
 
-    inline Matrix4x4 MatrixPerspectiveFovLH(float fovY, float aspect, float nearZ, float farZ)
+    inline Matrix4x4 MatrixPerspectiveFovLH(Core::float32 fovY, Core::float32 aspect, Core::float32 nearZ, Core::float32 farZ)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ));
         return out;
     }
 
-    inline Matrix4x4 MatrixOrthographicLH(float width, float height, float nearZ, float farZ)
+    inline Matrix4x4 MatrixOrthographicLH(Core::float32 width, Core::float32 height, Core::float32 nearZ, Core::float32 farZ)
     {
         Matrix4x4 out;
         StoreMatrix(out, DirectX::XMMatrixOrthographicLH(width, height, nearZ, farZ));
@@ -314,7 +376,7 @@ namespace Math
     //=============================================================================
 
     // 축 기반 회전 행렬 생성 (Vector3 버전)
-    inline Matrix4x4 MatrixRotationAxis(const Vector3& axis, float angle)
+    inline Matrix4x4 MatrixRotationAxis(const Vector3& axis, Core::float32 angle)
     {
         VectorSIMD axisVec = LoadVector3(axis);
         Matrix4x4 out;
@@ -337,17 +399,27 @@ namespace Math
     // 유틸리티 함수
     //=============================================================================
 
-    inline float Clamp(float value, float min, float max)
+    inline Core::float32 InverseSqrt(Core::float32 value)
+    {
+        return 1.0f / sqrtf(value);
+    }
+
+    inline Core::float32 Lerp(Core::float32 a, Core::float32 b, Core::float32 t)
+    {
+        return a + (b - a) * t;
+    }
+
+    inline Core::float32 Clamp(Core::float32 value, Core::float32 min, Core::float32 max)
     {
         return (value < min) ? min : (value > max) ? max : value;
     }
 
-    inline float DegToRad(float degrees)
+    inline Core::float32 DegToRad(Core::float32 degrees)
     {
         return degrees * DEG_TO_RAD;
     }
 
-    inline float RadToDeg(float radians)
+    inline Core::float32 RadToDeg(Core::float32 radians)
     {
         return radians * RAD_TO_DEG;
     }

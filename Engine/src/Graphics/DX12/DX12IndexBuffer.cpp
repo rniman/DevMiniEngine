@@ -1,8 +1,9 @@
+#include "pch.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
 #include "Graphics/DX12/d3dx12.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
-#include <Core/Logging/LogMacros.h>
+#include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {
@@ -16,7 +17,7 @@ namespace Graphics
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
 		const void* indexData,
-		Core::uint32 indexCount,
+		size_t indexCount,
 		DXGI_FORMAT indexFormat
 	)
 	{
@@ -46,7 +47,7 @@ namespace Graphics
 
 		// 인덱스 크기 계산
 		const UINT indexSize = (indexFormat == DXGI_FORMAT_R16_UINT) ? sizeof(Core::uint16) : sizeof(Core::uint32);
-		const UINT bufferSize = indexCount * indexSize;
+		const size_t bufferSize = indexCount * indexSize;
 
 		// Default Heap에 GPU 전용 버퍼 생성
 		if (!CreateIndexBuffer(device, bufferSize))
@@ -105,7 +106,7 @@ namespace Graphics
 
 		// 렌더링에 사용할 View 초기화
 		mIndexBufferView.BufferLocation = mIndexBuffer->GetGPUVirtualAddress();
-		mIndexBufferView.SizeInBytes = bufferSize;
+		mIndexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
 		mIndexBufferView.Format = mIndexFormat;
 
 		LOG_INFO(
@@ -138,7 +139,7 @@ namespace Graphics
 		LOG_INFO("[DX12IndexBuffer] Index Buffer shut down successfully");
 	}
 
-	bool DX12IndexBuffer::CreateIndexBuffer(ID3D12Device* device, UINT bufferSize)
+	bool DX12IndexBuffer::CreateIndexBuffer(ID3D12Device* device, size_t bufferSize)
 	{
 		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
@@ -161,7 +162,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool DX12IndexBuffer::CreateUploadBuffer(ID3D12Device* device, UINT bufferSize)
+	bool DX12IndexBuffer::CreateUploadBuffer(ID3D12Device* device, size_t bufferSize)
 	{
 		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
 		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);

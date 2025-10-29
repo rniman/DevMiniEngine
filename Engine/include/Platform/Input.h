@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Platform/PlatformTypes.h"
+#include "Core/Types.h"
 #include "Math/MathTypes.h"
+#include "Platform/PlatformTypes.h"
 
 namespace Platform
 {
@@ -103,14 +104,14 @@ namespace Platform
 
         void OnKeyDown(KeyCode key);
         void OnKeyUp(KeyCode key);
-        void OnMouseMove(int x, int y);
+        void OnMouseMove(Core::int32 x, Core::int32 y);
         void OnMouseButtonDown(MouseButton button);
         void OnMouseButtonUp(MouseButton button);
-        void OnMouseWheel(float delta);
+        void OnMouseWheel(Core::float32 delta);
 
     private:
         // 키보드 상태
-        static constexpr size_t KEY_COUNT = 256;
+        static constexpr Core::uint32 KEY_COUNT = 256;
         bool mKeyState[KEY_COUNT];          // 현재 프레임 상태
         bool mPrevKeyState[KEY_COUNT];      // 이전 프레임 상태
 
@@ -120,7 +121,7 @@ namespace Platform
 
         Math::Vector2 mMousePosition;
         Math::Vector2 mPrevMousePosition;
-        float mMouseWheelDelta;
+        Core::float32 mMouseWheelDelta;
     };
 
 } // namespace Platform

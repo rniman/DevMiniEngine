@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
@@ -15,9 +16,9 @@ namespace Graphics
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
 		const BasicVertex* vertices,
-		Core::uint32 vertexCount,
+		size_t vertexCount,
 		const Core::uint16* indices,
-		Core::uint32 indexCount
+		size_t indexCount
 	)
 	{
 		// 유효성 검증
@@ -115,7 +116,7 @@ namespace Graphics
 		{
 			// DrawIndexedInstanced(IndexCount, InstanceCount, StartIndex, BaseVertex, StartInstance)
 			commandList->DrawIndexedInstanced(
-				mIndexBuffer.GetIndexCount(),
+				static_cast<UINT>(mIndexBuffer.GetIndexCount()),
 				1,  // 인스턴스 1개
 				0,  // 첫 번째 인덱스부터
 				0,  // 베이스 버텍스 오프셋 없음
@@ -126,7 +127,7 @@ namespace Graphics
 		{
 			// DrawInstanced(VertexCount, InstanceCount, StartVertex, StartInstance)
 			commandList->DrawInstanced(
-				mVertexBuffer.GetVertexCount(),
+				static_cast<UINT>(mVertexBuffer.GetVertexCount()),
 				1,  // 인스턴스 1개
 				0,  // 첫 번째 버텍스부터
 				0   // 첫 번째 인스턴스

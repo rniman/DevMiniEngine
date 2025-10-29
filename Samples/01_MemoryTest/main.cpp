@@ -23,7 +23,7 @@ int main()
     std::cout << "Created LinearAllocator with 1024 bytes" << std::endl;
     std::cout << "Initial state:" << std::endl;
     std::cout << "  - Allocated: " << allocator.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << allocator.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << allocator.GetAvailableSize() << " bytes" << std::endl;
     std::cout << std::endl;
 
     // Test 1: Basic allocation
@@ -31,7 +31,7 @@ int main()
     void* ptr1 = allocator.Allocate(100);
     std::cout << "  - Pointer: " << ptr1 << std::endl;
     std::cout << "  - Allocated: " << allocator.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << allocator.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << allocator.GetAvailableSize() << " bytes" << std::endl;
     std::cout << std::endl;
 
     // Test 2: Multiple allocations
@@ -39,7 +39,7 @@ int main()
     void* ptr2 = allocator.Allocate(200);
     std::cout << "  - Pointer: " << ptr2 << std::endl;
     std::cout << "  - Allocated: " << allocator.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << allocator.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << allocator.GetAvailableSize() << " bytes" << std::endl;
     std::cout << "  - Allocation count: " << allocator.GetAllocationCount() << std::endl;
     std::cout << std::endl;
 
@@ -55,7 +55,7 @@ int main()
     std::cout << "Test 4: Reset allocator" << std::endl;
     allocator.Reset();
     std::cout << "  - Allocated: " << allocator.GetAllocatedSize() << " bytes" << std::endl;
-    std::cout << "  - Free: " << allocator.GetFreeSpace() << " bytes" << std::endl;
+    std::cout << "  - Free: " << allocator.GetAvailableSize() << " bytes" << std::endl;
     std::cout << "  - Allocation count: " << allocator.GetAllocationCount() << std::endl;
     std::cout << std::endl;
 
