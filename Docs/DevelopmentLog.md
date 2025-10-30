@@ -8,6 +8,79 @@
 
 ---
 
+## 2025-10-30 - Depth-Stencil Buffer 및 3D 카메라 렌더링 구현
+
+### Tasks
+- [x] DX12DepthStencilBuffer 클래스 구현
+- [x] MVP 행렬 변환을 통한 3D 큐브 회전 렌더링
+- [x] PerspectiveCamera 사용
+
+### Decisions
+
+**Depth-Stencil Buffer 설계**
+- Default Heap에 리소스 생성, DSV Descriptor Heap 분리 관리
+- 포맷: `DXGI_FORMAT_D24_UNORM_S8_UINT` (24bit Depth + 8bit Stencil)
+- 초기 상태: `D3D12_RESOURCE_STATE_DEPTH_WRITE`
+- Clear Value: Depth 1.0, Stencil 0
+
+**MVP 변환 구조**
+- Model: Y축 회전 (시간 기반)
+- View: 카메라 위치 (0, 10, -20) → 원점
+- Projection: PerspectiveCamera 생성
+- 셰이더 전달 전 전치(Transpose) 수행
+
+**렌더링 파이프라인**
+```cpp
+1. Clear RTV + DSV
+2. OMSetRenderTargets(RTV + DSV)
+3. Root Signature/PSO 바인딩
+4. CBV 설정 (MVP 행렬)
+5. Mesh Draw
+```
+
+### Implementation
+
+**DX12DepthStencilBuffer**
+```cpp
+class DX12DepthStencilBuffer
+{
+private:
+    ComPtr<ID3D12Resource> mDepthStencilBuffer;
+    ComPtr<ID3D12DescriptorHeap> mDSVHeap;
+    D3D12_CPU_DESCRIPTOR_HANDLE mDSVHandle;
+    DXGI_FORMAT mFormat;
+    uint32 mWidth, mHeight;
+};
+```
+
+**MVP 업데이트**
+```cpp
+Matrix4x4 model = MatrixRotationY(time * DegToRad(90.0f));
+Matrix4x4 mvp = model * view * projection;
+constants.MVP = MatrixTranspose(mvp);
+constantBuffer.Update(frameIndex, &constants);
+```
+
+### Results
+
+- Depth Test를 통한 올바른 3D 렌더링 구현
+- Y축 기준 큐브 회전 애니메이션 동작
+- 큐브 6개 면의 깊이 기반 정렬 확인
+
+### Lessons Learned
+
+- 3D 렌더링에서 Depth Buffer는 필수 (Z-Fighting 방지)
+- 행렬 곱셈 순서 중요: Model → View → Projection
+- DirectX(행 우선) ↔ HLSL(열 우선) 차이로 전치 필요
+
+### Next Steps
+- [ ] 카메라 컨트롤러 (향후)
+- [ ] 텍스처 로딩 및 샘플링
+- [ ] 복잡한 메시 로딩
+- [ ] 여러 객체 렌더링 (다중 Draw Call)
+
+---
+
 ## 2025-10-28 - 카메라 시스템 구현 완성
 
 ### Tasks
@@ -1400,4 +1473,4 @@ Samples/08_DX12Init/
 
 ---
 
-**최종 업데이트**: 2025-10-26
+**최종 업데이트**: 2025-10-30
