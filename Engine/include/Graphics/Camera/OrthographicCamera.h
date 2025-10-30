@@ -1,4 +1,8 @@
 #pragma once
+
+#include "Graphics/GraphicsTypes.h"
+#include "Math/MathTypes.h"
+
 #include "Graphics/Camera/Camera.h"
 
 namespace Graphics
@@ -21,10 +25,10 @@ namespace Graphics
 		 * @param farPlane 원평면 거리
 		 */
 		OrthographicCamera(
-			float width = 1280.0f,
-			float height = 720.0f,
-			float nearPlane = 0.1f,
-			float farPlane = 1000.0f
+			float32 width = 1280.0f,
+			float32 height = 720.0f,
+			float32 nearPlane = 0.1f,
+			float32 farPlane = 1000.0f
 		);
 		~OrthographicCamera() override = default;
 
@@ -35,25 +39,25 @@ namespace Graphics
 		void UpdateProjectionMatrix() override;
 
 		// 뷰포트 크기 설정
-		void SetSize(float width, float height);
-		void SetWidth(float width);
-		void SetHeight(float height);
+		void SetSize(float32 width, float32 height);
+		void SetWidth(float32 width);
+		void SetHeight(float32 height);
 
 		// 클리핑 평면 설정
-		void SetNearPlane(float nearPlane);
-		void SetFarPlane(float farPlane);
-		void SetClipPlanes(float nearPlane, float farPlane);
+		void SetNearPlane(float32 nearPlane);
+		void SetFarPlane(float32 farPlane);
+		void SetClipPlanes(float32 nearPlane, float32 farPlane);
 
 		// Getters
-		float GetWidth() const { return mWidth; }
-		float GetHeight() const { return mHeight; }
-		float GetNearPlane() const { return mNearPlane; }
-		float GetFarPlane() const { return mFarPlane; }
+		float32 GetWidth() const { return mWidth; }
+		float32 GetHeight() const { return mHeight; }
+		float32 GetNearPlane() const { return mNearPlane; }
+		float32 GetFarPlane() const { return mFarPlane; }
 
 	private:
-		float mWidth = 1280.0f;     
-		float mHeight = 720.0f;     
-		float mNearPlane = 0.1f;    
-		float mFarPlane = 1000.0f;  
+		float32 mWidth = 1280.0f;
+		float32 mHeight = 720.0f;
+		float32 mNearPlane = 0.1f;
+		float32 mFarPlane = 1000.0f;
 	};
 } // namespace Graphics

@@ -49,7 +49,7 @@ namespace Graphics
 		, mPSEntryPoint("PSMain")
 		, mPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, mNumRenderTargets(1)
-		, mDSVFormat(DXGI_FORMAT_UNKNOWN)
+		, mDSVFormat(DXGI_FORMAT_D24_UNORM_S8_UINT)
 		, mSampleCount(1)
 		, mSampleQuality(0)
 	{
@@ -65,7 +65,7 @@ namespace Graphics
 		mRasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
 		mRasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
 		mRasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-		mRasterizerDesc.DepthClipEnable = FALSE;
+		mRasterizerDesc.DepthClipEnable = TRUE;
 		mRasterizerDesc.MultisampleEnable = FALSE;
 		mRasterizerDesc.AntialiasedLineEnable = FALSE;
 		mRasterizerDesc.ForcedSampleCount = 0;
@@ -159,7 +159,7 @@ namespace Graphics
 
 		depthStencilDesc.FrontFace = defaultStencilOp;
 		depthStencilDesc.BackFace = defaultStencilOp;
-
+		
 		return depthStencilDesc;
 	}
 

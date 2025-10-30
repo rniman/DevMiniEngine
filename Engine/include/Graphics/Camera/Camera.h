@@ -1,4 +1,5 @@
 #pragma once
+#include "Graphics/GraphicsTypes.h"
 #include "Math/MathTypes.h"
 
 namespace Graphics
@@ -80,7 +81,7 @@ namespace Graphics
 		bool mProjectionDirty = true;     // Projection 행렬 갱신 필요 여부
 
 	private:
-		void MoveAlongDirection(const Math::Vector3& direction, float distance);
+		void MoveAlongDirection(const Math::Vector3& direction, float32 distance);
 
 	};
 

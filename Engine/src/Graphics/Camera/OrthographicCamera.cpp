@@ -9,10 +9,10 @@ using namespace Math;
 namespace Graphics
 {
 	OrthographicCamera::OrthographicCamera(
-		float width,
-		float height,
-		float nearPlane,
-		float farPlane
+		float32 width,
+		float32 height,
+		float32 nearPlane,
+		float32 farPlane
 	)
 		: mWidth(width)
 		, mHeight(height)
@@ -39,7 +39,7 @@ namespace Graphics
 		}
 	}
 
-	void OrthographicCamera::SetSize(float width, float height)
+	void OrthographicCamera::SetSize(float32 width, float32 height)
 	{
 		CORE_ASSERT(width > 0.0f && height > 0.0f, "Width and height must be positive");
 
@@ -48,7 +48,7 @@ namespace Graphics
 		mProjectionDirty = true;
 	}
 
-	void OrthographicCamera::SetWidth(float width)
+	void OrthographicCamera::SetWidth(float32 width)
 	{
 		CORE_ASSERT(width > 0.0f, "Width must be positive");
 
@@ -56,7 +56,7 @@ namespace Graphics
 		mProjectionDirty = true;
 	}
 
-	void OrthographicCamera::SetHeight(float height)
+	void OrthographicCamera::SetHeight(float32 height)
 	{
 		CORE_ASSERT(height > 0.0f, "Height must be positive");
 
@@ -64,7 +64,7 @@ namespace Graphics
 		mProjectionDirty = true;
 	}
 
-	void OrthographicCamera::SetNearPlane(float nearPlane)
+	void OrthographicCamera::SetNearPlane(float32 nearPlane)
 	{
 		if (nearPlane >= mFarPlane)
 		{
@@ -75,7 +75,7 @@ namespace Graphics
 		mProjectionDirty = true;
 	}
 
-	void OrthographicCamera::SetFarPlane(float farPlane)
+	void OrthographicCamera::SetFarPlane(float32 farPlane)
 	{
 		if (farPlane <= mNearPlane)
 		{
@@ -86,7 +86,7 @@ namespace Graphics
 		mProjectionDirty = true;
 	}
 
-	void OrthographicCamera::SetClipPlanes(float nearPlane, float farPlane)
+	void OrthographicCamera::SetClipPlanes(float32 nearPlane, float32 farPlane)
 	{
 		CORE_ASSERT(nearPlane < farPlane, "Near plane must be less than far plane");
 

@@ -9,10 +9,10 @@ using namespace Math;
 namespace Graphics
 {
     PerspectiveCamera::PerspectiveCamera(
-        float fovY,
-        float aspectRatio,
-        float nearPlane,
-        float farPlane
+        float32 fovY,
+        float32 aspectRatio,
+        float32 nearPlane,
+        float32 farPlane
     )
         : mFovY(fovY)
         , mAspectRatio(aspectRatio)
@@ -40,7 +40,7 @@ namespace Graphics
         }
     }
 
-    void PerspectiveCamera::SetFovY(float fovY)
+    void PerspectiveCamera::SetFovY(float32 fovY)
     {
         CORE_ASSERT(fovY > 0.0f && fovY < PI, "FOV must be between 0 and ¥ð radians");
 
@@ -48,7 +48,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    void PerspectiveCamera::SetFovYDegrees(float degrees)
+    void PerspectiveCamera::SetFovYDegrees(float32 degrees)
     {
         CORE_ASSERT(degrees > 0.0f && degrees < 180.0f, "FOV must be between 0 and 180 degrees");
 
@@ -56,7 +56,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    void PerspectiveCamera::SetAspectRatio(float aspectRatio)
+    void PerspectiveCamera::SetAspectRatio(float32 aspectRatio)
     {
         CORE_ASSERT(aspectRatio > 0.0f, "Aspect ratio must be positive");
 
@@ -64,7 +64,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    void PerspectiveCamera::SetAspectRatio(float width, float height)
+    void PerspectiveCamera::SetAspectRatio(float32 width, float32 height)
     {
         CORE_ASSERT(width > 0.0f && height > 0.0f, "Width and height must be positive");
 
@@ -72,7 +72,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    void PerspectiveCamera::SetNearPlane(float nearPlane)
+    void PerspectiveCamera::SetNearPlane(float32 nearPlane)
     {
         if (nearPlane <= 0.0f || nearPlane >= mFarPlane)
         {
@@ -83,7 +83,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    void PerspectiveCamera::SetFarPlane(float farPlane)
+    void PerspectiveCamera::SetFarPlane(float32 farPlane)
     {
         if (farPlane <= mNearPlane)
         {
@@ -94,7 +94,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    void PerspectiveCamera::SetClipPlanes(float nearPlane, float farPlane)
+    void PerspectiveCamera::SetClipPlanes(float32 nearPlane, float32 farPlane)
     {
         CORE_ASSERT(nearPlane > 0.0f && nearPlane < farPlane, "Invalid clip planes");
 
@@ -103,7 +103,7 @@ namespace Graphics
         mProjectionDirty = true;
     }
 
-    float PerspectiveCamera::GetFovYDegrees() const
+    float32 PerspectiveCamera::GetFovYDegrees() const
     {
         return RadToDeg(mFovY);
     }

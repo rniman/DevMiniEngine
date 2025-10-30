@@ -80,6 +80,9 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Graphics\DX12\DX12DepthStencilBuffer.cpp">
+      <Filter>Source Files\DX12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Graphics\DX12\d3dx12.h">
@@ -141,6 +144,9 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\DX12\DX12DepthStencilBuffer.h">
+      <Filter>Header Files\DX12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

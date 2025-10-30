@@ -125,7 +125,7 @@ namespace Graphics
 		return MatrixMultiply(mViewMatrix, mProjectionMatrix);
 	}
 
-	void Camera::MoveAlongDirection(const Math::Vector3& direction, float distance)
+	void Camera::MoveAlongDirection(const Math::Vector3& direction, float32 distance)
 	{
 		Vector3 offset = Multiply(direction, distance);
 		mPosition = Add(mPosition, offset);
