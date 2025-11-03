@@ -1,13 +1,11 @@
 #include "pch.h"
 #include "Graphics/DX12/DX12VertexBuffer.h"
-#include "Graphics/DX12/d3dx12.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {
-	
 	DX12VertexBuffer::~DX12VertexBuffer()
 	{
 		Shutdown();
@@ -35,23 +33,23 @@ namespace Graphics
 
 		const size_t bufferSize = vertexCount * vertexStride;
 
-		// Default Heap¿¡ ¹öÅØ½º ¹öÆÛ »ı¼º (GPU Àü¿ë ¸Ş¸ğ¸®)
+		// Default Heapì— ë²„í…ìŠ¤ ë²„í¼ ìƒì„± (GPU ì „ìš© ë©”ëª¨ë¦¬)
 		if (!CreateVertexBuffer(device, bufferSize))
 		{
 			LOG_ERROR("[DX12VertexBuffer] Failed to create vertex buffer");
 			return false;
 		}
 
-		// Upload Heap¿¡ ÀÓ½Ã ¾÷·Îµå ¹öÆÛ »ı¼º
+		// Upload Heapì— ì„ì‹œ ì—…ë¡œë“œ ë²„í¼ ìƒì„±
 		if (!CreateUploadBuffer(device, bufferSize))
 		{
 			LOG_ERROR("[DX12VertexBuffer] Failed to create upload buffer");
 			return false;
 		}
 
-		// CPU µ¥ÀÌÅÍ¸¦ Upload Buffer¿¡ º¹»ç
+		// CPU ë°ì´í„°ë¥¼ Upload Bufferì— ë³µì‚¬
 		void* mappedData = nullptr;
-		CD3DX12_RANGE readRange(0, 0); // CPU ÀĞ±â ¾øÀ½
+		CD3DX12_RANGE readRange(0, 0); // CPU ì½ê¸° ì—†ìŒ
 
 		HRESULT hr = mUploadBuffer->Map(0, &readRange, &mappedData);
 		if (FAILED(hr))
@@ -63,7 +61,7 @@ namespace Graphics
 		memcpy(mappedData, vertexData, bufferSize);
 		mUploadBuffer->Unmap(0, nullptr);
 
-		// GPU º¹»ç ¸í·É ±â·Ï
+		// GPU ë³µì‚¬ ëª…ë ¹ ê¸°ë¡
 		ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
 		commandList->Reset(commandContext->GetAllocator(), nullptr);
 
@@ -73,25 +71,25 @@ namespace Graphics
 			static_cast<UINT64>(bufferSize)
 		);
 
-		// COPY_DEST ¡æ VERTEX_AND_CONSTANT_BUFFER »óÅÂ ÀüÀÌ
+		// COPY_DEST â†’ VERTEX_AND_CONSTANT_BUFFER ìƒíƒœ ì „ì´
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			mVertexBuffer.Get(),
-			D3D12_RESOURCE_STATE_COPY_DEST, 
+			D3D12_RESOURCE_STATE_COPY_DEST,
 			D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
 		);
 		commandList->ResourceBarrier(1, &barrier);
 
 
-		// Ä¿¸Çµå ¸®½ºÆ® Close ¹× Á¦Ãâ
+		// ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ Close ë° ì œì¶œ
 		commandList->Close();
 		ID3D12CommandList* commandLists[] = { commandList };
 		commandQueue->ExecuteCommandLists(commandLists, 1);
 		commandQueue->WaitForIdle();
 
-		// GPU º¹»ç ¿Ï·á - Upload Buffer ÇØÁ¦
+		// GPU ë³µì‚¬ ì™„ë£Œ - Upload Buffer í•´ì œ
 		mUploadBuffer.Reset();
 
-		// ·»´õ¸µ¿¡ »ç¿ëÇÒ View ÃÊ±âÈ­
+		// ë Œë”ë§ì— ì‚¬ìš©í•  View ì´ˆê¸°í™”
 		mVertexBufferView.BufferLocation = mVertexBuffer->GetGPUVirtualAddress();
 		mVertexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
 		mVertexBufferView.StrideInBytes = static_cast<UINT>(mVertexStride);
@@ -99,40 +97,40 @@ namespace Graphics
 		LOG_INFO(
 			"[DX12VertexBuffer] Initialized successfully (Count: %u, Stride: %u, GPU Address: 0x%llX)",
 			vertexCount,
-			vertexStride, 
+			vertexStride,
 			mVertexBufferView.BufferLocation
 		);
 
-		// TODO: [Future Optimization] DX12ResourceUploader ÆĞÅÏÀ¸·Î ¸®ÆÑÅä¸µ
-		// ÇöÀç: °¢ VertexBuffer°¡ °³º° Upload Buffer ¼ÒÀ¯
-		// ¸ñÇ¥: °øÀ¯ Upload Buffer¸¦ ÅëÇÑ ¹èÄ¡ ¾÷·Îµå
+		// TODO: [Future Optimization] DX12ResourceUploader íŒ¨í„´ìœ¼ë¡œ ë¦¬íŒ©í† ë§
+		// í˜„ì¬: ê° VertexBufferê°€ ê°œë³„ Upload Buffer ì†Œìœ 
+		// ëª©í‘œ: ê³µìœ  Upload Bufferë¥¼ í†µí•œ ë°°ì¹˜ ì—…ë¡œë“œ
 		// 
-		// °³¼± ¹æÇâ:
-		// 1. DX12ResourceUploader Å¬·¡½º ±¸Çö
-		//    - Å« Upload Buffer ÇÏ³ª¸¦ ¿©·¯ ¸®¼Ò½º°¡ °øÀ¯
-		//    - Ring Buffer ÆĞÅÏÀ¸·Î ¸Ş¸ğ¸® Àç»ç¿ë
-		//    - FlushUploads()·Î ÀÏ°ı Á¦Ãâ
+		// ê°œì„  ë°©í–¥:
+		// 1. DX12ResourceUploader í´ë˜ìŠ¤ êµ¬í˜„
+		//    - í° Upload Buffer í•˜ë‚˜ë¥¼ ì—¬ëŸ¬ ë¦¬ì†ŒìŠ¤ê°€ ê³µìœ 
+		//    - Ring Buffer íŒ¨í„´ìœ¼ë¡œ ë©”ëª¨ë¦¬ ì¬ì‚¬ìš©
+		//    - FlushUploads()ë¡œ ì¼ê´„ ì œì¶œ
 		// 
-		// 2. VertexBuffer ´Ü¼øÈ­
-		//    - Upload Buffer ¸â¹ö Á¦°Å
-		//    - Initialize()¿¡¼­ uploader->UploadVertexBuffer() È£Ãâ
+		// 2. VertexBuffer ë‹¨ìˆœí™”
+		//    - Upload Buffer ë©¤ë²„ ì œê±°
+		//    - Initialize()ì—ì„œ uploader->UploadVertexBuffer() í˜¸ì¶œ
 		// 
-		// 3. »ç¿ë ¿¹½Ã:
+		// 3. ì‚¬ìš© ì˜ˆì‹œ:
 		//    DX12ResourceUploader uploader;
 		//    uploader.Initialize(device, 256MB);
 		//    for (auto& vb : vertexBuffers)
 		//        vb.Initialize(device, &uploader, ...);
 		//    uploader.FlushUploads(cmdList, queue);
 		// 
-		// ÀåÁ¡:
-		// - ¸Ş¸ğ¸® È¿À² Áõ°¡ (Upload Buffer Àç»ç¿ë)
-		// - ¹èÄ¡ ¾÷·Îµå·Î ¼º´É Çâ»ó
-		// - ¸íÈ®ÇÑ Ã¥ÀÓ ºĞ¸®
+		// ì¥ì :
+		// - ë©”ëª¨ë¦¬ íš¨ìœ¨ ì¦ê°€ (Upload Buffer ì¬ì‚¬ìš©)
+		// - ë°°ì¹˜ ì—…ë¡œë“œë¡œ ì„±ëŠ¥ í–¥ìƒ
+		// - ëª…í™•í•œ ì±…ì„ ë¶„ë¦¬
 		// 
-		// Àû¿ë ½ÃÁ¡:
-		// - ¸®¼Ò½º ·ÎµùÀÌ º¹ÀâÇØÁú ¶§
-		// - ¸Ş¸ğ¸® °ü¸®°¡ Áß¿äÇØÁú ¶§
-		// - ·Îµù ¼º´É ÃÖÀûÈ­°¡ ÇÊ¿äÇÒ ¶§
+		// ì ìš© ì‹œì :
+		// - ë¦¬ì†ŒìŠ¤ ë¡œë”©ì´ ë³µì¡í•´ì§ˆ ë•Œ
+		// - ë©”ëª¨ë¦¬ ê´€ë¦¬ê°€ ì¤‘ìš”í•´ì§ˆ ë•Œ
+		// - ë¡œë”© ì„±ëŠ¥ ìµœì í™”ê°€ í•„ìš”í•  ë•Œ
 
 		return true;
 	}
@@ -163,7 +161,7 @@ namespace Graphics
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
 			&bufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,     // ÃÊ±â »óÅÂ: º¹»ç ´ë»ó
+			D3D12_RESOURCE_STATE_COPY_DEST,     // ì´ˆê¸° ìƒíƒœ: ë³µì‚¬ ëŒ€ìƒ
 			nullptr,
 			IID_PPV_ARGS(&mVertexBuffer)
 		);
@@ -186,7 +184,7 @@ namespace Graphics
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
 			&bufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,  // Upload Heap ±âº» »óÅÂ
+			D3D12_RESOURCE_STATE_GENERIC_READ,  // Upload Heap ê¸°ë³¸ ìƒíƒœ
 			nullptr,
 			IID_PPV_ARGS(&mUploadBuffer)
 		);

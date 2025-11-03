@@ -6,9 +6,9 @@
 #include "Core/Logging/LogMacros.h"
 
 #include "Math/MathUtils.h"
-
+ 
 // Graphics headers
-#include <d3d12.h>
+#include <d3d12.h> 
 #include <dxgi1_6.h>
 
 #pragma warning(push, 0)
@@ -18,7 +18,6 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-#include "Graphics/Mesh.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12SwapChain.h"
@@ -29,8 +28,14 @@
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Graphics/DX12/DX12PipelineStateCache.h"
 #include "Graphics/DX12/DX12ConstantBuffer.h"
-#include "Graphics/Material.h"
 #include "Graphics/DX12/DX12DepthStencilBuffer.h"
+#include "Graphics/Camera/PerspectiveCamera.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/Material.h"
+#include "Graphics/Texture.h"
+
+constexpr Core::uint32 FRAME_WIDTH = 16 * 80;
+constexpr Core::uint32 FRAME_HEIGHT = 9 * 80;
 
 using namespace Microsoft::WRL;
 
@@ -43,6 +48,54 @@ struct MVPConstants
 // ============================================================================
 // 함수 선언
 // ============================================================================
+
+// 제안: 함수명 변경
+bool InitializeTexture(
+	Graphics::DX12Device& device,
+	Graphics::DX12Renderer& renderer,
+	Graphics::DX12DescriptorHeap& srvDescriptorHeap,
+	Graphics::Texture& diffuseTexture
+)
+{
+	// SRV용 Descriptor Heap 생성
+	if (!srvDescriptorHeap.Initialize(
+		device.GetDevice(),
+		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+		256,
+		true
+	))
+	{
+		LOG_ERROR("Failed to initialize SRV Descriptor Heap");
+		return false;
+	}
+
+	// 텍스처 로드
+	if (!diffuseTexture.LoadFromFile(
+		device.GetDevice(),
+		device.GetGraphicsQueue(),
+		device.GetCommandContext(renderer.GetCurrentFrameIndex()),
+		L"../../Assets/Textures/test.png"
+	))
+	{
+		LOG_ERROR("Failed to load texture");
+		return false;
+	}
+
+	// SRV 생성
+	if (!diffuseTexture.CreateSRV(
+		device.GetDevice(),
+		&srvDescriptorHeap,
+		0
+	))
+	{
+		LOG_ERROR("Failed to create SRV");
+		return false;
+	}
+
+	LOG_INFO("Texture initialized successfully");
+	return true;
+}
+
 
 /**
  * @brief 그래픽스 파이프라인 스테이트를 초기화합니다.
@@ -84,10 +137,7 @@ bool InitializePipelineState(
 	}
 }
 
-/**
- * @brief 삼각형 렌더링을 위한 리소스를 초기화합니다.
- */
-bool InitializeForTriangle(
+bool InitializeForCube(
 	Graphics::DX12Device& device,
 	Graphics::DX12Renderer& renderer,
 	Graphics::Mesh& mesh,
@@ -95,31 +145,91 @@ bool InitializeForTriangle(
 	Graphics::DX12ShaderCompiler& shaderCompiler,
 	Graphics::Material& material,
 	Graphics::DX12PipelineStateCache& pipelineStateCache,
-	Graphics::DX12ConstantBuffer& constantBuffer
+	Graphics::DX12ConstantBuffer& constantBuffer,
+	Graphics::DX12DepthStencilBuffer& depthStencilBuffer,
+	Graphics::DX12DescriptorHeap& srvDescriptorHeap,
+	Graphics::Texture& diffuseTexture
 )
 {
-	LOG_INFO("Initializing Triangle Resources...");
+	LOG_INFO("Initializing Cube Resources...");
 
-	// 삼각형 정점 데이터: 위치와 색상
-	Graphics::BasicVertex rectangleVertices[] =
+	Graphics::TexturedVertex cubeVertices[] =
 	{
-		{ Math::Vector3(-0.3f, 0.25f, 0.0f), Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f) },
-		{ Math::Vector3(0.3f, 0.25f, 0.0f), Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f) },
-		{ Math::Vector3(-0.3f,-0.25f, 0.0f), Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f) },
-		{ Math::Vector3(0.3f, -0.25f, 0.0f), Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f) }
+		// 1. Front face (앞면)
+		{ Math::Vector3(-2.0f,  2.0f, -2.0f), Math::Vector2(0.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 0
+		{ Math::Vector3(2.0f,  2.0f, -2.0f), Math::Vector2(1.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 1
+		{ Math::Vector3(-2.0f, -2.0f, -2.0f), Math::Vector2(0.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 2
+		{ Math::Vector3(2.0f, -2.0f, -2.0f), Math::Vector2(1.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 3
+
+		// 2. Back face (뒷면)
+		// (UV좌표를 0,0 1,0 0,1 1,1로 동일하게 가져가되, 
+		//  뒷면에서 볼 때 올바른 방향이 되도록 정점 순서를 조정)
+		{ Math::Vector3(2.0f,  2.0f,  2.0f), Math::Vector2(0.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 4
+		{ Math::Vector3(-2.0f,  2.0f,  2.0f), Math::Vector2(1.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 5
+		{ Math::Vector3(2.0f, -2.0f,  2.0f), Math::Vector2(0.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 6
+		{ Math::Vector3(-2.0f, -2.0f,  2.0f), Math::Vector2(1.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 7
+
+		// 3. Top face (윗면)
+		{ Math::Vector3(-2.0f,  2.0f,  2.0f), Math::Vector2(0.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 8
+		{ Math::Vector3(2.0f,  2.0f,  2.0f), Math::Vector2(1.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 9
+		{ Math::Vector3(-2.0f,  2.0f, -2.0f), Math::Vector2(0.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 10
+		{ Math::Vector3(2.0f,  2.0f, -2.0f), Math::Vector2(1.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 11
+
+		// 4. Bottom face (아랫면)
+		{ Math::Vector3(2.0f, -2.0f,  2.0f), Math::Vector2(0.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 12
+		{ Math::Vector3(-2.0f, -2.0f,  2.0f), Math::Vector2(1.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 13
+		{ Math::Vector3(2.0f, -2.0f, -2.0f), Math::Vector2(0.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 14
+		{ Math::Vector3(-2.0f, -2.0f, -2.0f), Math::Vector2(1.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 15
+
+		// 5. Left face (왼쪽면)
+		{ Math::Vector3(-2.0f,  2.0f,  2.0f), Math::Vector2(0.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 16
+		{ Math::Vector3(-2.0f,  2.0f, -2.0f), Math::Vector2(1.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 17
+		{ Math::Vector3(-2.0f, -2.0f,  2.0f), Math::Vector2(0.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 18
+		{ Math::Vector3(-2.0f, -2.0f, -2.0f), Math::Vector2(1.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 19
+
+		// 6. Right face (오른쪽면)
+		{ Math::Vector3(2.0f,  2.0f, -2.0f), Math::Vector2(0.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 20
+		{ Math::Vector3(2.0f,  2.0f,  2.0f), Math::Vector2(1.0f, 0.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 21
+		{ Math::Vector3(2.0f, -2.0f, -2.0f), Math::Vector2(0.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // 22
+		{ Math::Vector3(2.0f, -2.0f,  2.0f), Math::Vector2(1.0f, 1.0f), Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f) }  // 23
 	};
 
-	Core::uint16 triangleIndices[] = { 0, 1, 2, 1, 3, 2 };
+	Core::uint16 cubeIndices[] =
+	{
+		// 1. Front face
+		0, 1, 2,  // 0, 1, 2
+		1, 3, 2,  // 1, 3, 2
+
+		// 2. Back face
+		4, 5, 6,
+		5, 7, 6,
+
+		// 3. Top face
+		8, 9, 10,
+		9, 11, 10,
+
+		// 4. Bottom face
+		12, 13, 14,
+		13, 15, 14,
+
+		// 5. Left face
+		16, 17, 18,
+		17, 19, 18,
+
+		// 6. Right face
+		20, 21, 22,
+		21, 23, 22
+	};
 
 	// Mesh 초기화
-	if (!mesh.Initialize(
+	if (!mesh.InitializeTextured(
 		device.GetDevice(),
 		device.GetGraphicsQueue(),
 		device.GetCommandContext(renderer.GetCurrentFrameIndex()),
-		rectangleVertices,
-		4,
-		triangleIndices,
-		6
+		cubeVertices,
+		24,
+		cubeIndices,
+		36
 	))
 	{
 		LOG_ERROR("Failed to create mesh");
@@ -141,23 +251,49 @@ bool InitializeForTriangle(
 
 	LOG_INFO("Constant Buffer created successfully");
 
+	depthStencilBuffer.Initialize(
+		device.GetDevice(),
+		FRAME_WIDTH,
+		FRAME_HEIGHT,
+		DXGI_FORMAT_D24_UNORM_S8_UINT
+	);
+
 	// Root Signature 생성 (CBV 포함)
 	// Root Parameter 정의: CBV 1개
-	CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+	CD3DX12_ROOT_PARAMETER1 rootParameters[2];
+	// CBV (b0)
 	rootParameters[0].InitAsConstantBufferView(
-		0,                                  // register: b0
-		0,                                  // register space: 0
-		D3D12_ROOT_DESCRIPTOR_FLAG_NONE,    // flags
-		D3D12_SHADER_VISIBILITY_VERTEX      // Vertex Shader에서만 접근
+		0,
+		0,
+		D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+		D3D12_SHADER_VISIBILITY_VERTEX
+	);
+
+	// SRV Descriptor Table (t0)
+	CD3DX12_DESCRIPTOR_RANGE1 srvRange;
+	srvRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);  // t0
+	rootParameters[1].InitAsDescriptorTable(
+		1,
+		&srvRange,
+		D3D12_SHADER_VISIBILITY_PIXEL
+	);
+
+	// Static Sampler 추가
+	CD3DX12_STATIC_SAMPLER_DESC sampler(
+		0,  // s0
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP
 	);
 
 	// Root Signature 초기화
 	if (!rootSignature.Initialize(
 		device.GetDevice(),
-		1,                                              // numParameters
+		2,                                              // numParameters
 		rootParameters,                                 // parameters
-		0,                                              // numStaticSamplers
-		nullptr,                                        // staticSamplers
+		1,                                              // numStaticSamplers
+		&sampler,                                       // staticSamplers
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 	))
 	{
@@ -180,7 +316,9 @@ bool InitializeForTriangle(
 		return false;
 	}
 
-	LOG_INFO("Triangle Resources initialization completed successfully");
+	InitializeTexture(device, renderer, srvDescriptorHeap, diffuseTexture);
+
+	LOG_INFO("Camera Resources initialization completed successfully");
 	return true;
 }
 
@@ -190,16 +328,25 @@ bool InitializeForTriangle(
 void UpdateMVP(
 	Graphics::DX12ConstantBuffer& constantBuffer,
 	Core::uint32 frameIndex,
-	float timeInSeconds
+	Core::float32 timeInSeconds,
+	const Graphics::PerspectiveCamera& camera
 )
 {
-	float rotationAngle = timeInSeconds * Math::DegToRad(90.0f);
-	Math::Matrix4x4 model = Math::MatrixRotationZ(rotationAngle);
-	
-	MVPConstants constants;
-	constants.MVP = model;
+	// Model 행렬 (Y축 회전)
+	Core::float32 rotationAngle = timeInSeconds * Math::DegToRad(90.0);
+	auto a = Math::MatrixRotationY(rotationAngle);
+	Math::Matrix4x4 model = Math::MatrixMultiply(Math::MatrixIdentity(), a);
+	// View 행렬
+	Math::Matrix4x4 view = camera.GetViewMatrix();
+	// Projection 행렬
+	Math::Matrix4x4 projection = camera.GetProjectionMatrix();
+	// MVP 계산 (Model * View * Projection)
+	Math::Matrix4x4 mvp = Math::MatrixMultiply(model, view);
+	mvp = Math::MatrixMultiply(mvp, projection);
 
-	// Constant Buffer 업데이트
+	MVPConstants constants;
+	constants.MVP = Math::MatrixTranspose(mvp);
+
 	constantBuffer.Update(frameIndex, &constants, sizeof(MVPConstants));
 }
 
@@ -214,8 +361,11 @@ void RenderFrame(
 	Graphics::Material& material,
 	Graphics::DX12PipelineStateCache& DX12PipelineStateCache,
 	Graphics::DX12ConstantBuffer& constantBuffer,
+	Core::float32 timeInSeconds,
+	Graphics::PerspectiveCamera& camera,
 	Graphics::DX12DepthStencilBuffer& depthStencilBuffer,
-	float timeInSeconds
+	Graphics::DX12DescriptorHeap& srvDescriptorHeap,
+	Graphics::Texture& diffuseTexture
 )
 {
 	auto* swapChain = device.GetSwapChain();
@@ -227,7 +377,10 @@ void RenderFrame(
 	// GPU가 현재 백 버퍼 사용을 완료할 때까지 대기
 	graphicsQueue->WaitForFenceValue(renderer.GetCurrentFrameFenceValue());
 
-	UpdateMVP(constantBuffer, frameIndex, timeInSeconds);
+	camera.UpdateViewMatrix();
+	camera.UpdateProjectionMatrix();
+
+	UpdateMVP(constantBuffer, frameIndex, timeInSeconds, camera);
 
 	// 현재 프레임의 Command Context 가져오기
 	auto* cmdContext = device.GetCommandContext(frameIndex);
@@ -297,6 +450,15 @@ void RenderFrame(
 	// Pipeline State 및 Root Signature 설정
 	cmdList->SetGraphicsRootSignature(rootSignature.GetRootSignature());
 
+	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap.GetHeap() };
+	cmdList->SetDescriptorHeaps(1, heaps);
+
+	// SRV Descriptor Table 바인딩 (Root Parameter 1)
+	cmdList->SetGraphicsRootDescriptorTable(
+		1,
+		diffuseTexture.GetSRVHandle()
+	);
+
 	ID3D12PipelineState* pipelineState = DX12PipelineStateCache.GetOrCreatePipelineState(
 		material,
 		rootSignature.GetRootSignature(),
@@ -317,7 +479,6 @@ void RenderFrame(
 	// Primitive Topology 설정
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// 삼각형 그리기
 	mesh.Draw(cmdList);
 
 	// 리소스 전이: RENDER_TARGET → PRESENT
@@ -354,13 +515,13 @@ int main()
 	auto& logger = Core::Logging::Logger::GetInstance();
 	logger.AddSink(std::make_unique<Core::Logging::ConsoleSink>(true));
 
-	LOG_INFO("=== 10_RotatingTriangle Sample Started ===");
+	LOG_INFO("=== 12_CameraRendering Sample Started ===");
 
 	// 윈도우 생성
 	Platform::WindowDesc windowDesc;
-	windowDesc.title = "10_RotatingTriangle - DevMiniEngine";
-	windowDesc.width = 1280;
-	windowDesc.height = 720;
+	windowDesc.title = "12_CameraRendering - DevMiniEngine";
+	windowDesc.width = FRAME_WIDTH;
+	windowDesc.height = FRAME_HEIGHT;
 	windowDesc.resizable = true;
 
 	auto window = Platform::CreatePlatformWindow();
@@ -401,13 +562,20 @@ int main()
 	Graphics::Mesh mesh;
 	Graphics::DX12RootSignature rootSignature;
 	Graphics::DX12ShaderCompiler shaderCompiler;
-	Graphics::Material material;
 	Graphics::DX12PipelineStateCache DX12PipelineStateCache;
 	Graphics::DX12ConstantBuffer constantBuffer;
 	Graphics::DX12DepthStencilBuffer depthStencilBuffer;
+	Graphics::DX12DescriptorHeap srvDescriptorHeap;
 
-	// 삼각형 리소스 초기화
-	if (!InitializeForTriangle(
+	Graphics::Texture diffuseTexture;
+
+	Graphics::MaterialDesc materialDesc;
+	materialDesc.vertexShaderPath = L"TexturedShader.hlsl";
+	materialDesc.pixelShaderPath = L"TexturedShader.hlsl";
+
+	Graphics::Material material(materialDesc);
+
+	if (!InitializeForCube(
 		device,
 		renderer,
 		mesh,
@@ -415,10 +583,13 @@ int main()
 		shaderCompiler,
 		material,
 		DX12PipelineStateCache,
-		constantBuffer
+		constantBuffer,
+		depthStencilBuffer,
+		srvDescriptorHeap,
+		diffuseTexture
 	))
 	{
-		LOG_ERROR("Failed to initialize Triangle Resources");
+		LOG_ERROR("Failed to initialize Cube Resources");
 
 		DX12PipelineStateCache.Shutdown();
 		mesh.Shutdown();
@@ -429,7 +600,12 @@ int main()
 		return -1;
 	}
 
-	depthStencilBuffer.Initialize(device.GetDevice(), 1280, 720);
+	Graphics::PerspectiveCamera camera;
+	camera.SetLookAt(
+		Math::Vector3(0.0f, 10.0f, -20.0f),  // 카메라 위치 (뒤로 3 유닛)
+		Math::Vector3(0.0f, 0.0f, 0.0f),   // 타겟 (원점)
+		Math::Vector3(0.0f, 1.0f, 0.0f)    // Up 벡터
+	);
 
 	LOG_INFO("DirectX 12 initialization completed successfully!");
 	LOG_INFO("Press ESC to exit");
@@ -440,7 +616,7 @@ int main()
 	while (!window->ShouldClose())
 	{
 		Core::uint64 currentTicks = GetTickCount64();
-		float timeInSeconds = (currentTicks - startTicks) / 1000.0f;
+		Core::float32 timeInSeconds = (currentTicks - startTicks) / 1000.0f;
 
 		input.Update();
 		window->ProcessEvents();
@@ -459,15 +635,16 @@ int main()
 			material,
 			DX12PipelineStateCache,
 			constantBuffer,
+			timeInSeconds,
+			camera,
 			depthStencilBuffer,
-			timeInSeconds
+			srvDescriptorHeap,
+			diffuseTexture
 		);
-
-		LOG_INFO("Time In Seconds %f", timeInSeconds);
 
 		input.Reset();
 	}
 
-	LOG_INFO("10_RotatingTriangle  - Terminated successfully");
+	LOG_INFO("12_CameraRendering  - Terminated successfully");
 	return 0;
 }

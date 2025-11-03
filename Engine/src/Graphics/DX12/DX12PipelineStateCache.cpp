@@ -112,7 +112,7 @@ namespace Graphics
 
 		// Material에서 PSO 설정 가져오기
 		psoDesc.PrimitiveTopologyType = material.GetPrimitiveTopology();
-		psoDesc.NumRenderTargets = material.GetNumRenderTargets();
+		psoDesc.NumRenderTargets = static_cast<UINT>(material.GetNumRenderTargets());
 
 		const DXGI_FORMAT* rtvFormats = material.GetRTVFormats();
 		for (UINT i = 0; i < material.GetNumRenderTargets(); ++i)
@@ -123,9 +123,9 @@ namespace Graphics
 		psoDesc.DSVFormat = material.GetDSVFormat();
 
 		// Sample 설정
-		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.SampleMask = static_cast<UINT>(material.GetSampleMask());
 		psoDesc.SampleDesc.Count = static_cast<UINT>(material.GetSampleCount());
-		psoDesc.SampleDesc.Quality = material.GetSampleQuality();
+		psoDesc.SampleDesc.Quality = static_cast<UINT>(material.GetSampleQuality());
 
 		// PSO 생성
 		ComPtr<ID3D12PipelineState> pso;

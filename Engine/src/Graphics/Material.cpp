@@ -17,9 +17,14 @@ namespace Graphics
 		, mDSVFormat(desc.dsvFormat)
 		, mSampleCount(desc.sampleCount)
 		, mSampleQuality(desc.sampleQuality)
+		, mSampleMask(desc.sampleMask)
 	{
 		mBlendDesc = CreateBlendDesc(desc.blendMode);
-		mDepthStencilDesc = CreateDepthStencilDesc(desc.depthTestEnabled, desc.depthWriteEnabled);
+		mDepthStencilDesc = CreateDepthStencilDesc(
+			desc.depthTestEnabled,
+			desc.depthWriteEnabled,
+			desc.depthComparisonFunc
+		);
 
 		// Rasterizer State 직접 초기화
 		mRasterizerDesc = {};
@@ -52,10 +57,11 @@ namespace Graphics
 		, mDSVFormat(DXGI_FORMAT_D24_UNORM_S8_UINT)
 		, mSampleCount(1)
 		, mSampleQuality(0)
+		, mSampleMask(0xFFFFFFFF)
 	{
 		// 기본 설정: Opaque, Back culling, Solid fill, Depth test enabled
 		mBlendDesc = CreateBlendDesc(BlendMode::Opaque);
-		mDepthStencilDesc = CreateDepthStencilDesc(true, true);
+		mDepthStencilDesc = CreateDepthStencilDesc(true, true, D3D12_COMPARISON_FUNC_LESS);
 
 		// Rasterizer State 직접 초기화
 		mRasterizerDesc = {};
@@ -138,13 +144,17 @@ namespace Graphics
 		return blendDesc;
 	}
 
-	D3D12_DEPTH_STENCIL_DESC Material::CreateDepthStencilDesc(bool depthTest, bool depthWrite)
+	D3D12_DEPTH_STENCIL_DESC Material::CreateDepthStencilDesc(
+		bool depthTest,
+		bool depthWrite,
+		D3D12_COMPARISON_FUNC depthComparisonFunc
+	)
 	{
 		D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
 
 		depthStencilDesc.DepthEnable = depthTest ? TRUE : FALSE;
 		depthStencilDesc.DepthWriteMask = depthWrite ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-		depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+		depthStencilDesc.DepthFunc = depthComparisonFunc;
 		depthStencilDesc.StencilEnable = FALSE;
 		depthStencilDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
 		depthStencilDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;

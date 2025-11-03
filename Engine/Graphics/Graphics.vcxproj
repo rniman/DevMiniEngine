@@ -19,6 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ThirdParty\Microsoft\DirectXTex\DDSTextureLoader12.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\Microsoft\DirectXTex\WICTextureLoader12.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\src\Graphics\Camera\Camera.cpp" />
     <ClCompile Include="..\src\Graphics\Camera\OrthographicCamera.cpp" />
     <ClCompile Include="..\src\Graphics\Camera\PerspectiveCamera.cpp" />
@@ -43,6 +55,7 @@
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
     <ClCompile Include="..\src\Graphics\Material.cpp" />
     <ClCompile Include="..\src\Graphics\Mesh.cpp" />
+    <ClCompile Include="..\src\Graphics\Texture.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -51,10 +64,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\ThirdParty\Microsoft\D3DX12\d3dx12.h" />
+    <ClInclude Include="..\..\ThirdParty\Microsoft\DirectXTex\DDSTextureLoader12.h" />
+    <ClInclude Include="..\..\ThirdParty\Microsoft\DirectXTex\WICTextureLoader12.h" />
     <ClInclude Include="..\include\Graphics\Camera\Camera.h" />
     <ClInclude Include="..\include\Graphics\Camera\OrthographicCamera.h" />
     <ClInclude Include="..\include\Graphics\Camera\PerspectiveCamera.h" />
-    <ClInclude Include="..\include\Graphics\DX12\d3dx12.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12ConstantBuffer.h" />
@@ -76,6 +91,8 @@
     <ClInclude Include="..\include\Graphics\GraphicsTypes.h" />
     <ClInclude Include="..\include\Graphics\Material.h" />
     <ClInclude Include="..\include\Graphics\Mesh.h" />
+    <ClInclude Include="..\include\Graphics\Texture.h" />
+    <ClInclude Include="..\include\Graphics\VertexTypes.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -155,9 +172,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -172,9 +190,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -188,9 +207,10 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -206,9 +226,10 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

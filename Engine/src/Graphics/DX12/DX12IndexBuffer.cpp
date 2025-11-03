@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
-#include "Graphics/DX12/d3dx12.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Core/Logging/LogMacros.h"

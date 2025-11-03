@@ -12,7 +12,7 @@
 #include <dxgi1_6.h>
 
 #pragma warning(push, 0)
-#include "Graphics/DX12/d3dx12.h"
+#include "d3dx12.h"
 #pragma warning(pop)
 
 #pragma comment(lib, "d3d12.lib")

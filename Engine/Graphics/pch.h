@@ -27,9 +27,8 @@
 // #include <dxgidebug.h>
 // #endif
 
-// d3dx12.h - DirectX 12 헬퍼 라이브러리 (외부 라이브러리 경고 비활성화)
 #pragma warning(push, 0)
-#include "Graphics/DX12/d3dx12.h"
+#include "d3dx12.h"
 #pragma warning(pop)
 
 // DirectX 라이브러리 링크

@@ -21,6 +21,15 @@
     <Filter Include="Source Files\Camera">
       <UniqueIdentifier>{ef559efc-fc34-42f3-a194-107f5306c2a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Microsoft">
+      <UniqueIdentifier>{6c34a18b-bb97-4636-b9dd-74af3dbd4555}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Microsoft\D3DX12">
+      <UniqueIdentifier>{54cd98bd-ab22-4c96-ac9c-22a39afeb78e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Microsoft\DirectXTex">
+      <UniqueIdentifier>{ba777cb1-7ef5-4add-9ac9-1389e6708dd5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp">
@@ -83,11 +92,17 @@
     <ClCompile Include="..\src\Graphics\DX12\DX12DepthStencilBuffer.cpp">
       <Filter>Source Files\DX12</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Graphics\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\Microsoft\DirectXTex\DDSTextureLoader12.cpp">
+      <Filter>Microsoft\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\Microsoft\DirectXTex\WICTextureLoader12.cpp">
+      <Filter>Microsoft\DirectXTex</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\Graphics\DX12\d3dx12.h">
-      <Filter>Header Files\DX12</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
@@ -147,6 +162,21 @@
     </ClInclude>
     <ClInclude Include="..\include\Graphics\DX12\DX12DepthStencilBuffer.h">
       <Filter>Header Files\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\VertexTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ThirdParty\Microsoft\DirectXTex\DDSTextureLoader12.h">
+      <Filter>Microsoft\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ThirdParty\Microsoft\DirectXTex\WICTextureLoader12.h">
+      <Filter>Microsoft\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ThirdParty\Microsoft\D3DX12\d3dx12.h">
+      <Filter>Microsoft\D3DX12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

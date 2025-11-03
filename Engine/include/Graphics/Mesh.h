@@ -47,9 +47,59 @@ namespace Graphics
 				}
 			};
 
-			return D3D12_INPUT_LAYOUT_DESC{ elements, 2 };
+			D3D12_INPUT_LAYOUT_DESC layout = {};
+			layout.pInputElementDescs = elements;
+			layout.NumElements = _countof(elements);
+			return layout;
 		}
 	};
+
+	struct TexturedVertex
+	{
+		Math::Vector3 position;  // POSITION
+		Math::Vector2 texCoord;  // TEXCOORD0
+		Math::Vector4 color;     // COLOR (옵션)
+
+		static D3D12_INPUT_LAYOUT_DESC GetInputLayout()
+		{
+			static D3D12_INPUT_ELEMENT_DESC elements[] =
+			{
+				{
+					"POSITION",
+					0, 
+					DXGI_FORMAT_R32G32B32_FLOAT,
+					0,
+					0,
+					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+					0
+				},
+				{
+					"TEXCOORD",
+					0,
+					DXGI_FORMAT_R32G32_FLOAT,
+					0,
+					12,
+					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 
+					0
+				},
+				{
+					"COLOR",
+					0,
+					DXGI_FORMAT_R32G32B32A32_FLOAT,
+					0, 
+					20,
+					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 
+					0
+				}
+			};
+
+			D3D12_INPUT_LAYOUT_DESC layout = {};
+			layout.pInputElementDescs = elements;
+			layout.NumElements = _countof(elements);
+			return layout;
+		}
+	};
+
 
 	/**
 	 * @brief 렌더링 가능한 메시를 관리하는 클래스
@@ -91,6 +141,16 @@ namespace Graphics
 			size_t vertexCount,
 			const uint16* indices = nullptr,
 			size_t indexCount = 0
+		);
+
+		bool InitializeTextured(
+			ID3D12Device* device,
+			DX12CommandQueue* commandQueue,
+			DX12CommandContext* commandContext,
+			const TexturedVertex* vertices,
+			size_t vertexCount,
+			const Core::uint16* indices,
+			size_t indexCount
 		);
 
 		void Shutdown();

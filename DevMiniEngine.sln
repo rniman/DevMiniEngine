@@ -37,6 +37,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_CameraTest", "Samples\11
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_CameraRendering", "Samples\12_CameraRendering\12_CameraRendering.vcxproj", "{1E3EAA4E-951C-4F04-B0F6-DBB27EE6A84A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_TexturedCube", "Samples\13_TexturedCube\13_TexturedCube.vcxproj", "{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -173,6 +175,14 @@ Global
 		{1E3EAA4E-951C-4F04-B0F6-DBB27EE6A84A}.Release|x64.Build.0 = Release|x64
 		{1E3EAA4E-951C-4F04-B0F6-DBB27EE6A84A}.Release|x86.ActiveCfg = Release|Win32
 		{1E3EAA4E-951C-4F04-B0F6-DBB27EE6A84A}.Release|x86.Build.0 = Release|Win32
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Debug|x64.ActiveCfg = Debug|x64
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Debug|x64.Build.0 = Debug|x64
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Debug|x86.ActiveCfg = Debug|Win32
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Debug|x86.Build.0 = Debug|Win32
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Release|x64.ActiveCfg = Release|x64
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Release|x64.Build.0 = Release|x64
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Release|x86.ActiveCfg = Release|Win32
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -190,6 +200,7 @@ Global
 		{3431726C-A798-4A4A-AC69-E55BB36307F8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{82201C8F-CA63-4651-9D12-A6269DEA6A2B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{1E3EAA4E-951C-4F04-B0F6-DBB27EE6A84A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{58A30A56-CE6F-49DE-888B-B7C68D19F5AC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {754062E7-A9C4-434F-8C97-CBA9430783A5}

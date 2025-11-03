@@ -37,16 +37,18 @@ namespace Graphics
 
 		bool depthTestEnabled = true;
 		bool depthWriteEnabled = true;
+		D3D12_COMPARISON_FUNC depthComparisonFunc = D3D12_COMPARISON_FUNC_LESS;
 
 		// PSO 생성에 필요한 추가 설정
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE primitiveTopology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		Core::uint32 numRenderTargets = 1;
 		DXGI_FORMAT rtvFormats[8] = { DXGI_FORMAT_R8G8B8A8_UNORM };  // 최대 8개
-		DXGI_FORMAT dsvFormat = DXGI_FORMAT_UNKNOWN;
+		DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 		// MSAA 설정
 		Core::uint32 sampleCount = 1;
 		Core::uint32 sampleQuality = 0;
+		Core::uint32 sampleMask = 0xFFFFFFFF;
 	};
 
 	/**
@@ -96,6 +98,7 @@ namespace Graphics
 		DXGI_FORMAT GetDSVFormat() const { return mDSVFormat; }
 		Core::uint32 GetSampleCount() const { return mSampleCount; }
 		Core::uint32 GetSampleQuality() const { return mSampleQuality; }
+		Core::uint32 GetSampleMask() const { return mSampleMask; }
 
 		/**
 		 * @brief Material 설정 기반 해시 값 계산
@@ -115,7 +118,7 @@ namespace Graphics
 		/**
 		 * @brief 깊이 테스트 설정을 D3D12_DEPTH_STENCIL_DESC로 변환
 		 */
-		static D3D12_DEPTH_STENCIL_DESC CreateDepthStencilDesc(bool depthTest, bool depthWrite);
+		static D3D12_DEPTH_STENCIL_DESC CreateDepthStencilDesc(bool depthTest, bool depthWrite, D3D12_COMPARISON_FUNC depthComparisonFunc);
 
 		/**
 		 * @brief 문자열 해시 계산 헬퍼 함수
@@ -141,6 +144,7 @@ namespace Graphics
 		DXGI_FORMAT mDSVFormat;
 		Core::uint32 mSampleCount;
 		Core::uint32 mSampleQuality;
+		Core::uint32 mSampleMask;
 
 		// 캐싱을 위한 해시 (지연 계산)
 		mutable size_t mCachedHash = 0;

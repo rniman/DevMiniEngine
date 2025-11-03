@@ -1,16 +1,15 @@
-﻿// main.cpp (수정 버전)
-#include "Platform/Window.h"
+﻿#include "Platform/Window.h"
 #include "Platform/PlatformTypes.h"
 #include "Platform/Input.h"
 #include "Core/Logging/Logger.h"
 #include "Core/Logging/ConsoleSink.h"
 #include "Core/Logging/LogMacros.h"
-
+ 
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
 #pragma warning(push, 0)
-#include "Graphics/DX12/d3dx12.h"
+#include "d3dx12.h"
 #pragma warning(pop)
 
 #pragma comment(lib, "d3d12.lib")
@@ -321,8 +320,11 @@ int main()
 	Graphics::Mesh mesh;
 	Graphics::DX12RootSignature rootSignature;
 	Graphics::DX12ShaderCompiler shaderCompiler;
-	Graphics::Material material;
 	Graphics::DX12PipelineStateCache DX12PipelineStateCache;
+
+	Graphics::MaterialDesc matDesc;
+	matDesc.dsvFormat = DXGI_FORMAT_UNKNOWN;
+	Graphics::Material material(matDesc);
 
 	// 삼각형 리소스 초기화
 	if (!InitializeForTriangle(

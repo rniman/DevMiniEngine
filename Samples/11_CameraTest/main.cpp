@@ -13,7 +13,7 @@ void PrintMatrix(const char* name, const Matrix4x4& mat)
     std::cout << name << ":\n";
     std::cout << std::fixed << std::setprecision(4);
     std::cout << "  [" << mat._11 << ", " << mat._12 << ", " << mat._13 << ", " << mat._14 << "]\n";
-    std::cout << "  [" << mat._21 << ", " << mat._22 << ", " << mat._23 << ", " << mat._24 << "]\n";
+    std::cout << "  [" << mat._21 << ", " << mat._22 << ", " << mat._23 << ", " << mat._24 << "]\n"; 
     std::cout << "  [" << mat._31 << ", " << mat._32 << ", " << mat._33 << ", " << mat._34 << "]\n";
     std::cout << "  [" << mat._41 << ", " << mat._42 << ", " << mat._43 << ", " << mat._44 << "]\n";
     std::cout << "\n";
