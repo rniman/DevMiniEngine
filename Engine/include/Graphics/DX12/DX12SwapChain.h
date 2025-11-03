@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief DirectX 12 SwapChain °ü¸® Å¬·¡½º
+	 * @brief DirectX 12 SwapChain ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * È­¸é Ãâ·ÂÀ» À§ÇÑ SwapChain°ú Back BufferµéÀ» °ü¸®ÇÕ´Ï´Ù.
-	 * Double bufferingÀ» ±âº»À¸·Î »ç¿ëÇÕ´Ï´Ù.
+	 * í™”ë©´ ì¶œë ¥ì„ ìœ„í•œ SwapChainê³¼ Back Bufferë“¤ì„ ê´€ë¦¬í•©ë‹ˆë‹¤.
+	 * Double bufferingì„ ê¸°ë³¸ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
 	 */
 	class DX12SwapChain
 	{
@@ -20,15 +20,15 @@ namespace Graphics
 		DX12SwapChain& operator=(const DX12SwapChain&) = delete;
 
 		/**
-		 * @brief SwapChain ÃÊ±âÈ­
+		 * @brief SwapChain ì´ˆê¸°í™”
 		 *
 		 * @param factory DXGI Factory
 		 * @param commandQueue Command Queue
 		 * @param hwnd Window handle
-		 * @param width Back buffer ³Êºñ
-		 * @param height Back buffer ³ôÀÌ
-		 * @param bufferCount Back buffer °³¼ö (±âº»: 2)
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param width Back buffer ë„ˆë¹„
+		 * @param height Back buffer ë†’ì´
+		 * @param bufferCount Back buffer ê°œìˆ˜ (ê¸°ë³¸: 2)
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -45,17 +45,17 @@ namespace Graphics
 		void Present(bool vSync = true);
 
 		/**
-		 * @brief ´ÙÀ½ ÇÁ·¹ÀÓÀ» À§ÇØ Back Buffer ÀÎµ¦½º ¾÷µ¥ÀÌÆ®
+		 * @brief ë‹¤ìŒ í”„ë ˆì„ì„ ìœ„í•´ Back Buffer ì¸ë±ìŠ¤ ì—…ë°ì´íŠ¸
 		 *
-		 * @note Present() È£Ãâ ÈÄ ¹İµå½Ã È£ÃâÇØ¾ß ÇÕ´Ï´Ù
+		 * @note Present() í˜¸ì¶œ í›„ ë°˜ë“œì‹œ í˜¸ì¶œí•´ì•¼ í•©ë‹ˆë‹¤
 		 */
 		void MoveToNextFrame();
 
 		/**
-		 * @brief SwapChain ¸®»çÀÌÁî
+		 * @brief SwapChain ë¦¬ì‚¬ì´ì¦ˆ
 		 *
-		 * @warning È£Ãâ Àü GPU ÀÛ¾÷ ¿Ï·á ´ë±â ÇÊ¿ä
-		 * @note Back Buffer ¸®¼Ò½º°¡ Àç»ı¼ºµË´Ï´Ù
+		 * @warning í˜¸ì¶œ ì „ GPU ì‘ì—… ì™„ë£Œ ëŒ€ê¸° í•„ìš”
+		 * @note Back Buffer ë¦¬ì†ŒìŠ¤ê°€ ì¬ìƒì„±ë©ë‹ˆë‹¤
 		 */
 		bool Resize(Core::uint32 width, Core::uint32 height);
 
@@ -82,7 +82,7 @@ namespace Graphics
 		bool CreateRenderTargetViews(ID3D12Device* device);
 		void ReleaseBackBuffers();
 
-		// ¸â¹ö º¯¼ö
+		// ë©¤ë²„ ë³€ìˆ˜
 
 		// DirectX Resources
 		ComPtr<IDXGISwapChain3> mSwapChain;

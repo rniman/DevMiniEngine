@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Logging/LogSink.h"
 #include <fstream>
@@ -9,18 +9,18 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief ÆÄÀÏ Ãâ·Â Sink
+         * @brief íŒŒì¼ ì¶œë ¥ Sink
          * 
-         * @note append ¸ğµå·Î ÆÄÀÏÀ» ¿­¾î ±âÁ¸ ·Î±×¸¦ º¸Á¸ÇÕ´Ï´Ù.
-         * @note ½º·¹µå ¾ÈÀü¼ºÀº LoggerÀÇ ¹ÂÅØ½º¿¡ ÀÇÁ¸ÇÕ´Ï´Ù.
+         * @note append ëª¨ë“œë¡œ íŒŒì¼ì„ ì—´ì–´ ê¸°ì¡´ ë¡œê·¸ë¥¼ ë³´ì¡´í•©ë‹ˆë‹¤.
+         * @note ìŠ¤ë ˆë“œ ì•ˆì „ì„±ì€ Loggerì˜ ë®¤í…ìŠ¤ì— ì˜ì¡´í•©ë‹ˆë‹¤.
          */
         class FileSink : public LogSink
         {
         public:
             /**
-             * @brief ÆÄÀÏ °æ·Î¸¦ ÁöÁ¤ÇÏ¿© FileSink »ı¼º
+             * @brief íŒŒì¼ ê²½ë¡œë¥¼ ì§€ì •í•˜ì—¬ FileSink ìƒì„±
              * 
-             * @param filename ·Î±× ÆÄÀÏ °æ·Î
+             * @param filename ë¡œê·¸ íŒŒì¼ ê²½ë¡œ
              */
             explicit FileSink(const std::string& filename);
 
@@ -29,7 +29,7 @@ namespace Core
             void Write(const LogMessage& msg) override;
 
             /**
-             * @brief ¹öÆÛ¸¦ µğ½ºÅ©¿¡ Áï½Ã ±â·Ï
+             * @brief ë²„í¼ë¥¼ ë””ìŠ¤í¬ì— ì¦‰ì‹œ ê¸°ë¡
              */
             void Flush() override;
 

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Math/MathTypes.h"
@@ -6,26 +6,26 @@
 namespace Math 
 {
     //=============================================================================
-    // ºÎµ¿¼Ò¼öÁ¡ ºñ±³ »ó¼ö
+    // ë¶€ë™ì†Œìˆ˜ì  ë¹„êµ ìƒìˆ˜
     //=============================================================================
 
-    /// @brief ±âº» ºÎµ¿¼Ò¼öÁ¡ ºñ±³ ÀÓ°è°ª
+    /// @brief ê¸°ë³¸ ë¶€ë™ì†Œìˆ˜ì  ë¹„êµ ì„ê³„ê°’
     constexpr Core::float32 EPSILON = 1e-6f;
 
-    /// @brief ´õ ¾ö°İÇÑ ºñ±³°¡ ÇÊ¿äÇÒ ¶§
+    /// @brief ë” ì—„ê²©í•œ ë¹„êµê°€ í•„ìš”í•  ë•Œ
     constexpr Core::float32 EPSILON_STRICT = 1e-8f;
 
-    /// @brief ´ú ¾ö°İÇÑ ºñ±³ (·»´õ¸µ µî)
+    /// @brief ëœ ì—„ê²©í•œ ë¹„êµ (ë Œë”ë§ ë“±)
     constexpr Core::float32 EPSILON_LOOSE = 1e-4f;
 
     //=============================================================================
-    // ºÎµ¿¼Ò¼öÁ¡ ºñ±³ ÇÔ¼ö
+    // ë¶€ë™ì†Œìˆ˜ì  ë¹„êµ í•¨ìˆ˜
     //=============================================================================
 
     /**
-     * @brief ºÎµ¿¼Ò¼öÁ¡ °ªÀÌ 0¿¡ °¡±î¿îÁö °Ë»ç
-     * @param value °Ë»çÇÒ °ª
-     * @return 0¿¡ °¡±î¿ì¸é true
+     * @brief ë¶€ë™ì†Œìˆ˜ì  ê°’ì´ 0ì— ê°€ê¹Œìš´ì§€ ê²€ì‚¬
+     * @param value ê²€ì‚¬í•  ê°’
+     * @return 0ì— ê°€ê¹Œìš°ë©´ true
      */
     inline bool IsZero(Core::float32 value)
     {
@@ -33,10 +33,10 @@ namespace Math
     }
 
     /**
-     * @brief ºÎµ¿¼Ò¼öÁ¡ °ªÀÌ 0¿¡ °¡±î¿îÁö °Ë»ç (Ä¿½ºÅÒ epsilon)
-     * @param value °Ë»çÇÒ °ª
-     * @param epsilon ºñ±³ ÀÓ°è°ª
-     * @return 0¿¡ °¡±î¿ì¸é true
+     * @brief ë¶€ë™ì†Œìˆ˜ì  ê°’ì´ 0ì— ê°€ê¹Œìš´ì§€ ê²€ì‚¬ (ì»¤ìŠ¤í…€ epsilon)
+     * @param value ê²€ì‚¬í•  ê°’
+     * @param epsilon ë¹„êµ ì„ê³„ê°’
+     * @return 0ì— ê°€ê¹Œìš°ë©´ true
      */
     inline bool IsZero(Core::float32 value, Core::float32 epsilon)
     {
@@ -44,10 +44,10 @@ namespace Math
     }
 
     /**
-     * @brief µÎ ºÎµ¿¼Ò¼öÁ¡ °ªÀÌ °ÅÀÇ °°ÀºÁö °Ë»ç
-     * @param a Ã¹ ¹øÂ° °ª
-     * @param b µÎ ¹øÂ° °ª
-     * @return °ÅÀÇ °°À¸¸é true
+     * @brief ë‘ ë¶€ë™ì†Œìˆ˜ì  ê°’ì´ ê±°ì˜ ê°™ì€ì§€ ê²€ì‚¬
+     * @param a ì²« ë²ˆì§¸ ê°’
+     * @param b ë‘ ë²ˆì§¸ ê°’
+     * @return ê±°ì˜ ê°™ìœ¼ë©´ true
      */
     inline bool IsEqual(Core::float32 a, Core::float32 b)
     {
@@ -55,11 +55,11 @@ namespace Math
     }
 
     /**
-     * @brief µÎ ºÎµ¿¼Ò¼öÁ¡ °ªÀÌ °ÅÀÇ °°ÀºÁö °Ë»ç (Ä¿½ºÅÒ epsilon)
-     * @param a Ã¹ ¹øÂ° °ª
-     * @param b µÎ ¹øÂ° °ª
-     * @param epsilon ºñ±³ ÀÓ°è°ª
-     * @return °ÅÀÇ °°À¸¸é true
+     * @brief ë‘ ë¶€ë™ì†Œìˆ˜ì  ê°’ì´ ê±°ì˜ ê°™ì€ì§€ ê²€ì‚¬ (ì»¤ìŠ¤í…€ epsilon)
+     * @param a ì²« ë²ˆì§¸ ê°’
+     * @param b ë‘ ë²ˆì§¸ ê°’
+     * @param epsilon ë¹„êµ ì„ê³„ê°’
+     * @return ê±°ì˜ ê°™ìœ¼ë©´ true
      */
     inline bool IsEqual(Core::float32 a, Core::float32 b, Core::float32 epsilon)
     {
@@ -67,7 +67,7 @@ namespace Math
     }
 
     //=============================================================================
-    // º¤ÅÍ ¿¬»ê
+    // ë²¡í„° ì—°ì‚°
     //=============================================================================
 
     inline Vector3 Add(const Vector3& a, const Vector3& b)
@@ -156,7 +156,7 @@ namespace Math
     }
 
     //=============================================================================
-    // Çà·Ä ¿¬»ê
+    // í–‰ë ¬ ì—°ì‚°
     //=============================================================================
 
     inline Matrix4x4 MatrixMultiply(const Matrix4x4& a, const Matrix4x4& b)
@@ -196,7 +196,7 @@ namespace Math
     }
 
     //=============================================================================
-    // º¯È¯ Çà·Ä
+    // ë³€í™˜ í–‰ë ¬
     //=============================================================================
 
     inline Matrix4x4 MatrixTranslation(Core::float32 x, Core::float32 y, Core::float32 z)
@@ -232,8 +232,8 @@ namespace Math
         return out;
     }
 
-    // Pitch, Yaw, Roll º¹ÇÕ È¸Àü (¶óµğ¾È)
-    // È¸Àü Àû¿ë ¼ø¼­: Y(Yaw) ¡æ X(Pitch) ¡æ Z(Roll)
+    // Pitch, Yaw, Roll ë³µí•© íšŒì „ (ë¼ë””ì•ˆ)
+    // íšŒì „ ì ìš© ìˆœì„œ: Y(Yaw) â†’ X(Pitch) â†’ Z(Roll)
     inline Matrix4x4 MatrixRotationRollPitchYaw(Core::float32 pitch, Core::float32 yaw, Core::float32 roll)
     {
         Matrix4x4 out;
@@ -259,7 +259,7 @@ namespace Math
     }
 
     //=============================================================================
-    // ÄõÅÍ´Ï¾ğ ¿¬»ê
+    // ì¿¼í„°ë‹ˆì–¸ ì—°ì‚°
     //=============================================================================
 
     inline Quaternion QuaternionIdentity()
@@ -334,7 +334,7 @@ namespace Math
     }
 
     //=============================================================================
-    // Ä«¸Ş¶ó & Åõ¿µ
+    // ì¹´ë©”ë¼ & íˆ¬ì˜
     //=============================================================================
 
     inline Matrix4x4 MatrixLookAtLH(const Vector3& eye, const Vector3& target, const Vector3& up)
@@ -372,10 +372,10 @@ namespace Math
     }
 
     //=============================================================================
-    // º¤ÅÍ/Çà·Ä º¯È¯
+    // ë²¡í„°/í–‰ë ¬ ë³€í™˜
     //=============================================================================
 
-    // Ãà ±â¹İ È¸Àü Çà·Ä »ı¼º (Vector3 ¹öÀü)
+    // ì¶• ê¸°ë°˜ íšŒì „ í–‰ë ¬ ìƒì„± (Vector3 ë²„ì „)
     inline Matrix4x4 MatrixRotationAxis(const Vector3& axis, Core::float32 angle)
     {
         VectorSIMD axisVec = LoadVector3(axis);
@@ -384,7 +384,7 @@ namespace Math
         return out;
     }
 
-    // º¤ÅÍ¸¦ Çà·Ä·Î º¯È¯ (Normal º¯È¯¿ë)
+    // ë²¡í„°ë¥¼ í–‰ë ¬ë¡œ ë³€í™˜ (Normal ë³€í™˜ìš©)
     inline Vector3 Vector3TransformNormal(const Vector3& v, const Matrix4x4& m)
     {
         VectorSIMD vec = LoadVector3(v);
@@ -396,7 +396,7 @@ namespace Math
     }
 
     //=============================================================================
-    // À¯Æ¿¸®Æ¼ ÇÔ¼ö
+    // ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜
     //=============================================================================
 
     inline Core::float32 InverseSqrt(Core::float32 value)

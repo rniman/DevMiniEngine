@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief DirectX 12 Command ½ÇÇà ÄÁÅØ½ºÆ®
+	 * @brief DirectX 12 Command ì‹¤í–‰ ì»¨í…ìŠ¤íŠ¸
 	 *
-	 * Command Allocator¿Í Command List¸¦ °ü¸®ÇÕ´Ï´Ù.
+	 * Command Allocatorì™€ Command Listë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
 	 *
-	 * @note ´ÜÀÏ Allocator¸¦ »ç¿ëÇÏ¹Ç·Î GPU µ¿±âÈ­ ÈÄ¿¡¸¸ Reset °¡´ÉÇÕ´Ï´Ù
-	 * @warning ÇÁ·¹ÀÓ ¹öÆÛ¸µÀ» À§ÇØ¼­´Â ÇÁ·¹ÀÓ ¼ö¸¸Å­ ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇØ¾ß ÇÕ´Ï´Ù
+	 * @note ë‹¨ì¼ Allocatorë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ GPU ë™ê¸°í™” í›„ì—ë§Œ Reset ê°€ëŠ¥í•©ë‹ˆë‹¤
+	 * @warning í”„ë ˆì„ ë²„í¼ë§ì„ ìœ„í•´ì„œëŠ” í”„ë ˆì„ ìˆ˜ë§Œí¼ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•´ì•¼ í•©ë‹ˆë‹¤
 	 */
 	class DX12CommandContext
 	{
@@ -22,33 +22,33 @@ namespace Graphics
 		DX12CommandContext& operator=(const DX12CommandContext&) = delete;
 
 		/**
-		 * @brief Command Context ÃÊ±âÈ­
+		 * @brief Command Context ì´ˆê¸°í™”
 		 *
 		 * @param device D3D12 Device
-		 * @param type Command List Å¸ÀÔ
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param type Command List íƒ€ì…
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 */
 		bool Initialize(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type);
 
 		void Shutdown();
 
 		/**
-		 * @brief Command List ¸®¼Â (»õ ÇÁ·¹ÀÓ ½ÃÀÛ)
+		 * @brief Command List ë¦¬ì…‹ (ìƒˆ í”„ë ˆì„ ì‹œì‘)
 		 *
-		 * @return ¸®¼Â ¼º°ø ¿©ºÎ
+		 * @return ë¦¬ì…‹ ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @note ÇÁ·¹ÀÓ ½ÃÀÛ ½Ã È£ÃâÇÏ¿© »õ·Î¿î ¸í·É ±â·ÏÀ» ½ÃÀÛÇÕ´Ï´Ù
-		 * @warning Allocator°¡ GPU¿¡¼­ »ç¿ë ÁßÀÏ ¶§ È£ÃâÇÏ¸é ½ÇÆĞÇÕ´Ï´Ù
+		 * @note í”„ë ˆì„ ì‹œì‘ ì‹œ í˜¸ì¶œí•˜ì—¬ ìƒˆë¡œìš´ ëª…ë ¹ ê¸°ë¡ì„ ì‹œì‘í•©ë‹ˆë‹¤
+		 * @warning Allocatorê°€ GPUì—ì„œ ì‚¬ìš© ì¤‘ì¼ ë•Œ í˜¸ì¶œí•˜ë©´ ì‹¤íŒ¨í•©ë‹ˆë‹¤
 		 */
 		bool Reset();
 
 		/**
-		 * @brief Command List ´İ±â (±â·Ï Á¾·á)
+		 * @brief Command List ë‹«ê¸° (ê¸°ë¡ ì¢…ë£Œ)
 		 *
-		 * @return ´İ±â ¼º°ø ¿©ºÎ
+		 * @return ë‹«ê¸° ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @note ExecuteCommandLists() È£Ãâ Àü¿¡ ¹İµå½Ã Close()ÇØ¾ß ÇÕ´Ï´Ù
-		 * @warning ÀÌ¹Ì ´İÈù Command List¸¦ ´Ù½Ã ´İÀ¸¸é ½ÇÆĞÇÕ´Ï´Ù
+		 * @note ExecuteCommandLists() í˜¸ì¶œ ì „ì— ë°˜ë“œì‹œ Close()í•´ì•¼ í•©ë‹ˆë‹¤
+		 * @warning ì´ë¯¸ ë‹«íŒ Command Listë¥¼ ë‹¤ì‹œ ë‹«ìœ¼ë©´ ì‹¤íŒ¨í•©ë‹ˆë‹¤
 		 */
 		bool Close();
 

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Platform/Input.h"
 
 namespace Platform
@@ -6,7 +6,7 @@ namespace Platform
     Input::Input()
         : mMouseWheelDelta(0.0f)
     {
-        // ¸ğµç »óÅÂ¸¦ false·Î ÃÊ±âÈ­
+        // ëª¨ë“  ìƒíƒœë¥¼ falseë¡œ ì´ˆê¸°í™”
         std::memset(mKeyState, 0, sizeof(mKeyState));
         std::memset(mPrevKeyState, 0, sizeof(mPrevKeyState));
         std::memset(mMouseButtonState, 0, sizeof(mMouseButtonState));
@@ -18,7 +18,7 @@ namespace Platform
 
     void Input::Update()
     {
-        // ÇöÀç »óÅÂ¸¦ ÀÌÀü »óÅÂ·Î º¹»ç (´õºí ¹öÆÛ¸µ)
+        // í˜„ì¬ ìƒíƒœë¥¼ ì´ì „ ìƒíƒœë¡œ ë³µì‚¬ (ë”ë¸” ë²„í¼ë§)
         std::memcpy(mPrevKeyState, mKeyState, sizeof(mKeyState));
         std::memcpy(mPrevMouseButtonState, mMouseButtonState, sizeof(mMouseButtonState));
 
@@ -27,12 +27,12 @@ namespace Platform
 
     void Input::Reset()
     {
-        // ÇÁ·¹ÀÓº° »óÅÂ ¸®¼Â (¸¶¿ì½º ÈÙ µî)
+        // í”„ë ˆì„ë³„ ìƒíƒœ ë¦¬ì…‹ (ë§ˆìš°ìŠ¤ íœ  ë“±)
         mMouseWheelDelta = 0.0f;
     }
 
     //=============================================================================
-    // Å°º¸µå ÀÔ·Â
+    // í‚¤ë³´ë“œ ì…ë ¥
     //=============================================================================
 
     bool Input::IsKeyDown(KeyCode key) const
@@ -69,7 +69,7 @@ namespace Platform
     }
 
     //=============================================================================
-    // ¸¶¿ì½º ÀÔ·Â
+    // ë§ˆìš°ìŠ¤ ì…ë ¥
     //=============================================================================
 
     bool Input::IsMouseButtonDown(MouseButton button) const
@@ -121,7 +121,7 @@ namespace Platform
     }
 
     //=============================================================================
-    // ³»ºÎ ¾÷µ¥ÀÌÆ® ¸Ş¼­µå
+    // ë‚´ë¶€ ì—…ë°ì´íŠ¸ ë©”ì„œë“œ
     //=============================================================================
 
     void Input::OnKeyDown(KeyCode key)

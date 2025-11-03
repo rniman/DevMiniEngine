@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12SwapChain.h"
@@ -16,7 +16,7 @@ namespace Graphics
 	{
 		LOG_INFO("[DX12Device] Initializing DirectX 12 Device...");
 
-		// 1´Ü°è: Debug Layer È°¼ºÈ­ (Debug ºôµå¿¡¼­¸¸)
+		// 1ë‹¨ê³„: Debug Layer í™œì„±í™” (Debug ë¹Œë“œì—ì„œë§Œ)
 #if defined(_DEBUG)
 		if (enableDebugLayer)
 		{
@@ -27,35 +27,35 @@ namespace Graphics
 		}
 #endif
 
-		// 2´Ü°è: DXGI Factory »ı¼º
+		// 2ë‹¨ê³„: DXGI Factory ìƒì„±
 		if (!CreateFactory())
 		{
 			LOG_ERROR("[DX12Device] Failed to create DXGI Factory");
 			return false;
 		}
 
-		// 3´Ü°è: GPU Adapter ¼±ÅÃ
+		// 3ë‹¨ê³„: GPU Adapter ì„ íƒ
 		if (!SelectAdapter())
 		{
 			LOG_ERROR("[DX12Device] Failed to select GPU Adapter");
 			return false;
 		}
 
-		// 4´Ü°è: D3D12 Device »ı¼º
+		// 4ë‹¨ê³„: D3D12 Device ìƒì„±
 		if (!CreateDevice())
 		{
 			LOG_ERROR("[DX12Device] Failed to create D3D12 Device");
 			return false;
 		}
 
-		// 5´Ü°è: Command Queue »ı¼º
+		// 5ë‹¨ê³„: Command Queue ìƒì„±
 		if (!CreateCommandQueues())
 		{
 			LOG_ERROR("[DX12Device] Failed to create Command Queues");
 			return false;
 		}
 
-		// 6´Ü°è: Back Buffer ¼ö¸¸Å­ Command List¿Í Command Allocator »ı¼º
+		// 6ë‹¨ê³„: Back Buffer ìˆ˜ë§Œí¼ Command Listì™€ Command Allocator ìƒì„±
 		if (!CreateCommandContexts())
 		{
 			LOG_ERROR("[DX12Device] Failed to create Command Contexts");
@@ -77,13 +77,13 @@ namespace Graphics
 
 		LOG_INFO("[DX12Device] Shutting down DirectX 12 Device...");
 
-		// GPU ÀÛ¾÷ ¿Ï·á ´ë±â
+		// GPU ì‘ì—… ì™„ë£Œ ëŒ€ê¸°
 		if (mGraphicsQueue)
 		{
 			mGraphicsQueue->WaitForIdle();
 		}
 
-		// ¿ª¼øÀ¸·Î ¸®¼Ò½º ÇØÁ¦
+		// ì—­ìˆœìœ¼ë¡œ ë¦¬ì†ŒìŠ¤ í•´ì œ
 
 		// SwapChain
 		if (mSwapChain)
@@ -109,7 +109,7 @@ namespace Graphics
 			mGraphicsQueue.reset();
 		}
 
-		// DirectX °´Ã¼
+		// DirectX ê°ì²´
 		mDevice.Reset();
 		mAdapter.Reset();
 		mFactory.Reset();
@@ -144,7 +144,7 @@ namespace Graphics
 
 		LOG_INFO("[DX12Device] Creating SwapChain...");
 
-		// 1´Ü°è: SwapChain »ı¼º
+		// 1ë‹¨ê³„: SwapChain ìƒì„±
 		mSwapChain = std::make_unique<DX12SwapChain>();
 		if (!mSwapChain->Initialize(
 			mDevice.Get(),
@@ -196,7 +196,7 @@ namespace Graphics
 
 		UINT factoryFlags = 0;
 
-		// Debug ºôµå¿¡¼­ Debug ÇÃ·¡±× Ãß°¡
+		// Debug ë¹Œë“œì—ì„œ Debug í”Œë˜ê·¸ ì¶”ê°€
 #if defined(_DEBUG)
 		if (mDebugLayerEnabled)
 		{
@@ -212,7 +212,7 @@ namespace Graphics
 			return false;
 		}
 
-		// Factory5´Â Tearing Áö¿ø ¿©ºÎ(bool)¸¦ ¾ò±â À§ÇØ "ÀÏ½ÃÀû"À¸·Î »ç¿ë
+		// Factory5ëŠ” Tearing ì§€ì› ì—¬ë¶€(bool)ë¥¼ ì–»ê¸° ìœ„í•´ "ì¼ì‹œì "ìœ¼ë¡œ ì‚¬ìš©
 		ComPtr<IDXGIFactory5> factory5;
 		hr = mFactory.As(&factory5);
 		if (SUCCEEDED(hr))
@@ -250,7 +250,7 @@ namespace Graphics
 		{
 			LOG_INFO("[DX12Device] Selecting adapter using DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE...");
 
-			ComPtr<IDXGIAdapter1> adapter; // ·ÎÄÃ º¯¼ö »ç¿ë
+			ComPtr<IDXGIAdapter1> adapter; // ë¡œì»¬ ë³€ìˆ˜ ì‚¬ìš©
 
 			for (UINT i = 0;; ++i)
 			{
@@ -260,13 +260,13 @@ namespace Graphics
 					break;
 				}
 
-				// ÀÌ ¾î´ğÅÍ·Î D3D12 Device »ı¼ºÀÌ °¡´ÉÇÑÁö Å×½ºÆ®
+				// ì´ ì–´ëŒ‘í„°ë¡œ D3D12 Device ìƒì„±ì´ ê°€ëŠ¥í•œì§€ í…ŒìŠ¤íŠ¸
 				if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), mFeatureLevel, _uuidof(ID3D12Device), nullptr)))
 				{
-					// ¼º°ø! ÀÌ ¾î´ğÅÍ¸¦ mAdapter·Î È®Á¤ÇÏ°í ¹İÈ¯
-					mAdapter = adapter.Detach(); // ¼ÒÀ¯±Ç ÀÌÀü
+					// ì„±ê³µ! ì´ ì–´ëŒ‘í„°ë¥¼ mAdapterë¡œ í™•ì •í•˜ê³  ë°˜í™˜
+					mAdapter = adapter.Detach(); // ì†Œìœ ê¶Œ ì´ì „
 
-					// Fallback °æ·ÎÃ³·³ ·Î±× Ãß°¡
+					// Fallback ê²½ë¡œì²˜ëŸ¼ ë¡œê·¸ ì¶”ê°€
 					DXGI_ADAPTER_DESC1 desc;
 					mAdapter->GetDesc1(&desc);
 					char adapterName[128];
@@ -276,7 +276,7 @@ namespace Graphics
 
 					return true;
 				}
-				// Å×½ºÆ® ½ÇÆĞ. ·çÇÁ°¡ °è¼Ó µ¹¸é¼­ 'adapter' ComPtr´Â ÀÚµ¿À¸·Î ¸±¸®ÁîµÇ°í ´ÙÀ½ ¾î´ğÅÍ·Î µ¤¾î½áÁü.
+				// í…ŒìŠ¤íŠ¸ ì‹¤íŒ¨. ë£¨í”„ê°€ ê³„ì† ëŒë©´ì„œ 'adapter' ComPtrëŠ” ìë™ìœ¼ë¡œ ë¦´ë¦¬ì¦ˆë˜ê³  ë‹¤ìŒ ì–´ëŒ‘í„°ë¡œ ë®ì–´ì¨ì§.
 			}
 		}
 		
@@ -286,7 +286,7 @@ namespace Graphics
 		SIZE_T maxDedicatedVideoMemory = 0;
 		UINT adapterIndex = 0;
 
-		// ÃÖ´ë VRAMÀ» °¡Áø Adapter ¼±ÅÃ
+		// ìµœëŒ€ VRAMì„ ê°€ì§„ Adapter ì„ íƒ
 		while (mFactory->EnumAdapters1(adapterIndex, &adapter) != DXGI_ERROR_NOT_FOUND)
 		{
 
@@ -294,14 +294,14 @@ namespace Graphics
 			DXGI_ADAPTER_DESC1 desc;
 			adapter->GetDesc1(&desc);
 
-			// Software Adapter Á¦¿Ü
+			// Software Adapter ì œì™¸
 			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
 			{
 				adapterIndex++;
 				continue;
 			}
 
-			// Device »ı¼º °¡´É ¿©ºÎ ¹× VRAM Å©±â È®ÀÎ
+			// Device ìƒì„± ê°€ëŠ¥ ì—¬ë¶€ ë° VRAM í¬ê¸° í™•ì¸
 			if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
 			{
 				if (desc.DedicatedVideoMemory > maxDedicatedVideoMemory)
@@ -309,7 +309,7 @@ namespace Graphics
 					maxDedicatedVideoMemory = desc.DedicatedVideoMemory;
 					mAdapter = adapter;
 
-					// Adapter Á¤º¸ Ãâ·Â
+					// Adapter ì •ë³´ ì¶œë ¥
 					char adapterName[128];
 					size_t convertedChars = 0;
 					wcstombs_s(&convertedChars, adapterName, sizeof(adapterName), desc.Description, _TRUNCATE);
@@ -338,7 +338,7 @@ namespace Graphics
 	{
 		LOG_INFO("[DX12Device] Creating D3D12 Device...");
 
-		// Feature Level ¸ñ·Ï (³ôÀº ¼ø¼­)
+		// Feature Level ëª©ë¡ (ë†’ì€ ìˆœì„œ)
 		D3D_FEATURE_LEVEL featureLevels[] = {
 			D3D_FEATURE_LEVEL_12_2,
 			D3D_FEATURE_LEVEL_12_1,
@@ -349,7 +349,7 @@ namespace Graphics
 
 		HRESULT hr = E_FAIL;
 
-		// ÃÖ´ë Feature Level °¨Áö
+		// ìµœëŒ€ Feature Level ê°ì§€
 		for (D3D_FEATURE_LEVEL featureLevel : featureLevels)
 		{
 			hr = D3D12CreateDevice(
@@ -372,18 +372,18 @@ namespace Graphics
 			return false;
 		}
 
-		// Debug ºôµå Àü¿ë: Info Queue ¼³Á¤
+		// Debug ë¹Œë“œ ì „ìš©: Info Queue ì„¤ì •
 #if defined(_DEBUG)
 		if (mDebugLayerEnabled)
 		{
 			ComPtr<ID3D12InfoQueue> infoQueue;
 			if (SUCCEEDED(mDevice.As(&infoQueue)))
 			{
-				// ½É°¢ÇÑ ¿¡·¯ ¹ß»ı ½Ã Áß´Ü
+				// ì‹¬ê°í•œ ì—ëŸ¬ ë°œìƒ ì‹œ ì¤‘ë‹¨
 				infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
 				infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
 				
-				//// °æ°í ¼öÁØÀÇ ¸Ş½ÃÁöµµ Áß´Ü
+				//// ê²½ê³  ìˆ˜ì¤€ì˜ ë©”ì‹œì§€ë„ ì¤‘ë‹¨
 				// infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE); 
 
 				LOG_INFO("[DX12Device] Debug Info Queue configured");
@@ -399,7 +399,7 @@ namespace Graphics
 	{
 		LOG_INFO("[DX12Device] Creating Command Queues...");
 
-		// Graphics Command Queue »ı¼º
+		// Graphics Command Queue ìƒì„±
 		mGraphicsQueue = std::make_unique<DX12CommandQueue>();
 		if (!mGraphicsQueue->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT))
 		{
@@ -407,17 +407,17 @@ namespace Graphics
 			return false;
 		}
 
-		// TODO: [¿£Áø È®Àå ÁöÁ¡]
-		// 1. ºñµ¿±â ¸®¼Ò½º ·Îµù(Copy)ÀÌ³ª GPGPU(Compute)°¡ ÇÊ¿äÇÒ ¶§ Å¥¸¦ Ãß°¡ÇÕ´Ï´Ù.
+		// TODO: [ì—”ì§„ í™•ì¥ ì§€ì ]
+		// 1. ë¹„ë™ê¸° ë¦¬ì†ŒìŠ¤ ë¡œë”©(Copy)ì´ë‚˜ GPGPU(Compute)ê°€ í•„ìš”í•  ë•Œ íë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤.
 		// 
 		//    mCopyQueue = std::make_unique<DX12CommandQueue>();
 		//    mCopyQueue->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_COPY);
 		//
-		// 2. [Áß¿ä] Å¥¸¦ Ãß°¡ÇÏ¸é, CreateCommandContexts() ÇÔ¼ö¿¡µµ ÇØ´ç Å¸ÀÔÀÇ
-		//    'mCopyContexts[FRAME_BUFFER_COUNT]' ¹è¿­À» ¹İµå½Ã ÇÔ²² »ı¼ºÇØ¾ß ÇÕ´Ï´Ù.
+		// 2. [ì¤‘ìš”] íë¥¼ ì¶”ê°€í•˜ë©´, CreateCommandContexts() í•¨ìˆ˜ì—ë„ í•´ë‹¹ íƒ€ì…ì˜
+		//    'mCopyContexts[FRAME_BUFFER_COUNT]' ë°°ì—´ì„ ë°˜ë“œì‹œ í•¨ê»˜ ìƒì„±í•´ì•¼ í•©ë‹ˆë‹¤.
 		//
-		// 3. [¸®ÆÑÅä¸µ] ÇâÈÄ Å¥¿Í ÄÁÅØ½ºÆ® °ü¸®°¡ º¹ÀâÇØÁö¸é,
-		//    'CommandSystem' Å¬·¡½º¸¦ ¸¸µé¾î Å¥¿Í ÄÁÅØ½ºÆ® ¹è¿­À» ÇÔ²² Ä¸½¶È­ÇÏ´Â °ÍÀ» °í·ÁÇÕ´Ï´Ù.
+		// 3. [ë¦¬íŒ©í† ë§] í–¥í›„ íì™€ ì»¨í…ìŠ¤íŠ¸ ê´€ë¦¬ê°€ ë³µì¡í•´ì§€ë©´,
+		//    'CommandSystem' í´ë˜ìŠ¤ë¥¼ ë§Œë“¤ì–´ íì™€ ì»¨í…ìŠ¤íŠ¸ ë°°ì—´ì„ í•¨ê»˜ ìº¡ìŠí™”í•˜ëŠ” ê²ƒì„ ê³ ë ¤í•©ë‹ˆë‹¤.
 
 		LOG_INFO("[DX12Device] Command Queues created successfully");
 		return true;

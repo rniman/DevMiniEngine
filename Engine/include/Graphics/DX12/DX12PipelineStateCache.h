@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Graphics/GraphicsTypes.h"
 #include <unordered_map>
@@ -10,10 +10,10 @@ namespace Graphics
 	class DX12ShaderCompiler;
 
 	/**
-	 * @brief PSO »ı¼º ¹× Ä³½ÌÀ» °ü¸®ÇÏ´Â Å¬·¡½º
+	 * @brief PSO ìƒì„± ë° ìºì‹±ì„ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
 	 *
-	 * Material ±â¹İÀ¸·Î Pipeline State Object¸¦ »ı¼ºÇÏ°í,
-	 * µ¿ÀÏÇÑ ¼³Á¤ÀÇ PSO Àç»ı¼ºÀ» ¹æÁöÇÕ´Ï´Ù.
+	 * Material ê¸°ë°˜ìœ¼ë¡œ Pipeline State Objectë¥¼ ìƒì„±í•˜ê³ ,
+	 * ë™ì¼í•œ ì„¤ì •ì˜ PSO ì¬ìƒì„±ì„ ë°©ì§€í•©ë‹ˆë‹¤.
 	 */
 	class DX12PipelineStateCache
 	{
@@ -25,23 +25,23 @@ namespace Graphics
 		DX12PipelineStateCache& operator=(const DX12PipelineStateCache&) = delete;
 
 		/**
-		 * @brief DX12PipelineStateCache ÃÊ±âÈ­
+		 * @brief DX12PipelineStateCache ì´ˆê¸°í™”
 		 *
 		 * @param device D3D12 Device
-		 * @param shaderCompiler ¼ÎÀÌ´õ ÄÄÆÄÀÏ·¯
-		 * @return ¼º°ø ½Ã true
+		 * @param shaderCompiler ì…°ì´ë” ì»´íŒŒì¼ëŸ¬
+		 * @return ì„±ê³µ ì‹œ true
 		 */
 		bool Initialize(ID3D12Device* device, DX12ShaderCompiler* shaderCompiler);
 
 		/**
-		 * @brief Material ±â¹İ PSO °¡Á®¿À±â ¶Ç´Â »ı¼º
+		 * @brief Material ê¸°ë°˜ PSO ê°€ì ¸ì˜¤ê¸° ë˜ëŠ” ìƒì„±
 		 *
-		 * Ä³½Ã¿¡ µ¿ÀÏÇÑ ¼³Á¤ÀÇ PSO°¡ ÀÖÀ¸¸é ¹İÈ¯ÇÏ°í, ¾øÀ¸¸é »õ·Î »ı¼ºÇÕ´Ï´Ù.
+		 * ìºì‹œì— ë™ì¼í•œ ì„¤ì •ì˜ PSOê°€ ìˆìœ¼ë©´ ë°˜í™˜í•˜ê³ , ì—†ìœ¼ë©´ ìƒˆë¡œ ìƒì„±í•©ë‹ˆë‹¤.
 		 *
-		 * @param material ·»´õ¸µ ¼³Á¤ÀÌ ´ã±ä Material
+		 * @param material ë Œë”ë§ ì„¤ì •ì´ ë‹´ê¸´ Material
 		 * @param rootSignature Root Signature
 		 * @param inputLayout Vertex Input Layout
-		 * @return »ı¼ºµÇ°Å³ª Ä³½ÌµÈ PSO (½ÇÆĞ ½Ã nullptr)
+		 * @return ìƒì„±ë˜ê±°ë‚˜ ìºì‹±ëœ PSO (ì‹¤íŒ¨ ì‹œ nullptr)
 		 */
 		ID3D12PipelineState* GetOrCreatePipelineState(
 			const Material& material,
@@ -50,7 +50,7 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief ¸ğµç PSO Ä³½Ã Á¤¸®
+		 * @brief ëª¨ë“  PSO ìºì‹œ ì •ë¦¬
 		 */
 		void Clear();
 
@@ -58,15 +58,15 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief Ä³½ÃµÈ PSO °³¼ö ¹İÈ¯
+		 * @brief ìºì‹œëœ PSO ê°œìˆ˜ ë°˜í™˜
 		 */
 		size_t GetCachedPSOCount() const { return mPSOCache.size(); }
 
 	private:
 		/**
-		 * @brief PSO Ä³½Ã Å° ±¸Á¶Ã¼
+		 * @brief PSO ìºì‹œ í‚¤ êµ¬ì¡°ì²´
 		 *
-		 * Material, InputLayout, RootSignature Á¶ÇÕÀ¸·Î PSO¸¦ °íÀ¯ÇÏ°Ô ½Äº°ÇÕ´Ï´Ù.
+		 * Material, InputLayout, RootSignature ì¡°í•©ìœ¼ë¡œ PSOë¥¼ ê³ ìœ í•˜ê²Œ ì‹ë³„í•©ë‹ˆë‹¤.
 		 */
 		struct PSOKey
 		{
@@ -83,7 +83,7 @@ namespace Graphics
 		};
 
 		/**
-		 * @brief PSOKey ÇØ½Ã °è»ê ÇÔ¼ö °´Ã¼
+		 * @brief PSOKey í•´ì‹œ ê³„ì‚° í•¨ìˆ˜ ê°ì²´
 		 */
 		struct PSOKeyHasher
 		{
@@ -97,7 +97,7 @@ namespace Graphics
 		};
 
 		/**
-		 * @brief PSO »ı¼º ÇïÆÛ ÇÔ¼ö
+		 * @brief PSO ìƒì„± í—¬í¼ í•¨ìˆ˜
 		 */
 		ComPtr<ID3D12PipelineState> CreatePSO(
 			const Material& material,
@@ -106,7 +106,7 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief ¼ÎÀÌ´õ ÄÄÆÄÀÏ ¹× PSO Desc ±¸¼º
+		 * @brief ì…°ì´ë” ì»´íŒŒì¼ ë° PSO Desc êµ¬ì„±
 		 */
 		bool CompileShadersAndFillDesc(
 			const Material& material,
@@ -116,14 +116,14 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief Input Layout ÇØ½Ã °è»ê
+		 * @brief Input Layout í•´ì‹œ ê³„ì‚°
 		 */
 		static size_t HashInputLayout(const D3D12_INPUT_LAYOUT_DESC& inputLayout);
 
-		// PSO Ä³½Ã (Key -> PSO)
+		// PSO ìºì‹œ (Key -> PSO)
 		std::unordered_map<PSOKey, ComPtr<ID3D12PipelineState>, PSOKeyHasher> mPSOCache;
 
-		// D3D12 ¸®¼Ò½º (¼ÒÀ¯ÇÏÁö ¾ÊÀ½)
+		// D3D12 ë¦¬ì†ŒìŠ¤ (ì†Œìœ í•˜ì§€ ì•ŠìŒ)
 		ID3D12Device* mDevice = nullptr;
 		DX12ShaderCompiler* mShaderCompiler = nullptr;
 	};

@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief DirectX 12 Descriptor Heap °ü¸® Å¬·¡½º
+	 * @brief DirectX 12 Descriptor Heap ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * GPU ¸®¼Ò½º¿¡ ´ëÇÑ DescriptorµéÀ» °ü¸®ÇÏ´Â HeapÀÔ´Ï´Ù.
-	 * RTV, DSV, CBV/SRV/UAV, Sampler Å¸ÀÔÀ» Áö¿øÇÕ´Ï´Ù.
+	 * GPU ë¦¬ì†ŒìŠ¤ì— ëŒ€í•œ Descriptorë“¤ì„ ê´€ë¦¬í•˜ëŠ” Heapì…ë‹ˆë‹¤.
+	 * RTV, DSV, CBV/SRV/UAV, Sampler íƒ€ì…ì„ ì§€ì›í•©ë‹ˆë‹¤.
 	 */
 	class DX12DescriptorHeap
 	{
@@ -20,13 +20,13 @@ namespace Graphics
 		DX12DescriptorHeap& operator=(const DX12DescriptorHeap&) = delete;
 
 		/**
-		 * @brief Descriptor Heap ÃÊ±âÈ­
+		 * @brief Descriptor Heap ì´ˆê¸°í™”
 		 *
 		 * @param device D3D12 Device
-		 * @param type Descriptor Heap Å¸ÀÔ
-		 * @param numDescriptors Descriptor °³¼ö
-		 * @param shaderVisible Shader¿¡¼­ Á¢±Ù °¡´É ¿©ºÎ
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param type Descriptor Heap íƒ€ì…
+		 * @param numDescriptors Descriptor ê°œìˆ˜
+		 * @param shaderVisible Shaderì—ì„œ ì ‘ê·¼ ê°€ëŠ¥ ì—¬ë¶€
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -38,23 +38,23 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief CPU Descriptor Handle È¹µæ (ÀÎµ¦½º ±â¹İ)
+		 * @brief CPU Descriptor Handle íšë“ (ì¸ë±ìŠ¤ ê¸°ë°˜)
 		 *
-		 * @param index Descriptor ÀÎµ¦½º (0 ~ numDescriptors-1)
+		 * @param index Descriptor ì¸ë±ìŠ¤ (0 ~ numDescriptors-1)
 		 * @return CPU Descriptor Handle
 		 *
-		 * @warning ÀÎµ¦½º ¹üÀ§ °ËÁõÀ» ¼öÇàÇÏÁö ¾Ê½À´Ï´Ù
+		 * @warning ì¸ë±ìŠ¤ ë²”ìœ„ ê²€ì¦ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤
 		 */
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(Core::uint32 index) const;
 
 		/**
-		 * @brief GPU Descriptor Handle È¹µæ (ÀÎµ¦½º ±â¹İ)
+		 * @brief GPU Descriptor Handle íšë“ (ì¸ë±ìŠ¤ ê¸°ë°˜)
 		 *
-		 * @param index Descriptor ÀÎµ¦½º (0 ~ numDescriptors-1)
+		 * @param index Descriptor ì¸ë±ìŠ¤ (0 ~ numDescriptors-1)
 		 * @return GPU Descriptor Handle
 		 *
-		 * @warning ÀÎµ¦½º ¹üÀ§ °ËÁõÀ» ¼öÇàÇÏÁö ¾Ê½À´Ï´Ù
-		 * @note Shader Visible Heap¿¡¼­¸¸ À¯È¿ÇÕ´Ï´Ù
+		 * @warning ì¸ë±ìŠ¤ ë²”ìœ„ ê²€ì¦ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤
+		 * @note Shader Visible Heapì—ì„œë§Œ ìœ íš¨í•©ë‹ˆë‹¤
 		 */
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(Core::uint32 index) const;
 
@@ -70,7 +70,7 @@ namespace Graphics
 	private:
 		const char* GetDescriptorHeapTypeString(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
 
-		// ¸â¹ö º¯¼ö
+		// ë©¤ë²„ ë³€ìˆ˜
 		
 		// Descriptor Heap Resources
 		ComPtr<ID3D12DescriptorHeap> mHeap;

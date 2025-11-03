@@ -1,28 +1,28 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief ÇÁ·¹ÀÓº°·Î µ¶¸³µÈ Constant Buffer¸¦ °ü¸®ÇÏ´Â Å¬·¡½º
+	 * @brief í”„ë ˆì„ë³„ë¡œ ë…ë¦½ëœ Constant Bufferë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
 	 *
-	 * Upload HeapÀ» »ç¿ëÇÏ¿© CPU¿¡¼­ Á÷Á¢ ¾÷µ¥ÀÌÆ® °¡´ÉÇÑ Constant Buffer¸¦ Á¦°øÇÕ´Ï´Ù.
-	 * °¢ ÇÁ·¹ÀÓ¸¶´Ù µ¶¸³µÈ ¸Ş¸ğ¸® ¿µ¿ªÀ» »ç¿ëÇÏ¿© CPU-GPU µ¿±âÈ­ ¹®Á¦¸¦ ¹æÁöÇÕ´Ï´Ù.
+	 * Upload Heapì„ ì‚¬ìš©í•˜ì—¬ CPUì—ì„œ ì§ì ‘ ì—…ë°ì´íŠ¸ ê°€ëŠ¥í•œ Constant Bufferë¥¼ ì œê³µí•©ë‹ˆë‹¤.
+	 * ê° í”„ë ˆì„ë§ˆë‹¤ ë…ë¦½ëœ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì‚¬ìš©í•˜ì—¬ CPU-GPU ë™ê¸°í™” ë¬¸ì œë¥¼ ë°©ì§€í•©ë‹ˆë‹¤.
 	 *
-	 * @note Upload HeapÀº ÃÊ±âÈ­ ½Ã MapµÇ¾î ÇÁ·Î±×·¥ Á¾·á±îÁö À¯ÁöµË´Ï´Ù
-	 * @warning ¸ğµç Constant Buffer´Â 256¹ÙÀÌÆ® Á¤·ÄÀÌ ÇÊ¼öÀÔ´Ï´Ù
+	 * @note Upload Heapì€ ì´ˆê¸°í™” ì‹œ Mapë˜ì–´ í”„ë¡œê·¸ë¨ ì¢…ë£Œê¹Œì§€ ìœ ì§€ë©ë‹ˆë‹¤
+	 * @warning ëª¨ë“  Constant BufferëŠ” 256ë°”ì´íŠ¸ ì •ë ¬ì´ í•„ìˆ˜ì…ë‹ˆë‹¤
 	 *
 	 * @code
-	 * // »ç¿ë ¿¹½Ã
+	 * // ì‚¬ìš© ì˜ˆì‹œ
 	 * DX12ConstantBuffer mvpBuffer;
 	 * mvpBuffer.Initialize(device, sizeof(MVPMatrix), 2);
 	 *
-	 * // ¸Å ÇÁ·¹ÀÓ ¾÷µ¥ÀÌÆ®
+	 * // ë§¤ í”„ë ˆì„ ì—…ë°ì´íŠ¸
 	 * MVPMatrix mvp = CalculateMVP();
 	 * mvpBuffer.Update(currentFrameIndex, &mvp, sizeof(MVPMatrix));
 	 *
-	 * // GPU ÁÖ¼Ò ¹ÙÀÎµù
+	 * // GPU ì£¼ì†Œ ë°”ì¸ë”©
 	 * cmdList->SetGraphicsRootConstantBufferView(
 	 *     0,
 	 *     mvpBuffer.GetGPUAddress(currentFrameIndex)
@@ -39,12 +39,12 @@ namespace Graphics
 		DX12ConstantBuffer& operator=(const DX12ConstantBuffer&) = delete;
 
 		/**
-		 * @brief Constant Buffer ÃÊ±âÈ­
+		 * @brief Constant Buffer ì´ˆê¸°í™”
 		 *
 		 * @param device DirectX 12 Device
-		 * @param bufferSize ¹öÆÛ Å©±â (¹ÙÀÌÆ® ´ÜÀ§, ÀÚµ¿À¸·Î 256¹ÙÀÌÆ® Á¤·Ä)
-		 * @param frameCount ÇÁ·¹ÀÓ ¹öÆÛ °³¼ö (±âº»°ª: FRAME_BUFFER_COUNT)
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param bufferSize ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸ ë‹¨ìœ„, ìë™ìœ¼ë¡œ 256ë°”ì´íŠ¸ ì •ë ¬)
+		 * @param frameCount í”„ë ˆì„ ë²„í¼ ê°œìˆ˜ (ê¸°ë³¸ê°’: FRAME_BUFFER_COUNT)
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -55,14 +55,14 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief Å¸ÀÔ ¾ÈÀü ¾÷µ¥ÀÌÆ® ÇïÆÛ ÇÔ¼ö
+		 * @brief íƒ€ì… ì•ˆì „ ì—…ë°ì´íŠ¸ í—¬í¼ í•¨ìˆ˜
 		 *
-		 * @tparam T Trivially copyable Å¸ÀÔ
-		 * @param frameIndex ÇÁ·¹ÀÓ ÀÎµ¦½º
-		 * @param data ¾÷µ¥ÀÌÆ®ÇÒ µ¥ÀÌÅÍ
+		 * @tparam T Trivially copyable íƒ€ì…
+		 * @param frameIndex í”„ë ˆì„ ì¸ë±ìŠ¤
+		 * @param data ì—…ë°ì´íŠ¸í•  ë°ì´í„°
 		 *
-		 * @note ´ÜÀÏ ±¸Á¶Ã¼ ¾÷µ¥ÀÌÆ®¿¡ ±ÇÀå
-		 * @note ¹è¿­ÀÌ³ª °¡º¯ Å©±â´Â Update() »ç¿ë
+		 * @note ë‹¨ì¼ êµ¬ì¡°ì²´ ì—…ë°ì´íŠ¸ì— ê¶Œì¥
+		 * @note ë°°ì—´ì´ë‚˜ ê°€ë³€ í¬ê¸°ëŠ” Update() ì‚¬ìš©
 		 */
 		template<typename T>
 		void UpdateTyped(Core::uint32 frameIndex, const T& data)
@@ -76,18 +76,18 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief Æ¯Á¤ ÇÁ·¹ÀÓÀÇ Constant Buffer µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ®
+		 * @brief íŠ¹ì • í”„ë ˆì„ì˜ Constant Buffer ë°ì´í„° ì—…ë°ì´íŠ¸
 		 *
-		 * @param frameIndex ¾÷µ¥ÀÌÆ®ÇÒ ÇÁ·¹ÀÓ ÀÎµ¦½º
-		 * @param data º¹»çÇÒ µ¥ÀÌÅÍ Æ÷ÀÎÅÍ
-		 * @param dataSize µ¥ÀÌÅÍ Å©±â (¹ÙÀÌÆ® ´ÜÀ§)
+		 * @param frameIndex ì—…ë°ì´íŠ¸í•  í”„ë ˆì„ ì¸ë±ìŠ¤
+		 * @param data ë³µì‚¬í•  ë°ì´í„° í¬ì¸í„°
+		 * @param dataSize ë°ì´í„° í¬ê¸° (ë°”ì´íŠ¸ ë‹¨ìœ„)
 		 *
-		 * @note ³»ºÎÀûÀ¸·Î memcpy¸¦ »ç¿ëÇÏ¿© ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù
-		 * @warning dataSize´Â ÃÊ±âÈ­ ½Ã ÁöÁ¤ÇÑ bufferSize ÀÌÇÏ¿©¾ß ÇÕ´Ï´Ù
-		 * @warning frameIndex°¡ frameCount ÀÌ»óÀÌ¸é ¿¡·¯ ·Î±× Ãâ·Â ÈÄ ¹«½ÃµË´Ï´Ù
+		 * @note ë‚´ë¶€ì ìœ¼ë¡œ memcpyë¥¼ ì‚¬ìš©í•˜ì—¬ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤
+		 * @warning dataSizeëŠ” ì´ˆê¸°í™” ì‹œ ì§€ì •í•œ bufferSize ì´í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤
+		 * @warning frameIndexê°€ frameCount ì´ìƒì´ë©´ ì—ëŸ¬ ë¡œê·¸ ì¶œë ¥ í›„ ë¬´ì‹œë©ë‹ˆë‹¤
 		 *
-		 * @note Upload HeapÀÇ Write-Combined ¸Ş¸ğ¸® Æ¯¼º»ó memcpy ÈÄ ÀÚµ¿À¸·Î GPU¿¡ Àü´ŞµË´Ï´Ù
-		 * @note CPU¿Í GPUÀÇ µ¿±âÈ­´Â È£ÃâÀÚ°¡ Fence·Î °ü¸®ÇØ¾ß ÇÕ´Ï´Ù
+		 * @note Upload Heapì˜ Write-Combined ë©”ëª¨ë¦¬ íŠ¹ì„±ìƒ memcpy í›„ ìë™ìœ¼ë¡œ GPUì— ì „ë‹¬ë©ë‹ˆë‹¤
+		 * @note CPUì™€ GPUì˜ ë™ê¸°í™”ëŠ” í˜¸ì¶œìê°€ Fenceë¡œ ê´€ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤
 		 */
 		void Update(
 			Core::uint32 frameIndex,
@@ -96,10 +96,10 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief Æ¯Á¤ ÇÁ·¹ÀÓÀÇ Constant Buffer GPU ÁÖ¼Ò ¹İÈ¯
+		 * @brief íŠ¹ì • í”„ë ˆì„ì˜ Constant Buffer GPU ì£¼ì†Œ ë°˜í™˜
 		 *
-		 * @param frameIndex GPU ÁÖ¼Ò¸¦ °¡Á®¿Ã ÇÁ·¹ÀÓ ÀÎµ¦½º
-		 * @return GPU °¡»ó ÁÖ¼Ò (SetGraphicsRootConstantBufferView¿ë)
+		 * @param frameIndex GPU ì£¼ì†Œë¥¼ ê°€ì ¸ì˜¬ í”„ë ˆì„ ì¸ë±ìŠ¤
+		 * @return GPU ê°€ìƒ ì£¼ì†Œ (SetGraphicsRootConstantBufferViewìš©)
 		 */
 		D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress(Core::uint32 frameIndex) const;
 
@@ -108,16 +108,16 @@ namespace Graphics
 
 	private:
 		/**
-		 * @brief Å©±â¸¦ 256¹ÙÀÌÆ®·Î Á¤·Ä
+		 * @brief í¬ê¸°ë¥¼ 256ë°”ì´íŠ¸ë¡œ ì •ë ¬
 		 *
-		 * DirectX 12 Constant Buffer´Â 256¹ÙÀÌÆ® Á¤·ÄÀÌ ÇÊ¼ö
+		 * DirectX 12 Constant BufferëŠ” 256ë°”ì´íŠ¸ ì •ë ¬ì´ í•„ìˆ˜
 		 */
 		static size_t AlignSize(size_t size);
 
-		ComPtr<ID3D12Resource> mConstantBuffer;  // Upload Heap ¸®¼Ò½º
-		Core::uint8* mMappedData = nullptr;      // Áö¼ÓÀûÀ¸·Î MapµÈ CPU Æ÷ÀÎÅÍ
-		size_t mAlignedBufferSize = 0;           // 256¹ÙÀÌÆ® Á¤·ÄµÈ ´ÜÀÏ ÇÁ·¹ÀÓ ¹öÆÛ Å©±â
-		Core::uint32 mFrameCount = 0;            // ÇÁ·¹ÀÓ ¹öÆÛ °³¼ö
+		ComPtr<ID3D12Resource> mConstantBuffer;  // Upload Heap ë¦¬ì†ŒìŠ¤
+		Core::uint8* mMappedData = nullptr;      // ì§€ì†ì ìœ¼ë¡œ Mapëœ CPU í¬ì¸í„°
+		size_t mAlignedBufferSize = 0;           // 256ë°”ì´íŠ¸ ì •ë ¬ëœ ë‹¨ì¼ í”„ë ˆì„ ë²„í¼ í¬ê¸°
+		Core::uint32 mFrameCount = 0;            // í”„ë ˆì„ ë²„í¼ ê°œìˆ˜
 	};
 
 } // namespace Graphics

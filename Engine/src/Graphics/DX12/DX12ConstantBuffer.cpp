@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12ConstantBuffer.h"
 #include "Core/Logging/LogMacros.h"
 #include "Core/Assert.h"
@@ -36,25 +36,25 @@ namespace Graphics
 			return false;
 		}
 
-		// 256¹ÙÀÌÆ® Á¤·Ä
+		// 256ë°”ì´íŠ¸ ì •ë ¬
 		mAlignedBufferSize = AlignSize(bufferSize);
 		mFrameCount = frameCount;
 
-		// ÀüÃ¼ ¹öÆÛ Å©±â °è»ê (ÇÁ·¹ÀÓº° µ¶¸³ ¸Ş¸ğ¸®)
+		// ì „ì²´ ë²„í¼ í¬ê¸° ê³„ì‚° (í”„ë ˆì„ë³„ ë…ë¦½ ë©”ëª¨ë¦¬)
 		size_t totalBufferSize = mAlignedBufferSize * mFrameCount;
 
-		// Upload Heap ¼Ó¼º ¼³Á¤
+		// Upload Heap ì†ì„± ì„¤ì •
 		D3D12_HEAP_PROPERTIES heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 
-		// ¹öÆÛ ¸®¼Ò½º ¼³Á¤
+		// ë²„í¼ ë¦¬ì†ŒìŠ¤ ì„¤ì •
 		D3D12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(static_cast<UINT64>(totalBufferSize));
 
-		// Upload Heap¿¡ Constant Buffer »ı¼º
+		// Upload Heapì— Constant Buffer ìƒì„±
 		HRESULT hr = device->CreateCommittedResource(
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
 			&bufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,  // Upload HeapÀÇ ÃÊ±â »óÅÂ
+			D3D12_RESOURCE_STATE_GENERIC_READ,  // Upload Heapì˜ ì´ˆê¸° ìƒíƒœ
 			nullptr,
 			IID_PPV_ARGS(&mConstantBuffer)
 		);
@@ -65,8 +65,8 @@ namespace Graphics
 			return false;
 		}
 
-		// Upload HeapÀ» Áö¼ÓÀûÀ¸·Î Map (ÇÁ·Î±×·¥ Á¾·á±îÁö À¯Áö)
-		CD3DX12_RANGE readRange(0, 0);  // CPU¿¡¼­ ÀĞÁö ¾ÊÀ½
+		// Upload Heapì„ ì§€ì†ì ìœ¼ë¡œ Map (í”„ë¡œê·¸ë¨ ì¢…ë£Œê¹Œì§€ ìœ ì§€)
+		CD3DX12_RANGE readRange(0, 0);  // CPUì—ì„œ ì½ì§€ ì•ŠìŒ
 		hr = mConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&mMappedData));
 
 		if (FAILED(hr))
@@ -124,14 +124,14 @@ namespace Graphics
 			return;
 		}
 
-		// ÇØ´ç ÇÁ·¹ÀÓÀÇ ¹öÆÛ ¿ÀÇÁ¼Â °è»ê
+		// í•´ë‹¹ í”„ë ˆì„ì˜ ë²„í¼ ì˜¤í”„ì…‹ ê³„ì‚°
 		size_t offset = mAlignedBufferSize * frameIndex;
 
-		// µ¥ÀÌÅÍ º¹»ç (GPU°¡ Á÷Á¢ ÀĞÀ» ¼ö ÀÖ´Â Upload Heap ¸Ş¸ğ¸®)
+		// ë°ì´í„° ë³µì‚¬ (GPUê°€ ì§ì ‘ ì½ì„ ìˆ˜ ìˆëŠ” Upload Heap ë©”ëª¨ë¦¬)
 		memcpy(mMappedData + offset, data, dataSize);
 
-		// NOTE: Upload HeapÀº Write-Combined ¸Ş¸ğ¸®ÀÌ¹Ç·Î
-		// memcpy ÈÄ ÀÚµ¿À¸·Î GPU¿¡ Àü´ŞµÊ (Unmap ºÒÇÊ¿ä)
+		// NOTE: Upload Heapì€ Write-Combined ë©”ëª¨ë¦¬ì´ë¯€ë¡œ
+		// memcpy í›„ ìë™ìœ¼ë¡œ GPUì— ì „ë‹¬ë¨ (Unmap ë¶ˆí•„ìš”)
 	}
 
 	D3D12_GPU_VIRTUAL_ADDRESS DX12ConstantBuffer::GetGPUAddress(uint32 frameIndex) const
@@ -148,7 +148,7 @@ namespace Graphics
 			return 0;
 		}
 
-		// ±âº» GPU ÁÖ¼Ò + ÇÁ·¹ÀÓº° ¿ÀÇÁ¼Â
+		// ê¸°ë³¸ GPU ì£¼ì†Œ + í”„ë ˆì„ë³„ ì˜¤í”„ì…‹
 		D3D12_GPU_VIRTUAL_ADDRESS baseAddress = mConstantBuffer->GetGPUVirtualAddress();
 		size_t offset = mAlignedBufferSize * frameIndex;
 
@@ -157,7 +157,7 @@ namespace Graphics
 
 	void DX12ConstantBuffer::Shutdown()
 	{
-		// Upload HeapÀº MapµÈ »óÅÂ·Î À¯ÁöµÇ¹Ç·Î Unmap ÇÊ¿ä
+		// Upload Heapì€ Mapëœ ìƒíƒœë¡œ ìœ ì§€ë˜ë¯€ë¡œ Unmap í•„ìš”
 		if (mConstantBuffer && mMappedData)
 		{
 			mConstantBuffer->Unmap(0, nullptr);
@@ -173,7 +173,7 @@ namespace Graphics
 
 	size_t DX12ConstantBuffer::AlignSize(size_t size)
 	{
-		// DirectX 12 Constant Buffer´Â 256¹ÙÀÌÆ® Á¤·Ä ÇÊ¼ö
+		// DirectX 12 Constant BufferëŠ” 256ë°”ì´íŠ¸ ì •ë ¬ í•„ìˆ˜
 		constexpr size_t ALIGNMENT = 256;
 		return (size + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
 	}

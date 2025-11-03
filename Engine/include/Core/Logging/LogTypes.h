@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include <string>
@@ -9,9 +9,9 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief ·Î±× ½É°¢µµ ·¹º§
+         * @brief ë¡œê·¸ ì‹¬ê°ë„ ë ˆë²¨
          * 
-         * @note Release ºôµå¿¡¼­ Trace/Debug´Â ÄÄÆÄÀÏ ½ÃÁ¡¿¡ Á¦°ÅµÊ
+         * @note Release ë¹Œë“œì—ì„œ Trace/DebugëŠ” ì»´íŒŒì¼ ì‹œì ì— ì œê±°ë¨
          */
         enum class LogLevel
         {
@@ -24,7 +24,7 @@ namespace Core
         };
 
         /**
-         * @brief ·Î±× Ä«Å×°í¸®
+         * @brief ë¡œê·¸ ì¹´í…Œê³ ë¦¬
          */
         enum class LogCategory
         {
@@ -38,7 +38,7 @@ namespace Core
         };
 
         /**
-         * @brief ·Î±× ¸Ş½ÃÁö ±¸Á¶Ã¼
+         * @brief ë¡œê·¸ ë©”ì‹œì§€ êµ¬ì¡°ì²´
          */
         struct LogMessage
         {
@@ -61,7 +61,7 @@ namespace Core
         };
 
         /**
-         * @brief ·Î±× ·¹º§À» ¹®ÀÚ¿­·Î º¯È¯
+         * @brief ë¡œê·¸ ë ˆë²¨ì„ ë¬¸ìì—´ë¡œ ë³€í™˜
          */
         inline const char* LogLevelToString(LogLevel level)
         {
@@ -78,7 +78,7 @@ namespace Core
         }
 
         /**
-         * @brief ·Î±× Ä«Å×°í¸®¸¦ ¹®ÀÚ¿­·Î º¯È¯
+         * @brief ë¡œê·¸ ì¹´í…Œê³ ë¦¬ë¥¼ ë¬¸ìì—´ë¡œ ë³€í™˜
          */
         inline const char* LogCategoryToString(LogCategory category)
         {

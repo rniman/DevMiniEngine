@@ -1,26 +1,26 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief DirectX 12 Root Signature¸¦ °ü¸®ÇÏ´Â Å¬·¡½º
+	 * @brief DirectX 12 Root Signatureë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
 	 *
-	 * Root Signature´Â ¼ÎÀÌ´õ°¡ Á¢±ÙÇÒ ¸®¼Ò½ºÀÇ ·¹ÀÌ¾Æ¿ôÀ» Á¤ÀÇÇÕ´Ï´Ù.
-	 * GPU ÆÄÀÌÇÁ¶óÀÎ°ú ¼ÎÀÌ´õ °£ÀÇ "ÀÎÅÍÆäÀÌ½º °è¾à" ¿ªÇÒÀ» ÇÏ¸ç,
-	 * Constant Buffer, Texture, Sampler µîÀÇ ¹ÙÀÎµù ±¸Á¶¸¦ ¸í½ÃÇÕ´Ï´Ù.
+	 * Root SignatureëŠ” ì…°ì´ë”ê°€ ì ‘ê·¼í•  ë¦¬ì†ŒìŠ¤ì˜ ë ˆì´ì•„ì›ƒì„ ì •ì˜í•©ë‹ˆë‹¤.
+	 * GPU íŒŒì´í”„ë¼ì¸ê³¼ ì…°ì´ë” ê°„ì˜ "ì¸í„°í˜ì´ìŠ¤ ê³„ì•½" ì—­í• ì„ í•˜ë©°,
+	 * Constant Buffer, Texture, Sampler ë“±ì˜ ë°”ì¸ë”© êµ¬ì¡°ë¥¼ ëª…ì‹œí•©ë‹ˆë‹¤.
 	 *
-	 * Áö¿øÇÏ´Â Root Parameter Å¸ÀÔ:
-	 * - Descriptor Table: CBV, SRV, UAV, SamplerÀÇ ¿¬¼ÓµÈ ¹üÀ§
-	 * - Root Constants: 32bit °ªÀ» Á÷Á¢ Àü´Ş (ÃÖ´ë 64°³)
-	 * - Root Descriptor: ´ÜÀÏ CBV/SRV/UAV Á÷Á¢ ¹ÙÀÎµù
+	 * ì§€ì›í•˜ëŠ” Root Parameter íƒ€ì…:
+	 * - Descriptor Table: CBV, SRV, UAV, Samplerì˜ ì—°ì†ëœ ë²”ìœ„
+	 * - Root Constants: 32bit ê°’ì„ ì§ì ‘ ì „ë‹¬ (ìµœëŒ€ 64ê°œ)
+	 * - Root Descriptor: ë‹¨ì¼ CBV/SRV/UAV ì§ì ‘ ë°”ì¸ë”©
 	 *
-	 * DirectX 12¿¡¼­ Root Signature º¯°æÀº ÆÄÀÌÇÁ¶óÀÎ »óÅÂ º¯°æÀ» À¯¹ßÇÏ¹Ç·Î
-	 * °¡´ÉÇÑ Àû°Ô º¯°æÇÏ°í Àç»ç¿ëÇÏ´Â °ÍÀÌ ¼º´É»ó À¯¸®ÇÕ´Ï´Ù.
+	 * DirectX 12ì—ì„œ Root Signature ë³€ê²½ì€ íŒŒì´í”„ë¼ì¸ ìƒíƒœ ë³€ê²½ì„ ìœ ë°œí•˜ë¯€ë¡œ
+	 * ê°€ëŠ¥í•œ ì ê²Œ ë³€ê²½í•˜ê³  ì¬ì‚¬ìš©í•˜ëŠ” ê²ƒì´ ì„±ëŠ¥ìƒ ìœ ë¦¬í•©ë‹ˆë‹¤.
 	 *
-	 * @note PSO(Pipeline State Object) »ı¼º ½Ã Root Signature ÇÊ¿ä
-	 * @note Draw È£Ãâ Àü CommandList¿¡ ¹ÙÀÎµù ÇÊ¼ö
-	 * @warning Root Signature º¯°æÀº GPU ÆÄÀÌÇÁ¶óÀÎ ÇÃ·¯½Ã¸¦ À¯¹ß
+	 * @note PSO(Pipeline State Object) ìƒì„± ì‹œ Root Signature í•„ìš”
+	 * @note Draw í˜¸ì¶œ ì „ CommandListì— ë°”ì¸ë”© í•„ìˆ˜
+	 * @warning Root Signature ë³€ê²½ì€ GPU íŒŒì´í”„ë¼ì¸ í”ŒëŸ¬ì‹œë¥¼ ìœ ë°œ
 	 */
 	class DX12RootSignature
 	{
@@ -32,22 +32,22 @@ namespace Graphics
 		DX12RootSignature& operator=(const DX12RootSignature&) = delete;
 
 		/**
-		 * @brief Root Signature ÃÊ±âÈ­ (Version 1.1)
+		 * @brief Root Signature ì´ˆê¸°í™” (Version 1.1)
 		 *
-		 * DirectX 12.1ºÎÅÍ Áö¿øµÇ´Â Version 1.1À» »ç¿ëÇÕ´Ï´Ù.
-		 * Version 1.1Àº DescriptorÀÇ Á¤Àû/µ¿Àû ¼Ó¼ºÀ» ¸í½ÃÇÏ¿©
-		 * µå¶óÀÌ¹ö ÃÖÀûÈ­ ±âÈ¸¸¦ Á¦°øÇÕ´Ï´Ù.
+		 * DirectX 12.1ë¶€í„° ì§€ì›ë˜ëŠ” Version 1.1ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
+		 * Version 1.1ì€ Descriptorì˜ ì •ì /ë™ì  ì†ì„±ì„ ëª…ì‹œí•˜ì—¬
+		 * ë“œë¼ì´ë²„ ìµœì í™” ê¸°íšŒë¥¼ ì œê³µí•©ë‹ˆë‹¤.
 		 *
 		 * @param device DirectX 12 Device
-		 * @param numParameters Root Parameter °³¼ö
-		 * @param parameters Root Parameter ¹è¿­ (CD3DX12_ROOT_PARAMETER1)
-		 * @param numStaticSamplers Static Sampler °³¼ö
-		 * @param staticSamplers Static Sampler ¹è¿­
-		 * @param flags Root Signature ÇÃ·¡±×
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param numParameters Root Parameter ê°œìˆ˜
+		 * @param parameters Root Parameter ë°°ì—´ (CD3DX12_ROOT_PARAMETER1)
+		 * @param numStaticSamplers Static Sampler ê°œìˆ˜
+		 * @param staticSamplers Static Sampler ë°°ì—´
+		 * @param flags Root Signature í”Œë˜ê·¸
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @note ³»ºÎÀûÀ¸·Î D3DX12SerializeVersionedRootSignature »ç¿ë
-		 * @warning parameters ¹è¿­Àº ÀÌ ÇÔ¼ö°¡ ¹İÈ¯µÉ ¶§±îÁö À¯È¿ÇØ¾ß ÇÕ´Ï´Ù
+		 * @note ë‚´ë¶€ì ìœ¼ë¡œ D3DX12SerializeVersionedRootSignature ì‚¬ìš©
+		 * @warning parameters ë°°ì—´ì€ ì´ í•¨ìˆ˜ê°€ ë°˜í™˜ë  ë•Œê¹Œì§€ ìœ íš¨í•´ì•¼ í•©ë‹ˆë‹¤
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -59,13 +59,13 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief Empty Root Signature ÃÊ±âÈ­ (ÆÄ¶ó¹ÌÅÍ ¾øÀ½)
+		 * @brief Empty Root Signature ì´ˆê¸°í™” (íŒŒë¼ë¯¸í„° ì—†ìŒ)
 		 *
-		 * ¸®¼Ò½º ¹ÙÀÎµùÀÌ ÇÊ¿ä ¾ø´Â ´Ü¼øÇÑ ¼ÎÀÌ´õ¸¦ À§ÇÑ Root SignatureÀÔ´Ï´Ù.
-		 * Vertex Input¸¸ »ç¿ëÇÏ´Â °æ¿ì ÀûÇÕÇÕ´Ï´Ù.
+		 * ë¦¬ì†ŒìŠ¤ ë°”ì¸ë”©ì´ í•„ìš” ì—†ëŠ” ë‹¨ìˆœí•œ ì…°ì´ë”ë¥¼ ìœ„í•œ Root Signatureì…ë‹ˆë‹¤.
+		 * Vertex Inputë§Œ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ì í•©í•©ë‹ˆë‹¤.
 		 *
 		 * @param device DirectX 12 Device
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 */
 		bool InitializeEmpty(ID3D12Device* device);
 

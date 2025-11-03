@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/Camera/Camera.h"
 #include "Math/MathUtils.h"
 
@@ -32,7 +32,7 @@ namespace Graphics
 		Vector3 forward = Subtract(mTarget, mPosition);
 		float distance = Length(forward);
 
-		// Up º¤ÅÍ¸¦ È¸ÀüÃàÀ¸·Î »ç¿ëÇÏ¿© ¼öÆò È¸Àü ±¸Çö
+		// Up ë²¡í„°ë¥¼ íšŒì „ì¶•ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ìˆ˜í‰ íšŒì „ êµ¬í˜„
 		Matrix4x4 rotationMatrix = MatrixRotationAxis(mUpVector, angle);
 		Vector3 rotatedForward = Vector3TransformNormal(forward, rotationMatrix);
 
@@ -57,7 +57,7 @@ namespace Graphics
 
 		mTarget = Add(mPosition, newForward);
 
-		// Pitch È¸Àü ½Ã Up º¤ÅÍµµ ÇÔ²² È¸Àü½ÃÄÑ Ä«¸Ş¶ó ·Ñ ¹æÁö
+		// Pitch íšŒì „ ì‹œ Up ë²¡í„°ë„ í•¨ê»˜ íšŒì „ì‹œì¼œ ì¹´ë©”ë¼ ë¡¤ ë°©ì§€
 		mUpVector = Vector3TransformNormal(mUpVector, rotationMatrix);
 
 		mViewDirty = true;
@@ -101,7 +101,7 @@ namespace Graphics
 	void Camera::SetLookTo(const Vector3& position, const Vector3& direction, const Vector3& up)
 	{
 		mPosition = position;
-		// direction º¤ÅÍ·ÎºÎÅÍ Àı´ë Å¸°Ù À§Ä¡ °è»ê
+		// direction ë²¡í„°ë¡œë¶€í„° ì ˆëŒ€ íƒ€ê²Ÿ ìœ„ì¹˜ ê³„ì‚°
 		mTarget = Add(position, direction);
 		mUpVector = up;
 		mViewDirty = true;

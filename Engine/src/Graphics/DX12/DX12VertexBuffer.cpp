@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Graphics/DX12/DX12VertexBuffer.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 
@@ -7,34 +7,34 @@ namespace Core
     namespace Memory
     {
         //=============================================================================
-        // ¸Ş¸ğ¸® ¼³Á¤
+        // ë©”ëª¨ë¦¬ ì„¤ì •
         //=============================================================================
 
-        // ¸Ş¸ğ¸® ÇÒ´ç ±âº» Á¤·Ä
-        constexpr size_t DEFAULT_ALIGNMENT = 16;      // SIMD ÃÖÀûÈ­
-        constexpr size_t CACHE_LINE_SIZE = 64;        // CPU Ä³½Ã ¶óÀÎ
+        // ë©”ëª¨ë¦¬ í• ë‹¹ ê¸°ë³¸ ì •ë ¬
+        constexpr size_t DEFAULT_ALIGNMENT = 16;      // SIMD ìµœì í™”
+        constexpr size_t CACHE_LINE_SIZE = 64;        // CPU ìºì‹œ ë¼ì¸
 
-        // Ç¥ÁØ ¸Ş¸ğ¸® Å©±â ´ÜÀ§
+        // í‘œì¤€ ë©”ëª¨ë¦¬ í¬ê¸° ë‹¨ìœ„
         constexpr size_t KB = 1024;
         constexpr size_t MB = 1024 * KB;
         constexpr size_t GB = 1024 * MB;
 
-        // ÇÒ´çÀÚ »çÀü Á¤ÀÇ Å©±â
-        constexpr size_t FRAME_ALLOCATOR_SIZE = 10 * MB;   // ÇÁ·¹ÀÓ¸¶´Ù ¸®¼Â
-        constexpr size_t TEMP_ALLOCATOR_SIZE = 1 * MB;     // ´Ü±â ÇÒ´ç¿ë
+        // í• ë‹¹ì ì‚¬ì „ ì •ì˜ í¬ê¸°
+        constexpr size_t FRAME_ALLOCATOR_SIZE = 10 * MB;   // í”„ë ˆì„ë§ˆë‹¤ ë¦¬ì…‹
+        constexpr size_t TEMP_ALLOCATOR_SIZE = 1 * MB;     // ë‹¨ê¸° í• ë‹¹ìš©
 
         //=============================================================================
-        // ¸Ş¸ğ¸® Á¤·Ä ÇïÆÛ ÇÔ¼ö
+        // ë©”ëª¨ë¦¬ ì •ë ¬ í—¬í¼ í•¨ìˆ˜
         //=============================================================================
 
         /**
-         * @brief Æ÷ÀÎÅÍ¸¦ ÁöÁ¤µÈ Á¤·Ä·Î Á¤·Ä
+         * @brief í¬ì¸í„°ë¥¼ ì§€ì •ëœ ì •ë ¬ë¡œ ì •ë ¬
          *
-         * @param ptr Á¤·ÄÇÒ Æ÷ÀÎÅÍ
-         * @param alignment Á¤·Ä Å©±â (2ÀÇ °ÅµìÁ¦°ö)
-         * @return Á¤·ÄµÈ Æ÷ÀÎÅÍ
+         * @param ptr ì •ë ¬í•  í¬ì¸í„°
+         * @param alignment ì •ë ¬ í¬ê¸° (2ì˜ ê±°ë“­ì œê³±)
+         * @return ì •ë ¬ëœ í¬ì¸í„°
          *
-         * @note alignment´Â ¹İµå½Ã 2ÀÇ °ÅµìÁ¦°öÀÌ¾î¾ß ÇÔ
+         * @note alignmentëŠ” ë°˜ë“œì‹œ 2ì˜ ê±°ë“­ì œê³±ì´ì–´ì•¼ í•¨
          */
         inline void* AlignPointer(void* ptr, size_t alignment)
         {
@@ -44,13 +44,13 @@ namespace Core
         }
 
         /**
-         * @brief Á¤·ÄµÈ Å©±â °è»ê
+         * @brief ì •ë ¬ëœ í¬ê¸° ê³„ì‚°
          *
-         * @param size ¿øº» Å©±â
-         * @param alignment Á¤·Ä Å©±â (2ÀÇ °ÅµìÁ¦°ö)
-         * @return Á¤·ÄµÈ Å©±â
+         * @param size ì›ë³¸ í¬ê¸°
+         * @param alignment ì •ë ¬ í¬ê¸° (2ì˜ ê±°ë“­ì œê³±)
+         * @return ì •ë ¬ëœ í¬ê¸°
          *
-         * @note °á°ú´Â Ç×»ó ¿øº» Å©±â ÀÌ»ó
+         * @note ê²°ê³¼ëŠ” í•­ìƒ ì›ë³¸ í¬ê¸° ì´ìƒ
          */
         inline size_t AlignSize(size_t size, size_t alignment)
         {
@@ -58,11 +58,11 @@ namespace Core
         }
 
         /**
-         * @brief Æ÷ÀÎÅÍ Á¤·Ä ¿©ºÎ È®ÀÎ
+         * @brief í¬ì¸í„° ì •ë ¬ ì—¬ë¶€ í™•ì¸
          *
-         * @param ptr È®ÀÎÇÒ Æ÷ÀÎÅÍ
-         * @param alignment Á¤·Ä Å©±â (2ÀÇ °ÅµìÁ¦°ö)
-         * @return Á¤·ÄµÇ¾î ÀÖÀ¸¸é true
+         * @param ptr í™•ì¸í•  í¬ì¸í„°
+         * @param alignment ì •ë ¬ í¬ê¸° (2ì˜ ê±°ë“­ì œê³±)
+         * @return ì •ë ¬ë˜ì–´ ìˆìœ¼ë©´ true
          */
         inline bool IsAligned(const void* ptr, size_t alignment)
         {

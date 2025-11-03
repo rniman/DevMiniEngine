@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Platform/PlatformTypes.h"
@@ -6,16 +6,16 @@
 #include <functional>
 #include <memory>
 
-// Windows Å¸ÀÔ Àü¹æ ¼±¾ğ (Windows.h ¿À¿° ¹æÁö)
+// Windows íƒ€ì… ì „ë°© ì„ ì–¸ (Windows.h ì˜¤ì—¼ ë°©ì§€)
 struct HWND__;
 using HWND = HWND__*;
 
 namespace Platform
 {
     /**
-     * @brief Ãß»ó À©µµ¿ì ÀÎÅÍÆäÀÌ½º
+     * @brief ì¶”ìƒ ìœˆë„ìš° ì¸í„°í˜ì´ìŠ¤
      *
-     * ÇÃ·§Æûº° ±¸Çö Å¬·¡½º(Win32Window µî)°¡ ÀÌ¸¦ »ó¼ÓÇÕ´Ï´Ù.
+     * í”Œë«í¼ë³„ êµ¬í˜„ í´ë˜ìŠ¤(Win32Window ë“±)ê°€ ì´ë¥¼ ìƒì†í•©ë‹ˆë‹¤.
      */
     class Window
     {
@@ -25,76 +25,76 @@ namespace Platform
         virtual ~Window() = default;
 
         /**
-         * @brief À©µµ¿ì »ı¼º ¹× Ç¥½Ã
-         * @param desc À©µµ¿ì »ı¼º ¼³Á¤
-         * @return ¼º°ø ½Ã true
+         * @brief ìœˆë„ìš° ìƒì„± ë° í‘œì‹œ
+         * @param desc ìœˆë„ìš° ìƒì„± ì„¤ì •
+         * @return ì„±ê³µ ì‹œ true
          */
         virtual bool Create(const WindowDesc& desc) = 0;
 
         /**
-         * @brief À©µµ¿ì ÆÄ±«
+         * @brief ìœˆë„ìš° íŒŒê´´
          */
         virtual void Destroy() = 0;
 
         /**
-         * @brief ´ë±â ÁßÀÎ À©µµ¿ì ÀÌº¥Æ® Ã³¸®
-         * @note ¸Å ÇÁ·¹ÀÓ È£Ãâ ÇÊ¿ä
+         * @brief ëŒ€ê¸° ì¤‘ì¸ ìœˆë„ìš° ì´ë²¤íŠ¸ ì²˜ë¦¬
+         * @note ë§¤ í”„ë ˆì„ í˜¸ì¶œ í•„ìš”
          */
         virtual void ProcessEvents() = 0;
 
         /**
-         * @brief À©µµ¿ì°¡ ´İÇô¾ß ÇÏ´ÂÁö È®ÀÎ
-         * @return ´İÇô¾ß ÇÏ¸é true
+         * @brief ìœˆë„ìš°ê°€ ë‹«í˜€ì•¼ í•˜ëŠ”ì§€ í™•ì¸
+         * @return ë‹«í˜€ì•¼ í•˜ë©´ true
          */
         virtual bool ShouldClose() const = 0;
 
         /**
-         * @brief ³×ÀÌÆ¼ºê À©µµ¿ì ÇÚµé ¹İÈ¯
-         * @return WindowsÀÇ °æ¿ì HWND
+         * @brief ë„¤ì´í‹°ë¸Œ ìœˆë„ìš° í•¸ë“¤ ë°˜í™˜
+         * @return Windowsì˜ ê²½ìš° HWND
          */
         virtual HWND GetNativeHandle() const = 0;
 
         /**
-         * @brief À©µµ¿ì ³Êºñ ¹İÈ¯
-         * @return ³Êºñ (ÇÈ¼¿)
+         * @brief ìœˆë„ìš° ë„ˆë¹„ ë°˜í™˜
+         * @return ë„ˆë¹„ (í”½ì…€)
          */
         virtual Core::uint32 GetWidth() const = 0;
 
         /**
-         * @brief À©µµ¿ì ³ôÀÌ ¹İÈ¯
-         * @return ³ôÀÌ (ÇÈ¼¿)
+         * @brief ìœˆë„ìš° ë†’ì´ ë°˜í™˜
+         * @return ë†’ì´ (í”½ì…€)
          */
         virtual Core::uint32 GetHeight() const = 0;
 
         /**
-         * @brief ÀüÃ¼È­¸é ¸ğµå È®ÀÎ
-         * @return ÀüÃ¼È­¸éÀÌ¸é true
+         * @brief ì „ì²´í™”ë©´ ëª¨ë“œ í™•ì¸
+         * @return ì „ì²´í™”ë©´ì´ë©´ true
          */
         virtual bool IsFullscreen() const = 0;
 
         /**
-         * @brief ÀÔ·Â ¸Å´ÏÀú ¹İÈ¯
-         * @return ÀÌ À©µµ¿ìÀÇ ÀÔ·Â ¸Å´ÏÀú ÂüÁ¶
+         * @brief ì…ë ¥ ë§¤ë‹ˆì € ë°˜í™˜
+         * @return ì´ ìœˆë„ìš°ì˜ ì…ë ¥ ë§¤ë‹ˆì € ì°¸ì¡°
          */
         virtual Input& GetInput() = 0;
 
         /**
-         * @brief ÀÌº¥Æ® Äİ¹é ¼³Á¤
-         * @param callback À©µµ¿ì ÀÌº¥Æ® ¹ß»ı ½Ã È£ÃâµÉ ÇÔ¼ö
+         * @brief ì´ë²¤íŠ¸ ì½œë°± ì„¤ì •
+         * @param callback ìœˆë„ìš° ì´ë²¤íŠ¸ ë°œìƒ ì‹œ í˜¸ì¶œë  í•¨ìˆ˜
          */
         virtual void SetEventCallback(EventCallback callback) = 0;
 
     protected:
         Window() = default;
 
-        // º¹»ç ºÒ°¡
+        // ë³µì‚¬ ë¶ˆê°€
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
     };
 
     /**
-     * @brief ÇÃ·§Æûº° À©µµ¿ì »ı¼º
-     * @return ÇÃ·§Æû¿¡ ¸Â´Â Window ±¸Çö (Windows: Win32Window)
+     * @brief í”Œë«í¼ë³„ ìœˆë„ìš° ìƒì„±
+     * @return í”Œë«í¼ì— ë§ëŠ” Window êµ¬í˜„ (Windows: Win32Window)
      */
     std::unique_ptr<Window> CreatePlatformWindow();
 

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Logging/LogTypes.h"
 
@@ -7,9 +7,9 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief ·Î±× Ãâ·Â ´ë»óÀ» À§ÇÑ ±âº» ÀÎÅÍÆäÀÌ½º
+         * @brief ë¡œê·¸ ì¶œë ¥ ëŒ€ìƒì„ ìœ„í•œ ê¸°ë³¸ ì¸í„°í˜ì´ìŠ¤
          * 
-         * @note »õ·Î¿î Ãâ·Â ´ë»ó Ãß°¡ ½Ã ÀÌ Å¬·¡½º¸¦ »ó¼ÓÇÏ¿© ±¸Çö
+         * @note ìƒˆë¡œìš´ ì¶œë ¥ ëŒ€ìƒ ì¶”ê°€ ì‹œ ì´ í´ë˜ìŠ¤ë¥¼ ìƒì†í•˜ì—¬ êµ¬í˜„
          */
         class LogSink
         {
@@ -17,19 +17,19 @@ namespace Core
             virtual ~LogSink() = default;
 
             /**
-             * @brief ·Î±× ¸Ş½ÃÁö Ãâ·Â
+             * @brief ë¡œê·¸ ë©”ì‹œì§€ ì¶œë ¥
              */
             virtual void Write(const LogMessage& msg) = 0;
 
             /**
-             * @brief ¹öÆÛ¸µµÈ ¸Ş½ÃÁö Áï½Ã Ãâ·Â
+             * @brief ë²„í¼ë§ëœ ë©”ì‹œì§€ ì¦‰ì‹œ ì¶œë ¥
              */
             virtual void Flush() {}
 
         protected:
             LogSink() = default;
 
-            // º¹»ç ±İÁö
+            // ë³µì‚¬ ê¸ˆì§€
             LogSink(const LogSink&) = delete;
             LogSink& operator=(const LogSink&) = delete;
         };

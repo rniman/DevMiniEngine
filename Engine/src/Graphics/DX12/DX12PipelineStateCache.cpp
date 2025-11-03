@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12PipelineStateCache.h"
 #include "Core/Logging/Logger.h"
 #include "Graphics/DX12/DX12ShaderCompiler.h"
@@ -52,13 +52,13 @@ namespace Graphics
 			return nullptr;
 		}
 
-		// Ä³½Ã Å° »ı¼º
+		// ìºì‹œ í‚¤ ìƒì„±
 		PSOKey key;
 		key.materialHash = material.GetHash();
 		key.inputLayoutHash = HashInputLayout(inputLayout);
 		key.rootSignature = rootSignature;
 
-		// Ä³½Ã °Ë»ö
+		// ìºì‹œ ê²€ìƒ‰
 		auto it = mPSOCache.find(key);
 		if (it != mPSOCache.end())
 		{
@@ -66,7 +66,7 @@ namespace Graphics
 			return it->second.Get();
 		}
 
-		// »õ·Î »ı¼º
+		// ìƒˆë¡œ ìƒì„±
 		LOG_INFO("DX12PipelineStateCache: Creating new PSO (Material hash: %zu)", key.materialHash);
 
 		ComPtr<ID3D12PipelineState> pso = CreatePSO(material, rootSignature, inputLayout);
@@ -76,7 +76,7 @@ namespace Graphics
 			return nullptr;
 		}
 
-		// Ä³½Ã¿¡ ÀúÀå
+		// ìºì‹œì— ì €ì¥
 		mPSOCache[key] = pso;
 
 		LOG_INFO("DX12PipelineStateCache: PSO created successfully (Total cached: %zu)", mPSOCache.size());
@@ -94,23 +94,23 @@ namespace Graphics
 		ComPtr<ID3DBlob> vsBlob;
 		ComPtr<ID3DBlob> psBlob;
 
-		// ¼ÎÀÌ´õ ÄÄÆÄÀÏ ¹× Desc Ã¤¿ì±â
+		// ì…°ì´ë” ì»´íŒŒì¼ ë° Desc ì±„ìš°ê¸°
 		if (!CompileShadersAndFillDesc(material, psoDesc, vsBlob, psBlob))
 		{
 			LOG_ERROR("Failed to compile shaders");
 			return nullptr;
 		}
 
-		// Root Signature ¹× Input Layout ¼³Á¤
+		// Root Signature ë° Input Layout ì„¤ì •
 		psoDesc.pRootSignature = rootSignature;
 		psoDesc.InputLayout = inputLayout;
 
-		// Material¿¡¼­ ·»´õ »óÅÂ °¡Á®¿À±â
+		// Materialì—ì„œ ë Œë” ìƒíƒœ ê°€ì ¸ì˜¤ê¸°
 		psoDesc.BlendState = material.GetBlendState();
 		psoDesc.RasterizerState = material.GetRasterizerState();
 		psoDesc.DepthStencilState = material.GetDepthStencilState();
 
-		// Material¿¡¼­ PSO ¼³Á¤ °¡Á®¿À±â
+		// Materialì—ì„œ PSO ì„¤ì • ê°€ì ¸ì˜¤ê¸°
 		psoDesc.PrimitiveTopologyType = material.GetPrimitiveTopology();
 		psoDesc.NumRenderTargets = static_cast<UINT>(material.GetNumRenderTargets());
 
@@ -122,12 +122,12 @@ namespace Graphics
 
 		psoDesc.DSVFormat = material.GetDSVFormat();
 
-		// Sample ¼³Á¤
+		// Sample ì„¤ì •
 		psoDesc.SampleMask = static_cast<UINT>(material.GetSampleMask());
 		psoDesc.SampleDesc.Count = static_cast<UINT>(material.GetSampleCount());
 		psoDesc.SampleDesc.Quality = static_cast<UINT>(material.GetSampleQuality());
 
-		// PSO »ı¼º
+		// PSO ìƒì„±
 		ComPtr<ID3D12PipelineState> pso;
 		HRESULT hr = mDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso));
 
@@ -137,7 +137,7 @@ namespace Graphics
 			return nullptr;
 		}
 
-		// µğ¹ö±× ÀÌ¸§ ¼³Á¤
+		// ë””ë²„ê·¸ ì´ë¦„ ì„¤ì •
 #if defined(_DEBUG)
 		wstring debugName = L"PSO_";
 		debugName += material.GetVertexShaderPath();
@@ -154,7 +154,7 @@ namespace Graphics
 		ComPtr<ID3DBlob>& psBlob
 	)
 	{
-		// Vertex Shader ÄÄÆÄÀÏ
+		// Vertex Shader ì»´íŒŒì¼
 		if (!mShaderCompiler->CompileFromFile(
 			material.GetVertexShaderPath(),
 			material.GetVSEntryPoint(),
@@ -169,7 +169,7 @@ namespace Graphics
 		desc.VS.pShaderBytecode = vsBlob->GetBufferPointer();
 		desc.VS.BytecodeLength = vsBlob->GetBufferSize();
 
-		// Pixel Shader ÄÄÆÄÀÏ
+		// Pixel Shader ì»´íŒŒì¼
 		if (!mShaderCompiler->CompileFromFile(
 			material.GetPixelShaderPath(),
 			material.GetPSEntryPoint(),
@@ -191,22 +191,22 @@ namespace Graphics
 	{
 		size_t hash = 0;
 
-		// Input Element °³¼ö ÇØ½Ã
+		// Input Element ê°œìˆ˜ í•´ì‹œ
 		hash ^= std::hash<UINT>()(inputLayout.NumElements) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 
-		// °¢ Input Element ÇØ½Ã
+		// ê° Input Element í•´ì‹œ
 		for (UINT i = 0; i < inputLayout.NumElements; ++i)
 		{
 			const D3D12_INPUT_ELEMENT_DESC& element = inputLayout.pInputElementDescs[i];
 
-			// SemanticName ÇØ½Ã
+			// SemanticName í•´ì‹œ
 			if (element.SemanticName)
 			{
 				string semanticName(element.SemanticName);
 				hash ^= std::hash<string>()(semanticName) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 			}
 
-			// ÁÖ¿ä ÇÊµå ÇØ½Ã
+			// ì£¼ìš” í•„ë“œ í•´ì‹œ
 			hash ^= std::hash<UINT>()(element.SemanticIndex) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 			hash ^= std::hash<DXGI_FORMAT>()(element.Format) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 			hash ^= std::hash<UINT>()(element.InputSlot) + 0x9e3779b9 + (hash << 6) + (hash >> 2);

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
@@ -7,11 +7,11 @@ namespace Graphics
 	class DX12CommandContext;
 
 	/**
-	 * @brief DirectX 12 ÀÎµ¦½º ¹öÆÛ °ü¸® Å¬·¡½º
+	 * @brief DirectX 12 ì¸ë±ìŠ¤ ë²„í¼ ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * GPU ¸Ş¸ğ¸®¿¡ ÀÎµ¦½º µ¥ÀÌÅÍ¸¦ ¾÷·ÎµåÇÏ°í ·»´õ¸µ ½Ã »ç¿ëÇÒ ¼ö ÀÖµµ·Ï °ü¸®ÇÕ´Ï´Ù.
-	 * Default Heap (GPU Àü¿ë ¸Ş¸ğ¸®)¸¦ »ç¿ëÇÏ¿© ÃÖÀûÀÇ ·»´õ¸µ ¼º´ÉÀ» Á¦°øÇÕ´Ï´Ù.
-	 * ÀÎµ¦½º ¹öÆÛ¸¦ »ç¿ëÇÏ¸é ¹öÅØ½º Àç»ç¿ëÀ¸·Î ¸Ş¸ğ¸®¸¦ Àı¾àÇÒ ¼ö ÀÖ½À´Ï´Ù.
+	 * GPU ë©”ëª¨ë¦¬ì— ì¸ë±ìŠ¤ ë°ì´í„°ë¥¼ ì—…ë¡œë“œí•˜ê³  ë Œë”ë§ ì‹œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ê´€ë¦¬í•©ë‹ˆë‹¤.
+	 * Default Heap (GPU ì „ìš© ë©”ëª¨ë¦¬)ë¥¼ ì‚¬ìš©í•˜ì—¬ ìµœì ì˜ ë Œë”ë§ ì„±ëŠ¥ì„ ì œê³µí•©ë‹ˆë‹¤.
+	 * ì¸ë±ìŠ¤ ë²„í¼ë¥¼ ì‚¬ìš©í•˜ë©´ ë²„í…ìŠ¤ ì¬ì‚¬ìš©ìœ¼ë¡œ ë©”ëª¨ë¦¬ë¥¼ ì ˆì•½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 	 */
 	class DX12IndexBuffer
 	{
@@ -23,20 +23,20 @@ namespace Graphics
 		DX12IndexBuffer& operator=(const DX12IndexBuffer&) = delete;
 
 		/**
-		 * @brief ÀÎµ¦½º ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÏ°í GPU·Î µ¥ÀÌÅÍ¸¦ ¾÷·ÎµåÇÕ´Ï´Ù
+		 * @brief ì¸ë±ìŠ¤ ë²„í¼ë¥¼ ì´ˆê¸°í™”í•˜ê³  GPUë¡œ ë°ì´í„°ë¥¼ ì—…ë¡œë“œí•©ë‹ˆë‹¤
 		 *
-		 * Default Heap¿¡ ÀÎµ¦½º ¹öÆÛ¸¦ »ı¼ºÇÏ°í, Upload HeapÀ» ÅëÇØ CPU µ¥ÀÌÅÍ¸¦
-		 * GPU·Î º¹»çÇÕ´Ï´Ù. º¹»ç ¿Ï·á ÈÄ Upload Buffer´Â Áï½Ã ÇØÁ¦µË´Ï´Ù.
+		 * Default Heapì— ì¸ë±ìŠ¤ ë²„í¼ë¥¼ ìƒì„±í•˜ê³ , Upload Heapì„ í†µí•´ CPU ë°ì´í„°ë¥¼
+		 * GPUë¡œ ë³µì‚¬í•©ë‹ˆë‹¤. ë³µì‚¬ ì™„ë£Œ í›„ Upload BufferëŠ” ì¦‰ì‹œ í•´ì œë©ë‹ˆë‹¤.
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param commandQueue Ä¿¸Çµå Å¥ (GPU ÀÛ¾÷ Á¦Ãâ ¹× µ¿±âÈ­)
-		 * @param commandContext Ä¿¸Çµå ÄÁÅØ½ºÆ® (Ä¿¸Çµå ¸®½ºÆ® ¹× ÇÒ´çÀÚ)
-		 * @param indexData ¾÷·ÎµåÇÒ ÀÎµ¦½º µ¥ÀÌÅÍ (CPU ¸Ş¸ğ¸®)
-		 * @param indexCount ÀÎµ¦½º °³¼ö
-		 * @param indexFormat ÀÎµ¦½º Æ÷¸Ë (DXGI_FORMAT_R16_UINT ¶Ç´Â DXGI_FORMAT_R32_UINT)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param commandQueue ì»¤ë§¨ë“œ í (GPU ì‘ì—… ì œì¶œ ë° ë™ê¸°í™”)
+		 * @param commandContext ì»¤ë§¨ë“œ ì»¨í…ìŠ¤íŠ¸ (ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ ë° í• ë‹¹ì)
+		 * @param indexData ì—…ë¡œë“œí•  ì¸ë±ìŠ¤ ë°ì´í„° (CPU ë©”ëª¨ë¦¬)
+		 * @param indexCount ì¸ë±ìŠ¤ ê°œìˆ˜
+		 * @param indexFormat ì¸ë±ìŠ¤ í¬ë§· (DXGI_FORMAT_R16_UINT ë˜ëŠ” DXGI_FORMAT_R32_UINT)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 *
-		 * @note ÀÌ ÇÔ¼ö´Â ³»ºÎÀûÀ¸·Î GPU ÀÛ¾÷ ¿Ï·á¸¦ ´ë±âÇÕ´Ï´Ù (WaitForIdle)
+		 * @note ì´ í•¨ìˆ˜ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ GPU ì‘ì—… ì™„ë£Œë¥¼ ëŒ€ê¸°í•©ë‹ˆë‹¤ (WaitForIdle)
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -50,9 +50,9 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief ·»´õ¸µ¿¡ »ç¿ëÇÒ Index Buffer View¸¦ ¹İÈ¯ÇÕ´Ï´Ù
+		 * @brief ë Œë”ë§ì— ì‚¬ìš©í•  Index Buffer Viewë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤
 		 *
-		 * @return D3D12_INDEX_BUFFER_VIEW ±¸Á¶Ã¼
+		 * @return D3D12_INDEX_BUFFER_VIEW êµ¬ì¡°ì²´
 		 */
 		D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const { return mIndexBufferView; }
 		size_t GetIndexCount() const { return mIndexCount; }
@@ -60,28 +60,28 @@ namespace Graphics
 
 	private:
 		/**
-		 * @brief Default Heap¿¡ ÀÎµ¦½º ¹öÆÛ¸¦ »ı¼ºÇÕ´Ï´Ù
+		 * @brief Default Heapì— ì¸ë±ìŠ¤ ë²„í¼ë¥¼ ìƒì„±í•©ë‹ˆë‹¤
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param bufferSize ¹öÆÛ Å©±â (¹ÙÀÌÆ®)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param bufferSize ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 */
 		bool CreateIndexBuffer(ID3D12Device* device, size_t bufferSize);
 
 		/**
-		 * @brief Upload Heap¿¡ ÀÓ½Ã ¾÷·Îµå ¹öÆÛ¸¦ »ı¼ºÇÕ´Ï´Ù
+		 * @brief Upload Heapì— ì„ì‹œ ì—…ë¡œë“œ ë²„í¼ë¥¼ ìƒì„±í•©ë‹ˆë‹¤
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param bufferSize ¹öÆÛ Å©±â (¹ÙÀÌÆ®)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param bufferSize ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 */
 		bool CreateUploadBuffer(ID3D12Device* device, size_t bufferSize);
 
-		ComPtr<ID3D12Resource> mIndexBuffer;              // GPU Àü¿ë ÀÎµ¦½º ¹öÆÛ (Default Heap)
-		ComPtr<ID3D12Resource> mUploadBuffer;             // CPU¡æGPU ¾÷·Îµå ¹öÆÛ (Upload Heap)
-		D3D12_INDEX_BUFFER_VIEW mIndexBufferView = {};   // ·»´õ¸µ¿¡ »ç¿ëÇÒ View
-		size_t mIndexCount = 0;                    // ÀÎµ¦½º °³¼ö
-		DXGI_FORMAT mIndexFormat = DXGI_FORMAT_UNKNOWN;  // ÀÎµ¦½º Æ÷¸Ë (R16_UINT ¶Ç´Â R32_UINT)
+		ComPtr<ID3D12Resource> mIndexBuffer;              // GPU ì „ìš© ì¸ë±ìŠ¤ ë²„í¼ (Default Heap)
+		ComPtr<ID3D12Resource> mUploadBuffer;             // CPUâ†’GPU ì—…ë¡œë“œ ë²„í¼ (Upload Heap)
+		D3D12_INDEX_BUFFER_VIEW mIndexBufferView = {};   // ë Œë”ë§ì— ì‚¬ìš©í•  View
+		size_t mIndexCount = 0;                    // ì¸ë±ìŠ¤ ê°œìˆ˜
+		DXGI_FORMAT mIndexFormat = DXGI_FORMAT_UNKNOWN;  // ì¸ë±ìŠ¤ í¬ë§· (R16_UINT ë˜ëŠ” R32_UINT)
 	};
 
 } // namespace Graphics

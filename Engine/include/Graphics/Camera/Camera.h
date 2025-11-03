@@ -1,14 +1,14 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include "Math/MathTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief Ä«¸Ş¶ó ±âº» Å¬·¡½º
+	 * @brief ì¹´ë©”ë¼ ê¸°ë³¸ í´ë˜ìŠ¤
 	 *
-	 * View¿Í Projection Çà·ÄÀ» °ü¸®ÇÏ´Â Ãß»ó ±âº» Å¬·¡½ºÀÔ´Ï´Ù.
-	 * PerspectiveCamera¿Í OrthographicCameraÀÇ °øÅë ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÕ´Ï´Ù.
+	 * Viewì™€ Projection í–‰ë ¬ì„ ê´€ë¦¬í•˜ëŠ” ì¶”ìƒ ê¸°ë³¸ í´ë˜ìŠ¤ì…ë‹ˆë‹¤.
+	 * PerspectiveCameraì™€ OrthographicCameraì˜ ê³µí†µ ì¸í„°í˜ì´ìŠ¤ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
 	 */
 	class Camera
 	{
@@ -26,12 +26,12 @@ namespace Graphics
 		void RotatePitch(float angle);
 
 		/**
-		 * @brief View Çà·ÄÀ» ¾÷µ¥ÀÌÆ® (Dirty Flag ÆĞÅÏ)
+		 * @brief View í–‰ë ¬ì„ ì—…ë°ì´íŠ¸ (Dirty Flag íŒ¨í„´)
 		 */
 		void UpdateViewMatrix();
 
 		/**
-		 * @brief Projection Çà·ÄÀ» ¾÷µ¥ÀÌÆ® (ÆÄ»ı Å¬·¡½º¿¡¼­ ±¸Çö)
+		 * @brief Projection í–‰ë ¬ì„ ì—…ë°ì´íŠ¸ (íŒŒìƒ í´ë˜ìŠ¤ì—ì„œ êµ¬í˜„)
 		 */
 		virtual void UpdateProjectionMatrix() = 0;
 
@@ -40,18 +40,18 @@ namespace Graphics
 		void SetUpVector(const Math::Vector3& up);
 
 		/**
-		 * @brief Ä«¸Ş¶óÀÇ À§Ä¡, Å¸°Ù, Up º¤ÅÍ¸¦ ÇÑ¹ø¿¡ ¼³Á¤
-		 * @param position »õ·Î¿î À§Ä¡
-		 * @param target »õ·Î¿î Å¸°Ù À§Ä¡
-		 * @param up »õ·Î¿î Up º¤ÅÍ
+		 * @brief ì¹´ë©”ë¼ì˜ ìœ„ì¹˜, íƒ€ê²Ÿ, Up ë²¡í„°ë¥¼ í•œë²ˆì— ì„¤ì •
+		 * @param position ìƒˆë¡œìš´ ìœ„ì¹˜
+		 * @param target ìƒˆë¡œìš´ íƒ€ê²Ÿ ìœ„ì¹˜
+		 * @param up ìƒˆë¡œìš´ Up ë²¡í„°
 		 */
 		void SetLookAt(const Math::Vector3& position, const Math::Vector3& target, const Math::Vector3& up);
 
 		/**
-		 * @brief Ä«¸Ş¶óÀÇ À§Ä¡, ¹æÇâ, Up º¤ÅÍ¸¦ ÇÑ¹ø¿¡ ¼³Á¤
-		 * @param position »õ·Î¿î À§Ä¡
-		 * @param direction Ä«¸Ş¶ó°¡ ¹Ù¶óº¸´Â ¹æÇâ º¤ÅÍ
-		 * @param up »õ·Î¿î Up º¤ÅÍ
+		 * @brief ì¹´ë©”ë¼ì˜ ìœ„ì¹˜, ë°©í–¥, Up ë²¡í„°ë¥¼ í•œë²ˆì— ì„¤ì •
+		 * @param position ìƒˆë¡œìš´ ìœ„ì¹˜
+		 * @param direction ì¹´ë©”ë¼ê°€ ë°”ë¼ë³´ëŠ” ë°©í–¥ ë²¡í„°
+		 * @param up ìƒˆë¡œìš´ Up ë²¡í„°
 		 */
 		void SetLookTo(const Math::Vector3& position, const Math::Vector3& direction, const Math::Vector3& up);
 		
@@ -64,8 +64,8 @@ namespace Graphics
 		const Math::Matrix4x4& GetProjectionMatrix() const { return mProjectionMatrix; }
 
 		/**
-		 * @brief View¿Í ProjectionÀ» °öÇÑ Çà·Ä ¹İÈ¯
-		 * @return View * Projection Çà·Ä
+		 * @brief Viewì™€ Projectionì„ ê³±í•œ í–‰ë ¬ ë°˜í™˜
+		 * @return View * Projection í–‰ë ¬
 		 */
 		Math::Matrix4x4 GetViewProjectionMatrix() const;
 
@@ -77,8 +77,8 @@ namespace Graphics
 		Math::Matrix4x4 mViewMatrix;       
 		Math::Matrix4x4 mProjectionMatrix; 
 
-		bool mViewDirty = true;           // View Çà·Ä °»½Å ÇÊ¿ä ¿©ºÎ
-		bool mProjectionDirty = true;     // Projection Çà·Ä °»½Å ÇÊ¿ä ¿©ºÎ
+		bool mViewDirty = true;           // View í–‰ë ¬ ê°±ì‹  í•„ìš” ì—¬ë¶€
+		bool mProjectionDirty = true;     // Projection í–‰ë ¬ ê°±ì‹  í•„ìš” ì—¬ë¶€
 
 	private:
 		void MoveAlongDirection(const Math::Vector3& direction, float32 distance);

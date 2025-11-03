@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Logging/Logger.h"
 #include <cstdio>  // snprintf
@@ -8,7 +8,7 @@ namespace Core
 {
     namespace Logging
     {
-        // ÀüÃ¼ °æ·Î¿¡¼­ ÆÄÀÏ¸í¸¸ ÃßÃâ (¿¹: "C:\Project\main.cpp" -> "main.cpp")
+        // ì „ì²´ ê²½ë¡œì—ì„œ íŒŒì¼ëª…ë§Œ ì¶”ì¶œ (ì˜ˆ: "C:\Project\main.cpp" -> "main.cpp")
         inline const char* GetFileName(const char* path)
         {
             const char* file = strrchr(path, '\\');
@@ -16,7 +16,7 @@ namespace Core
             return file ? file + 1 : path;
         }
 
-        // printf ½ºÅ¸ÀÏ ¹®ÀÚ¿­ Æ÷¸ËÆÃ (ÃÖ´ë 1024¹ÙÀÌÆ®)
+        // printf ìŠ¤íƒ€ì¼ ë¬¸ìì—´ í¬ë§·íŒ… (ìµœëŒ€ 1024ë°”ì´íŠ¸)
         template<typename... Args>
         std::string FormatLog(const char* format, Args... args)
         {
@@ -25,7 +25,7 @@ namespace Core
             return std::string(buffer);
         }
 
-        // ¿À¹öÇÃ·Î¿ì ¹æÁö¸¦ À§ÇÑ ÀÎÀÚ ¾ø´Â ¿À¹ö·Îµå
+        // ì˜¤ë²„í”Œë¡œìš° ë°©ì§€ë¥¼ ìœ„í•œ ì¸ì ì—†ëŠ” ì˜¤ë²„ë¡œë“œ
         inline std::string FormatLog(const char* format)
         {
             return std::string(format);
@@ -35,11 +35,11 @@ namespace Core
 } // namespace Core
 
 //-----------------------------------------------------------------------------
-// ·Î±ë ¸ÅÅ©·Î
+// ë¡œê¹… ë§¤í¬ë¡œ
 //-----------------------------------------------------------------------------
-// NOTE: LOG_TRACE/LOG_DEBUG´Â Release ºôµå¿¡¼­ ÄÄÆÄÀÏ Á¦¿Ü (¼º´É ÃÖÀûÈ­)
+// NOTE: LOG_TRACE/LOG_DEBUGëŠ” Release ë¹Œë“œì—ì„œ ì»´íŒŒì¼ ì œì™¸ (ì„±ëŠ¥ ìµœì í™”)
 
-// Core Ä«Å×°í¸® ¸ÅÅ©·Î
+// Core ì¹´í…Œê³ ë¦¬ ë§¤í¬ë¡œ
 #define LOG_TRACE(format, ...) \
     Core::Logging::Logger::GetInstance().Log( \
         Core::Logging::LogLevel::Trace, \
@@ -82,7 +82,7 @@ namespace Core
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
-// Æ¯Á¤ Ä«Å×°í¸® ¸ÅÅ©·Î
+// íŠ¹ì • ì¹´í…Œê³ ë¦¬ ë§¤í¬ë¡œ
 #define LOG_GRAPHICS_INFO(format, ...) \
     Core::Logging::Logger::GetInstance().Log( \
         Core::Logging::LogLevel::Info, \
@@ -97,7 +97,7 @@ namespace Core
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
-// Release ºôµå ÃÖÀûÈ­: Trace/Debug ·Î±× Á¦°Å
+// Release ë¹Œë“œ ìµœì í™”: Trace/Debug ë¡œê·¸ ì œê±°
 #ifdef NDEBUG
 #undef LOG_TRACE
 #undef LOG_DEBUG

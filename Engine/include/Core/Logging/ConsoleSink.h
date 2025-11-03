@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Core/Logging/LogSink.h"
@@ -9,9 +9,9 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief ÄÜ¼Ö Ãâ·Â Sink
+         * @brief ì½˜ì†” ì¶œë ¥ Sink
          * 
-         * @note Windows Console API¸¦ »ç¿ëÇÑ ÄÃ·¯ Ãâ·Â Áö¿ø
+         * @note Windows Console APIë¥¼ ì‚¬ìš©í•œ ì»¬ëŸ¬ ì¶œë ¥ ì§€ì›
          */
         class ConsoleSink : public LogSink
         {

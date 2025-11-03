@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include <d3d12.h> 
 
@@ -8,10 +8,10 @@ namespace Graphics
 	class DX12CommandContext;
 
 	/**
-	 * @brief DirectX 12 ¹öÅØ½º ¹öÆÛ °ü¸® Å¬·¡½º
+	 * @brief DirectX 12 ë²„í…ìŠ¤ ë²„í¼ ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * GPU ¸Ş¸ğ¸®¿¡ ¹öÅØ½º µ¥ÀÌÅÍ¸¦ ¾÷·ÎµåÇÏ°í ·»´õ¸µ ½Ã »ç¿ëÇÒ ¼ö ÀÖµµ·Ï °ü¸®ÇÕ´Ï´Ù.
-	 * Default Heap (GPU Àü¿ë ¸Ş¸ğ¸®)¸¦ »ç¿ëÇÏ¿© ÃÖÀûÀÇ ·»´õ¸µ ¼º´ÉÀ» Á¦°øÇÕ´Ï´Ù.
+	 * GPU ë©”ëª¨ë¦¬ì— ë²„í…ìŠ¤ ë°ì´í„°ë¥¼ ì—…ë¡œë“œí•˜ê³  ë Œë”ë§ ì‹œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ê´€ë¦¬í•©ë‹ˆë‹¤.
+	 * Default Heap (GPU ì „ìš© ë©”ëª¨ë¦¬)ë¥¼ ì‚¬ìš©í•˜ì—¬ ìµœì ì˜ ë Œë”ë§ ì„±ëŠ¥ì„ ì œê³µí•©ë‹ˆë‹¤.
 	 */
 	class DX12VertexBuffer
 	{
@@ -23,20 +23,20 @@ namespace Graphics
 		DX12VertexBuffer& operator=(const DX12VertexBuffer&) = delete;
 
 		/**
-		 * @brief ¹öÅØ½º ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÏ°í GPU·Î µ¥ÀÌÅÍ¸¦ ¾÷·ÎµåÇÕ´Ï´Ù
+		 * @brief ë²„í…ìŠ¤ ë²„í¼ë¥¼ ì´ˆê¸°í™”í•˜ê³  GPUë¡œ ë°ì´í„°ë¥¼ ì—…ë¡œë“œí•©ë‹ˆë‹¤
 		 *
-		 * Default Heap¿¡ ¹öÅØ½º ¹öÆÛ¸¦ »ı¼ºÇÏ°í, Upload HeapÀ» ÅëÇØ CPU µ¥ÀÌÅÍ¸¦
-		 * GPU·Î º¹»çÇÕ´Ï´Ù. º¹»ç ¿Ï·á ÈÄ Upload Buffer´Â Áï½Ã ÇØÁ¦µË´Ï´Ù.
+		 * Default Heapì— ë²„í…ìŠ¤ ë²„í¼ë¥¼ ìƒì„±í•˜ê³ , Upload Heapì„ í†µí•´ CPU ë°ì´í„°ë¥¼
+		 * GPUë¡œ ë³µì‚¬í•©ë‹ˆë‹¤. ë³µì‚¬ ì™„ë£Œ í›„ Upload BufferëŠ” ì¦‰ì‹œ í•´ì œë©ë‹ˆë‹¤.
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param commandQueue Ä¿¸Çµå Å¥ (GPU ÀÛ¾÷ Á¦Ãâ ¹× µ¿±âÈ­)
-		 * @param commandContext Ä¿¸Çµå ÄÁÅØ½ºÆ® (Ä¿¸Çµå ¸®½ºÆ® ¹× ÇÒ´çÀÚ)
-		 * @param vertexData ¾÷·ÎµåÇÒ ¹öÅØ½º µ¥ÀÌÅÍ (CPU ¸Ş¸ğ¸®)
-		 * @param vertexCount ¹öÅØ½º °³¼ö
-		 * @param vertexStride ¹öÅØ½º ÇÏ³ªÀÇ Å©±â (¹ÙÀÌÆ®)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param commandQueue ì»¤ë§¨ë“œ í (GPU ì‘ì—… ì œì¶œ ë° ë™ê¸°í™”)
+		 * @param commandContext ì»¤ë§¨ë“œ ì»¨í…ìŠ¤íŠ¸ (ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ ë° í• ë‹¹ì)
+		 * @param vertexData ì—…ë¡œë“œí•  ë²„í…ìŠ¤ ë°ì´í„° (CPU ë©”ëª¨ë¦¬)
+		 * @param vertexCount ë²„í…ìŠ¤ ê°œìˆ˜
+		 * @param vertexStride ë²„í…ìŠ¤ í•˜ë‚˜ì˜ í¬ê¸° (ë°”ì´íŠ¸)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 *
-		 * @note ÀÌ ÇÔ¼ö´Â ³»ºÎÀûÀ¸·Î GPU ÀÛ¾÷ ¿Ï·á¸¦ ´ë±âÇÕ´Ï´Ù (WaitForIdle)
+		 * @note ì´ í•¨ìˆ˜ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ GPU ì‘ì—… ì™„ë£Œë¥¼ ëŒ€ê¸°í•©ë‹ˆë‹¤ (WaitForIdle)
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -50,9 +50,9 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief ·»´õ¸µ¿¡ »ç¿ëÇÒ Vertex Buffer View¸¦ ¹İÈ¯ÇÕ´Ï´Ù
+		 * @brief ë Œë”ë§ì— ì‚¬ìš©í•  Vertex Buffer Viewë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤
 		 *
-		 * @return D3D12_VERTEX_BUFFER_VIEW ±¸Á¶Ã¼
+		 * @return D3D12_VERTEX_BUFFER_VIEW êµ¬ì¡°ì²´
 		 */
 		D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return mVertexBufferView; }
 		size_t GetVertexCount() const { return mVertexCount; }
@@ -60,28 +60,28 @@ namespace Graphics
 
 	private:
 		/**
-		 * @brief Default Heap¿¡ ¹öÅØ½º ¹öÆÛ¸¦ »ı¼ºÇÕ´Ï´Ù
+		 * @brief Default Heapì— ë²„í…ìŠ¤ ë²„í¼ë¥¼ ìƒì„±í•©ë‹ˆë‹¤
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param bufferSize ¹öÆÛ Å©±â (¹ÙÀÌÆ®)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param bufferSize ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 */
 		bool CreateVertexBuffer(ID3D12Device* device, size_t bufferSize);
 
 		/**
-		 * @brief Upload Heap¿¡ ÀÓ½Ã ¾÷·Îµå ¹öÆÛ¸¦ »ı¼ºÇÕ´Ï´Ù
+		 * @brief Upload Heapì— ì„ì‹œ ì—…ë¡œë“œ ë²„í¼ë¥¼ ìƒì„±í•©ë‹ˆë‹¤
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param bufferSize ¹öÆÛ Å©±â (¹ÙÀÌÆ®)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param bufferSize ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 */
 		bool CreateUploadBuffer(ID3D12Device* device, size_t bufferSize);
 
-		ComPtr<ID3D12Resource> mVertexBuffer;				// GPU Àü¿ë ¹öÅØ½º ¹öÆÛ (Default Heap)
-		ComPtr<ID3D12Resource> mUploadBuffer;				// CPU¡æGPU ¾÷·Îµå ¹öÆÛ (Upload Heap)
-		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView = {};	// ·»´õ¸µ¿¡ »ç¿ëÇÒ View
-		size_t mVertexCount = 0;							// ¹öÅØ½º °³¼ö
-		size_t mVertexStride = 0;							// ¹öÅØ½º ÇÏ³ªÀÇ Å©±â (¹ÙÀÌÆ®)
+		ComPtr<ID3D12Resource> mVertexBuffer;				// GPU ì „ìš© ë²„í…ìŠ¤ ë²„í¼ (Default Heap)
+		ComPtr<ID3D12Resource> mUploadBuffer;				// CPUâ†’GPU ì—…ë¡œë“œ ë²„í¼ (Upload Heap)
+		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView = {};	// ë Œë”ë§ì— ì‚¬ìš©í•  View
+		size_t mVertexCount = 0;							// ë²„í…ìŠ¤ ê°œìˆ˜
+		size_t mVertexStride = 0;							// ë²„í…ìŠ¤ í•˜ë‚˜ì˜ í¬ê¸° (ë°”ì´íŠ¸)
 	};
 
 } // namespace Graphics

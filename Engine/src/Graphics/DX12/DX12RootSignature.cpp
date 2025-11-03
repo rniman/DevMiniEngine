@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12RootSignature.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -20,14 +20,14 @@ namespace Graphics
 	{
 		CORE_ASSERT(device != nullptr, "Device is null");
 
-		// ÀÌ¹Ì ÃÊ±âÈ­µÈ °æ¿ì Á¾·á
+		// ì´ë¯¸ ì´ˆê¸°í™”ëœ ê²½ìš° ì¢…ë£Œ
 		if (mRootSignature != nullptr)
 		{
 			LOG_WARN("Root Signature already initialized. Shutting down existing one.");
 			Shutdown();
 		}
 
-		// Root Signature Desc 1.1 »ı¼º
+		// Root Signature Desc 1.1 ìƒì„±
 		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSigDesc;
 		rootSigDesc.Init_1_1(
 			static_cast<UINT>(numParameters),
@@ -37,7 +37,7 @@ namespace Graphics
 			flags
 		);
 
-		// Root Signature ½Ã¸®¾ó¶óÀÌÁî
+		// Root Signature ì‹œë¦¬ì–¼ë¼ì´ì¦ˆ
 		ComPtr<ID3DBlob> signatureBlob;
 		ComPtr<ID3DBlob> errorBlob;
 
@@ -62,7 +62,7 @@ namespace Graphics
 			return false;
 		}
 
-		// Root Signature »ı¼º
+		// Root Signature ìƒì„±
 		hr = device->CreateRootSignature(
 			0,
 			signatureBlob->GetBufferPointer(),
@@ -91,7 +91,7 @@ namespace Graphics
 
 		LOG_INFO("Creating Empty Root Signature (no parameters)");
 
-		// Empty Root Signature´Â ÆÄ¶ó¹ÌÅÍ ¾øÀÌ »ı¼º
+		// Empty Root SignatureëŠ” íŒŒë¼ë¯¸í„° ì—†ì´ ìƒì„±
 		return Initialize(
 			device,
 			0,

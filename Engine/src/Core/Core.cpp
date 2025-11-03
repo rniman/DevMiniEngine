@@ -1,15 +1,15 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Core/Types.h"
 
 namespace Core
 {
     void Initialize()
     {
-        // TODO: Core ½Ã½ºÅÛ ÃÊ±âÈ­
+        // TODO: Core ì‹œìŠ¤í…œ ì´ˆê¸°í™”
     }
 
     void Shutdown()
     {
-        // TODO: Core ½Ã½ºÅÛ Á¾·á
+        // TODO: Core ì‹œìŠ¤í…œ ì¢…ë£Œ
     }
 }

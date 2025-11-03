@@ -1,28 +1,28 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include "d3d12.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief Depth-Stencil Buffer »ı¼º ¿É¼Ç
+	 * @brief Depth-Stencil Buffer ìƒì„± ì˜µì…˜
 	 */
 	struct DepthStencilBufferDesc
 	{
 		uint32 width = 0;
 		uint32 height = 0;
 		DXGI_FORMAT format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		bool enableShaderResource = false;  // ÇâÈÄ Shadow Mapping ´ëºñ
-		uint32 sampleCount = 1;             // MSAA ´ëºñ
+		bool enableShaderResource = false;  // í–¥í›„ Shadow Mapping ëŒ€ë¹„
+		uint32 sampleCount = 1;             // MSAA ëŒ€ë¹„
 		uint32 sampleQuality = 0;
 	};
 
 	/**
-	 * @brief Depth-Stencil Buffer¿Í Descriptor °ü¸® Å¬·¡½º
+	 * @brief Depth-Stencil Bufferì™€ Descriptor ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * Depth Test¿Í Stencil Test¸¦ À§ÇÑ ¸®¼Ò½º¸¦ »ı¼ºÇÏ°í °ü¸®ÇÕ´Ï´Ù.
+	 * Depth Testì™€ Stencil Testë¥¼ ìœ„í•œ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•˜ê³  ê´€ë¦¬í•©ë‹ˆë‹¤.
 	 *
-	 * @note ¸®¼Ò½º´Â Default Heap¿¡ »ı¼ºµÇ¸ç DEPTH_WRITE »óÅÂ·Î ½ÃÀÛ
+	 * @note ë¦¬ì†ŒìŠ¤ëŠ” Default Heapì— ìƒì„±ë˜ë©° DEPTH_WRITE ìƒíƒœë¡œ ì‹œì‘
 	 */
 	class DX12DepthStencilBuffer
 	{
@@ -30,20 +30,20 @@ namespace Graphics
 		DX12DepthStencilBuffer();
 		~DX12DepthStencilBuffer();
 
-		// º¹»ç/ÀÌµ¿ ±İÁö
+		// ë³µì‚¬/ì´ë™ ê¸ˆì§€
 		DX12DepthStencilBuffer(const DX12DepthStencilBuffer&) = delete;
 		DX12DepthStencilBuffer& operator=(const DX12DepthStencilBuffer&) = delete;
 
 		/**
-		 * @brief Depth-Stencil Buffer ÃÊ±âÈ­
+		 * @brief Depth-Stencil Buffer ì´ˆê¸°í™”
 		 *
-		 * @param device À¯È¿ÇÑ ID3D12Device Æ÷ÀÎÅÍ (nullptr ºÒ°¡)
-		 * @param width ¹öÆÛ ³Êºñ (1 ÀÌ»ó)
-		 * @param height ¹öÆÛ ³ôÀÌ (1 ÀÌ»ó)
-		 * @param format Depth-Stencil Æ÷¸Ë (D24_UNORM_S8_UINT, D32_FLOAT µî)
-		 * @return ÃÊ±âÈ­ ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device ìœ íš¨í•œ ID3D12Device í¬ì¸í„° (nullptr ë¶ˆê°€)
+		 * @param width ë²„í¼ ë„ˆë¹„ (1 ì´ìƒ)
+		 * @param height ë²„í¼ ë†’ì´ (1 ì´ìƒ)
+		 * @param format Depth-Stencil í¬ë§· (D24_UNORM_S8_UINT, D32_FLOAT ë“±)
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 *
-		 * @note ½ÇÆĞ ¿øÀÎ: Àß¸øµÈ ÆÄ¶ó¹ÌÅÍ, Áö¿øµÇÁö ¾Ê´Â Æ÷¸Ë, ¸®¼Ò½º/Heap »ı¼º ½ÇÆĞ
+		 * @note ì‹¤íŒ¨ ì›ì¸: ì˜ëª»ëœ íŒŒë¼ë¯¸í„°, ì§€ì›ë˜ì§€ ì•ŠëŠ” í¬ë§·, ë¦¬ì†ŒìŠ¤/Heap ìƒì„± ì‹¤íŒ¨
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -53,29 +53,29 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief Depth-Stencil Buffer ÃÊ±âÈ­ (È®Àå ¹öÀü)
+		 * @brief Depth-Stencil Buffer ì´ˆê¸°í™” (í™•ì¥ ë²„ì „)
 		 *
-		 * @param device À¯È¿ÇÑ ID3D12Device Æ÷ÀÎÅÍ
-		 * @param desc ¹öÆÛ »ı¼º ¿É¼Ç
-		 * @return ÃÊ±âÈ­ ¼º°ø ½Ã true
+		 * @param device ìœ íš¨í•œ ID3D12Device í¬ì¸í„°
+		 * @param desc ë²„í¼ ìƒì„± ì˜µì…˜
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì‹œ true
 		 */
 		bool Initialize(ID3D12Device* device, const DepthStencilBufferDesc& desc);;
 
 		/**
-		 * @brief ¹öÆÛ Å©±â º¯°æ
+		 * @brief ë²„í¼ í¬ê¸° ë³€ê²½
 		 *
 		 * @param device D3D12 Device
-		 * @param width »õ·Î¿î ³Êºñ
-		 * @param height »õ·Î¿î ³ôÀÌ
-		 * @return ¼º°ø ½Ã true
+		 * @param width ìƒˆë¡œìš´ ë„ˆë¹„
+		 * @param height ìƒˆë¡œìš´ ë†’ì´
+		 * @return ì„±ê³µ ì‹œ true
 		 *
-		 * @note ±âÁ¸ ¸®¼Ò½º¸¦ ÇØÁ¦ÇÏ°í µ¿ÀÏÇÑ Æ÷¸ËÀ¸·Î Àç»ı¼º
-		 * @note Å©±â°¡ µ¿ÀÏÇÏ¸é Àç»ı¼ºÇÏÁö ¾ÊÀ½
+		 * @note ê¸°ì¡´ ë¦¬ì†ŒìŠ¤ë¥¼ í•´ì œí•˜ê³  ë™ì¼í•œ í¬ë§·ìœ¼ë¡œ ì¬ìƒì„±
+		 * @note í¬ê¸°ê°€ ë™ì¼í•˜ë©´ ì¬ìƒì„±í•˜ì§€ ì•ŠìŒ
 		 */
 		bool Resize(ID3D12Device* device, uint32 width, uint32 height);
 
 		/**
-		 * @brief ¸®¼Ò½º ÇØÁ¦
+		 * @brief ë¦¬ì†ŒìŠ¤ í•´ì œ
 		 */
 		void Shutdown();
 
@@ -88,23 +88,23 @@ namespace Graphics
 		uint32 GetHeight() const { return mHeight; }
 		bool IsInitialized() const { return mDepthStencilBuffer != nullptr; }
 
-		// TODO: Phase 2 ¿Ï·á ÈÄ ÀüÃ¼ ¸®¼Ò½º Å¬·¡½º¿¡ µğ¹ö±× ÀÌ¸§ ±â´É ÀÏ°ı Ãß°¡
+		// TODO: Phase 2 ì™„ë£Œ í›„ ì „ì²´ ë¦¬ì†ŒìŠ¤ í´ë˜ìŠ¤ì— ë””ë²„ê·¸ ì´ë¦„ ê¸°ëŠ¥ ì¼ê´„ ì¶”ê°€
 		// #ifdef _DEBUG
 		//     void SetDebugName(const wchar_t* name);
 		// #endif
 
 	private:
 		/**
-		 * @brief Depth-Stencil Æ÷¸Ë À¯È¿¼º °ËÁõ
+		 * @brief Depth-Stencil í¬ë§· ìœ íš¨ì„± ê²€ì¦
 		 */
 		static bool IsValidDepthStencilFormat(DXGI_FORMAT format);
 
-		// DirectX ¸®¼Ò½º
+		// DirectX ë¦¬ì†ŒìŠ¤
 		ComPtr<ID3D12Resource> mDepthStencilBuffer;
 		ComPtr<ID3D12DescriptorHeap> mDSVHeap;
 		D3D12_CPU_DESCRIPTOR_HANDLE mDSVHandle;
 
-		// ¹öÆÛ ¼Ó¼º
+		// ë²„í¼ ì†ì„±
 		D3D12_RESOURCE_STATES mCurrentState;
 		DXGI_FORMAT mFormat;
 		uint32 mWidth;

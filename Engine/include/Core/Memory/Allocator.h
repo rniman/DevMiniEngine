@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Core/Memory/MemoryConfig.h"
@@ -8,12 +8,12 @@ namespace Core
     namespace Memory
     {
         /**
-         * @brief ¸Ş¸ğ¸® ÇÒ´çÀÚ ±âº» ÀÎÅÍÆäÀÌ½º
+         * @brief ë©”ëª¨ë¦¬ í• ë‹¹ì ê¸°ë³¸ ì¸í„°í˜ì´ìŠ¤
          *
-         * ¸ğµç Ä¿½ºÅÒ ÇÒ´çÀÚ°¡ »ó¼Ó¹Ş´Â Ãß»ó Å¬·¡½ºÀÔ´Ï´Ù.
-         * LinearAllocator, PoolAllocator, StackAllocator µîÀÌ ÀÌ ÀÎÅÍÆäÀÌ½º¸¦ ±¸ÇöÇÕ´Ï´Ù.
+         * ëª¨ë“  ì»¤ìŠ¤í…€ í• ë‹¹ìê°€ ìƒì†ë°›ëŠ” ì¶”ìƒ í´ë˜ìŠ¤ì…ë‹ˆë‹¤.
+         * LinearAllocator, PoolAllocator, StackAllocator ë“±ì´ ì´ ì¸í„°í˜ì´ìŠ¤ë¥¼ êµ¬í˜„í•©ë‹ˆë‹¤.
          *
-         * @note ½º·¹µå ¾ÈÀü¼ºÀº ±¸ÇöÃ¼¿¡ µû¶ó ´Ù¸¨´Ï´Ù.
+         * @note ìŠ¤ë ˆë“œ ì•ˆì „ì„±ì€ êµ¬í˜„ì²´ì— ë”°ë¼ ë‹¤ë¦…ë‹ˆë‹¤.
          */
         class Allocator
         {
@@ -21,42 +21,42 @@ namespace Core
             virtual ~Allocator() = default;
 
             /**
-             * @brief ¸Ş¸ğ¸® ÇÒ´ç
+             * @brief ë©”ëª¨ë¦¬ í• ë‹¹
              *
-             * @param size ÇÒ´çÇÒ ¹ÙÀÌÆ® Å©±â
-             * @param alignment Á¤·Ä ¿ä±¸»çÇ× (±âº»: DEFAULT_ALIGNMENT)
-             * @return ÇÒ´çµÈ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ, ½ÇÆĞ ½Ã nullptr
+             * @param size í• ë‹¹í•  ë°”ì´íŠ¸ í¬ê¸°
+             * @param alignment ì •ë ¬ ìš”êµ¬ì‚¬í•­ (ê¸°ë³¸: DEFAULT_ALIGNMENT)
+             * @return í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°, ì‹¤íŒ¨ ì‹œ nullptr
              *
-             * @note ½º·¹µå ¾ÈÀü¼ºÀº ±¸ÇöÃ¼¿¡ µû¶ó ´Ù¸§
+             * @note ìŠ¤ë ˆë“œ ì•ˆì „ì„±ì€ êµ¬í˜„ì²´ì— ë”°ë¼ ë‹¤ë¦„
              */
             virtual void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) = 0;
 
             /**
-             * @brief ÇÒ´çÀÚ ÃÊ±âÈ­ (Áö¿øµÇ´Â °æ¿ì)
+             * @brief í• ë‹¹ì ì´ˆê¸°í™” (ì§€ì›ë˜ëŠ” ê²½ìš°)
              *
-             * @note ±âº» ±¸ÇöÀº no-op
-             * @note LinearAllocator, StackAllocator´Â ¸ğµç ÇÒ´çÀ» ÇÑ ¹ø¿¡ ÇØÁ¦
+             * @note ê¸°ë³¸ êµ¬í˜„ì€ no-op
+             * @note LinearAllocator, StackAllocatorëŠ” ëª¨ë“  í• ë‹¹ì„ í•œ ë²ˆì— í•´ì œ
              */
             virtual void Reset() {}
 
             /**
-             * @brief ¸Ş¸ğ¸® ÇØÁ¦
+             * @brief ë©”ëª¨ë¦¬ í•´ì œ
              *
-             * @param ptr ÇØÁ¦ÇÒ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ (nullptr Çã¿ë)
+             * @param ptr í•´ì œí•  ë©”ëª¨ë¦¬ í¬ì¸í„° (nullptr í—ˆìš©)
              *
-             * @note LinearAllocator °°Àº ÀÏºÎ ±¸ÇöÃ¼´Â °³º° ÇØÁ¦¸¦ Áö¿øÇÏÁö ¾ÊÀ½
+             * @note LinearAllocator ê°™ì€ ì¼ë¶€ êµ¬í˜„ì²´ëŠ” ê°œë³„ í•´ì œë¥¼ ì§€ì›í•˜ì§€ ì•ŠìŒ
              */
             virtual void Deallocate(void* ptr) = 0;
 
             /**
-             * @brief ÇöÀç ÇÒ´çµÈ ÃÑ ¸Ş¸ğ¸® Å©±â
-             * @return ÇÒ´çµÈ ¹ÙÀÌÆ® ¼ö
+             * @brief í˜„ì¬ í• ë‹¹ëœ ì´ ë©”ëª¨ë¦¬ í¬ê¸°
+             * @return í• ë‹¹ëœ ë°”ì´íŠ¸ ìˆ˜
              */
             virtual size_t GetAllocatedSize() const = 0;
 
             /**
-             * @brief ÇöÀç ÇÒ´ç È½¼ö
-             * @return È°¼º ÇÒ´ç °³¼ö
+             * @brief í˜„ì¬ í• ë‹¹ íšŸìˆ˜
+             * @return í™œì„± í• ë‹¹ ê°œìˆ˜
              */
             virtual size_t GetAllocationCount() const = 0;
 

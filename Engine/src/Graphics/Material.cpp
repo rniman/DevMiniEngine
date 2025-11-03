@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/Material.h"
 #include "Core/Logging/Logger.h"
 
@@ -26,7 +26,7 @@ namespace Graphics
 			desc.depthComparisonFunc
 		);
 
-		// Rasterizer State Á÷Á¢ ÃÊ±âÈ­
+		// Rasterizer State ì§ì ‘ ì´ˆê¸°í™”
 		mRasterizerDesc = {};
 		mRasterizerDesc.FillMode = desc.fillMode;
 		mRasterizerDesc.CullMode = desc.cullMode;
@@ -40,7 +40,7 @@ namespace Graphics
 		mRasterizerDesc.ForcedSampleCount = 0;
 		mRasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
-		// RTV Æ÷¸Ë º¹»ç
+		// RTV í¬ë§· ë³µì‚¬
 		for (Core::uint32 i = 0; i < 8; ++i)
 		{
 			mRTVFormats[i] = desc.rtvFormats[i];
@@ -59,11 +59,11 @@ namespace Graphics
 		, mSampleQuality(0)
 		, mSampleMask(0xFFFFFFFF)
 	{
-		// ±âº» ¼³Á¤: Opaque, Back culling, Solid fill, Depth test enabled
+		// ê¸°ë³¸ ì„¤ì •: Opaque, Back culling, Solid fill, Depth test enabled
 		mBlendDesc = CreateBlendDesc(BlendMode::Opaque);
 		mDepthStencilDesc = CreateDepthStencilDesc(true, true, D3D12_COMPARISON_FUNC_LESS);
 
-		// Rasterizer State Á÷Á¢ ÃÊ±âÈ­
+		// Rasterizer State ì§ì ‘ ì´ˆê¸°í™”
 		mRasterizerDesc = {};
 		mRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 		mRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
@@ -77,7 +77,7 @@ namespace Graphics
 		mRasterizerDesc.ForcedSampleCount = 0;
 		mRasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
-		// RTV Æ÷¸Ë ±âº»°ª
+		// RTV í¬ë§· ê¸°ë³¸ê°’
 		mRTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		for (Core::uint32 i = 1; i < 8; ++i)
 		{
@@ -135,7 +135,7 @@ namespace Graphics
 			break;
 		}
 
-		// ³ª¸ÓÁö ·»´õ Å¸°Ùµµ µ¿ÀÏÇÏ°Ô ¼³Á¤
+		// ë‚˜ë¨¸ì§€ ë Œë” íƒ€ê²Ÿë„ ë™ì¼í•˜ê²Œ ì„¤ì •
 		for (Core::uint32 i = 1; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
 		{
 			blendDesc.RenderTarget[i] = rtBlend;
@@ -175,24 +175,24 @@ namespace Graphics
 
 	size_t Material::GetHash() const
 	{
-		// Ä³½ÃµÈ ÇØ½Ã°¡ ÀÖÀ¸¸é ¹İÈ¯
+		// ìºì‹œëœ í•´ì‹œê°€ ìˆìœ¼ë©´ ë°˜í™˜
 		if (mCachedHash != 0)
 		{
 			return mCachedHash;
 		}
 
-		// ÇØ½Ã °è»ê
+		// í•´ì‹œ ê³„ì‚°
 		size_t hash = 0;
 
-		// ¼ÎÀÌ´õ °æ·Î ÇØ½Ã
+		// ì…°ì´ë” ê²½ë¡œ í•´ì‹œ
 		hash ^= HashString(mVertexShaderPath) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 		hash ^= HashString(mPixelShaderPath) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 
-		// Entry Point ÇØ½Ã
+		// Entry Point í•´ì‹œ
 		hash ^= HashString(mVSEntryPoint) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 		hash ^= HashString(mPSEntryPoint) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 
-		// ·»´õ »óÅÂ ÇØ½Ã (°£´ÜÈ÷ ¸î °¡Áö ÁÖ¿ä ÇÊµå¸¸)
+		// ë Œë” ìƒíƒœ í•´ì‹œ (ê°„ë‹¨íˆ ëª‡ ê°€ì§€ ì£¼ìš” í•„ë“œë§Œ)
 		hash ^= std::hash<BOOL>()(mBlendDesc.RenderTarget[0].BlendEnable) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 		hash ^= std::hash<D3D12_FILL_MODE>()(mRasterizerDesc.FillMode) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 		hash ^= std::hash<D3D12_CULL_MODE>()(mRasterizerDesc.CullMode) + 0x9e3779b9 + (hash << 6) + (hash >> 2);

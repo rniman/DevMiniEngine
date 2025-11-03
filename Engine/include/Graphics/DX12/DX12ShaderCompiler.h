@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include <string>
 
@@ -6,13 +6,13 @@ namespace Graphics
 {
 
 	/**
-	 * @brief HLSL ¼ÎÀÌ´õ ÄÄÆÄÀÏ ¹× CSO ·ÎµùÀ» ´ã´çÇÏ´Â À¯Æ¿¸®Æ¼ Å¬·¡½º
+	 * @brief HLSL ì…°ì´ë” ì»´íŒŒì¼ ë° CSO ë¡œë”©ì„ ë‹´ë‹¹í•˜ëŠ” ìœ í‹¸ë¦¬í‹° í´ë˜ìŠ¤
 	 *
-	 * ·±Å¸ÀÓ HLSL ÄÄÆÄÀÏ°ú »çÀü ÄÄÆÄÀÏµÈ CSO ÆÄÀÏ ·ÎµùÀ» Áö¿øÇÕ´Ï´Ù.
-	 * D3DCompile API¸¦ ·¡ÇÎÇÏ¿© ÀÏ°üµÈ ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÕ´Ï´Ù.
+	 * ëŸ°íƒ€ì„ HLSL ì»´íŒŒì¼ê³¼ ì‚¬ì „ ì»´íŒŒì¼ëœ CSO íŒŒì¼ ë¡œë”©ì„ ì§€ì›í•©ë‹ˆë‹¤.
+	 * D3DCompile APIë¥¼ ë˜í•‘í•˜ì—¬ ì¼ê´€ëœ ì¸í„°í˜ì´ìŠ¤ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
 	 *
-	 * @note ½º·¹µå ¾ÈÀüÇÏÁö ¾ÊÀ½
-	 * @warning ÄÄÆÄÀÏ ½ÇÆĞ ½Ã µğ¹ö±× Ãâ·Â¿¡ ¿¡·¯ ¸Ş½ÃÁö Ç¥½Ã
+	 * @note ìŠ¤ë ˆë“œ ì•ˆì „í•˜ì§€ ì•ŠìŒ
+	 * @warning ì»´íŒŒì¼ ì‹¤íŒ¨ ì‹œ ë””ë²„ê·¸ ì¶œë ¥ì— ì—ëŸ¬ ë©”ì‹œì§€ í‘œì‹œ
 	 */
 	class DX12ShaderCompiler
 	{
@@ -24,19 +24,19 @@ namespace Graphics
 		DX12ShaderCompiler& operator=(const DX12ShaderCompiler&) = delete;
 
 		/**
-		 * @brief HLSL ÆÄÀÏÀ» ·±Å¸ÀÓ¿¡ ÄÄÆÄÀÏ
+		 * @brief HLSL íŒŒì¼ì„ ëŸ°íƒ€ì„ì— ì»´íŒŒì¼
 		 *
-		 * µğ¹ö±× ºôµå¿¡¼­´Â µğ¹ö±× ÇÃ·¡±×°¡ È°¼ºÈ­µÇ¸ç,
-		 * ÄÄÆÄÀÏ ½ÇÆĞ ½Ã ¿¡·¯ ¸Ş½ÃÁö¸¦ µğ¹ö±× Ãâ·Â¿¡ Ç¥½ÃÇÕ´Ï´Ù.
+		 * ë””ë²„ê·¸ ë¹Œë“œì—ì„œëŠ” ë””ë²„ê·¸ í”Œë˜ê·¸ê°€ í™œì„±í™”ë˜ë©°,
+		 * ì»´íŒŒì¼ ì‹¤íŒ¨ ì‹œ ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ë””ë²„ê·¸ ì¶œë ¥ì— í‘œì‹œí•©ë‹ˆë‹¤.
 		 *
-		 * @param filePath ÄÄÆÄÀÏÇÒ HLSL ÆÄÀÏ °æ·Î (¿¹: L"Shaders/Basic.hlsl")
-		 * @param entryPoint ÁøÀÔÁ¡ ÇÔ¼ö ÀÌ¸§ (¿¹: "VSMain", "PSMain")
-		 * @param target ¼ÎÀÌ´õ ¸ğµ¨ Å¸°Ù (¿¹: "vs_5_1", "ps_5_1")
-		 * @param outBlob ÄÄÆÄÀÏµÈ ¹ÙÀÌÆ®ÄÚµå¸¦ ¹ŞÀ» Blob Æ÷ÀÎÅÍ
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param filePath ì»´íŒŒì¼í•  HLSL íŒŒì¼ ê²½ë¡œ (ì˜ˆ: L"Shaders/Basic.hlsl")
+		 * @param entryPoint ì§„ì…ì  í•¨ìˆ˜ ì´ë¦„ (ì˜ˆ: "VSMain", "PSMain")
+		 * @param target ì…°ì´ë” ëª¨ë¸ íƒ€ê²Ÿ (ì˜ˆ: "vs_5_1", "ps_5_1")
+		 * @param outBlob ì»´íŒŒì¼ëœ ë°”ì´íŠ¸ì½”ë“œë¥¼ ë°›ì„ Blob í¬ì¸í„°
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 *
-		 * @note outBlobÀº È£ÃâÀÚ°¡ Release()·Î ÇØÁ¦ ÇÊ¿ä
-		 * @warning ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê°Å³ª ¹®¹ı ¿À·ù ½Ã false ¹İÈ¯
+		 * @note outBlobì€ í˜¸ì¶œìê°€ Release()ë¡œ í•´ì œ í•„ìš”
+		 * @warning íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜ ë¬¸ë²• ì˜¤ë¥˜ ì‹œ false ë°˜í™˜
 		 */
 		bool CompileFromFile(
 			const std::wstring& filePath,
@@ -46,17 +46,17 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief »çÀü ÄÄÆÄÀÏµÈ CSO ÆÄÀÏÀ» ·Îµå
+		 * @brief ì‚¬ì „ ì»´íŒŒì¼ëœ CSO íŒŒì¼ì„ ë¡œë“œ
 		 *
-		 * FXC ¶Ç´Â DXC·Î »çÀü ÄÄÆÄÀÏµÈ ¼ÎÀÌ´õ °´Ã¼(.cso) ÆÄÀÏÀ» ¸Ş¸ğ¸®·Î ·ÎµåÇÕ´Ï´Ù.
-		 * ·±Å¸ÀÓ ÄÄÆÄÀÏº¸´Ù ºü¸£¸ç ¹èÆ÷ ºôµå¿¡ ±ÇÀåµË´Ï´Ù.
+		 * FXC ë˜ëŠ” DXCë¡œ ì‚¬ì „ ì»´íŒŒì¼ëœ ì…°ì´ë” ê°ì²´(.cso) íŒŒì¼ì„ ë©”ëª¨ë¦¬ë¡œ ë¡œë“œí•©ë‹ˆë‹¤.
+		 * ëŸ°íƒ€ì„ ì»´íŒŒì¼ë³´ë‹¤ ë¹ ë¥´ë©° ë°°í¬ ë¹Œë“œì— ê¶Œì¥ë©ë‹ˆë‹¤.
 		 *
-		 * @param csoFilePath CSO ÆÄÀÏ °æ·Î (¿¹: L"Shaders/Compiled/VertexShader.cso")
-		 * @param outBlob ·ÎµåµÈ ¹ÙÀÌÆ®ÄÚµå¸¦ ¹ŞÀ» Blob Æ÷ÀÎÅÍ
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param csoFilePath CSO íŒŒì¼ ê²½ë¡œ (ì˜ˆ: L"Shaders/Compiled/VertexShader.cso")
+		 * @param outBlob ë¡œë“œëœ ë°”ì´íŠ¸ì½”ë“œë¥¼ ë°›ì„ Blob í¬ì¸í„°
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 *
-		 * @note outBlobÀº È£ÃâÀÚ°¡ Release()·Î ÇØÁ¦ ÇÊ¿ä
-		 * @warning ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê°Å³ª ÀĞ±â ½ÇÆĞ ½Ã false ¹İÈ¯
+		 * @note outBlobì€ í˜¸ì¶œìê°€ Release()ë¡œ í•´ì œ í•„ìš”
+		 * @warning íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜ ì½ê¸° ì‹¤íŒ¨ ì‹œ false ë°˜í™˜
 		 */
 		bool LoadCompiledShader(
 			const std::wstring& csoFilePath,
@@ -65,11 +65,11 @@ namespace Graphics
 
 	private:
 		/**
-		 * @brief ÆÄÀÏ ³»¿ëÀ» ¸Ş¸ğ¸®·Î ÀĞ´Â ÇïÆÛ ÇÔ¼ö
+		 * @brief íŒŒì¼ ë‚´ìš©ì„ ë©”ëª¨ë¦¬ë¡œ ì½ëŠ” í—¬í¼ í•¨ìˆ˜
 		 *
-		 * @param filePath ÀĞÀ» ÆÄÀÏ °æ·Î
-		 * @param outData ÆÄÀÏ ³»¿ëÀ» ÀúÀåÇÒ º¤ÅÍ
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param filePath ì½ì„ íŒŒì¼ ê²½ë¡œ
+		 * @param outData íŒŒì¼ ë‚´ìš©ì„ ì €ì¥í•  ë²¡í„°
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 */
 		bool ReadFileToMemory(
 			const std::wstring& filePath,

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Core/Logging/FileSink.h"
 
 
@@ -15,8 +15,8 @@ namespace Core
 
             if (!mFile.is_open())
             {
-                // NOTE: ·Î±ë ½Ã½ºÅÛ ÃÊ±âÈ­ ÁßÀÌ¹Ç·Î LOG_ERROR »ç¿ë ºÒ°¡
-                // stderr·Î Á÷Á¢ Ãâ·ÂÇÏ°Å³ª ¿¹¿Ü ´øÁö±â
+                // NOTE: ë¡œê¹… ì‹œìŠ¤í…œ ì´ˆê¸°í™” ì¤‘ì´ë¯€ë¡œ LOG_ERROR ì‚¬ìš© ë¶ˆê°€
+                // stderrë¡œ ì§ì ‘ ì¶œë ¥í•˜ê±°ë‚˜ ì˜ˆì™¸ ë˜ì§€ê¸°
                 throw runtime_error("Failed to open log file: " + filename);
             }
         }
@@ -25,9 +25,9 @@ namespace Core
         {
             if (mFile.is_open())
             {
-                mFile.flush();  // ¹öÆÛ ³»¿ë °­Á¦ ±â·Ï
+                mFile.flush();  // ë²„í¼ ë‚´ìš© ê°•ì œ ê¸°ë¡
             }
-            // close()´Â ofstream ¼Ò¸êÀÚ¿¡¼­ ÀÚµ¿ È£ÃâµÊ
+            // close()ëŠ” ofstream ì†Œë©¸ìì—ì„œ ìë™ í˜¸ì¶œë¨
         }
 
         void FileSink::Write(const LogMessage& msg)
@@ -50,8 +50,8 @@ namespace Core
         {
             stringstream ss;
 
-            // ÆÄÀÏ ·Î±×´Â °Ë»ö°ú Á¤·ÄÀ» À§ÇØ ISO 8601 Çü½Ä »ç¿ë (YYYY-MM-DD HH:MM:SS)
-            // ConsoleSink´Â °£°á¼ºÀ» À§ÇØ ½Ã°£¸¸ Ç¥½Ã
+            // íŒŒì¼ ë¡œê·¸ëŠ” ê²€ìƒ‰ê³¼ ì •ë ¬ì„ ìœ„í•´ ISO 8601 í˜•ì‹ ì‚¬ìš© (YYYY-MM-DD HH:MM:SS)
+            // ConsoleSinkëŠ” ê°„ê²°ì„±ì„ ìœ„í•´ ì‹œê°„ë§Œ í‘œì‹œ
             auto time = chrono::system_clock::to_time_t(msg.timestamp);
             tm tm;
             localtime_s(&tm, &time);
@@ -61,7 +61,7 @@ namespace Core
             ss << "[" << LogCategoryToString(msg.category) << "] ";
             ss << msg.message;
 
-            // ÆÄÀÏ ·Î±×´Â Ç×»ó ÆÄÀÏ À§Ä¡ Æ÷ÇÔ (µğ¹ö±ë ¿ëÀÌ¼º)
+            // íŒŒì¼ ë¡œê·¸ëŠ” í•­ìƒ íŒŒì¼ ìœ„ì¹˜ í¬í•¨ (ë””ë²„ê¹… ìš©ì´ì„±)
             ss << " (" << msg.file << ":" << msg.line << ")";
 
             return ss.str();

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Core/Memory/Allocator.h"
@@ -8,37 +8,37 @@ namespace Core
     namespace Memory
     {
         /**
-         * @brief ½ºÄÚÇÁ ÇÒ´çÀ» À§ÇÑ ½ºÅÃ ÇÒ´çÀÚ
+         * @brief ìŠ¤ì½”í”„ í• ë‹¹ì„ ìœ„í•œ ìŠ¤íƒ í• ë‹¹ì
          *
-         * LIFO (Last In First Out) ÇÒ´ç ÆĞÅÏÀ» Áö¿øÇÏ´Â ÇÒ´çÀÚÀÔ´Ï´Ù.
-         * ÁßÃ¸µÈ ½ºÄÚÇÁ ÆĞÅÏ¿¡ ÃÖÀûÈ­µÇ¾î ÀÖÀ¸¸ç, ¸¶Ä¿¸¦ ÅëÇÑ ºÎºĞ ÇØÁ¦¸¦ Áö¿øÇÕ´Ï´Ù.
+         * LIFO (Last In First Out) í• ë‹¹ íŒ¨í„´ì„ ì§€ì›í•˜ëŠ” í• ë‹¹ìì…ë‹ˆë‹¤.
+         * ì¤‘ì²©ëœ ìŠ¤ì½”í”„ íŒ¨í„´ì— ìµœì í™”ë˜ì–´ ìˆìœ¼ë©°, ë§ˆì»¤ë¥¼ í†µí•œ ë¶€ë¶„ í•´ì œë¥¼ ì§€ì›í•©ë‹ˆë‹¤.
          *
-         * »ç¿ë ¿¹:
+         * ì‚¬ìš© ì˜ˆ:
          *   StackAllocator stack(1 * MB);
          *   auto marker = stack.GetMarker();
          *   void* temp = stack.Allocate(1024);
-         *   // ... ¸Ş¸ğ¸® »ç¿ë
-         *   stack.FreeToMarker(marker);  // ¸¶Ä¿ ÀÌÈÄ ÇÒ´ç ¸ğµÎ ÇØÁ¦
+         *   // ... ë©”ëª¨ë¦¬ ì‚¬ìš©
+         *   stack.FreeToMarker(marker);  // ë§ˆì»¤ ì´í›„ í• ë‹¹ ëª¨ë‘ í•´ì œ
          *
-         * @note ½º·¹µå ¾ÈÀüÇÏÁö ¾ÊÀ½
-         * @note ¸¶Ä¿´Â ¹İµå½Ã LIFO ¼ø¼­·Î ÇØÁ¦ÇØ¾ß ÇÔ
-         * @warning FreeToMarker´Â LIFO ¼ø¼­·Î¸¸ È£ÃâÇØ¾ß ÇÔ (ÃÖ½Å ¸¶Ä¿ºÎÅÍ ÇØÁ¦)
-         * @warning ¼ø¼­¸¦ ÁöÅ°Áö ¾ÊÀ¸¸é ¸Ş¸ğ¸® ´©¼ö ¶Ç´Â Àß¸øµÈ ÇØÁ¦ ¹ß»ı °¡´É
+         * @note ìŠ¤ë ˆë“œ ì•ˆì „í•˜ì§€ ì•ŠìŒ
+         * @note ë§ˆì»¤ëŠ” ë°˜ë“œì‹œ LIFO ìˆœì„œë¡œ í•´ì œí•´ì•¼ í•¨
+         * @warning FreeToMarkerëŠ” LIFO ìˆœì„œë¡œë§Œ í˜¸ì¶œí•´ì•¼ í•¨ (ìµœì‹  ë§ˆì»¤ë¶€í„° í•´ì œ)
+         * @warning ìˆœì„œë¥¼ ì§€í‚¤ì§€ ì•Šìœ¼ë©´ ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ ë˜ëŠ” ì˜ëª»ëœ í•´ì œ ë°œìƒ ê°€ëŠ¥
          */
         class StackAllocator : public Allocator
         {
         public:
             /**
-             * @brief ½ºÅÃ À§Ä¡¸¦ ³ªÅ¸³»´Â ¸¶Ä¿ Å¸ÀÔ
+             * @brief ìŠ¤íƒ ìœ„ì¹˜ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë§ˆì»¤ íƒ€ì…
              *
-             * @note ³»ºÎÀûÀ¸·Î ¿ÀÇÁ¼Â °ª(size_t)À» »ç¿ë
-             * @note GetMarker()·Î È¹µæÇÏ°í FreeToMarker()·Î µÇµ¹¸²
+             * @note ë‚´ë¶€ì ìœ¼ë¡œ ì˜¤í”„ì…‹ ê°’(size_t)ì„ ì‚¬ìš©
+             * @note GetMarker()ë¡œ íšë“í•˜ê³  FreeToMarker()ë¡œ ë˜ëŒë¦¼
              */
             using Marker = size_t;
 
             /**
-             * @brief ½ºÅÃ ÇÒ´çÀÚ »ı¼º
-             * @param size ÇÒ´çÀÚ ÀüÃ¼ ¿ë·® (¹ÙÀÌÆ®)
+             * @brief ìŠ¤íƒ í• ë‹¹ì ìƒì„±
+             * @param size í• ë‹¹ì ì „ì²´ ìš©ëŸ‰ (ë°”ì´íŠ¸)
              */
             explicit StackAllocator(size_t size);
 
@@ -48,98 +48,98 @@ namespace Core
             StackAllocator& operator=(const StackAllocator&) = delete;
 
             /**
-             * @brief ½ºÅÃ¿¡¼­ ¸Ş¸ğ¸® ÇÒ´ç
+             * @brief ìŠ¤íƒì—ì„œ ë©”ëª¨ë¦¬ í• ë‹¹
              *
-             * @param size ÇÒ´çÇÒ ¹ÙÀÌÆ® Å©±â
-             * @param alignment Á¤·Ä ¿ä±¸»çÇ× (±âº»: DEFAULT_ALIGNMENT)
-             * @return ÇÒ´çµÈ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ, °ø°£ ºÎÁ· ½Ã nullptr
+             * @param size í• ë‹¹í•  ë°”ì´íŠ¸ í¬ê¸°
+             * @param alignment ì •ë ¬ ìš”êµ¬ì‚¬í•­ (ê¸°ë³¸: DEFAULT_ALIGNMENT)
+             * @return í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°, ê³µê°„ ë¶€ì¡± ì‹œ nullptr
              *
-             * @note O(1) º¹Àâµµ, ÆĞµùÀ¸·Î ÀÎÇØ ½ÇÁ¦ »ç¿ë·®Àº sizeº¸´Ù Å¬ ¼ö ÀÖÀ½
-             * @warning ÇÒ´çµÈ ¸Ş¸ğ¸®´Â FreeToMarker() ¶Ç´Â Reset() È£Ãâ Àü±îÁö À¯È¿
+             * @note O(1) ë³µì¡ë„, íŒ¨ë”©ìœ¼ë¡œ ì¸í•´ ì‹¤ì œ ì‚¬ìš©ëŸ‰ì€ sizeë³´ë‹¤ í´ ìˆ˜ ìˆìŒ
+             * @warning í• ë‹¹ëœ ë©”ëª¨ë¦¬ëŠ” FreeToMarker() ë˜ëŠ” Reset() í˜¸ì¶œ ì „ê¹Œì§€ ìœ íš¨
              */
             void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) override;
 
             /**
-             * @brief ÇöÀç ½ºÅÃ À§Ä¡ ¹İÈ¯
+             * @brief í˜„ì¬ ìŠ¤íƒ ìœ„ì¹˜ ë°˜í™˜
              *
-             * @return ÇöÀç ¿ÀÇÁ¼ÂÀ» ³ªÅ¸³»´Â ¸¶Ä¿
+             * @return í˜„ì¬ ì˜¤í”„ì…‹ì„ ë‚˜íƒ€ë‚´ëŠ” ë§ˆì»¤
              *
-             * @note ³ªÁß¿¡ ÀÌ ¸¶Ä¿·Î µÇµ¹¸± ¼ö ÀÖÀ½ (LIFO)
+             * @note ë‚˜ì¤‘ì— ì´ ë§ˆì»¤ë¡œ ë˜ëŒë¦´ ìˆ˜ ìˆìŒ (LIFO)
              */
             Marker GetMarker() const { return mOffset; }
 
             /**
-             * @brief Æ¯Á¤ ¸¶Ä¿ À§Ä¡·Î ½ºÅÃÀ» µÇµ¹¸²
+             * @brief íŠ¹ì • ë§ˆì»¤ ìœ„ì¹˜ë¡œ ìŠ¤íƒì„ ë˜ëŒë¦¼
              *
-             * @param marker µÇµ¹¸± ½ºÅÃ À§Ä¡ (GetMarker()·Î »çÀü È¹µæÇÑ °ª)
+             * @param marker ë˜ëŒë¦´ ìŠ¤íƒ ìœ„ì¹˜ (GetMarker()ë¡œ ì‚¬ì „ íšë“í•œ ê°’)
              *
-             * »ç¿ë ¿¹:
+             * ì‚¬ìš© ì˜ˆ:
              *   auto marker1 = stack.GetMarker();
              *   void* data1 = stack.Allocate(100);
              *
              *   auto marker2 = stack.GetMarker();
              *   void* data2 = stack.Allocate(200);
              *
-             *   stack.FreeToMarker(marker2);  // data2 ÇØÁ¦
-             *   stack.FreeToMarker(marker1);  // data1 ÇØÁ¦
+             *   stack.FreeToMarker(marker2);  // data2 í•´ì œ
+             *   stack.FreeToMarker(marker1);  // data1 í•´ì œ
              *
-             * @note LIFO ¼ø¼­ ÇÊ¼ö: marker2 ¡æ marker1 ¼ø¼­·Î ÇØÁ¦ÇØ¾ß ÇÔ
-             * @note ÇÒ´ç Ä«¿îÆ®´Â ¾÷µ¥ÀÌÆ®µÇÁö ¾ÊÀ½ (±Ù»ç°ªÀ¸·Î À¯Áö)
-             * @warning marker > mOffsetÀÎ °æ¿ì assertion ½ÇÆĞ
-             * @warning Àß¸øµÈ ¼ø¼­ (marker1 ¡æ marker2)·Î È£ÃâÇÏ¸é ¾È µÊ
+             * @note LIFO ìˆœì„œ í•„ìˆ˜: marker2 â†’ marker1 ìˆœì„œë¡œ í•´ì œí•´ì•¼ í•¨
+             * @note í• ë‹¹ ì¹´ìš´íŠ¸ëŠ” ì—…ë°ì´íŠ¸ë˜ì§€ ì•ŠìŒ (ê·¼ì‚¬ê°’ìœ¼ë¡œ ìœ ì§€)
+             * @warning marker > mOffsetì¸ ê²½ìš° assertion ì‹¤íŒ¨
+             * @warning ì˜ëª»ëœ ìˆœì„œ (marker1 â†’ marker2)ë¡œ í˜¸ì¶œí•˜ë©´ ì•ˆ ë¨
              */
             void FreeToMarker(Marker marker);
 
             /**
-             * @brief ÇÒ´çÀÚ ÃÊ±âÈ­
-             * @note ¸ğµç ÇÒ´çÀ» ÇÑ ¹ø¿¡ ÇØÁ¦ÇÏ°í ¿ÀÇÁ¼ÂÀ» 0À¸·Î Àç¼³Á¤
+             * @brief í• ë‹¹ì ì´ˆê¸°í™”
+             * @note ëª¨ë“  í• ë‹¹ì„ í•œ ë²ˆì— í•´ì œí•˜ê³  ì˜¤í”„ì…‹ì„ 0ìœ¼ë¡œ ì¬ì„¤ì •
              */
             void Reset() override;
 
             /**
-             * @brief No-op (°³º° ÇØÁ¦ ºÒ°¡)
+             * @brief No-op (ê°œë³„ í•´ì œ ë¶ˆê°€)
              *
-             * @param ptr ¹«½ÃµÊ
+             * @param ptr ë¬´ì‹œë¨
              *
-             * @note StackAllocator´Â °³º° ÇØÁ¦¸¦ Áö¿øÇÏÁö ¾ÊÀ½
-             * @note ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÏ·Á¸é FreeToMarker() ¶Ç´Â Reset()À» »ç¿ëÇÏ¼¼¿ä
+             * @note StackAllocatorëŠ” ê°œë³„ í•´ì œë¥¼ ì§€ì›í•˜ì§€ ì•ŠìŒ
+             * @note ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ë ¤ë©´ FreeToMarker() ë˜ëŠ” Reset()ì„ ì‚¬ìš©í•˜ì„¸ìš”
              */
             void Deallocate(void* ptr) override;
 
             /**
-             * @brief ÇöÀç ÇÒ´çµÈ ¸Ş¸ğ¸® Å©±â
-             * @return ÇÒ´çµÈ ¹ÙÀÌÆ® ¼ö (ÆĞµù Æ÷ÇÔ)
+             * @brief í˜„ì¬ í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ê¸°
+             * @return í• ë‹¹ëœ ë°”ì´íŠ¸ ìˆ˜ (íŒ¨ë”© í¬í•¨)
              */
             size_t GetAllocatedSize() const override { return mOffset; }
 
             /**
-             * @brief ´©Àû ÇÒ´ç È½¼ö (±Ù»ç°ª)
+             * @brief ëˆ„ì  í• ë‹¹ íšŸìˆ˜ (ê·¼ì‚¬ê°’)
              *
-             * @return ´ë·«ÀûÀÎ ÇÒ´ç È½¼ö
+             * @return ëŒ€ëµì ì¸ í• ë‹¹ íšŸìˆ˜
              *
-             * @note FreeToMarker()´Â ÇÒ´ç Ä«¿îÆ®¸¦ ¾÷µ¥ÀÌÆ®ÇÏÁö ¾ÊÀ¸¹Ç·Î ºÎÁ¤È®ÇÒ ¼ö ÀÖÀ½
-             * @note Á¤È®ÇÑ Ä«¿îÆ®´Â Reset() È£Ãâ ½Ã¿¡¸¸ º¸ÀåµÊ
-             * @warning ÀÌ °ªÀº µğ¹ö±ë Âü°í¿ëÀ¸·Î¸¸ »ç¿ëÇÏ¼¼¿ä
+             * @note FreeToMarker()ëŠ” í• ë‹¹ ì¹´ìš´íŠ¸ë¥¼ ì—…ë°ì´íŠ¸í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë¶€ì •í™•í•  ìˆ˜ ìˆìŒ
+             * @note ì •í™•í•œ ì¹´ìš´íŠ¸ëŠ” Reset() í˜¸ì¶œ ì‹œì—ë§Œ ë³´ì¥ë¨
+             * @warning ì´ ê°’ì€ ë””ë²„ê¹… ì°¸ê³ ìš©ìœ¼ë¡œë§Œ ì‚¬ìš©í•˜ì„¸ìš”
              */
             size_t GetAllocationCount() const override { return mAllocationCount; }
 
             /**
-             * @brief ÇÒ´çÀÚÀÇ ÃÑ ¿ë·®
-             * @return ÀüÃ¼ ¹öÆÛ Å©±â (¹ÙÀÌÆ®)
+             * @brief í• ë‹¹ìì˜ ì´ ìš©ëŸ‰
+             * @return ì „ì²´ ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸)
              */
             size_t GetCapacity() const { return mSize; }
 
             /**
-             * @brief ³²Àº ¿©À¯ °ø°£
-             * @return ÇÒ´ç °¡´ÉÇÑ ¹ÙÀÌÆ® ¼ö (´ë·«Àû, ÆĞµù ¹ÌÆ÷ÇÔ)
+             * @brief ë‚¨ì€ ì—¬ìœ  ê³µê°„
+             * @return í• ë‹¹ ê°€ëŠ¥í•œ ë°”ì´íŠ¸ ìˆ˜ (ëŒ€ëµì , íŒ¨ë”© ë¯¸í¬í•¨)
              */
             size_t GetAvailableSize() const { return mSize - mOffset; }
 
         private:
             void* mMemory;
             size_t mSize;
-            size_t mOffset;             // ´ÙÀ½ ÇÒ´ç À§Ä¡ (¸¶Ä¿·Îµµ »ç¿ëµÊ)
-            size_t mAllocationCount;    // ±Ù»ç°ª (FreeToMarker ½Ã ºÎÁ¤È®)
+            size_t mOffset;             // ë‹¤ìŒ í• ë‹¹ ìœ„ì¹˜ (ë§ˆì»¤ë¡œë„ ì‚¬ìš©ë¨)
+            size_t mAllocationCount;    // ê·¼ì‚¬ê°’ (FreeToMarker ì‹œ ë¶€ì •í™•)
         };
 
     } // namespace Memory

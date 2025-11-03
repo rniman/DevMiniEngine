@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Core/Memory/StackAllocator.h"
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h" 
@@ -60,8 +60,8 @@ namespace Core
 
         void StackAllocator::Deallocate(void* ptr)
         {
-            // StackAllocator´Â LIFO ÆĞÅÏ¸¸ Áö¿ø - °³º° ÇØÁ¦ ºÒ°¡
-            // Æ¯Á¤ ÁöÁ¡±îÁö ÇØÁ¦: FreeToMarker(), ÀüÃ¼ ÇØÁ¦: Reset()
+            // StackAllocatorëŠ” LIFO íŒ¨í„´ë§Œ ì§€ì› - ê°œë³„ í•´ì œ ë¶ˆê°€
+            // íŠ¹ì • ì§€ì ê¹Œì§€ í•´ì œ: FreeToMarker(), ì „ì²´ í•´ì œ: Reset()
             (void)ptr;
         }
 
@@ -82,8 +82,8 @@ namespace Core
                 LOG_TRACE("StackAllocator freed to marker: %zu bytes freed", freedBytes);
                 mOffset = marker;
 
-                // NOTE: ¸¶Ä¿ ±â¹İ ÇØÁ¦¿¡¼­´Â Á¤È®ÇÑ ÇÒ´ç Ä«¿îÆ® ÃßÀû ºÒ°¡´É
-                // Reset()¿¡¼­¸¸ Ä«¿îÆ®¸¦ 0À¸·Î ÃÊ±âÈ­
+                // NOTE: ë§ˆì»¤ ê¸°ë°˜ í•´ì œì—ì„œëŠ” ì •í™•í•œ í• ë‹¹ ì¹´ìš´íŠ¸ ì¶”ì  ë¶ˆê°€ëŠ¥
+                // Reset()ì—ì„œë§Œ ì¹´ìš´íŠ¸ë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”
             }
         }
 

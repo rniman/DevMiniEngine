@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include <array>
 #include <memory>
@@ -11,20 +11,20 @@ namespace Graphics
 	class DX12CommandContext;
 
 	/**
-	 * @brief DirectX 12 Device °ü¸® Å¬·¡½º
+	 * @brief DirectX 12 Device ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * GPU¿ÍÀÇ ÀÎÅÍÆäÀÌ½º¸¦ ´ã´çÇÏ¸ç ¸ğµç DirectX 12 ¸®¼Ò½ºÀÇ »ı¼ºÀ» °ü¸®ÇÕ´Ï´Ù.
+	 * GPUì™€ì˜ ì¸í„°í˜ì´ìŠ¤ë¥¼ ë‹´ë‹¹í•˜ë©° ëª¨ë“  DirectX 12 ë¦¬ì†ŒìŠ¤ì˜ ìƒì„±ì„ ê´€ë¦¬í•©ë‹ˆë‹¤.
 	 *
-	 * ÃÊ±âÈ­ ¼ø¼­:
-	 * 1. Debug Layer È°¼ºÈ­ (¼±ÅÃÀû)
-	 * 2. DXGI Factory »ı¼º
-	 * 3. GPU Adapter ¼±ÅÃ (ÃÖ´ë VRAM ±âÁØ)
-	 * 4. D3D12 Device »ı¼º
-	 * 5. Command Queue »ı¼º
-	 * 6. Descriptor Heap »ı¼º
-	 * 7. Command Context »ı¼º
+	 * ì´ˆê¸°í™” ìˆœì„œ:
+	 * 1. Debug Layer í™œì„±í™” (ì„ íƒì )
+	 * 2. DXGI Factory ìƒì„±
+	 * 3. GPU Adapter ì„ íƒ (ìµœëŒ€ VRAM ê¸°ì¤€)
+	 * 4. D3D12 Device ìƒì„±
+	 * 5. Command Queue ìƒì„±
+	 * 6. Descriptor Heap ìƒì„±
+	 * 7. Command Context ìƒì„±
 	 *
-	 * @note SwapChainÀº º°µµ·Î CreateSwapChain()À» È£ÃâÇÏ¿© »ı¼º
+	 * @note SwapChainì€ ë³„ë„ë¡œ CreateSwapChain()ì„ í˜¸ì¶œí•˜ì—¬ ìƒì„±
 	 */
 	class DX12Device
 	{
@@ -37,41 +37,41 @@ namespace Graphics
 		DX12Device& operator=(const DX12Device&) = delete;
 
 		/**
-		 * @brief Device ÃÊ±âÈ­
+		 * @brief Device ì´ˆê¸°í™”
 		 *
-		 * @param enableDebugLayer Debug Layer È°¼ºÈ­ ¿©ºÎ (Debug ºôµå¿¡¼­¸¸ À¯È¿)
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param enableDebugLayer Debug Layer í™œì„±í™” ì—¬ë¶€ (Debug ë¹Œë“œì—ì„œë§Œ ìœ íš¨)
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @note Debug Layer´Â ¼º´É ¿À¹öÇìµå°¡ ÀÖÀ¸¹Ç·Î Release ºôµå¿¡¼­´Â ºñÈ°¼ºÈ­ ±ÇÀå
+		 * @note Debug LayerëŠ” ì„±ëŠ¥ ì˜¤ë²„í—¤ë“œê°€ ìˆìœ¼ë¯€ë¡œ Release ë¹Œë“œì—ì„œëŠ” ë¹„í™œì„±í™” ê¶Œì¥
 		 */
 		bool Initialize(bool enableDebugLayer = true);
 
 		/**
-		 * @brief Device Á¾·á ¹× ¸ğµç ¸®¼Ò½º ÇØÁ¦
+		 * @brief Device ì¢…ë£Œ ë° ëª¨ë“  ë¦¬ì†ŒìŠ¤ í•´ì œ
 		 *
-		 * ¸®¼Ò½º´Â ¿ª¼øÀ¸·Î ÇØÁ¦µË´Ï´Ù:
+		 * ë¦¬ì†ŒìŠ¤ëŠ” ì—­ìˆœìœ¼ë¡œ í•´ì œë©ë‹ˆë‹¤:
 		 * 1. Command Context
 		 * 2. SwapChain
 		 * 3. Descriptor Heap
 		 * 4. Command Queue
 		 * 5. Device, Adapter, Factory
 		 *
-		 * @note GPU À¯ÈŞ ´ë±â ÈÄ È£ÃâÇÏ´Â °ÍÀ» ±ÇÀåÇÕ´Ï´Ù
+		 * @note GPU ìœ íœ´ ëŒ€ê¸° í›„ í˜¸ì¶œí•˜ëŠ” ê²ƒì„ ê¶Œì¥í•©ë‹ˆë‹¤
 		 */
 		void Shutdown();
 
 		/**
-		 * @brief ½º¿Ò Ã¼ÀÎ »ı¼º ¹× ÃÊ±âÈ­
+		 * @brief ìŠ¤ì™‘ ì²´ì¸ ìƒì„± ë° ì´ˆê¸°í™”
 		 *
-		 * @param hwnd ·»´õ¸µ ´ë»ó À©µµ¿ì ÇÚµé
-		 * @param width ¹é ¹öÆÛ ³Êºñ
-		 * @param height ¹é ¹öÆÛ ³ôÀÌ
-		 * @return »ı¼º ¼º°ø ¿©ºÎ
+		 * @param hwnd ë Œë”ë§ ëŒ€ìƒ ìœˆë„ìš° í•¸ë“¤
+		 * @param width ë°± ë²„í¼ ë„ˆë¹„
+		 * @param height ë°± ë²„í¼ ë†’ì´
+		 * @return ìƒì„± ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @note Initialize() È£Ãâ ÈÄ¿¡¸¸ »ç¿ë °¡´É
-		 * @note RTV(Render Target View)µµ ÇÔ²² »ı¼ºµË´Ï´Ù
-		 * @note À©µµ¿ì ¸®»çÀÌÂ¡, ÀüÃ¼ È­¸é ÀüÈ¯À» ´ëºñÇÏ¿© Initialize¿Í ºĞ¸®ÇÏ¿© »ç¿ëÇÕ´Ï´Ù
-		 * @warning ±âÁ¸ ½º¿Ò Ã¼ÀÎÀÌ ÀÖÀ¸¸é ½ÇÆĞÇÕ´Ï´Ù
+		 * @note Initialize() í˜¸ì¶œ í›„ì—ë§Œ ì‚¬ìš© ê°€ëŠ¥
+		 * @note RTV(Render Target View)ë„ í•¨ê»˜ ìƒì„±ë©ë‹ˆë‹¤
+		 * @note ìœˆë„ìš° ë¦¬ì‚¬ì´ì§•, ì „ì²´ í™”ë©´ ì „í™˜ì„ ëŒ€ë¹„í•˜ì—¬ Initializeì™€ ë¶„ë¦¬í•˜ì—¬ ì‚¬ìš©í•©ë‹ˆë‹¤
+		 * @warning ê¸°ì¡´ ìŠ¤ì™‘ ì²´ì¸ì´ ìˆìœ¼ë©´ ì‹¤íŒ¨í•©ë‹ˆë‹¤
 		 */
 		bool CreateSwapChain(HWND hwnd, Core::uint32 width, Core::uint32 height);
 
@@ -86,7 +86,7 @@ namespace Graphics
 		bool IsInitialized() const { return mDevice != nullptr; }
 
 	private:
-		// ÃÊ±âÈ­ ÇïÆÛ (È£Ãâ ¼ø¼­´ë·Î Á¤·Ä)
+		// ì´ˆê¸°í™” í—¬í¼ (í˜¸ì¶œ ìˆœì„œëŒ€ë¡œ ì •ë ¬)
 		bool EnableDebugLayer();
 		bool CreateFactory();
 		bool SelectAdapter();
@@ -94,20 +94,20 @@ namespace Graphics
 		bool CreateCommandQueues();
 		bool CreateCommandContexts();
 
-		// À¯Æ¿¸®Æ¼ ÇÔ¼ö
+		// ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜
 		const char* GetFeatureLevelString(D3D_FEATURE_LEVEL featureLevel) const;
 
-		// ¸â¹ö º¯¼ö
+		// ë©¤ë²„ ë³€ìˆ˜
 		
-		// --- ÄÚ¾î DX12 °´Ã¼ ---
-		// DX12 È£È¯¼ºÀ» À§ÇÑ "º£ÀÌ½º¶óÀÎ" ÀÎÅÍÆäÀÌ½º¸¦ ¸â¹ö·Î ÀúÀåÇÕ´Ï´Ù.
+		// --- ì½”ì–´ DX12 ê°ì²´ ---
+		// DX12 í˜¸í™˜ì„±ì„ ìœ„í•œ "ë² ì´ìŠ¤ë¼ì¸" ì¸í„°í˜ì´ìŠ¤ë¥¼ ë©¤ë²„ë¡œ ì €ì¥í•©ë‹ˆë‹¤.
 		// 
-		// TODO: [¿£Áø È®Àå ÁöÁ¡]
-		// ·¹ÀÌ Æ®·¹ÀÌ½Ì(ID3D12Device5), ¸Ş½Ã ¼ÎÀÌ´õ(ID3D12Device6) µî
-		// ´õ ³ôÀº ¹öÀüÀÇ ±â´ÉÀÌ ÇÊ¿äÇÒ °æ¿ì, mDevice.As(&device5)Ã³·³
-		// ÇÔ¼ö ³»¿¡¼­ ÀÏ½ÃÀûÀ¸·Î Äõ¸®ÇÏ¿© »ç¿ëÇÕ´Ï´Ù.
-		// È®Àå ½Ã±â¿¡´Â ´Ù¾çÇÑ COM °´Ã¼ÀÇ ¹öÁ¯À» È®ÀÎ ÇØ¾ßÇÕ´Ï´Ù.
-		// ¸â¹ö º¯¼ö ÀÚÃ¼ÀÇ Å¸ÀÔÀº º¯°æÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+		// TODO: [ì—”ì§„ í™•ì¥ ì§€ì ]
+		// ë ˆì´ íŠ¸ë ˆì´ì‹±(ID3D12Device5), ë©”ì‹œ ì…°ì´ë”(ID3D12Device6) ë“±
+		// ë” ë†’ì€ ë²„ì „ì˜ ê¸°ëŠ¥ì´ í•„ìš”í•  ê²½ìš°, mDevice.As(&device5)ì²˜ëŸ¼
+		// í•¨ìˆ˜ ë‚´ì—ì„œ ì¼ì‹œì ìœ¼ë¡œ ì¿¼ë¦¬í•˜ì—¬ ì‚¬ìš©í•©ë‹ˆë‹¤.
+		// í™•ì¥ ì‹œê¸°ì—ëŠ” ë‹¤ì–‘í•œ COM ê°ì²´ì˜ ë²„ì ¼ì„ í™•ì¸ í•´ì•¼í•©ë‹ˆë‹¤.
+		// ë©¤ë²„ ë³€ìˆ˜ ìì²´ì˜ íƒ€ì…ì€ ë³€ê²½í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
 		ComPtr<IDXGIFactory4> mFactory;
 		ComPtr<IDXGIAdapter1> mAdapter;
 		ComPtr<ID3D12Device> mDevice;
@@ -122,7 +122,7 @@ namespace Graphics
 
 		// Flags
 		bool mDebugLayerEnabled = false;
-		bool mTearingAllowed = false;       // Factory5ÀÇ Äõ¸®µÈ ±â´É ÇÃ·¡±×
+		bool mTearingAllowed = false;       // Factory5ì˜ ì¿¼ë¦¬ëœ ê¸°ëŠ¥ í”Œë˜ê·¸
 	};
 
 } // namespace Graphics

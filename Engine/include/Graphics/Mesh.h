@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Math/MathTypes.h"
 #include "Graphics/GraphicsTypes.h"
@@ -11,17 +11,17 @@ namespace Graphics
 	class DX12CommandContext;
 
 	/**
-	 * @brief ±âº» ¹öÅØ½º ±¸Á¶Ã¼ (À§Ä¡ + »ö»ó)
+	 * @brief ê¸°ë³¸ ë²„í…ìŠ¤ êµ¬ì¡°ì²´ (ìœ„ì¹˜ + ìƒ‰ìƒ)
 	 *
-	 * Ã¹ »ï°¢Çü ·»´õ¸µÀ» À§ÇÑ ´Ü¼øÇÑ ¹öÅØ½º Æ÷¸Ë
+	 * ì²« ì‚¼ê°í˜• ë Œë”ë§ì„ ìœ„í•œ ë‹¨ìˆœí•œ ë²„í…ìŠ¤ í¬ë§·
 	 */
 	struct BasicVertex
 	{
-		Math::Vector3 position;  // ·ÎÄÃ ÁÂÇ¥°è À§Ä¡
-		Math::Vector4 color;     // RGBA »ö»ó (0.0 ~ 1.0)
+		Math::Vector3 position;  // ë¡œì»¬ ì¢Œí‘œê³„ ìœ„ì¹˜
+		Math::Vector4 color;     // RGBA ìƒ‰ìƒ (0.0 ~ 1.0)
 
 		/**
-		 * @brief ÀÌ Vertex Å¸ÀÔ¿¡ ´ëÇÑ Input Layout ¹İÈ¯
+		 * @brief ì´ Vertex íƒ€ì…ì— ëŒ€í•œ Input Layout ë°˜í™˜
 		 */
 		static D3D12_INPUT_LAYOUT_DESC GetInputLayout()
 		{
@@ -58,7 +58,7 @@ namespace Graphics
 	{
 		Math::Vector3 position;  // POSITION
 		Math::Vector2 texCoord;  // TEXCOORD0
-		Math::Vector4 color;     // COLOR (¿É¼Ç)
+		Math::Vector4 color;     // COLOR (ì˜µì…˜)
 
 		static D3D12_INPUT_LAYOUT_DESC GetInputLayout()
 		{
@@ -102,10 +102,10 @@ namespace Graphics
 
 
 	/**
-	 * @brief ·»´õ¸µ °¡´ÉÇÑ ¸Ş½Ã¸¦ °ü¸®ÇÏ´Â Å¬·¡½º
+	 * @brief ë Œë”ë§ ê°€ëŠ¥í•œ ë©”ì‹œë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
 	 *
-	 * VertexBuffer¿Í IndexBuffer¸¦ ÇÏ³ªÀÇ ·»´õ¸µ ´ÜÀ§·Î Á¶ÇÕÇÏ¿© °ü¸®ÇÕ´Ï´Ù.
-	 * GPU ¸Ş¸ğ¸®¿¡ Áö¿À¸ŞÆ®¸® µ¥ÀÌÅÍ¸¦ ¾÷·ÎµåÇÏ°í ·»´õ¸µ ½Ã ¹ÙÀÎµù/µå·Î¿ì¸¦ ¼öÇàÇÕ´Ï´Ù.
+	 * VertexBufferì™€ IndexBufferë¥¼ í•˜ë‚˜ì˜ ë Œë”ë§ ë‹¨ìœ„ë¡œ ì¡°í•©í•˜ì—¬ ê´€ë¦¬í•©ë‹ˆë‹¤.
+	 * GPU ë©”ëª¨ë¦¬ì— ì§€ì˜¤ë©”íŠ¸ë¦¬ ë°ì´í„°ë¥¼ ì—…ë¡œë“œí•˜ê³  ë Œë”ë§ ì‹œ ë°”ì¸ë”©/ë“œë¡œìš°ë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤.
 	 */
 	class Mesh
 	{
@@ -117,21 +117,21 @@ namespace Graphics
 		Mesh& operator=(const Mesh&) = delete;
 
 		/**
-		 * @brief Á¤Á¡ ¹× ÀÎµ¦½º µ¥ÀÌÅÍ·Î ¸Ş½Ã¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù
+		 * @brief ì •ì  ë° ì¸ë±ìŠ¤ ë°ì´í„°ë¡œ ë©”ì‹œë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤
 		 *
-		 * GPU ¸Ş¸ğ¸®¿¡ ¹öÅØ½º¿Í ÀÎµ¦½º ¹öÆÛ¸¦ »ı¼ºÇÏ°í µ¥ÀÌÅÍ¸¦ ¾÷·ÎµåÇÕ´Ï´Ù.
-		 * Upload HeapÀ» ÅëÇØ µ¥ÀÌÅÍ¸¦ º¹»çÇÏ¸ç, ¿Ï·á ÈÄ GPU ÀÛ¾÷ ´ë±â¸¦ ¼öÇàÇÕ´Ï´Ù.
+		 * GPU ë©”ëª¨ë¦¬ì— ë²„í…ìŠ¤ì™€ ì¸ë±ìŠ¤ ë²„í¼ë¥¼ ìƒì„±í•˜ê³  ë°ì´í„°ë¥¼ ì—…ë¡œë“œí•©ë‹ˆë‹¤.
+		 * Upload Heapì„ í†µí•´ ë°ì´í„°ë¥¼ ë³µì‚¬í•˜ë©°, ì™„ë£Œ í›„ GPU ì‘ì—… ëŒ€ê¸°ë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤.
 		 *
-		 * @param device DirectX 12 µğ¹ÙÀÌ½º
-		 * @param commandQueue Ä¿¸Çµå Å¥ (GPU ÀÛ¾÷ Á¦Ãâ ¹× µ¿±âÈ­)
-		 * @param commandContext Ä¿¸Çµå ÄÁÅØ½ºÆ® (Ä¿¸Çµå ¸®½ºÆ® ¹× ÇÒ´çÀÚ)
-		 * @param vertices ¾÷·ÎµåÇÒ ¹öÅØ½º µ¥ÀÌÅÍ ¹è¿­
-		 * @param vertexCount ¹öÅØ½º °³¼ö
-		 * @param indices ¾÷·ÎµåÇÒ ÀÎµ¦½º µ¥ÀÌÅÍ ¹è¿­ (nullptrÀÌ¸é ÀÎµ¦½º ¹öÆÛ ¹Ì»ç¿ë)
-		 * @param indexCount ÀÎµ¦½º °³¼ö (0ÀÌ¸é ÀÎµ¦½º ¹öÆÛ ¹Ì»ç¿ë)
-		 * @return ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+		 * @param device DirectX 12 ë””ë°”ì´ìŠ¤
+		 * @param commandQueue ì»¤ë§¨ë“œ í (GPU ì‘ì—… ì œì¶œ ë° ë™ê¸°í™”)
+		 * @param commandContext ì»¤ë§¨ë“œ ì»¨í…ìŠ¤íŠ¸ (ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ ë° í• ë‹¹ì)
+		 * @param vertices ì—…ë¡œë“œí•  ë²„í…ìŠ¤ ë°ì´í„° ë°°ì—´
+		 * @param vertexCount ë²„í…ìŠ¤ ê°œìˆ˜
+		 * @param indices ì—…ë¡œë“œí•  ì¸ë±ìŠ¤ ë°ì´í„° ë°°ì—´ (nullptrì´ë©´ ì¸ë±ìŠ¤ ë²„í¼ ë¯¸ì‚¬ìš©)
+		 * @param indexCount ì¸ë±ìŠ¤ ê°œìˆ˜ (0ì´ë©´ ì¸ë±ìŠ¤ ë²„í¼ ë¯¸ì‚¬ìš©)
+		 * @return ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
 		 *
-		 * @note ÀÌ ÇÔ¼ö´Â ³»ºÎÀûÀ¸·Î GPU ÀÛ¾÷ ¿Ï·á¸¦ ´ë±âÇÕ´Ï´Ù (WaitForIdle)
+		 * @note ì´ í•¨ìˆ˜ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ GPU ì‘ì—… ì™„ë£Œë¥¼ ëŒ€ê¸°í•©ë‹ˆë‹¤ (WaitForIdle)
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -156,13 +156,13 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief Vertex/Index Buffer¸¦ ¹ÙÀÎµùÇÏ°í Draw Ä¿¸Çµå¸¦ ½ÇÇàÇÕ´Ï´Ù.
+		 * @brief Vertex/Index Bufferë¥¼ ë°”ì¸ë”©í•˜ê³  Draw ì»¤ë§¨ë“œë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 		 *
-		 * ³»ºÎÀûÀ¸·Î IASetVertexBuffers, IASetIndexBuffer¸¦ È£ÃâÇÏ¿© ¹öÆÛ¸¦ ¹ÙÀÎµùÇÑ ÈÄ,
-		 * ÀÎµ¦½º ¹öÆÛ À¯¹«¿¡ µû¶ó DrawIndexedInstanced ¶Ç´Â DrawInstanced¸¦ È£ÃâÇÕ´Ï´Ù.
-		 * ·»´õ¸µ¿¡ ÇÊ¿äÇÑ ¸ğµç »óÅÂ (PSO, Root Signature)´Â ¿ÜºÎ¿¡¼­ ¹Ì¸® ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+		 * ë‚´ë¶€ì ìœ¼ë¡œ IASetVertexBuffers, IASetIndexBufferë¥¼ í˜¸ì¶œí•˜ì—¬ ë²„í¼ë¥¼ ë°”ì¸ë”©í•œ í›„,
+		 * ì¸ë±ìŠ¤ ë²„í¼ ìœ ë¬´ì— ë”°ë¼ DrawIndexedInstanced ë˜ëŠ” DrawInstancedë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
+		 * ë Œë”ë§ì— í•„ìš”í•œ ëª¨ë“  ìƒíƒœ (PSO, Root Signature)ëŠ” ì™¸ë¶€ì—ì„œ ë¯¸ë¦¬ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
 		 *
-		 * @param commandList ¹ÙÀÎµù ¹× µå·Î¿ì Ä¿¸Çµå¸¦ ±â·ÏÇÒ Ä¿¸Çµå ¸®½ºÆ®
+		 * @param commandList ë°”ì¸ë”© ë° ë“œë¡œìš° ì»¤ë§¨ë“œë¥¼ ê¸°ë¡í•  ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸
 		 */
 		void Draw(ID3D12GraphicsCommandList* commandList);
 
@@ -174,10 +174,10 @@ namespace Graphics
 		D3D12_INPUT_LAYOUT_DESC GetInputLayout() const { return mInputLayout; }
 
 	private:
-		DX12VertexBuffer mVertexBuffer;  // ¹öÅØ½º ¹öÆÛ
-		DX12IndexBuffer mIndexBuffer;    // ÀÎµ¦½º ¹öÆÛ (¼±ÅÃÀû)
+		DX12VertexBuffer mVertexBuffer;  // ë²„í…ìŠ¤ ë²„í¼
+		DX12IndexBuffer mIndexBuffer;    // ì¸ë±ìŠ¤ ë²„í¼ (ì„ íƒì )
 		D3D12_INPUT_LAYOUT_DESC mInputLayout = {};
-		bool mInitialized = false;       // ÃÊ±âÈ­ ¿©ºÎ
+		bool mInitialized = false;       // ì´ˆê¸°í™” ì—¬ë¶€
 	};
 
 } // namespace Graphics

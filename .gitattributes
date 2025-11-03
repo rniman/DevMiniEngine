@@ -1,0 +1,262 @@
+# DirectX 12 게임 엔진 프로젝트 Git Attributes
+# 자동 줄바꿈 변환 활성화
+* text=auto
+
+#
+# 소스 코드 파일
+#
+
+# C/C++ 소스 파일
+*.c text eol=crlf diff=cpp
+*.cpp text eol=crlf diff=cpp
+*.h text eol=crlf diff=cpp
+*.hpp text eol=crlf diff=cpp
+*.inl text eol=crlf diff=cpp
+
+# HLSL 셰이더 파일 (BOM 없는 UTF-8)
+*.hlsl text eol=crlf
+*.hlsli text eol=crlf
+*.fx text eol=crlf
+*.fxh text eol=crlf
+
+# 어셈블리 파일
+*.asm text eol=crlf
+*.inc text eol=crlf
+
+#
+# 프로젝트 및 빌드 파일
+#
+
+# Visual Studio 프로젝트 파일
+*.sln text eol=crlf merge=union
+*.vcxproj text eol=crlf merge=union
+*.vcxproj.filters text eol=crlf merge=union
+*.vcxproj.user text eol=crlf merge=union
+*.vcxitems text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
+*.natvis text eol=crlf
+
+# Visual Studio 설정
+*.suo binary
+*.user binary
+*.userosscache binary
+*.sln.docstates binary
+
+# CMake 파일 (향후 사용 가능성)
+CMakeLists.txt text eol=crlf
+*.cmake text eol=crlf
+
+# Makefile
+Makefile text eol=lf
+*.mk text eol=lf
+
+#
+# 문서 및 설정 파일
+#
+
+# 마크다운 문서
+*.md text eol=crlf diff=markdown
+*.markdown text eol=crlf
+
+# 설정 파일
+*.json text eol=crlf
+*.xml text eol=crlf
+*.yaml text eol=crlf
+*.yml text eol=crlf
+*.toml text eol=crlf
+*.ini text eol=crlf
+*.config text eol=crlf
+
+# Git 설정 파일
+.gitattributes text eol=lf
+.gitignore text eol=lf
+.gitmodules text eol=lf
+.editorconfig text eol=lf
+
+#
+# 스크립트 파일
+#
+
+# Windows 스크립트
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Unix 스크립트
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Python
+*.py text eol=lf diff=python
+*.pyw text eol=lf
+*.pyx text eol=lf
+*.pxd text eol=lf
+
+#
+# 텍스처 및 이미지 파일
+#
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.ico binary
+*.tga binary
+*.dds binary
+*.hdr binary
+*.exr binary
+*.tif binary
+*.tiff binary
+
+#
+# 3D 모델 및 애니메이션 파일
+#
+
+*.fbx binary
+*.obj text eol=crlf
+*.mtl text eol=crlf
+*.dae text eol=crlf
+*.gltf text eol=crlf
+*.glb binary
+*.blend binary
+*.max binary
+*.ma binary
+*.mb binary
+
+#
+# 오디오 파일
+#
+
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.flac binary
+*.wma binary
+*.aiff binary
+
+#
+# 비디오 파일
+#
+
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.wmv binary
+*.flv binary
+
+#
+# 폰트 파일
+#
+
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+#
+# 컴파일 결과물 및 바이너리
+#
+
+# 실행 파일
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.app binary
+
+# 라이브러리 파일
+*.lib binary
+*.a binary
+*.pdb binary
+*.idb binary
+*.ilk binary
+
+# 오브젝트 파일
+*.o binary
+*.obj binary
+*.pyc binary
+
+#
+# 압축 파일
+#
+
+*.zip binary
+*.7z binary
+*.rar binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+
+#
+# 데이터베이스 파일
+#
+
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+#
+# 기타 바이너리 파일
+#
+
+*.pak binary
+*.dat binary
+*.bin binary
+*.cache binary
+
+#
+# 특수 처리 파일
+#
+
+# 대용량 파일 추적 (Git LFS 사용 시)
+# *.psd filter=lfs diff=lfs merge=lfs -text
+# *.fbx filter=lfs diff=lfs merge=lfs -text
+
+#
+# 언어별 특정 파일
+#
+
+# C#
+*.cs text eol=crlf diff=csharp
+*.csproj text eol=crlf merge=union
+*.sln text eol=crlf merge=union
+
+# Rust (향후 확장 가능성)
+*.rs text eol=lf diff=rust
+Cargo.toml text eol=lf
+Cargo.lock text eol=lf
+
+#
+# 문서 및 리소스
+#
+
+# 리소스 파일
+*.rc text eol=crlf
+*.resx text eol=crlf merge=union
+*.resw text eol=crlf merge=union
+
+# 텍스트 문서
+*.txt text eol=crlf
+*.rtf binary
+LICENSE text eol=crlf
+README text eol=crlf
+AUTHORS text eol=crlf
+CHANGELOG text eol=crlf
+CONTRIBUTING text eol=crlf
+
+#
+# 제외 패턴 (추적하지 않음)
+#
+
+# 빌드 출력
+Binaries/** binary
+Intermediate/** binary
+Build/** binary
+Out/** binary
+
+# 외부 라이브러리 (서브모듈로 관리 권장)
+ThirdParty/** binary linguist-vendored
+External/** binary linguist-vendored

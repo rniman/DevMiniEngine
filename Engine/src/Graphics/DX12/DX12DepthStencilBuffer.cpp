@@ -1,285 +1,285 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "Graphics/DX12/DX12DepthStencilBuffer.h"
 #include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {
 
-    DX12DepthStencilBuffer::DX12DepthStencilBuffer()
-        : mFormat(DXGI_FORMAT_UNKNOWN)
-        , mCurrentState(D3D12_RESOURCE_STATE_COMMON)
-        , mWidth(0)
-        , mHeight(0)
-        , mDSVHandle{}
-    {
-    }
+	DX12DepthStencilBuffer::DX12DepthStencilBuffer()
+		: mFormat(DXGI_FORMAT_UNKNOWN)
+		, mCurrentState(D3D12_RESOURCE_STATE_COMMON)
+		, mWidth(0)
+		, mHeight(0)
+		, mDSVHandle{}
+	{
+	}
 
-    DX12DepthStencilBuffer::~DX12DepthStencilBuffer()
-    {
-        Shutdown();
-    }
+	DX12DepthStencilBuffer::~DX12DepthStencilBuffer()
+	{
+		Shutdown();
+	}
 
-    bool DX12DepthStencilBuffer::Initialize(
-        ID3D12Device* device,
-        uint32 width,
-        uint32 height,
-        DXGI_FORMAT format
-    )
-    {
-        // DepthStencilBufferDesc ª˝º∫«œø© ¿ß¿”
-        DepthStencilBufferDesc desc;
-        desc.width = width;
-        desc.height = height;
-        desc.format = format;
-        desc.enableShaderResource = false;
-        desc.sampleCount = 1;
-        desc.sampleQuality = 0;
+	bool DX12DepthStencilBuffer::Initialize(
+		ID3D12Device* device,
+		uint32 width,
+		uint32 height,
+		DXGI_FORMAT format
+	)
+	{
+		// DepthStencilBufferDesc ÏÉùÏÑ±ÌïòÏó¨ ÏúÑÏûÑ
+		DepthStencilBufferDesc desc;
+		desc.width = width;
+		desc.height = height;
+		desc.format = format;
+		desc.enableShaderResource = false;
+		desc.sampleCount = 1;
+		desc.sampleQuality = 0;
 
-        return Initialize(device, desc);
-    }
+		return Initialize(device, desc);
+	}
 
-    bool DX12DepthStencilBuffer::Initialize(
-        ID3D12Device* device,
-        const DepthStencilBufferDesc& desc
-    )
-    {
-        // ∆ƒ∂ÛπÃ≈Õ ∞À¡ı
-        if (!device || desc.width == 0 || desc.height == 0)
-        {
-            LOG_ERROR(
-                "Invalid parameters: device=%p, width=%u, height=%u",
-                device,
-                desc.width,
-                desc.height
-            );
-            return false;
-        }
+	bool DX12DepthStencilBuffer::Initialize(
+		ID3D12Device* device,
+		const DepthStencilBufferDesc& desc
+	)
+	{
+		// ÌååÎùºÎØ∏ÌÑ∞ Í≤ÄÏ¶ù
+		if (!device || desc.width == 0 || desc.height == 0)
+		{
+			LOG_ERROR(
+				"Invalid parameters: device=%p, width=%u, height=%u",
+				device,
+				desc.width,
+				desc.height
+			);
+			return false;
+		}
 
-        if (!IsValidDepthStencilFormat(desc.format))
-        {
-            LOG_ERROR("Invalid Depth-Stencil format: %d", desc.format);
-            return false;
-        }
+		if (!IsValidDepthStencilFormat(desc.format))
+		{
+			LOG_ERROR("Invalid Depth-Stencil format: %d", desc.format);
+			return false;
+		}
 
-        // «ˆ¿Á ¥‹∞Ëø°º≠¥¬ ±‚∫ª ±‚¥…∏∏ ¡ˆø¯
-        if (desc.enableShaderResource)
-        {
-            LOG_ERROR("Shader Resource View (SRV) not yet supported");
-            return false;
-        }
+		// ÌòÑÏû¨ Îã®Í≥ÑÏóêÏÑúÎäî Í∏∞Î≥∏ Í∏∞Îä•Îßå ÏßÄÏõê
+		if (desc.enableShaderResource)
+		{
+			LOG_ERROR("Shader Resource View (SRV) not yet supported");
+			return false;
+		}
 
-        if (desc.sampleCount > 1)
-        {
-            LOG_ERROR("MSAA (sampleCount > 1) not yet supported");
-            return false;
-        }
+		if (desc.sampleCount > 1)
+		{
+			LOG_ERROR("MSAA (sampleCount > 1) not yet supported");
+			return false;
+		}
 
-        // º”º∫ ¿˙¿Â
-        mWidth = desc.width;
-        mHeight = desc.height;
-        mFormat = desc.format;
+		// ÏÜçÏÑ± Ï†ÄÏû•
+		mWidth = desc.width;
+		mHeight = desc.height;
+		mFormat = desc.format;
 
-        CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
+		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 
-        CD3DX12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-            desc.format,
-            static_cast<UINT64>(desc.width),
-            static_cast<UINT>(desc.height),
-            1,  // ≈ÿΩ∫√≥ πËø≠ ≈©±‚
-            1,  // Mipmap ∑π∫ß
-            static_cast<UINT>(desc.sampleCount),
-            static_cast<UINT>(desc.sampleQuality)
-        );
-        resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		CD3DX12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+			desc.format,
+			static_cast<UINT64>(desc.width),
+			static_cast<UINT>(desc.height),
+			1,  // ÌÖçÏä§Ï≤ò Î∞∞Ïó¥ ÌÅ¨Í∏∞
+			1,  // Mipmap Î†àÎ≤®
+			static_cast<UINT>(desc.sampleCount),
+			static_cast<UINT>(desc.sampleQuality)
+		);
+		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-        // Depth¥¬ 1.0 (√÷¥Î ∞≈∏Æ), Stencil¿∫ 0¿∏∑Œ √ ±‚»≠
-        D3D12_CLEAR_VALUE clearValue;
-        clearValue.Format = desc.format;
-        clearValue.DepthStencil.Depth = 1.0f;
-        clearValue.DepthStencil.Stencil = 0;
+		// DepthÎäî 1.0 (ÏµúÎåÄ Í±∞Î¶¨), StencilÏùÄ 0ÏúºÎ°ú Ï¥àÍ∏∞Ìôî
+		D3D12_CLEAR_VALUE clearValue;
+		clearValue.Format = desc.format;
+		clearValue.DepthStencil.Depth = 1.0f;
+		clearValue.DepthStencil.Stencil = 0;
 
-        // Depth-Stencil Buffer ∏Æº“Ω∫ ª˝º∫
-        HRESULT hr = device->CreateCommittedResource(
-            &heapProps,
-            D3D12_HEAP_FLAG_NONE,
-            &resourceDesc,
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            &clearValue,
-            IID_PPV_ARGS(&mDepthStencilBuffer)
-        );
+		// Depth-Stencil Buffer Î¶¨ÏÜåÏä§ ÏÉùÏÑ±
+		HRESULT hr = device->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&resourceDesc,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			&clearValue,
+			IID_PPV_ARGS(&mDepthStencilBuffer)
+		);
 
-        if (FAILED(hr))
-        {
-            LOG_ERROR(
-                "Failed to create Depth-Stencil Buffer (HRESULT: 0x%08X, Size: %ux%u, Format: %d)",
-                hr,
-                desc.width,
-                desc.height,
-                desc.format
-            );
-            return false;
-        }
+		if (FAILED(hr))
+		{
+			LOG_ERROR(
+				"Failed to create Depth-Stencil Buffer (HRESULT: 0x%08X, Size: %ux%u, Format: %d)",
+				hr,
+				desc.width,
+				desc.height,
+				desc.format
+			);
+			return false;
+		}
 
-        // √ ±‚ ªÛ≈¬ ¿˙¿Â
-        mCurrentState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-
-#ifdef _DEBUG
-        mDepthStencilBuffer->SetName(L"DepthStencilBuffer");
-#endif
-
-        // DSV Descriptor Heap ª˝º∫
-        D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
-        dsvHeapDesc.NumDescriptors = 1;
-        dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-        dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        dsvHeapDesc.NodeMask = 0;
-
-        hr = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mDSVHeap));
-
-        if (FAILED(hr))
-        {
-            LOG_ERROR("Failed to create DSV Descriptor Heap (HRESULT: 0x%08X)", hr);
-            mDepthStencilBuffer.Reset();
-            return false;
-        }
+		// Ï¥àÍ∏∞ ÏÉÅÌÉú Ï†ÄÏû•
+		mCurrentState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 
 #ifdef _DEBUG
-        mDSVHeap->SetName(L"DSV_DescriptorHeap");
+		mDepthStencilBuffer->SetName(L"DepthStencilBuffer");
 #endif
 
-        // DSV ª˝º∫
-        mDSVHandle = mDSVHeap->GetCPUDescriptorHandleForHeapStart();
+		// DSV Descriptor Heap ÏÉùÏÑ±
+		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+		dsvHeapDesc.NumDescriptors = 1;
+		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		dsvHeapDesc.NodeMask = 0;
 
-        D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-        dsvDesc.Format = desc.format;
+		hr = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mDSVHeap));
 
-        // MSAA ¡ˆø¯ Ω√ ViewDimension ∫Ø∞Ê
-        if (desc.sampleCount > 1)
-        {
-            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
-        }
-        else
-        {
-            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-            dsvDesc.Texture2D.MipSlice = 0;
-        }
+		if (FAILED(hr))
+		{
+			LOG_ERROR("Failed to create DSV Descriptor Heap (HRESULT: 0x%08X)", hr);
+			mDepthStencilBuffer.Reset();
+			return false;
+		}
 
-        dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+#ifdef _DEBUG
+		mDSVHeap->SetName(L"DSV_DescriptorHeap");
+#endif
 
-        device->CreateDepthStencilView(
-            mDepthStencilBuffer.Get(),
-            &dsvDesc,
-            mDSVHandle
-        );
+		// DSV ÏÉùÏÑ±
+		mDSVHandle = mDSVHeap->GetCPUDescriptorHandleForHeapStart();
 
-        LOG_INFO(
-            "Depth-Stencil Buffer created successfully (Size: %ux%u, Format: %d, Samples: %u)",
-            desc.width,
-            desc.height,
-            desc.format,
-            desc.sampleCount
-        );
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		dsvDesc.Format = desc.format;
 
-        return true;
-    }
+		// MSAA ÏßÄÏõê Ïãú ViewDimension Î≥ÄÍ≤Ω
+		if (desc.sampleCount > 1)
+		{
+			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
+		}
+		else
+		{
+			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+			dsvDesc.Texture2D.MipSlice = 0;
+		}
 
-    void DX12DepthStencilBuffer::Shutdown()
-    {
-        if (!IsInitialized())
-        {
-            return;
-        }
+		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-        LOG_INFO("Shutting down Depth-Stencil Buffer (%ux%u)", mWidth, mHeight);
+		device->CreateDepthStencilView(
+			mDepthStencilBuffer.Get(),
+			&dsvDesc,
+			mDSVHandle
+		);
 
-        // DirectX ∏Æº“Ω∫ «ÿ¡¶
-        mDepthStencilBuffer.Reset();
-        mDSVHeap.Reset();
+		LOG_INFO(
+			"Depth-Stencil Buffer created successfully (Size: %ux%u, Format: %d, Samples: %u)",
+			desc.width,
+			desc.height,
+			desc.format,
+			desc.sampleCount
+		);
 
-        // ªÛ≈¬ √ ±‚»≠
-        mDSVHandle.ptr = 0;
-        mCurrentState = D3D12_RESOURCE_STATE_COMMON;
-        mFormat = DXGI_FORMAT_UNKNOWN;
-        mWidth = 0;
-        mHeight = 0;
-    }
+		return true;
+	}
 
-//#ifdef _DEBUG
-//    void DX12DepthStencilBuffer::SetDebugName(const wchar_t* name)
-//    {
-//        if (!name)
-//        {
-//            LOG_ERROR("Debug name cannot be null");
-//            return;
-//        }
-//
-//        if (!IsInitialized())
-//        {
-//            LOG_ERROR("Cannot set debug name on uninitialized buffer");
-//            return;
-//        }
-//
-//        // Depth-Stencil Buffer ∏Æº“Ω∫ø° ¿Ã∏ß º≥¡§
-//        HRESULT hr = mDepthStencilBuffer->SetName(name);
-//        if (FAILED(hr))
-//        {
-//            LOG_ERROR("Failed to set debug name for Depth-Stencil Buffer (HRESULT: 0x%08X)", hr);
-//            return;
-//        }
-//
-//        // DSV Heapø°µµ ¿Ã∏ß º≥¡§ (±∏∫–¿ª ¿ß«ÿ ¡¢πÃªÁ √ﬂ∞°)
-//        std::wstring heapName = std::wstring(name) + L"_DSVHeap";
-//        hr = mDSVHeap->SetName(heapName.c_str());
-//        if (FAILED(hr))
-//        {
-//            LOG_ERROR("Failed to set debug name for DSV Heap (HRESULT: 0x%08X)", hr);
-//            return;
-//        }
-//
-//        LOG_INFO("Debug name set successfully");
-//    }
-//#endif
+	void DX12DepthStencilBuffer::Shutdown()
+	{
+		if (!IsInitialized())
+		{
+			return;
+		}
 
-    bool DX12DepthStencilBuffer::IsValidDepthStencilFormat(DXGI_FORMAT format)
-    {
-        switch (format)
-        {
-        case DXGI_FORMAT_D32_FLOAT:
-        case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
-        case DXGI_FORMAT_D24_UNORM_S8_UINT:
-        case DXGI_FORMAT_D16_UNORM:
-            return true;
-        default:
-            return false;
-        }
-    }
+		LOG_INFO("Shutting down Depth-Stencil Buffer (%ux%u)", mWidth, mHeight);
 
-    bool DX12DepthStencilBuffer::Resize(
-        ID3D12Device* device,
-        uint32 width,
-        uint32 height
-    )
-    {
-        if (width == mWidth && height == mHeight)
-        {
-            LOG_INFO("Depth-Stencil Buffer size unchanged, skipping resize");
-            return true;
-        }
+		// DirectX Î¶¨ÏÜåÏä§ Ìï¥Ï†ú
+		mDepthStencilBuffer.Reset();
+		mDSVHeap.Reset();
 
-        LOG_INFO(
-            "Resizing Depth-Stencil Buffer: %ux%u -> %ux%u",
-            mWidth,
-            mHeight,
-            width,
-            height
-        );
+		// ÏÉÅÌÉú Ï¥àÍ∏∞Ìôî
+		mDSVHandle.ptr = 0;
+		mCurrentState = D3D12_RESOURCE_STATE_COMMON;
+		mFormat = DXGI_FORMAT_UNKNOWN;
+		mWidth = 0;
+		mHeight = 0;
+	}
 
-        // ±‚¡∏ ∏Æº“Ω∫ «ÿ¡¶
-        mDepthStencilBuffer.Reset();
-        mDSVHeap.Reset();
+	//#ifdef _DEBUG
+	//    void DX12DepthStencilBuffer::SetDebugName(const wchar_t* name)
+	//    {
+	//        if (!name)
+	//        {
+	//            LOG_ERROR("Debug name cannot be null");
+	//            return;
+	//        }
+	//
+	//        if (!IsInitialized())
+	//        {
+	//            LOG_ERROR("Cannot set debug name on uninitialized buffer");
+	//            return;
+	//        }
+	//
+	//        // Depth-Stencil Buffer Î¶¨ÏÜåÏä§Ïóê Ïù¥Î¶Ñ ÏÑ§Ï†ï
+	//        HRESULT hr = mDepthStencilBuffer->SetName(name);
+	//        if (FAILED(hr))
+	//        {
+	//            LOG_ERROR("Failed to set debug name for Depth-Stencil Buffer (HRESULT: 0x%08X)", hr);
+	//            return;
+	//        }
+	//
+	//        // DSV HeapÏóêÎèÑ Ïù¥Î¶Ñ ÏÑ§Ï†ï (Íµ¨Î∂ÑÏùÑ ÏúÑÌï¥ Ï†ëÎØ∏ÏÇ¨ Ï∂îÍ∞Ä)
+	//        std::wstring heapName = std::wstring(name) + L"_DSVHeap";
+	//        hr = mDSVHeap->SetName(heapName.c_str());
+	//        if (FAILED(hr))
+	//        {
+	//            LOG_ERROR("Failed to set debug name for DSV Heap (HRESULT: 0x%08X)", hr);
+	//            return;
+	//        }
+	//
+	//        LOG_INFO("Debug name set successfully");
+	//    }
+	//#endif
 
-        // µø¿œ«— ∆˜∏À¿∏∑Œ ¿Áª˝º∫
-        return Initialize(device, width, height, mFormat);
-    }
+	bool DX12DepthStencilBuffer::IsValidDepthStencilFormat(DXGI_FORMAT format)
+	{
+		switch (format)
+		{
+		case DXGI_FORMAT_D32_FLOAT:
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+		case DXGI_FORMAT_D16_UNORM:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	bool DX12DepthStencilBuffer::Resize(
+		ID3D12Device* device,
+		uint32 width,
+		uint32 height
+	)
+	{
+		if (width == mWidth && height == mHeight)
+		{
+			LOG_INFO("Depth-Stencil Buffer size unchanged, skipping resize");
+			return true;
+		}
+
+		LOG_INFO(
+			"Resizing Depth-Stencil Buffer: %ux%u -> %ux%u",
+			mWidth,
+			mHeight,
+			width,
+			height
+		);
+
+		// Í∏∞Ï°¥ Î¶¨ÏÜåÏä§ Ìï¥Ï†ú
+		mDepthStencilBuffer.Reset();
+		mDSVHeap.Reset();
+
+		// ÎèôÏùºÌïú Ìè¨Îß∑ÏúºÎ°ú Ïû¨ÏÉùÏÑ±
+		return Initialize(device, width, height, mFormat);
+	}
 
 } // namespace Graphics

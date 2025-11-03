@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -23,7 +23,7 @@ namespace Graphics
 		mNextFenceValue = 1;
 		mFenceEvent = nullptr;
 
-		// 1´Ü°è: Command Queue »ı¼º
+		// 1ë‹¨ê³„: Command Queue ìƒì„±
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Type = type;
 		queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
@@ -39,7 +39,7 @@ namespace Graphics
 
 		LOG_INFO("[DX12CommandQueue] Command Queue created successfully");
 
-		// 2´Ü°è: Fence »ı¼º
+		// 2ë‹¨ê³„: Fence ìƒì„±
 		if (!CreateFence(device))
 		{
 			LOG_ERROR("[DX12CommandQueue] Failed to create Fence");
@@ -59,17 +59,17 @@ namespace Graphics
 
 		LOG_INFO("[DX12CommandQueue] Shutting down Command Queue...");
 
-		// ¸ğµç GPU ÀÛ¾÷ ¿Ï·á ´ë±â
+		// ëª¨ë“  GPU ì‘ì—… ì™„ë£Œ ëŒ€ê¸°
 		WaitForIdle();
 
-		// Fence ÀÌº¥Æ® ´İ±â
+		// Fence ì´ë²¤íŠ¸ ë‹«ê¸°
 		if (mFenceEvent)
 		{
 			CloseHandle(mFenceEvent);
 			mFenceEvent = nullptr;
 		}
 
-		// ¸®¼Ò½º ÇØÁ¦
+		// ë¦¬ì†ŒìŠ¤ í•´ì œ
 		mFence.Reset();
 		mCommandQueue.Reset();
 
@@ -95,10 +95,10 @@ namespace Graphics
 
 		const Core::uint64 fenceValueToSignal = mNextFenceValue;
 		
-		// Command List ½ÇÇà
+		// Command List ì‹¤í–‰
 		mCommandQueue->ExecuteCommandLists(static_cast<UINT>(numCommandLists), commandLists);
 
-		// Fence ½ÅÈ£ Àü¼Û
+		// Fence ì‹ í˜¸ ì „ì†¡
 		mCommandQueue->Signal(mFence.Get(), static_cast<UINT64>(mNextFenceValue));
 		mNextFenceValue++;
 
@@ -113,7 +113,7 @@ namespace Graphics
 			return false;
 		}
 
-		// ÇöÀç Fence °ª ½ÅÈ£ Àü¼Û
+		// í˜„ì¬ Fence ê°’ ì‹ í˜¸ ì „ì†¡
 		UINT64 fenceValueToWaitFor = static_cast<UINT64>(mNextFenceValue);
 		HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueToWaitFor);
 		if (FAILED(hr))
@@ -124,7 +124,7 @@ namespace Graphics
 
 		mNextFenceValue++;
 
-		// GPU°¡ ÀÌ Fence °ª±îÁö ¿Ï·áÇÏÁö ¾Ê¾ÒÀ¸¸é ´ë±â
+		// GPUê°€ ì´ Fence ê°’ê¹Œì§€ ì™„ë£Œí•˜ì§€ ì•Šì•˜ìœ¼ë©´ ëŒ€ê¸°
 		if (mFence->GetCompletedValue() < fenceValueToWaitFor)
 		{
 			hr = mFence->SetEventOnCompletion(fenceValueToWaitFor, mFenceEvent);
@@ -142,38 +142,38 @@ namespace Graphics
 
 	bool DX12CommandQueue::WaitForFenceValue(Core::uint64 valueToWaitFor)
 	{
-		// 1. À¯È¿¼º °Ë»ç (Å¥ ÃÊ±âÈ­)
+		// 1. ìœ íš¨ì„± ê²€ì‚¬ (í ì´ˆê¸°í™”)
 		if (!IsInitialized())
 		{
 			LOG_ERROR("[DX12CommandQueue] Command Queue not initialized");
 			return false;
 		}
 
-		// 2. À¯È¿¼º °Ë»ç (ÀÌº¥Æ® ÇÚµé)
+		// 2. ìœ íš¨ì„± ê²€ì‚¬ (ì´ë²¤íŠ¸ í•¸ë“¤)
 		if (mFenceEvent == nullptr)
 		{
 			LOG_ERROR("[DX12CommandQueue] Fence Event handle is null. (Did CreateEvent fail in Initialize?)");
 			return false;
 		}
 
-		// 3. À¯È¿¼º °Ë»ç (°ª)
-		// 0Àº FrameResourceÀÇ ÃÊ±â°ªÀÏ ¼ö ÀÖÀ¸¸ç, mNextFenceValue´Â 1ºÎÅÍ ½ÃÀÛÇÏ¹Ç·Î
-		// 0À» ±â´Ù¸®´Â °ÍÀº ÀÇ¹Ì°¡ ¾ø½À´Ï´Ù.
+		// 3. ìœ íš¨ì„± ê²€ì‚¬ (ê°’)
+		// 0ì€ FrameResourceì˜ ì´ˆê¸°ê°’ì¼ ìˆ˜ ìˆìœ¼ë©°, mNextFenceValueëŠ” 1ë¶€í„° ì‹œì‘í•˜ë¯€ë¡œ
+		// 0ì„ ê¸°ë‹¤ë¦¬ëŠ” ê²ƒì€ ì˜ë¯¸ê°€ ì—†ìŠµë‹ˆë‹¤.
 		if (valueToWaitFor == 0)
 		{
-			return true; // ±â´Ù¸± °ÍÀÌ ¾øÀ½
+			return true; // ê¸°ë‹¤ë¦´ ê²ƒì´ ì—†ìŒ
 		}
 
-		// 4. [ÃÖÀûÈ­] GPU°¡ ÀÌ¹Ì ÀÌ °ªÀ» Åë°úÇß´ÂÁö È®ÀÎ
-		// GetCompletedValue()´Â ½º·¹µå¿¡ ¾ÈÀüÇÏ¸ç ºü¸¨´Ï´Ù.
+		// 4. [ìµœì í™”] GPUê°€ ì´ë¯¸ ì´ ê°’ì„ í†µê³¼í–ˆëŠ”ì§€ í™•ì¸
+		// GetCompletedValue()ëŠ” ìŠ¤ë ˆë“œì— ì•ˆì „í•˜ë©° ë¹ ë¦…ë‹ˆë‹¤.
 		if (mFence->GetCompletedValue() >= static_cast<UINT64>(valueToWaitFor))
 		{
-			return true; // ÀÌ¹Ì ¿Ï·áµÊ, CPU¸¦ ´ë±â½ÃÅ³ ÇÊ¿ä ¾øÀ½
+			return true; // ì´ë¯¸ ì™„ë£Œë¨, CPUë¥¼ ëŒ€ê¸°ì‹œí‚¬ í•„ìš” ì—†ìŒ
 		}
 
-		// 5. [´ë±â] GPU°¡ ¾ÆÁ÷ µµ´ŞÇÏÁö ¸øÇÔ. CPU ½º·¹µå¸¦ Àç¿ó´Ï´Ù.
+		// 5. [ëŒ€ê¸°] GPUê°€ ì•„ì§ ë„ë‹¬í•˜ì§€ ëª»í•¨. CPU ìŠ¤ë ˆë“œë¥¼ ì¬ì›ë‹ˆë‹¤.
 
-		// GPU°¡ 'valueToWaitFor' °ª¿¡ µµ´ŞÇÏ¸é mFenceEvent¸¦ ½Ã±×³Î(Signal)ÇÏµµ·Ï ¼³Á¤
+		// GPUê°€ 'valueToWaitFor' ê°’ì— ë„ë‹¬í•˜ë©´ mFenceEventë¥¼ ì‹œê·¸ë„(Signal)í•˜ë„ë¡ ì„¤ì •
 		HRESULT hr = mFence->SetEventOnCompletion(static_cast<UINT64>(valueToWaitFor), mFenceEvent);
 		if (FAILED(hr))
 		{
@@ -181,8 +181,8 @@ namespace Graphics
 			return false;
 		}
 
-		// ÀÌº¥Æ®°¡ ½Ã±×³ÎµÉ ¶§±îÁö CPU ½º·¹µå¸¦ (È¿À²ÀûÀ¸·Î) ´ë±â½ÃÅ´
-		// (INFINITE´Â ¹«ÇÑ ´ë±â¸¦ ÀÇ¹Ì)
+		// ì´ë²¤íŠ¸ê°€ ì‹œê·¸ë„ë  ë•Œê¹Œì§€ CPU ìŠ¤ë ˆë“œë¥¼ (íš¨ìœ¨ì ìœ¼ë¡œ) ëŒ€ê¸°ì‹œí‚´
+		// (INFINITEëŠ” ë¬´í•œ ëŒ€ê¸°ë¥¼ ì˜ë¯¸)
 		WaitForSingleObject(mFenceEvent, INFINITE);
 
 		return true;
@@ -202,7 +202,7 @@ namespace Graphics
 	{
 		LOG_INFO("[DX12CommandQueue] Creating Fence...");
 
-		// Fence »ı¼º
+		// Fence ìƒì„±
 		HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence));
 		if (FAILED(hr))
 		{
@@ -210,7 +210,7 @@ namespace Graphics
 			return false;
 		}
 
-		// Fence ÀÌº¥Æ® »ı¼º
+		// Fence ì´ë²¤íŠ¸ ìƒì„±
 		mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		if (!mFenceEvent)
 		{

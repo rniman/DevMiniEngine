@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Core/Memory/Allocator.h"
@@ -8,25 +8,25 @@ namespace Core
     namespace Memory
     {
         /**
-         * @brief ¼±Çü(¾Æ·¹³ª) ÇÒ´çÀÚ
+         * @brief ì„ í˜•(ì•„ë ˆë‚˜) í• ë‹¹ì
          *
-         * ÇÁ·¹ÀÓ ´ÜÀ§ ÀÓ½Ã µ¥ÀÌÅÍ¸¦ À§ÇÑ °í¼Ó ¹üÇÁ Æ÷ÀÎÅÍ ÇÒ´çÀÚÀÔ´Ï´Ù.
-         * °³º° ÇÒ´ç ÇØÁ¦°¡ ºÒ°¡´ÉÇÏ¸ç, ÀüÃ¼ ÇÒ´çÀÚ¸¦ ÃÊ±âÈ­ÇØ¾ß ÇÕ´Ï´Ù.
+         * í”„ë ˆì„ ë‹¨ìœ„ ì„ì‹œ ë°ì´í„°ë¥¼ ìœ„í•œ ê³ ì† ë²”í”„ í¬ì¸í„° í• ë‹¹ìì…ë‹ˆë‹¤.
+         * ê°œë³„ í• ë‹¹ í•´ì œê°€ ë¶ˆê°€ëŠ¥í•˜ë©°, ì „ì²´ í• ë‹¹ìë¥¼ ì´ˆê¸°í™”í•´ì•¼ í•©ë‹ˆë‹¤.
          *
-         * »ç¿ë ¿¹:
+         * ì‚¬ìš© ì˜ˆ:
          *   LinearAllocator frameAlloc(10 * MB);
          *   void* memory = frameAlloc.Allocate(1024);
-         *   // ... ¸Ş¸ğ¸® »ç¿ë
-         *   frameAlloc.Reset();  // ÇÑ ¹ø¿¡ ¸ğµÎ ÇØÁ¦
+         *   // ... ë©”ëª¨ë¦¬ ì‚¬ìš©
+         *   frameAlloc.Reset();  // í•œ ë²ˆì— ëª¨ë‘ í•´ì œ
          *
-         * @note ½º·¹µå ¾ÈÀüÇÏÁö ¾ÊÀ½
+         * @note ìŠ¤ë ˆë“œ ì•ˆì „í•˜ì§€ ì•ŠìŒ
          */
         class LinearAllocator : public Allocator
         {
         public:
             /**
-             * @brief ¼±Çü ÇÒ´çÀÚ »ı¼º
-             * @param size ÇÒ´çÀÚ ÀüÃ¼ ¿ë·® (¹ÙÀÌÆ®)
+             * @brief ì„ í˜• í• ë‹¹ì ìƒì„±
+             * @param size í• ë‹¹ì ì „ì²´ ìš©ëŸ‰ (ë°”ì´íŠ¸)
              */
             explicit LinearAllocator(size_t size);
 
@@ -36,63 +36,63 @@ namespace Core
             LinearAllocator& operator=(const LinearAllocator&) = delete;
 
             /**
-             * @brief ¼±Çü ¹öÆÛ¿¡¼­ ¸Ş¸ğ¸® ÇÒ´ç
+             * @brief ì„ í˜• ë²„í¼ì—ì„œ ë©”ëª¨ë¦¬ í• ë‹¹
              *
-             * @param size ÇÒ´çÇÒ ¹ÙÀÌÆ® Å©±â
-             * @param alignment Á¤·Ä ¿ä±¸»çÇ× (±âº»: DEFAULT_ALIGNMENT)
-             * @return ÇÒ´çµÈ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ, °ø°£ ºÎÁ· ½Ã nullptr
+             * @param size í• ë‹¹í•  ë°”ì´íŠ¸ í¬ê¸°
+             * @param alignment ì •ë ¬ ìš”êµ¬ì‚¬í•­ (ê¸°ë³¸: DEFAULT_ALIGNMENT)
+             * @return í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°, ê³µê°„ ë¶€ì¡± ì‹œ nullptr
              *
-             * @note O(1) º¹Àâµµ, ÆĞµùÀ¸·Î ÀÎÇØ ½ÇÁ¦ »ç¿ë·®Àº sizeº¸´Ù Å¬ ¼ö ÀÖÀ½
-             * @warning ÇÒ´çµÈ ¸Ş¸ğ¸®´Â Reset() È£Ãâ Àü±îÁö À¯È¿
+             * @note O(1) ë³µì¡ë„, íŒ¨ë”©ìœ¼ë¡œ ì¸í•´ ì‹¤ì œ ì‚¬ìš©ëŸ‰ì€ sizeë³´ë‹¤ í´ ìˆ˜ ìˆìŒ
+             * @warning í• ë‹¹ëœ ë©”ëª¨ë¦¬ëŠ” Reset() í˜¸ì¶œ ì „ê¹Œì§€ ìœ íš¨
              */
             void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) override;
 
             /**
-             * @brief ÇÒ´çÀÚ ÃÊ±âÈ­
+             * @brief í• ë‹¹ì ì´ˆê¸°í™”
              *
-             * @note ¸ğµç ÇÒ´çÀ» ÇÑ ¹ø¿¡ ÇØÁ¦ÇÏ°í ¿ÀÇÁ¼ÂÀ» 0À¸·Î Àç¼³Á¤
+             * @note ëª¨ë“  í• ë‹¹ì„ í•œ ë²ˆì— í•´ì œí•˜ê³  ì˜¤í”„ì…‹ì„ 0ìœ¼ë¡œ ì¬ì„¤ì •
              */
             void Reset() override;
 
             /**
-             * @brief No-op (°³º° ÇØÁ¦ ºÒ°¡)
+             * @brief No-op (ê°œë³„ í•´ì œ ë¶ˆê°€)
              *
-             * @param ptr ¹«½ÃµÊ
+             * @param ptr ë¬´ì‹œë¨
              *
-             * @note LinearAllocator´Â °³º° ÇØÁ¦¸¦ Áö¿øÇÏÁö ¾ÊÀ½
-             * @note ¸ğµç ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÏ·Á¸é Reset()À» »ç¿ëÇÏ¼¼¿ä
+             * @note LinearAllocatorëŠ” ê°œë³„ í•´ì œë¥¼ ì§€ì›í•˜ì§€ ì•ŠìŒ
+             * @note ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ë ¤ë©´ Reset()ì„ ì‚¬ìš©í•˜ì„¸ìš”
              */
             void Deallocate(void* ptr) override;
 
             /**
-             * @brief ÇöÀç ÇÒ´çµÈ ¸Ş¸ğ¸® Å©±â
-             * @return ÇÒ´çµÈ ¹ÙÀÌÆ® ¼ö (ÆĞµù Æ÷ÇÔ)
+             * @brief í˜„ì¬ í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ê¸°
+             * @return í• ë‹¹ëœ ë°”ì´íŠ¸ ìˆ˜ (íŒ¨ë”© í¬í•¨)
              */
             size_t GetAllocatedSize() const override { return mOffset; }
 
             /**
-             * @brief ÇöÀç ÇÒ´ç È½¼ö
-             * @return È°¼º ÇÒ´ç °³¼ö
+             * @brief í˜„ì¬ í• ë‹¹ íšŸìˆ˜
+             * @return í™œì„± í• ë‹¹ ê°œìˆ˜
              */
             size_t GetAllocationCount() const override { return mAllocationCount; }
 
             /**
-             * @brief ÇÒ´çÀÚÀÇ ÃÑ ¿ë·®
-             * @return ÀüÃ¼ ¹öÆÛ Å©±â (¹ÙÀÌÆ®)
+             * @brief í• ë‹¹ìì˜ ì´ ìš©ëŸ‰
+             * @return ì „ì²´ ë²„í¼ í¬ê¸° (ë°”ì´íŠ¸)
              */
             size_t GetCapacity() const { return mSize; }
 
             /**
-             * @brief ³²Àº ¿©À¯ °ø°£
-             * @return ÇÒ´ç °¡´ÉÇÑ ¹ÙÀÌÆ® ¼ö (´ë·«Àû, ÆĞµù ¹ÌÆ÷ÇÔ)
+             * @brief ë‚¨ì€ ì—¬ìœ  ê³µê°„
+             * @return í• ë‹¹ ê°€ëŠ¥í•œ ë°”ì´íŠ¸ ìˆ˜ (ëŒ€ëµì , íŒ¨ë”© ë¯¸í¬í•¨)
              */
             size_t GetAvailableSize() const { return mSize - mOffset; }
 
         private:
-            void* mMemory;              // ¸Ş¸ğ¸® ºí·Ï ½ÃÀÛ ÁÖ¼Ò
-            size_t mSize;               // ÀüÃ¼ Å©±â
-            size_t mOffset;             // ÇöÀç ¿ÀÇÁ¼Â (ÇÒ´çµÈ Å©±â)
-            size_t mAllocationCount;    // ÇÒ´ç È½¼ö
+            void* mMemory;              // ë©”ëª¨ë¦¬ ë¸”ë¡ ì‹œì‘ ì£¼ì†Œ
+            size_t mSize;               // ì „ì²´ í¬ê¸°
+            size_t mOffset;             // í˜„ì¬ ì˜¤í”„ì…‹ (í• ë‹¹ëœ í¬ê¸°)
+            size_t mAllocationCount;    // í• ë‹¹ íšŸìˆ˜
         };
 
     } // namespace Memory

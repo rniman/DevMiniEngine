@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief DirectX 12 ±â¹İ ·»´õ·¯ Å¬·¡½º
+	 * @brief DirectX 12 ê¸°ë°˜ ë Œë”ëŸ¬ í´ë˜ìŠ¤
 	 *
-	 * CPU-GPU ÆÄÀÌÇÁ¶óÀÌ´×À» °ü¸®ÇÏ°í ¸Å ÇÁ·¹ÀÓ ·»´õ¸µÀ» ¼öÇàÇÕ´Ï´Ù.
-	 * FRAME_BUFFER_COUNT °³ÀÇ ÇÁ·¹ÀÓ ¸®¼Ò½º¸¦ ¼øÈ¯ÇÏ¸ç »ç¿ëÇÕ´Ï´Ù.
+	 * CPU-GPU íŒŒì´í”„ë¼ì´ë‹ì„ ê´€ë¦¬í•˜ê³  ë§¤ í”„ë ˆì„ ë Œë”ë§ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
+	 * FRAME_BUFFER_COUNT ê°œì˜ í”„ë ˆì„ ë¦¬ì†ŒìŠ¤ë¥¼ ìˆœí™˜í•˜ë©° ì‚¬ìš©í•©ë‹ˆë‹¤.
 	 */
 	class DX12Renderer
 	{
@@ -18,11 +18,11 @@ namespace Graphics
 		DX12Renderer(const DX12Renderer&) = delete;
 		DX12Renderer& operator=(const DX12Renderer&) = delete;
 
-		// TODO: Game Å¬·¡½º°¡ ¸Å ÇÁ·¹ÀÓ È£ÃâÇÒ À¯ÀÏÇÑ public ÇÔ¼ö
+		// TODO: Game í´ë˜ìŠ¤ê°€ ë§¤ í”„ë ˆì„ í˜¸ì¶œí•  ìœ ì¼í•œ public í•¨ìˆ˜
 		// bool Render();
 
 		/**
-		 * @brief ´ÙÀ½ ÇÁ·¹ÀÓÀ¸·Î ÀÎµ¦½º ÀÌµ¿ (Ring Buffer ¹æ½Ä)
+		 * @brief ë‹¤ìŒ í”„ë ˆì„ìœ¼ë¡œ ì¸ë±ìŠ¤ ì´ë™ (Ring Buffer ë°©ì‹)
 		 */
 		void MoveFrameIndex()
 		{
@@ -30,8 +30,8 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief Æ¯Á¤ ÇÁ·¹ÀÓÀÇ Fence °ª Á¶È¸
-		 * @param index ÇÁ·¹ÀÓ ÀÎµ¦½º (0 ~ FRAME_BUFFER_COUNT-1)
+		 * @brief íŠ¹ì • í”„ë ˆì„ì˜ Fence ê°’ ì¡°íšŒ
+		 * @param index í”„ë ˆì„ ì¸ë±ìŠ¤ (0 ~ FRAME_BUFFER_COUNT-1)
 		 */
 		Core::uint64 GetFrameFenceValue(Core::uint32 index) const
 		{
@@ -40,7 +40,7 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief ÇöÀç ÇÁ·¹ÀÓÀÇ Fence °ª Á¶È¸
+		 * @brief í˜„ì¬ í”„ë ˆì„ì˜ Fence ê°’ ì¡°íšŒ
 		 */
 		Core::uint64 GetCurrentFrameFenceValue() const
 		{
@@ -48,7 +48,7 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief ÇöÀç ÇÁ·¹ÀÓ ÀÎµ¦½º Á¶È¸
+		 * @brief í˜„ì¬ í”„ë ˆì„ ì¸ë±ìŠ¤ ì¡°íšŒ
 		 */
 		Core::uint32 GetCurrentFrameIndex() const
 		{
@@ -56,9 +56,9 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief Æ¯Á¤ ÇÁ·¹ÀÓÀÇ Fence °ª ¼³Á¤
-		 * @param index ÇÁ·¹ÀÓ ÀÎµ¦½º (0 ~ FRAME_BUFFER_COUNT-1)
-		 * @param value ¼³Á¤ÇÒ Fence °ª
+		 * @brief íŠ¹ì • í”„ë ˆì„ì˜ Fence ê°’ ì„¤ì •
+		 * @param index í”„ë ˆì„ ì¸ë±ìŠ¤ (0 ~ FRAME_BUFFER_COUNT-1)
+		 * @param value ì„¤ì •í•  Fence ê°’
 		 */
 		void SetFrameFenceValue(Core::uint32 index, Core::uint64 value)
 		{
@@ -67,8 +67,8 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief ÇöÀç ÇÁ·¹ÀÓÀÇ Fence °ª ¼³Á¤
-		 * @param value ¼³Á¤ÇÒ Fence °ª
+		 * @brief í˜„ì¬ í”„ë ˆì„ì˜ Fence ê°’ ì„¤ì •
+		 * @param value ì„¤ì •í•  Fence ê°’
 		 */
 		void SetCurrentFrameFenceValue(Core::uint64 value)
 		{
@@ -76,15 +76,15 @@ namespace Graphics
 		}
 
 	private:
-		// TODO: [Future] ·»´õ¸µ¿¡ ÇÊ¿äÇÑ ÂüÁ¶ (¼ÒÀ¯ÇÏÁö ¾ÊÀ½)
+		// TODO: [Future] ë Œë”ë§ì— í•„ìš”í•œ ì°¸ì¡° (ì†Œìœ í•˜ì§€ ì•ŠìŒ)
 		// DX12Device* mDevice = nullptr;
 		// DX12CommandQueue* mCommandQueue = nullptr;
 		// DX12SwapChain* mSwapChain = nullptr;
 
-		// TODO: [Future Enhancement] FrameResource ±¸Á¶Ã¼·Î ¸®ÆÑÅä¸µ
-		// ÇöÀç: ÇÁ·¹ÀÓº° Fence °ª¸¸ ÃßÀû
-		// ¹Ì·¡: ÇÁ·¹ÀÓº° ¸®¼Ò½º(CommandAllocator, ConstantBuffer µî)¸¦
-		//       FrameResource ±¸Á¶Ã¼·Î Ä¸½¶È­
+		// TODO: [Future Enhancement] FrameResource êµ¬ì¡°ì²´ë¡œ ë¦¬íŒ©í† ë§
+		// í˜„ì¬: í”„ë ˆì„ë³„ Fence ê°’ë§Œ ì¶”ì 
+		// ë¯¸ë˜: í”„ë ˆì„ë³„ ë¦¬ì†ŒìŠ¤(CommandAllocator, ConstantBuffer ë“±)ë¥¼
+		//       FrameResource êµ¬ì¡°ì²´ë¡œ ìº¡ìŠí™”
 		//
 		// struct FrameResource
 		// {
@@ -95,17 +95,17 @@ namespace Graphics
 		// std::array<FrameResource, FRAME_BUFFER_COUNT> mFrameResources;
 
 		/**
-		 * @brief CPU-GPU µ¿±âÈ­¸¦ À§ÇÑ ÇÁ·¹ÀÓº° Fence °ª
+		 * @brief CPU-GPU ë™ê¸°í™”ë¥¼ ìœ„í•œ í”„ë ˆì„ë³„ Fence ê°’
 		 *
-		 * mFrameFenceValues[i]: i¹øÂ° ÇÁ·¹ÀÓÀÇ GPU ÀÛ¾÷ÀÌ ¿Ï·áµÇ´Â ½ÃÁ¡À» ³ªÅ¸³»´Â Fence °ª
-		 * CPU´Â i¹øÂ° ÇÁ·¹ÀÓ ¸®¼Ò½º¸¦ Àç»ç¿ëÇÏ±â Àü¿¡ ÇØ´ç Fence °ª¿¡ µµ´ŞÇß´ÂÁö È®ÀÎÇØ¾ß ÇÔ
+		 * mFrameFenceValues[i]: ië²ˆì§¸ í”„ë ˆì„ì˜ GPU ì‘ì—…ì´ ì™„ë£Œë˜ëŠ” ì‹œì ì„ ë‚˜íƒ€ë‚´ëŠ” Fence ê°’
+		 * CPUëŠ” ië²ˆì§¸ í”„ë ˆì„ ë¦¬ì†ŒìŠ¤ë¥¼ ì¬ì‚¬ìš©í•˜ê¸° ì „ì— í•´ë‹¹ Fence ê°’ì— ë„ë‹¬í–ˆëŠ”ì§€ í™•ì¸í•´ì•¼ í•¨
 		 */
 		std::array<Core::uint64, FRAME_BUFFER_COUNT> mFrameFenceValues = { 0 };
 
 		/**
-		 * @brief ÇöÀç CPU°¡ ÀÛ¾÷ ÁßÀÎ ÇÁ·¹ÀÓ ÀÎµ¦½º (0 ~ FRAME_BUFFER_COUNT-1)
+		 * @brief í˜„ì¬ CPUê°€ ì‘ì—… ì¤‘ì¸ í”„ë ˆì„ ì¸ë±ìŠ¤ (0 ~ FRAME_BUFFER_COUNT-1)
 		 *
-		 * Ring Buffer ¹æ½ÄÀ¸·Î ¼øÈ¯: 0 ¡æ 1 ¡æ 2 ¡æ 0 ¡æ ...
+		 * Ring Buffer ë°©ì‹ìœ¼ë¡œ ìˆœí™˜: 0 â†’ 1 â†’ 2 â†’ 0 â†’ ...
 		 */
 		Core::uint32 mCurrentFrameIndex = 0;
 	};

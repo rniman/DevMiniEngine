@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 #include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {
 	/**
-	 * @brief DirectX 12 Command Queue °ü¸® Å¬·¡½º
+	 * @brief DirectX 12 Command Queue ê´€ë¦¬ í´ë˜ìŠ¤
 	 *
-	 * GPU¿¡ ¸í·ÉÀ» Á¦ÃâÇÏ´Â Queue¸¦ °ü¸®ÇÕ´Ï´Ù.
-	 * Graphics, Compute, Copy Å¸ÀÔÀ» Áö¿øÇÏ¸ç, ±âº»ÀûÀ¸·Î Graphics Queue¸¦ »ç¿ëÇÕ´Ï´Ù.
+	 * GPUì— ëª…ë ¹ì„ ì œì¶œí•˜ëŠ” Queueë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
+	 * Graphics, Compute, Copy íƒ€ì…ì„ ì§€ì›í•˜ë©°, ê¸°ë³¸ì ìœ¼ë¡œ Graphics Queueë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 	 */
 	class DX12CommandQueue
 	{
@@ -20,11 +20,11 @@ namespace Graphics
 		DX12CommandQueue& operator=(const DX12CommandQueue&) = delete;
 
 		/**
-		 * @brief Command Queue ÃÊ±âÈ­
+		 * @brief Command Queue ì´ˆê¸°í™”
 		 *
 		 * @param device D3D12 Device
-		 * @param type Command Queue Å¸ÀÔ (±âº»: Direct)
-		 * @return ÃÊ±âÈ­ ¼º°ø ¿©ºÎ
+		 * @param type Command Queue íƒ€ì… (ê¸°ë³¸: Direct)
+		 * @return ì´ˆê¸°í™” ì„±ê³µ ì—¬ë¶€
 		 */
 		bool Initialize(
 			ID3D12Device* device,
@@ -34,21 +34,21 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief Command List ½ÇÇà ¹× Fence ½Ã±×³Î
+		 * @brief Command List ì‹¤í–‰ ë° Fence ì‹œê·¸ë„
 		 *
-		 * GPU¿¡ ÀÛ¾÷ ¸ñ·ÏÀ» Á¦ÃâÇÏ°í, ÀÌ ÀÛ¾÷ÀÌ ¿Ï·áµÇ¾úÀ½À» ½Äº°ÇÏ±â À§ÇÑ
-		 * »õ·Î¿î Fence °ªÀ» Å¥¿¡ »ğÀÔ(Signal)ÇÕ´Ï´Ù.
+		 * GPUì— ì‘ì—… ëª©ë¡ì„ ì œì¶œí•˜ê³ , ì´ ì‘ì—…ì´ ì™„ë£Œë˜ì—ˆìŒì„ ì‹ë³„í•˜ê¸° ìœ„í•œ
+		 * ìƒˆë¡œìš´ Fence ê°’ì„ íì— ì‚½ì…(Signal)í•©ë‹ˆë‹¤.
 		 *
-		 * @param commandLists ½ÇÇàÇÒ Command List ¹è¿­
-		 * @param numCommandLists Command List °³¼ö
+		 * @param commandLists ì‹¤í–‰í•  Command List ë°°ì—´
+		 * @param numCommandLists Command List ê°œìˆ˜
 		 *
-		 * @return (Core::uint64) ÀÌ ÀÛ¾÷ ¹èÄ¡¸¦ ½Äº°ÇÏ´Â °íÀ¯ÇÑ Fence °ª (ÀÛ¾÷ ¿µ¼öÁõ)
+		 * @return (Core::uint64) ì´ ì‘ì—… ë°°ì¹˜ë¥¼ ì‹ë³„í•˜ëŠ” ê³ ìœ í•œ Fence ê°’ (ì‘ì—… ì˜ìˆ˜ì¦)
 		 *
-		 * @note È£ÃâÀÚ(¿¹: Renderer)´Â ÀÌ ¹İÈ¯µÈ Fence °ªÀ»
-		 * ¹İµå½Ã FrameResource °°Àº °÷¿¡ ÀúÀåÇØ¾ß ÇÕ´Ï´Ù.
+		 * @note í˜¸ì¶œì(ì˜ˆ: Renderer)ëŠ” ì´ ë°˜í™˜ëœ Fence ê°’ì„
+		 * ë°˜ë“œì‹œ FrameResource ê°™ì€ ê³³ì— ì €ì¥í•´ì•¼ í•©ë‹ˆë‹¤.
 		 *
-		 * @note ÀÌ °ªÀº ³ªÁß¿¡ ÀÌ ÇÁ·¹ÀÓ¿¡¼­ »ç¿ëÇÑ ¸®¼Ò½º(¿¹: Command Allocator)¸¦
-		 * ¾ÈÀüÇÏ°Ô Àç»ç¿ëÇÏ±â Àü¿¡, GPU ÀÛ¾÷ ¿Ï·á¸¦ ±â´Ù¸®´Â µ¥ »ç¿ëµË´Ï´Ù.
+		 * @note ì´ ê°’ì€ ë‚˜ì¤‘ì— ì´ í”„ë ˆì„ì—ì„œ ì‚¬ìš©í•œ ë¦¬ì†ŒìŠ¤(ì˜ˆ: Command Allocator)ë¥¼
+		 * ì•ˆì „í•˜ê²Œ ì¬ì‚¬ìš©í•˜ê¸° ì „ì—, GPU ì‘ì—… ì™„ë£Œë¥¼ ê¸°ë‹¤ë¦¬ëŠ” ë° ì‚¬ìš©ë©ë‹ˆë‹¤.
 		 */
 		Core::uint64 ExecuteCommandLists(
 			ID3D12CommandList* const* commandLists,
@@ -56,35 +56,35 @@ namespace Graphics
 		);
 
 		/**
-		 * @brief GPU ÀÛ¾÷ ¿Ï·á ´ë±â (ºí·ÎÅ·)
+		 * @brief GPU ì‘ì—… ì™„ë£Œ ëŒ€ê¸° (ë¸”ë¡œí‚¹)
 		 *
-		 * @return ´ë±â ¼º°ø ¿©ºÎ
+		 * @return ëŒ€ê¸° ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @warning CPU ºí·ÎÅ· ¹ß»ı - ¼º´É¿¡ ¹Î°¨ÇÑ °æ¿ì »ç¿ë ÁÖÀÇ
-		 * @note Queue¿¡ Á¦ÃâµÈ ¸ğµç ÀÛ¾÷ÀÌ ¿Ï·áµÉ ¶§±îÁö ´ë±âÇÕ´Ï´Ù
+		 * @warning CPU ë¸”ë¡œí‚¹ ë°œìƒ - ì„±ëŠ¥ì— ë¯¼ê°í•œ ê²½ìš° ì‚¬ìš© ì£¼ì˜
+		 * @note Queueì— ì œì¶œëœ ëª¨ë“  ì‘ì—…ì´ ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°í•©ë‹ˆë‹¤
 		 */
 		bool WaitForIdle();
 
 		/**
-		 * @brief Æ¯Á¤ Fence °ª¿¡ µµ´ŞÇÒ ¶§±îÁö GPU¸¦ ±â´Ù¸³´Ï´Ù.
+		 * @brief íŠ¹ì • Fence ê°’ì— ë„ë‹¬í•  ë•Œê¹Œì§€ GPUë¥¼ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
 		 *
-		 * WaitForIdle()°ú ´Ş¸®, Å¥ÀÇ ¸ğµç ÀÛ¾÷ÀÌ ¾Æ´Ñ
-		 * 'valueToWaitFor'·Î ½Äº°µÇ´Â Æ¯Á¤ ÀÛ¾÷±îÁö¸¸ ±â´Ù¸³´Ï´Ù.
+		 * WaitForIdle()ê³¼ ë‹¬ë¦¬, íì˜ ëª¨ë“  ì‘ì—…ì´ ì•„ë‹Œ
+		 * 'valueToWaitFor'ë¡œ ì‹ë³„ë˜ëŠ” íŠ¹ì • ì‘ì—…ê¹Œì§€ë§Œ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
 		 *
-		 * @param valueToWaitFor ±â´Ù¸± ´ë»ó Fence °ª (ExecuteCommandLists°¡ ¹İÈ¯ÇÑ °ª).
-		 * @return ¼º°ø ¿©ºÎ
+		 * @param valueToWaitFor ê¸°ë‹¤ë¦´ ëŒ€ìƒ Fence ê°’ (ExecuteCommandListsê°€ ë°˜í™˜í•œ ê°’).
+		 * @return ì„±ê³µ ì—¬ë¶€
 		 *
-		 * @note ÀÌ ÇÔ¼ö´Â CPU-GPU ÆÄÀÌÇÁ¶óÀÎ µ¿±âÈ­ÀÇ ÇÙ½ÉÀÌ¸ç,
-		 * CPU°¡ GPU¸¦ Ãß¿ùÇÏÁö ¾Êµµ·Ï º¸ÀåÇÕ´Ï´Ù.
+		 * @note ì´ í•¨ìˆ˜ëŠ” CPU-GPU íŒŒì´í”„ë¼ì¸ ë™ê¸°í™”ì˜ í•µì‹¬ì´ë©°,
+		 * CPUê°€ GPUë¥¼ ì¶”ì›”í•˜ì§€ ì•Šë„ë¡ ë³´ì¥í•©ë‹ˆë‹¤.
 		 */
 		bool WaitForFenceValue(Core::uint64 valueToWaitFor);
 
 		/**
-		 * @brief Fence °ª È¹µæ (ÇöÀç ¿Ï·áµÈ GPU ÀÛ¾÷)
+		 * @brief Fence ê°’ íšë“ (í˜„ì¬ ì™„ë£Œëœ GPU ì‘ì—…)
 		 *
-		 * @return GPU°¡ ¿Ï·áÇÑ ¸¶Áö¸· Fence °ª
+		 * @return GPUê°€ ì™„ë£Œí•œ ë§ˆì§€ë§‰ Fence ê°’
 		 *
-		 * @note ÀÌ °ª°ú GetNextFenceValue()¸¦ ºñ±³ÇÏ¿© GPU ÁøÇà »óÅÂ¸¦ È®ÀÎÇÒ ¼ö ÀÖ½À´Ï´Ù
+		 * @note ì´ ê°’ê³¼ GetNextFenceValue()ë¥¼ ë¹„êµí•˜ì—¬ GPU ì§„í–‰ ìƒíƒœë¥¼ í™•ì¸í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤
 		 */
 		Core::uint64 GetCompletedFenceValue() const;
 
@@ -98,7 +98,7 @@ namespace Graphics
 		bool CreateFence(ID3D12Device* device);
 		const char* GetCommandListTypeString(D3D12_COMMAND_LIST_TYPE type) const;
 
-		// ¸â¹ö º¯¼ö
+		// ë©¤ë²„ ë³€ìˆ˜
 
 		// DirectX Resources
 		ComPtr<ID3D12CommandQueue> mCommandQueue;

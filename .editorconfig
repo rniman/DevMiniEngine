@@ -1,35 +1,69 @@
-# 파일 인코딩 및 줄 끝 문자열 설정을 위한 최상위 설정
+# DirectX 12 게임 엔진 프로젝트 EditorConfig
+# 최상위 설정 파일임을 명시
 root = true
 
-# 모든 파일에 대한 일반 설정
+# 모든 파일에 대한 기본 설정
 [*]
-# IDE에서 파일의 끝에 빈 줄을 추가할지 여부
-insert_final_newline = true 
-# 줄 끝 문자열(Windows 표준인 CRLF 사용)
-end_of_line = crlf 
-# 모든 파일의 문자 인코딩을 UTF-8로 지정 (C4819 이슈와 Git 호환성에 유리)
-charset = utf-8 
-# 파일 끝에 빈 줄 추가
-insert_final_newline = true 
-# 후행 공백 제거
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
 trim_trailing_whitespace = true
 
-# C/C++ 파일에 대한 특정 설정
-[*.{cpp,h,hpp,c}]
-# 들여쓰기에 공백을 사용할지 탭을 사용할지 지정
-indent_style = tab 
-# 들여쓰기 크기: 4칸 (탭 하나의 크기를 4칸 공백으로 처리)
-indent_size = 4 
-tab_width = 4
-
-# 셰이더 파일에 대한 설정 (일반적으로 Visual Studio 기본값 사용)
-[*.hlsl]
+# C/C++ 소스 파일
+[*.{cpp,h,hpp,c,inl}]
+charset = utf-8-bom
 indent_style = tab
-# 들여쓰기 크기: 4칸 (탭 하나의 크기를 4칸 공백으로 처리)
-indent_size = 4 
+indent_size = 4
 tab_width = 4
 
-# JSON 및 기타 구성 파일 (2칸 들여쓰기 사용 예시)
-[*.json]
+# HLSL 셰이더 파일
+[*.{hlsl,hlsli}]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+# Visual Studio 프로젝트 파일
+[*.{sln,vcxproj,vcxproj.filters,props,targets}]
 indent_style = space
 indent_size = 2
+
+# 스크립트 파일
+[*.{py,sh,bat,ps1}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+
+# 데이터 및 설정 파일
+[*.{json,xml,yaml,yml}]
+charset = utf-8
+indent_style = space
+indent_size = 2
+
+# 마크다운 문서
+[*.{md,markdown}]
+charset = utf-8
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# CMake 파일 (향후 사용 가능성 대비)
+[{CMakeLists.txt,*.cmake}]
+charset = utf-8
+indent_style = space
+indent_size = 2
+
+# Git 설정 파일
+[.git*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+
+# 특정 파일 개별 설정
+[Makefile]
+indent_style = tab
+
+[*.tsv]
+indent_style = tab
+trim_trailing_whitespace = false

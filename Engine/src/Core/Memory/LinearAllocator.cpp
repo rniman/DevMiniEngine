@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Core/Memory/LinearAllocator.h"
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h" 
@@ -59,7 +59,7 @@ namespace Core
 
         void LinearAllocator::Deallocate(void* ptr)
         {
-            // LinearAllocator´Â °³º° ÇØÁ¦ ºÒ°¡ - Reset()À¸·Î ÀüÃ¼ ÇØÁ¦¸¸ °¡´É
+            // LinearAllocatorëŠ” ê°œë³„ í•´ì œ ë¶ˆê°€ - Reset()ìœ¼ë¡œ ì „ì²´ í•´ì œë§Œ ê°€ëŠ¥
             (void)ptr;
         }
 

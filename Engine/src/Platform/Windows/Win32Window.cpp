@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Platform/Windows/Win32Window.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -31,14 +31,14 @@ namespace Platform
         mHeight = desc.height;
         mIsFullscreen = desc.fullscreen;
 
-        // 1. À©µµ¿ì Å¬·¡½º µî·Ï
+        // 1. ìœˆë„ìš° í´ë˜ìŠ¤ ë“±ë¡
         if (!RegisterWindowClass())
         {
             LOG_ERROR("Failed to register window class");
             return false;
         }
 
-        // 2. À©µµ¿ì »ç°¢Çü °è»ê
+        // 2. ìœˆë„ìš° ì‚¬ê°í˜• ê³„ì‚°
         DWORD style = WS_OVERLAPPEDWINDOW;
         DWORD exStyle = WS_EX_APPWINDOW;
 
@@ -52,25 +52,25 @@ namespace Platform
             style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
         }
 
-        // Å¬¶óÀÌ¾ğÆ® ¿µ¿ª Å©±â Á¶Á¤
+        // í´ë¼ì´ì–¸íŠ¸ ì˜ì—­ í¬ê¸° ì¡°ì •
         RECT rect = { 0, 0, static_cast<LONG>(mWidth), static_cast<LONG>(mHeight) };
         AdjustWindowRectEx(&rect, style, FALSE, exStyle);
 
         Core::int32 windowWidth = rect.right - rect.left;
         Core::int32 windowHeight = rect.bottom - rect.top;
 
-        // È­¸é Áß¾Ó¿¡ À©µµ¿ì ¹èÄ¡
+        // í™”ë©´ ì¤‘ì•™ì— ìœˆë„ìš° ë°°ì¹˜
         Core::int32 screenWidth = GetSystemMetrics(SM_CXSCREEN);
         Core::int32 screenHeight = GetSystemMetrics(SM_CYSCREEN);
         Core::int32 windowX = (screenWidth - windowWidth) / 2;
         Core::int32 windowY = (screenHeight - windowHeight) / 2;
 
-        // 3. Å¸ÀÌÆ²À» ¿ÍÀÌµå ¹®ÀÚ¿­·Î º¯È¯
+        // 3. íƒ€ì´í‹€ì„ ì™€ì´ë“œ ë¬¸ìì—´ë¡œ ë³€í™˜
         Core::int32 wideLength = MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, nullptr, 0);
         std::wstring wideTitle(wideLength, L'\0');
         MultiByteToWideChar(CP_UTF8, 0, desc.title.c_str(), -1, &wideTitle[0], wideLength);
 
-        // 4. À©µµ¿ì »ı¼º
+        // 4. ìœˆë„ìš° ìƒì„±
         mHwnd = reinterpret_cast<HWND__*>(CreateWindowExW(
             exStyle,
             CLASS_NAME,
@@ -80,10 +80,10 @@ namespace Platform
             windowY,
             windowWidth,
             windowHeight,
-            nullptr,        // ºÎ¸ğ À©µµ¿ì ¾øÀ½
-            nullptr,        // ¸Ş´º ¾øÀ½
+            nullptr,        // ë¶€ëª¨ ìœˆë„ìš° ì—†ìŒ
+            nullptr,        // ë©”ë‰´ ì—†ìŒ
             reinterpret_cast<HINSTANCE>(mHInstance),
-            this            // WM_CREATE¿¡¼­ »ç¿ëÇÒ 'this' Æ÷ÀÎÅÍ
+            this            // WM_CREATEì—ì„œ ì‚¬ìš©í•  'this' í¬ì¸í„°
         ));
 
         if (!mHwnd)
@@ -93,7 +93,7 @@ namespace Platform
             return false;
         }
 
-        // 5. À©µµ¿ì Ç¥½Ã
+        // 5. ìœˆë„ìš° í‘œì‹œ
         ShowWindow(reinterpret_cast<HWND>(mHwnd), SW_SHOW);
         UpdateWindow(reinterpret_cast<HWND>(mHwnd));
 
@@ -117,7 +117,7 @@ namespace Platform
     {
         MSG msg = {};
 
-        // ³íºí·ÎÅ· ¸Ş½ÃÁö Ã³¸®
+        // ë…¼ë¸”ë¡œí‚¹ ë©”ì‹œì§€ ì²˜ë¦¬
         while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
@@ -183,7 +183,7 @@ namespace Platform
         wc.hInstance = reinterpret_cast<HINSTANCE>(mHInstance);
         wc.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
         wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-        wc.hbrBackground = nullptr;  // DirectX°¡ ±×¸± °ÍÀÌ¹Ç·Î nullptr
+        wc.hbrBackground = nullptr;  // DirectXê°€ ê·¸ë¦´ ê²ƒì´ë¯€ë¡œ nullptr
         wc.lpszMenuName = nullptr;
         wc.lpszClassName = CLASS_NAME;
         wc.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
@@ -223,11 +223,11 @@ namespace Platform
 
         if (msg == WM_CREATE)
         {
-            // WM_CREATE¿¡¼­ CreateWindowExÀÇ ¸¶Áö¸· ÀÎÀÚ·Î Àü´ŞµÈ 'this' Æ÷ÀÎÅÍ º¹±¸
+            // WM_CREATEì—ì„œ CreateWindowExì˜ ë§ˆì§€ë§‰ ì¸ìë¡œ ì „ë‹¬ëœ 'this' í¬ì¸í„° ë³µêµ¬
             CREATESTRUCTW* pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
             window = reinterpret_cast<Win32Window*>(pCreate->lpCreateParams);
 
-            // ÀÌÈÄ ¸Ş½ÃÁö¿¡¼­ »ç¿ëÇÏ±â À§ÇØ À©µµ¿ìÀÇ GWLP_USERDATA¿¡ ÀúÀå
+            // ì´í›„ ë©”ì‹œì§€ì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ìœˆë„ìš°ì˜ GWLP_USERDATAì— ì €ì¥
             SetWindowLongPtrW(
                 reinterpret_cast<HWND>(hwnd),
                 GWLP_USERDATA,
@@ -238,7 +238,7 @@ namespace Platform
         }
         else
         {
-            // ´Ù¸¥ ¸Ş½ÃÁö¿¡¼­´Â ÀúÀåµÈ 'this' Æ÷ÀÎÅÍ °¡Á®¿À±â
+            // ë‹¤ë¥¸ ë©”ì‹œì§€ì—ì„œëŠ” ì €ì¥ëœ 'this' í¬ì¸í„° ê°€ì ¸ì˜¤ê¸°
             window = reinterpret_cast<Win32Window*>(GetWindowLongPtrW(reinterpret_cast<HWND>(hwnd), GWLP_USERDATA));
         }
 
@@ -314,7 +314,7 @@ namespace Platform
 		}
 
 		//=============================================================================
-		// Å°º¸µå ¸Ş½ÃÁö
+		// í‚¤ë³´ë“œ ë©”ì‹œì§€
 		//=============================================================================
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
@@ -333,12 +333,12 @@ namespace Platform
 		}
 
 		//=============================================================================
-		// ¸¶¿ì½º ¸Ş½ÃÁö
+		// ë§ˆìš°ìŠ¤ ë©”ì‹œì§€
 		//=============================================================================
 		case WM_MOUSEMOVE:
 		{
-            // LOWORD/HIWORD´Â unsigned short ¹İÈ¯
-            // signed short·Î º¯È¯ÇÏ¿© À½¼ö ÁÂÇ¥ Ã³¸®
+            // LOWORD/HIWORDëŠ” unsigned short ë°˜í™˜
+            // signed shortë¡œ ë³€í™˜í•˜ì—¬ ìŒìˆ˜ ì¢Œí‘œ ì²˜ë¦¬
             Core::int32 xPos = static_cast<Core::int32>(
                 static_cast<Core::int16>(LOWORD(lParam))
                 );

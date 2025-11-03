@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "Core/Logging/Logger.h"
 
 using namespace std;
@@ -17,7 +17,7 @@ namespace Core
             LogLevel level,
             LogCategory category,
             const string& message,
-            const char* file,  // ¿ÃπÃ const
+            const char* file,  // Ïù¥ÎØ∏ const
             int line
         )
         {
@@ -30,9 +30,9 @@ namespace Core
 
             lock_guard<mutex> lock(mMutex);
 
-            // TODO: ∞Ì∫Ûµµ ∑Œ±Î Ω√≥™∏Æø¿∏¶ ¿ß«— ∫Òµø±‚ ≈• ∞Ì∑¡
-            // «ˆ¿Á: µø±‚Ωƒ (¥‹º¯«œ∞Ì æ»¿¸)
-            // «‚»ƒ: ∫Òµø±‚ ≈• (∞Ìº∫¥…)
+            // TODO: Í≥†ÎπàÎèÑ Î°úÍπÖ ÏãúÎÇòÎ¶¨Ïò§Î•º ÏúÑÌïú ÎπÑÎèôÍ∏∞ ÌÅê Í≥†Î†§
+            // ÌòÑÏû¨: ÎèôÍ∏∞Ïãù (Îã®ÏàúÌïòÍ≥† ÏïàÏ†Ñ)
+            // Ìñ•ÌõÑ: ÎπÑÎèôÍ∏∞ ÌÅê (Í≥†ÏÑ±Îä•)
             for (const auto& sink : mSinks)
             {
                 sink->Write(msg);

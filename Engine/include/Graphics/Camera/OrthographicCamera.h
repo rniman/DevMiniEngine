@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Graphics/GraphicsTypes.h"
 #include "Math/MathTypes.h"
@@ -8,21 +8,21 @@
 namespace Graphics
 {
 	/**
-	 * @brief Á÷±³ Åõ¿µ Ä«¸Ş¶ó
+	 * @brief ì§êµ íˆ¬ì˜ ì¹´ë©”ë¼
 	 *
-	 * UI ·»´õ¸µ ¹× 2D °ÔÀÓ¿¡ »ç¿ëµÇ´Â Á÷±³ Åõ¿µ ¹æ½ÄÀÇ Ä«¸Ş¶óÀÔ´Ï´Ù.
-	 * ¿ø±Ù°¨ ¾øÀÌ ¹°Ã¼ÀÇ Å©±â°¡ °Å¸®¿¡ °ü°è¾øÀÌ ÀÏÁ¤ÇÏ°Ô Ç¥ÇöµË´Ï´Ù.
+	 * UI ë Œë”ë§ ë° 2D ê²Œì„ì— ì‚¬ìš©ë˜ëŠ” ì§êµ íˆ¬ì˜ ë°©ì‹ì˜ ì¹´ë©”ë¼ì…ë‹ˆë‹¤.
+	 * ì›ê·¼ê° ì—†ì´ ë¬¼ì²´ì˜ í¬ê¸°ê°€ ê±°ë¦¬ì— ê´€ê³„ì—†ì´ ì¼ì •í•˜ê²Œ í‘œí˜„ë©ë‹ˆë‹¤.
 	 */
 	class OrthographicCamera : public Camera
 	{
 	public:
 		/**
-		 * @brief OrthographicCamera »ı¼ºÀÚ
+		 * @brief OrthographicCamera ìƒì„±ì
 		 *
-		 * @param width ºäÆ÷Æ® ³Êºñ
-		 * @param height ºäÆ÷Æ® ³ôÀÌ
-		 * @param nearPlane ±ÙÆò¸é °Å¸®
-		 * @param farPlane ¿øÆò¸é °Å¸®
+		 * @param width ë·°í¬íŠ¸ ë„ˆë¹„
+		 * @param height ë·°í¬íŠ¸ ë†’ì´
+		 * @param nearPlane ê·¼í‰ë©´ ê±°ë¦¬
+		 * @param farPlane ì›í‰ë©´ ê±°ë¦¬
 		 */
 		OrthographicCamera(
 			float32 width = 1280.0f,
@@ -38,12 +38,12 @@ namespace Graphics
 		// Camera override
 		void UpdateProjectionMatrix() override;
 
-		// ºäÆ÷Æ® Å©±â ¼³Á¤
+		// ë·°í¬íŠ¸ í¬ê¸° ì„¤ì •
 		void SetSize(float32 width, float32 height);
 		void SetWidth(float32 width);
 		void SetHeight(float32 height);
 
-		// Å¬¸®ÇÎ Æò¸é ¼³Á¤
+		// í´ë¦¬í•‘ í‰ë©´ ì„¤ì •
 		void SetNearPlane(float32 nearPlane);
 		void SetFarPlane(float32 farPlane);
 		void SetClipPlanes(float32 nearPlane, float32 farPlane);

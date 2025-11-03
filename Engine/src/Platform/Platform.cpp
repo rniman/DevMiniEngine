@@ -1,7 +1,7 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Platform/Window.h"
 
-// ÇÃ·§Æûº° ±¸ÇöÃ¼
+// í”Œë«í¼ë³„ êµ¬í˜„ì²´
 #ifdef _WIN32
 #include "Platform/Windows/Win32Window.h"
 #endif

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12SwapChain.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -41,28 +41,28 @@ namespace Graphics
 		mCurrentBackBufferIndex = 0;
 		mTearingAllowed = tearingAllowed;
 
-		// 1´Ü°è: SwapChain »ı¼º
+		// 1ë‹¨ê³„: SwapChain ìƒì„±
 		if (!CreateSwapChain(factory, commandQueue, hwnd))
 		{
 			LOG_ERROR("[DX12SwapChain] Failed to create SwapChain");
 			return false;
 		}
 
-		// 2´Ü°è: Back Buffer ¸®¼Ò½º È¹µæ
+		// 2ë‹¨ê³„: Back Buffer ë¦¬ì†ŒìŠ¤ íšë“
 		if (!GetBackBufferResources())
 		{
 			LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer resources");
 			return false;
 		}
 
-		// 3´Ü°è: Descriptor Heap »ı¼º
+		// 3ë‹¨ê³„: Descriptor Heap ìƒì„±
 		if (!CreateDescriptorHeaps(device))
 		{
 			LOG_ERROR("[DX12SwapChain] Failed to create Descriptor Heaps");
 			return false;
 		}
 
-		// 4´Ü°è: Render Target View »ı¼º
+		// 4ë‹¨ê³„: Render Target View ìƒì„±
 		if (!CreateRenderTargetViews(device))
 		{
 			LOG_ERROR("[DX12SwapChain] Failed to create Render Target Views");
@@ -89,10 +89,10 @@ namespace Graphics
 			mRTVHeap.reset();
 		}
 
-		// Back Buffer ÇØÁ¦
+		// Back Buffer í•´ì œ
 		ReleaseBackBuffers();
 
-		// SwapChain ÇØÁ¦
+		// SwapChain í•´ì œ
 		mSwapChain.Reset();
 
 		LOG_INFO("[DX12SwapChain] SwapChain shut down successfully");
@@ -106,12 +106,12 @@ namespace Graphics
 			return;
 		}
 
-		// VSync °£°İ ¼³Á¤
+		// VSync ê°„ê²© ì„¤ì •
 		UINT syncInterval = vSync ? 1 : 0;
-		// Tearing ÇÃ·¡±× ¼³Á¤
+		// Tearing í”Œë˜ê·¸ ì„¤ì •
 		UINT presentFlags = 0;
 		
-		if (!vSync && mTearingAllowed) // mIsTearingAllowed´Â ¸â¹ö º¯¼ö
+		if (!vSync && mTearingAllowed) // mIsTearingAllowedëŠ” ë©¤ë²„ ë³€ìˆ˜
 		{
 			presentFlags = DXGI_PRESENT_ALLOW_TEARING;
 		}
@@ -169,7 +169,7 @@ namespace Graphics
 
 		if (width == mWidth && height == mHeight)
 		{
-			// ¸®»çÀÌÁî ºÒÇÊ¿ä
+			// ë¦¬ì‚¬ì´ì¦ˆ ë¶ˆí•„ìš”
 			return true;
 		}
 
@@ -181,10 +181,10 @@ namespace Graphics
 			height
 		);
 
-		// Back Buffer ÇØÁ¦
+		// Back Buffer í•´ì œ
 		ReleaseBackBuffers();
 
-		// SwapChain ¹öÆÛ ¸®»çÀÌÁî
+		// SwapChain ë²„í¼ ë¦¬ì‚¬ì´ì¦ˆ
 		HRESULT hr = mSwapChain->ResizeBuffers(
 			static_cast<UINT>(mBufferCount),
 			static_cast<UINT>(width),
@@ -202,7 +202,7 @@ namespace Graphics
 		mWidth = width;
 		mHeight = height;
 
-		// »õ·Î¿î Back Buffer ¸®¼Ò½º È¹µæ
+		// ìƒˆë¡œìš´ Back Buffer ë¦¬ì†ŒìŠ¤ íšë“
 		if (!GetBackBufferResources())
 		{
 			LOG_ERROR("[DX12SwapChain] Failed to get Back Buffer resources after resize");
@@ -221,7 +221,7 @@ namespace Graphics
 	{
 		LOG_INFO("[DX12SwapChain] Creating SwapChain...");
 
-		// SwapChain ¼³Á¤
+		// SwapChain ì„¤ì •
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 		swapChainDesc.Width = static_cast<UINT>(mWidth);
 		swapChainDesc.Height = static_cast<UINT>(mHeight);
@@ -239,7 +239,7 @@ namespace Graphics
 			swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 		}
 
-		// SwapChain »ı¼º
+		// SwapChain ìƒì„±
 		ComPtr<IDXGISwapChain1> swapChain1;
 		HRESULT hr = factory->CreateSwapChainForHwnd(
 			commandQueue,
@@ -256,10 +256,10 @@ namespace Graphics
 			return false;
 		}
 
-		// Alt+Enter ÀüÃ¼È­¸é ÀüÈ¯ ºñÈ°¼ºÈ­
+		// Alt+Enter ì „ì²´í™”ë©´ ì „í™˜ ë¹„í™œì„±í™”
 		factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 
-		// IDXGISwapChain3 ÀÎÅÍÆäÀÌ½º Äõ¸®
+		// IDXGISwapChain3 ì¸í„°í˜ì´ìŠ¤ ì¿¼ë¦¬
 		hr = swapChain1.As(&mSwapChain);
 		if (FAILED(hr))
 		{
@@ -267,7 +267,7 @@ namespace Graphics
 			return false;
 		}
 
-		// ÃÊ±â Back Buffer ÀÎµ¦½º °¡Á®¿À±â
+		// ì´ˆê¸° Back Buffer ì¸ë±ìŠ¤ ê°€ì ¸ì˜¤ê¸°
 		mCurrentBackBufferIndex = static_cast<uint32>(mSwapChain->GetCurrentBackBufferIndex());
 
 		LOG_INFO("[DX12SwapChain] SwapChain created successfully");
@@ -289,7 +289,7 @@ namespace Graphics
 				return false;
 			}
 
-			// µğ¹ö±× ÀÌ¸§ ¼³Á¤
+			// ë””ë²„ê·¸ ì´ë¦„ ì„¤ì •
 			wchar_t name[32];
 			swprintf_s(name, L"BackBuffer[%llu]", i);
 			mBackBuffers[i]->SetName(name);
@@ -303,7 +303,7 @@ namespace Graphics
 	{
 		LOG_INFO("[DX12SwapChain] Creating Descriptor Heaps...");
 
-		// RTV Descriptor Heap »ı¼º (Shader Visible ºÒÇÊ¿ä)
+		// RTV Descriptor Heap ìƒì„± (Shader Visible ë¶ˆí•„ìš”)
 		mRTVHeap = std::make_unique<DX12DescriptorHeap>();
 		if (!mRTVHeap->Initialize(
 			device,
@@ -330,7 +330,7 @@ namespace Graphics
 
 		LOG_INFO("[DX12SwapChain] Creating Render Target Views...");
 
-		// ¹é ¹öÆÛ¸¦ À§ÇÑ RTV »ı¼º
+		// ë°± ë²„í¼ë¥¼ ìœ„í•œ RTV ìƒì„±
 		for (Core::uint32 i = 0; i < FRAME_BUFFER_COUNT; ++i)
 		{
 			ID3D12Resource* backBuffer = GetBackBuffer(static_cast<size_t>(i));

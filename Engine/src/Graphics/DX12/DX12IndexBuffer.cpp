@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
@@ -32,7 +32,7 @@ namespace Graphics
 			return false;
 		}
 
-		// ÀÎµ¦½º Æ÷¸Ë °ËÁõ
+		// ì¸ë±ìŠ¤ í¬ë§· ê²€ì¦
 		if (indexFormat != DXGI_FORMAT_R16_UINT && indexFormat != DXGI_FORMAT_R32_UINT)
 		{
 			LOG_ERROR("[DX12IndexBuffer] Invalid index format (must be R16_UINT or R32_UINT)");
@@ -44,27 +44,27 @@ namespace Graphics
 		mIndexCount = indexCount;
 		mIndexFormat = indexFormat;
 
-		// ÀÎµ¦½º Å©±â °è»ê
+		// ì¸ë±ìŠ¤ í¬ê¸° ê³„ì‚°
 		const UINT indexSize = (indexFormat == DXGI_FORMAT_R16_UINT) ? sizeof(Core::uint16) : sizeof(Core::uint32);
 		const size_t bufferSize = indexCount * indexSize;
 
-		// Default Heap¿¡ GPU Àü¿ë ¹öÆÛ »ı¼º
+		// Default Heapì— GPU ì „ìš© ë²„í¼ ìƒì„±
 		if (!CreateIndexBuffer(device, bufferSize))
 		{
 			LOG_ERROR("[DX12IndexBuffer] Failed to create index buffer");
 			return false;
 		}
 
-		// Upload Heap¿¡ ÀÓ½Ã ¾÷·Îµå ¹öÆÛ »ı¼º
+		// Upload Heapì— ì„ì‹œ ì—…ë¡œë“œ ë²„í¼ ìƒì„±
 		if (!CreateUploadBuffer(device, bufferSize))
 		{
 			LOG_ERROR("[DX12IndexBuffer] Failed to create upload buffer");
 			return false;
 		}
 
-		// CPU µ¥ÀÌÅÍ¸¦ Upload Buffer¿¡ º¹»ç
+		// CPU ë°ì´í„°ë¥¼ Upload Bufferì— ë³µì‚¬
 		void* mappedData = nullptr;
-		CD3DX12_RANGE readRange(0, 0);  // CPU ÀĞ±â ¾øÀ½
+		CD3DX12_RANGE readRange(0, 0);  // CPU ì½ê¸° ì—†ìŒ
 
 		HRESULT hr = mUploadBuffer->Map(0, &readRange, &mappedData);
 		if (FAILED(hr))
@@ -76,7 +76,7 @@ namespace Graphics
 		memcpy(mappedData, indexData, bufferSize);
 		mUploadBuffer->Unmap(0, nullptr);
 
-		// GPU º¹»ç ¸í·É ±â·Ï
+		// GPU ë³µì‚¬ ëª…ë ¹ ê¸°ë¡
 		ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
 		commandList->Reset(commandContext->GetAllocator(), nullptr);
 
@@ -86,7 +86,7 @@ namespace Graphics
 			bufferSize
 		);
 
-		// COPY_DEST ¡æ INDEX_BUFFER »óÅÂ ÀüÀÌ
+		// COPY_DEST â†’ INDEX_BUFFER ìƒíƒœ ì „ì´
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			mIndexBuffer.Get(),
 			D3D12_RESOURCE_STATE_COPY_DEST,
@@ -94,16 +94,16 @@ namespace Graphics
 		);
 		commandList->ResourceBarrier(1, &barrier);
 
-		// Ä¿¸Çµå ¸®½ºÆ® Close ¹× Á¦Ãâ
+		// ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ Close ë° ì œì¶œ
 		commandList->Close();
 		ID3D12CommandList* commandLists[] = { commandList };
 		commandQueue->ExecuteCommandLists(commandLists, 1);
 		commandQueue->WaitForIdle();
 
-		// GPU º¹»ç ¿Ï·á - Upload Buffer ÇØÁ¦
+		// GPU ë³µì‚¬ ì™„ë£Œ - Upload Buffer í•´ì œ
 		mUploadBuffer.Reset();
 
-		// ·»´õ¸µ¿¡ »ç¿ëÇÒ View ÃÊ±âÈ­
+		// ë Œë”ë§ì— ì‚¬ìš©í•  View ì´ˆê¸°í™”
 		mIndexBufferView.BufferLocation = mIndexBuffer->GetGPUVirtualAddress();
 		mIndexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
 		mIndexBufferView.Format = mIndexFormat;
@@ -115,8 +115,8 @@ namespace Graphics
 			mIndexBufferView.BufferLocation
 		);
 
-		// TODO: [Future Optimization] DX12ResourceUploader ÆĞÅÏÀ¸·Î ¸®ÆÑÅä¸µ
-		// VertexBuffer¿Í µ¿ÀÏÇÑ °³¼± ¹æÇâ Àû¿ë
+		// TODO: [Future Optimization] DX12ResourceUploader íŒ¨í„´ìœ¼ë¡œ ë¦¬íŒ©í† ë§
+		// VertexBufferì™€ ë™ì¼í•œ ê°œì„  ë°©í–¥ ì ìš©
 
 		return true;
 	}
@@ -147,7 +147,7 @@ namespace Graphics
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
 			&bufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,  // ÃÊ±â »óÅÂ: º¹»ç ´ë»ó
+			D3D12_RESOURCE_STATE_COPY_DEST,  // ì´ˆê¸° ìƒíƒœ: ë³µì‚¬ ëŒ€ìƒ
 			nullptr,
 			IID_PPV_ARGS(&mIndexBuffer)
 		);
@@ -170,7 +170,7 @@ namespace Graphics
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
 			&bufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,  // Upload Heap ±âº» »óÅÂ
+			D3D12_RESOURCE_STATE_GENERIC_READ,  // Upload Heap ê¸°ë³¸ ìƒíƒœ
 			nullptr,
 			IID_PPV_ARGS(&mUploadBuffer)
 		);

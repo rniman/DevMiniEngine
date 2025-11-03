@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -21,7 +21,7 @@ namespace Graphics
 
 		mType = type;
 
-		// Command Allocator »ý¼º
+		// Command Allocator ìƒì„±
 		HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&mCommandAllocator));
 		if (FAILED(hr))
 		{
@@ -29,7 +29,7 @@ namespace Graphics
 			return false;
 		}
 
-		// Command List »ý¼º
+		// Command List ìƒì„±
 		hr = device->CreateCommandList(
 			0,
 			type,
@@ -43,7 +43,7 @@ namespace Graphics
 			return false;
 		}
 
-		// Command List´Â »ý¼º ½Ã Open »óÅÂÀÌ¹Ç·Î ´Ý¾Æ¾ß ÇÔ
+		// Command ListëŠ” ìƒì„± ì‹œ Open ìƒíƒœì´ë¯€ë¡œ ë‹«ì•„ì•¼ í•¨
 		mCommandList->Close();
 
 		LOG_INFO("[DX12CommandContext] Command Context initialized successfully");

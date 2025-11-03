@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Core/Memory/Allocator.h"
@@ -8,31 +8,31 @@ namespace Core
     namespace Memory
     {
         /**
-         * @brief °íÁ¤ Å©±â °´Ã¼¿ë Ç® ÇÒ´çÀÚ
+         * @brief ê³ ì • í¬ê¸° ê°ì²´ìš© í’€ í• ë‹¹ì
          *
-         * O(1) ÇÒ´ç/ÇØÁ¦¸¦ Á¦°øÇÏ´Â free-list ±â¹İ ¸Ş¸ğ¸® Ç®ÀÔ´Ï´Ù.
-         * ¸ğµç Ã»Å©°¡ µ¿ÀÏÇÑ Å©±âÀÌ¸ç, ºó¹øÇÑ ÇÒ´ç/ÇØÁ¦ ÆĞÅÏ¿¡ ÃÖÀûÈ­µÇ¾î ÀÖ½À´Ï´Ù.
+         * O(1) í• ë‹¹/í•´ì œë¥¼ ì œê³µí•˜ëŠ” free-list ê¸°ë°˜ ë©”ëª¨ë¦¬ í’€ì…ë‹ˆë‹¤.
+         * ëª¨ë“  ì²­í¬ê°€ ë™ì¼í•œ í¬ê¸°ì´ë©°, ë¹ˆë²ˆí•œ í• ë‹¹/í•´ì œ íŒ¨í„´ì— ìµœì í™”ë˜ì–´ ìˆìŠµë‹ˆë‹¤.
          *
-         * »ç¿ë ¿¹:
+         * ì‚¬ìš© ì˜ˆ:
          *   PoolAllocator pool(sizeof(MyObject), 100);
          *   void* obj = pool.Allocate(sizeof(MyObject));
-         *   // ... °´Ã¼ »ç¿ë
+         *   // ... ê°ì²´ ì‚¬ìš©
          *   pool.Deallocate(obj);
          *
-         * @note ½º·¹µå ¾ÈÀüÇÏÁö ¾ÊÀ½
-         * @note Á¤·ÄÀº ÃÖ´ë sizeof(void*)±îÁö Áö¿ø (free-list Á¦¾à)
-         * @warning size > chunkSizeÀÎ ÇÒ´çÀº assertion ½ÇÆĞ
+         * @note ìŠ¤ë ˆë“œ ì•ˆì „í•˜ì§€ ì•ŠìŒ
+         * @note ì •ë ¬ì€ ìµœëŒ€ sizeof(void*)ê¹Œì§€ ì§€ì› (free-list ì œì•½)
+         * @warning size > chunkSizeì¸ í• ë‹¹ì€ assertion ì‹¤íŒ¨
          */
         class PoolAllocator : public Allocator
         {
         public:
             /**
-             * @brief Ç® ÇÒ´çÀÚ »ı¼º
+             * @brief í’€ í• ë‹¹ì ìƒì„±
              *
-             * @param chunkSize °¢ Ã»Å©ÀÇ Å©±â (¹ÙÀÌÆ®, ÃÖ¼Ò sizeof(void*))
-             * @param chunkCount ÀüÃ¼ Ã»Å© °³¼ö
+             * @param chunkSize ê° ì²­í¬ì˜ í¬ê¸° (ë°”ì´íŠ¸, ìµœì†Œ sizeof(void*))
+             * @param chunkCount ì „ì²´ ì²­í¬ ê°œìˆ˜
              *
-             * @note chunkSize´Â ÀÚµ¿À¸·Î sizeof(void*)ÀÇ ¹è¼ö·Î Á¤·ÄµÊ
+             * @note chunkSizeëŠ” ìë™ìœ¼ë¡œ sizeof(void*)ì˜ ë°°ìˆ˜ë¡œ ì •ë ¬ë¨
              */
             explicit PoolAllocator(size_t chunkSize, size_t chunkCount);
 
@@ -42,78 +42,78 @@ namespace Core
             PoolAllocator& operator=(const PoolAllocator&) = delete;
 
             /**
-             * @brief Ç®¿¡¼­ ¸Ş¸ğ¸® ÇÒ´ç
+             * @brief í’€ì—ì„œ ë©”ëª¨ë¦¬ í• ë‹¹
              *
-             * @param size ÇÒ´çÇÒ ¹ÙÀÌÆ® Å©±â (chunkSize ÀÌÇÏ¿©¾ß ÇÔ)
-             * @param alignment Á¤·Ä ¿ä±¸»çÇ× (±âº»: DEFAULT_ALIGNMENT, ÃÖ´ë: sizeof(void*))
-             * @return ÇÒ´çµÈ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ, Ç®ÀÌ °¡µæ Âù °æ¿ì nullptr
+             * @param size í• ë‹¹í•  ë°”ì´íŠ¸ í¬ê¸° (chunkSize ì´í•˜ì—¬ì•¼ í•¨)
+             * @param alignment ì •ë ¬ ìš”êµ¬ì‚¬í•­ (ê¸°ë³¸: DEFAULT_ALIGNMENT, ìµœëŒ€: sizeof(void*))
+             * @return í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°, í’€ì´ ê°€ë“ ì°¬ ê²½ìš° nullptr
              *
-             * @note O(1) º¹Àâµµ, free-list¿¡¼­ pop
-             * @warning size°¡ chunkSize¸¦ ÃÊ°úÇÏ¸é assertion ½ÇÆĞ
+             * @note O(1) ë³µì¡ë„, free-listì—ì„œ pop
+             * @warning sizeê°€ chunkSizeë¥¼ ì´ˆê³¼í•˜ë©´ assertion ì‹¤íŒ¨
              */
             void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) override;
 
             /**
-             * @brief ¸Ş¸ğ¸®¸¦ Ç®¿¡ ¹İÈ¯
+             * @brief ë©”ëª¨ë¦¬ë¥¼ í’€ì— ë°˜í™˜
              *
-             * @param ptr ÇØÁ¦ÇÒ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ (nullptr Çã¿ë)
+             * @param ptr í•´ì œí•  ë©”ëª¨ë¦¬ í¬ì¸í„° (nullptr í—ˆìš©)
              *
-             * @note O(1) º¹Àâµµ, free-list¿¡ push
-             * @warning ptrÀº ÀÌ Ç®¿¡¼­ ÇÒ´çµÈ °ÍÀÌ¾î¾ß ÇÔ
+             * @note O(1) ë³µì¡ë„, free-listì— push
+             * @warning ptrì€ ì´ í’€ì—ì„œ í• ë‹¹ëœ ê²ƒì´ì–´ì•¼ í•¨
              */
             void Deallocate(void* ptr) override;
 
             /**
-             * @brief Ç® ÃÊ±âÈ­
+             * @brief í’€ ì´ˆê¸°í™”
              *
-             * @note ¸ğµç Ã»Å©¸¦ free-list·Î º¹¿ø
-             * @warning ¾ÆÁ÷ ÇÒ´çµÈ °´Ã¼°¡ ÀÖ¾îµµ ÃÊ±âÈ­µÊ (¼öµ¿ ¼Ò¸ê ÇÊ¿ä)
+             * @note ëª¨ë“  ì²­í¬ë¥¼ free-listë¡œ ë³µì›
+             * @warning ì•„ì§ í• ë‹¹ëœ ê°ì²´ê°€ ìˆì–´ë„ ì´ˆê¸°í™”ë¨ (ìˆ˜ë™ ì†Œë©¸ í•„ìš”)
              */
             void Reset() override;
 
             /**
-             * @brief ÇöÀç ÇÒ´çµÈ ÃÑ ¸Ş¸ğ¸® Å©±â
-             * @return ÇÒ´çµÈ ¹ÙÀÌÆ® ¼ö (chunkSize * ÇÒ´çµÈ Ã»Å© °³¼ö)
+             * @brief í˜„ì¬ í• ë‹¹ëœ ì´ ë©”ëª¨ë¦¬ í¬ê¸°
+             * @return í• ë‹¹ëœ ë°”ì´íŠ¸ ìˆ˜ (chunkSize * í• ë‹¹ëœ ì²­í¬ ê°œìˆ˜)
              */
             size_t GetAllocatedSize() const override { return mChunkSize * mAllocatedChunks; }
 
             /**
-             * @brief ÇöÀç ÇÒ´çµÈ Ã»Å© °³¼ö
-             * @return È°¼º Ã»Å© °³¼ö
+             * @brief í˜„ì¬ í• ë‹¹ëœ ì²­í¬ ê°œìˆ˜
+             * @return í™œì„± ì²­í¬ ê°œìˆ˜
              */
             size_t GetAllocationCount() const override { return mAllocatedChunks; }
 
             /**
-             * @brief Ã»Å© Å©±â
-             * @return °¢ Ã»Å©ÀÇ ¹ÙÀÌÆ® Å©±â (Á¤·Ä Àû¿ëµÊ)
+             * @brief ì²­í¬ í¬ê¸°
+             * @return ê° ì²­í¬ì˜ ë°”ì´íŠ¸ í¬ê¸° (ì •ë ¬ ì ìš©ë¨)
              */
             size_t GetChunkSize() const { return mChunkSize; }
 
             /**
-             * @brief ÀüÃ¼ Ã»Å© °³¼ö
-             * @return Ç®ÀÇ ÃÑ Ã»Å© °³¼ö
+             * @brief ì „ì²´ ì²­í¬ ê°œìˆ˜
+             * @return í’€ì˜ ì´ ì²­í¬ ê°œìˆ˜
              */
             size_t GetChunkCount() const { return mChunkCount; }
 
             /**
-             * @brief ³²Àº ¿©À¯ Ã»Å© °³¼ö
-             * @return ÇÒ´ç °¡´ÉÇÑ Ã»Å© °³¼ö
+             * @brief ë‚¨ì€ ì—¬ìœ  ì²­í¬ ê°œìˆ˜
+             * @return í• ë‹¹ ê°€ëŠ¥í•œ ì²­í¬ ê°œìˆ˜
              */
             size_t GetFreeChunkCount() const { return mChunkCount - mAllocatedChunks; }
 
         private:
             /**
-             * @brief free-list ÃÊ±âÈ­
+             * @brief free-list ì´ˆê¸°í™”
              *
-             * @note ¸ğµç Ã»Å©¸¦ ¿¬°á ¸®½ºÆ®·Î ±¸¼º
+             * @note ëª¨ë“  ì²­í¬ë¥¼ ì—°ê²° ë¦¬ìŠ¤íŠ¸ë¡œ êµ¬ì„±
              */
             void InitializeFreeList();
 
-            void* mMemory;              // ¸Ş¸ğ¸® ºí·Ï ½ÃÀÛ ÁÖ¼Ò
-            size_t mChunkSize;          // °¢ Ã»Å©ÀÇ Å©±â
-            size_t mChunkCount;         // ÀüÃ¼ Ã»Å© °³¼ö
-            size_t mAllocatedChunks;    // ÇöÀç ÇÒ´çµÈ Ã»Å© °³¼ö
-            void* mFreeList;            // free-list Çìµå Æ÷ÀÎÅÍ
+            void* mMemory;              // ë©”ëª¨ë¦¬ ë¸”ë¡ ì‹œì‘ ì£¼ì†Œ
+            size_t mChunkSize;          // ê° ì²­í¬ì˜ í¬ê¸°
+            size_t mChunkCount;         // ì „ì²´ ì²­í¬ ê°œìˆ˜
+            size_t mAllocatedChunks;    // í˜„ì¬ í• ë‹¹ëœ ì²­í¬ ê°œìˆ˜
+            void* mFreeList;            // free-list í—¤ë“œ í¬ì¸í„°
         };
 
     } // namespace Memory

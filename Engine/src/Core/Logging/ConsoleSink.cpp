@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Core/Logging/ConsoleSink.h"
 
 using namespace std;
@@ -47,7 +47,7 @@ namespace Core
             ss << msg.message;
 
 #ifdef _DEBUG
-            // µð¹ö±× ºôµå¿¡¼­¸¸ ÆÄÀÏ À§Ä¡ Ç¥½Ã·Î ºü¸¥ ¹®Á¦ ÃßÀû Áö¿ø
+            // ë””ë²„ê·¸ ë¹Œë“œì—ì„œë§Œ íŒŒì¼ ìœ„ì¹˜ í‘œì‹œë¡œ ë¹ ë¥¸ ë¬¸ì œ ì¶”ì  ì§€ì›
             ss << " (" << msg.file << ":" << msg.line << ")";
 #endif
 

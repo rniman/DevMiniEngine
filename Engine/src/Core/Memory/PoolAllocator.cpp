@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Core/Memory/PoolAllocator.h"
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h"
@@ -19,7 +19,7 @@ namespace Core
             CORE_VERIFY(chunkSize >= sizeof(void*), "Chunk size must be at least pointer size");
             CORE_VERIFY(chunkCount > 0, "Chunk count must be greater than 0");
 
-            // Free-list ±¸ÇöÀ» À§ÇØ °¢ Ã»Å©°¡ ÃÖ¼ÒÇÑ Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÒ ¼ö ÀÖ¾î¾ß ÇÔ
+            // Free-list êµ¬í˜„ì„ ìœ„í•´ ê° ì²­í¬ê°€ ìµœì†Œí•œ í¬ì¸í„°ë¥¼ ì €ì¥í•  ìˆ˜ ìˆì–´ì•¼ í•¨
             mChunkSize = AlignSize(chunkSize, sizeof(void*));
 
             const size_t totalSize = mChunkSize * mChunkCount;
@@ -94,11 +94,11 @@ namespace Core
 
         void PoolAllocator::InitializeFreeList()
         {
-            // Free-list´Â »ç¿ë °¡´ÉÇÑ Ã»Å©µéÀ» ¿¬°á ¸®½ºÆ®·Î °ü¸®
-            // °¢ Ã»Å©ÀÇ ½ÃÀÛ ºÎºĞ¿¡ ´ÙÀ½ Ã»Å©ÀÇ Æ÷ÀÎÅÍ¸¦ ÀúÀå
+            // Free-listëŠ” ì‚¬ìš© ê°€ëŠ¥í•œ ì²­í¬ë“¤ì„ ì—°ê²° ë¦¬ìŠ¤íŠ¸ë¡œ ê´€ë¦¬
+            // ê° ì²­í¬ì˜ ì‹œì‘ ë¶€ë¶„ì— ë‹¤ìŒ ì²­í¬ì˜ í¬ì¸í„°ë¥¼ ì €ì¥
             mFreeList = mMemory;
 
-            // °¢ Ã»Å©¸¦ ´ÙÀ½ Ã»Å©¿¡ ¿¬°áÇÏ¿© free-list ±¸¼º
+            // ê° ì²­í¬ë¥¼ ë‹¤ìŒ ì²­í¬ì— ì—°ê²°í•˜ì—¬ free-list êµ¬ì„±
             char* current = static_cast<char*>(mMemory);
             for (size_t i = 0; i < mChunkCount - 1; ++i)
             {
@@ -107,7 +107,7 @@ namespace Core
                 current += mChunkSize;
             }
 
-            // ¸¶Áö¸· Ã»Å©´Â nullptr·Î ¸®½ºÆ® Á¾·á
+            // ë§ˆì§€ë§‰ ì²­í¬ëŠ” nullptrë¡œ ë¦¬ìŠ¤íŠ¸ ì¢…ë£Œ
             void** const lastChunk = reinterpret_cast<void**>(current);
             *lastChunk = nullptr;
         }

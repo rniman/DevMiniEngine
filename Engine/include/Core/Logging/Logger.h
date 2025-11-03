@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Logging/LogTypes.h"
 #include "Core/Logging/LogSink.h"
@@ -12,10 +12,10 @@ namespace Core
     namespace Logging
     {
         /**
-         * @brief ¸ŞÀÎ ·Î±ë ½Ã½ºÅÛ (½Ì±ÛÅæ)
+         * @brief ë©”ì¸ ë¡œê¹… ì‹œìŠ¤í…œ (ì‹±ê¸€í†¤)
          * 
-         * @note ½º·¹µå ¾ÈÀü: ¿©·¯ ½º·¹µå¿¡¼­ µ¿½Ã È£Ãâ °¡´É
-         * @note ¸ÅÅ©·Î »ç¿ë ±ÇÀå (LOG_INFO, LOG_ERROR µî)
+         * @note ìŠ¤ë ˆë“œ ì•ˆì „: ì—¬ëŸ¬ ìŠ¤ë ˆë“œì—ì„œ ë™ì‹œ í˜¸ì¶œ ê°€ëŠ¥
+         * @note ë§¤í¬ë¡œ ì‚¬ìš© ê¶Œì¥ (LOG_INFO, LOG_ERROR ë“±)
          */
         class Logger
         {
@@ -23,9 +23,9 @@ namespace Core
             static Logger& GetInstance();
 
             /**
-             * @brief ·Î±× ¸Ş½ÃÁö ±â·Ï
+             * @brief ë¡œê·¸ ë©”ì‹œì§€ ê¸°ë¡
              * 
-             * @note ÃÖ¼Ò ·Î±× ·¹º§º¸´Ù ³·Àº ¸Ş½ÃÁö´Â ÇÊÅÍ¸µµÊ
+             * @note ìµœì†Œ ë¡œê·¸ ë ˆë²¨ë³´ë‹¤ ë‚®ì€ ë©”ì‹œì§€ëŠ” í•„í„°ë§ë¨
              */
             void Log(
                 LogLevel level,
@@ -36,29 +36,29 @@ namespace Core
             );
 
             /**
-             * @brief Ãâ·Â ´ë»ó(Sink) Ãß°¡
+             * @brief ì¶œë ¥ ëŒ€ìƒ(Sink) ì¶”ê°€
              * 
-             * @param sink Ãß°¡ÇÒ LogSink (¼ÒÀ¯±Ç ÀÌÀü)
+             * @param sink ì¶”ê°€í•  LogSink (ì†Œìœ ê¶Œ ì´ì „)
              */
             void AddSink(std::unique_ptr<LogSink> sink);
 
             /**
-             * @brief ¸ğµç Sink Á¦°Å
+             * @brief ëª¨ë“  Sink ì œê±°
              */
             void ClearSinks();
 
             /**
-             * @brief ÃÖ¼Ò ·Î±× ·¹º§ ¼³Á¤
+             * @brief ìµœì†Œ ë¡œê·¸ ë ˆë²¨ ì„¤ì •
              */
             void SetMinLevel(LogLevel level) { mMinLevel = level; }
 
             /**
-             * @brief ÃÖ¼Ò ·Î±× ·¹º§ Á¶È¸
+             * @brief ìµœì†Œ ë¡œê·¸ ë ˆë²¨ ì¡°íšŒ
              */
             LogLevel GetMinLevel() const { return mMinLevel; }
 
             /**
-             * @brief ¸ğµç SinkÀÇ ¹öÆÛ¸¦ Áï½Ã Ãâ·Â
+             * @brief ëª¨ë“  Sinkì˜ ë²„í¼ë¥¼ ì¦‰ì‹œ ì¶œë ¥
              */
             void Flush();
 
@@ -66,7 +66,7 @@ namespace Core
             Logger() = default;
             ~Logger() = default;
 
-            // º¹»ç ¹× ÀÌµ¿ ±İÁö (½Ì±ÛÅæ)
+            // ë³µì‚¬ ë° ì´ë™ ê¸ˆì§€ (ì‹±ê¸€í†¤)
             Logger(const Logger&) = delete;
             Logger& operator=(const Logger&) = delete;
 

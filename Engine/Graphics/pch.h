@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 
 //=============================================================================
 // Windows API
 //=============================================================================
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN
-	#define NOMINMAX  // min/max ¸ÅÅ©·Î Ãæµ¹ ¹æÁö (ÃßÃµ)
+	#define NOMINMAX  // min/max ë§¤í¬ë¡œ ì¶©ëŒ ë°©ì§€ (ì¶”ì²œ)
 	#include <windows.h>
 	#include <wrl/client.h>
 #endif
@@ -22,7 +22,7 @@
 //#include <DirectXColors.h>
 //#include <DirectXCollision.h>
 
-// dxgidebug.h´Â ³ªÁß¿¡ Ãß°¡
+// dxgidebug.hëŠ” ë‚˜ì¤‘ì— ì¶”ê°€
 // #ifdef _DEBUG
 // #include <dxgidebug.h>
 // #endif
@@ -31,14 +31,14 @@
 #include "d3dx12.h"
 #pragma warning(pop)
 
-// DirectX ¶óÀÌºê·¯¸® ¸µÅ©
+// DirectX ë¼ì´ë¸ŒëŸ¬ë¦¬ ë§í¬
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
 //=============================================================================
-// Ç¥ÁØ ¶óÀÌºê·¯¸®
+// í‘œì¤€ ë¼ì´ë¸ŒëŸ¬ë¦¬
 //=============================================================================
 #include <cstdint>
 #include <memory>
@@ -52,15 +52,15 @@
 #include <stdexcept>  // std::runtime_error
 
 
-// ¸ÖÆ¼½º·¹µù
+// ë©€í‹°ìŠ¤ë ˆë”©
 //#include <thread>
 //#include <mutex>
 //#include <atomic>
 
-// ¼º´É ÃøÁ¤
+// ì„±ëŠ¥ ì¸¡ì •
 //#include <chrono>
 
-// À¯Æ¿¸®Æ¼
+// ìœ í‹¸ë¦¬í‹°
 //#include <utility>
 //#include <optional>
 //#include <variant>

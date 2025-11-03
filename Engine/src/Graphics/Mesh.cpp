@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
@@ -21,21 +21,21 @@ namespace Graphics
 		size_t indexCount
 	)
 	{
-		// À¯È¿¼º °ËÁõ
+		// ìœ íš¨ì„± ê²€ì¦
 		if (!device || !commandQueue || !commandContext || !vertices || vertexCount == 0)
 		{
 			LOG_ERROR("Mesh::Initialize - Invalid parameters");
 			return false;
 		}
 
-		// ÀÌ¹Ì ÃÊ±âÈ­µÈ °æ¿ì Á¤¸®
+		// ì´ë¯¸ ì´ˆê¸°í™”ëœ ê²½ìš° ì •ë¦¬
 		if (mInitialized)
 		{
 			LOG_WARN("Mesh::Initialize - Already initialized, shutting down first");
 			Shutdown();
 		}
 
-		// Vertex Buffer ÃÊ±âÈ­
+		// Vertex Buffer ì´ˆê¸°í™”
 		if (!mVertexBuffer.Initialize(
 			device,
 			commandQueue,
@@ -51,7 +51,7 @@ namespace Graphics
 
 		LOG_GRAPHICS_INFO("Mesh - Vertex buffer initialized (%u vertices)", vertexCount);
 
-		// Index Buffer ÃÊ±âÈ­ (¼±ÅÃÀû)
+		// Index Buffer ì´ˆê¸°í™” (ì„ íƒì )
 		if (indices && indexCount > 0)
 		{
 			if (!mIndexBuffer.Initialize(
@@ -88,21 +88,21 @@ namespace Graphics
 		size_t indexCount
 	)
 	{
-		// À¯È¿¼º °ËÁõ
+		// ìœ íš¨ì„± ê²€ì¦
 		if (!device || !commandQueue || !commandContext || !vertices || vertexCount == 0)
 		{
 			LOG_ERROR("Mesh::InitializeTextured - Invalid parameters");
 			return false;
 		}
 
-		// ÀÌ¹Ì ÃÊ±âÈ­µÈ °æ¿ì Á¤¸®
+		// ì´ë¯¸ ì´ˆê¸°í™”ëœ ê²½ìš° ì •ë¦¬
 		if (mInitialized)
 		{
 			LOG_WARN("Mesh::InitializeTextured - Already initialized, shutting down first");
 			Shutdown();
 		}
 
-		// Vertex Buffer ÃÊ±âÈ­
+		// Vertex Buffer ì´ˆê¸°í™”
 		if (!mVertexBuffer.Initialize(
 			device,
 			commandQueue,
@@ -117,7 +117,7 @@ namespace Graphics
 		}
 		LOG_GRAPHICS_INFO("Mesh - Vertex buffer initialized (%u textured vertices)", vertexCount);
 
-		// Index Buffer ÃÊ±âÈ­ (¼±ÅÃÀû)
+		// Index Buffer ì´ˆê¸°í™” (ì„ íƒì )
 		if (indices && indexCount > 0)
 		{
 			if (!mIndexBuffer.Initialize(
@@ -136,7 +136,7 @@ namespace Graphics
 			LOG_GRAPHICS_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
 		}
 
-		mInputLayout = TexturedVertex::GetInputLayout();  // º¯°æµÊ
+		mInputLayout = TexturedVertex::GetInputLayout();  // ë³€ê²½ë¨
 
 		mInitialized = true;
 		LOG_GRAPHICS_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
@@ -165,27 +165,27 @@ namespace Graphics
 			return;
 		}
 
-		// Vertex Buffer ¹ÙÀÎµù
+		// Vertex Buffer ë°”ì¸ë”©
 		D3D12_VERTEX_BUFFER_VIEW vbv = mVertexBuffer.GetVertexBufferView();
 		commandList->IASetVertexBuffers(0, 1, &vbv);
 
-		// Index Buffer ¹ÙÀÎµù (ÀÖ´Â °æ¿ì)
+		// Index Buffer ë°”ì¸ë”© (ìˆëŠ” ê²½ìš°)
 		if (mIndexBuffer.IsInitialized())
 		{
 			D3D12_INDEX_BUFFER_VIEW ibv = mIndexBuffer.GetIndexBufferView();
 			commandList->IASetIndexBuffer(&ibv);
 		}
 
-		// Index Buffer »ç¿ë ¿©ºÎ¿¡ µû¶ó ´Ù¸¥ Draw È£Ãâ
+		// Index Buffer ì‚¬ìš© ì—¬ë¶€ì— ë”°ë¼ ë‹¤ë¥¸ Draw í˜¸ì¶œ
 		if (mIndexBuffer.IsInitialized())
 		{
 			// DrawIndexedInstanced(IndexCount, InstanceCount, StartIndex, BaseVertex, StartInstance)
 			commandList->DrawIndexedInstanced(
 				static_cast<UINT>(mIndexBuffer.GetIndexCount()),
-				1,  // ÀÎ½ºÅÏ½º 1°³
-				0,  // Ã¹ ¹øÂ° ÀÎµ¦½ººÎÅÍ
-				0,  // º£ÀÌ½º ¹öÅØ½º ¿ÀÇÁ¼Â ¾øÀ½
-				0   // Ã¹ ¹øÂ° ÀÎ½ºÅÏ½º
+				1,  // ì¸ìŠ¤í„´ìŠ¤ 1ê°œ
+				0,  // ì²« ë²ˆì§¸ ì¸ë±ìŠ¤ë¶€í„°
+				0,  // ë² ì´ìŠ¤ ë²„í…ìŠ¤ ì˜¤í”„ì…‹ ì—†ìŒ
+				0   // ì²« ë²ˆì§¸ ì¸ìŠ¤í„´ìŠ¤
 			);
 		}
 		else
@@ -193,9 +193,9 @@ namespace Graphics
 			// DrawInstanced(VertexCount, InstanceCount, StartVertex, StartInstance)
 			commandList->DrawInstanced(
 				static_cast<UINT>(mVertexBuffer.GetVertexCount()),
-				1,  // ÀÎ½ºÅÏ½º 1°³
-				0,  // Ã¹ ¹øÂ° ¹öÅØ½ººÎÅÍ
-				0   // Ã¹ ¹øÂ° ÀÎ½ºÅÏ½º
+				1,  // ì¸ìŠ¤í„´ìŠ¤ 1ê°œ
+				0,  // ì²« ë²ˆì§¸ ë²„í…ìŠ¤ë¶€í„°
+				0   // ì²« ë²ˆì§¸ ì¸ìŠ¤í„´ìŠ¤
 			);
 		}
 	}

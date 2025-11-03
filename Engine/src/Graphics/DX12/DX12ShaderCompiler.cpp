@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include <fstream>
 
 #include "Graphics/DX12/DX12ShaderCompiler.h"
@@ -15,42 +15,42 @@ namespace Graphics
 		ID3DBlob** outBlob
 	)
 	{
-		// ºôµå ±¸¼º¿¡ µû¸¥ ÄÄÆÄÀÏ ÇÃ·¡±× ¼³Á¤
+		// ë¹Œë“œ êµ¬ì„±ì— ë”°ë¥¸ ì»´íŒŒì¼ í”Œë˜ê·¸ ì„¤ì •
 		UINT compileFlags = 0;
 #ifdef _DEBUG
-		// Debug: µğ¹ö±× ½Éº¼ Æ÷ÇÔ ¹× ÃÖÀûÈ­ ºñÈ°¼ºÈ­·Î µğ¹ö±ë ¿ëÀÌ¼º È®º¸
+		// Debug: ë””ë²„ê·¸ ì‹¬ë³¼ í¬í•¨ ë° ìµœì í™” ë¹„í™œì„±í™”ë¡œ ë””ë²„ê¹… ìš©ì´ì„± í™•ë³´
 		compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #else
-		// Release: ÃÖ°í ¼öÁØ ÃÖÀûÈ­·Î ·±Å¸ÀÓ ¼º´É ÃÖ´ëÈ­
+		// Release: ìµœê³  ìˆ˜ì¤€ ìµœì í™”ë¡œ ëŸ°íƒ€ì„ ì„±ëŠ¥ ìµœëŒ€í™”
 		compileFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
 
 		ComPtr<ID3DBlob> errorBlob;
 
-		// D3DCompileFromFile: ÆÄÀÏ¿¡¼­ Á÷Á¢ ÄÄÆÄÀÏ (¸Ş¸ğ¸® ·Îµù ºÒÇÊ¿ä)
-		// D3D_COMPILE_STANDARD_FILE_INCLUDE: #include Áö½ÃÀÚ ÀÚµ¿ Ã³¸®
+		// D3DCompileFromFile: íŒŒì¼ì—ì„œ ì§ì ‘ ì»´íŒŒì¼ (ë©”ëª¨ë¦¬ ë¡œë”© ë¶ˆí•„ìš”)
+		// D3D_COMPILE_STANDARD_FILE_INCLUDE: #include ì§€ì‹œì ìë™ ì²˜ë¦¬
 		HRESULT hr = D3DCompileFromFile(
 			filePath.c_str(),
-			nullptr,                               // ¸ÅÅ©·Î Á¤ÀÇ ¾øÀ½
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,     // Ç¥ÁØ include ÇÚµé·¯
+			nullptr,                               // ë§¤í¬ë¡œ ì •ì˜ ì—†ìŒ
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,     // í‘œì¤€ include í•¸ë“¤ëŸ¬
 			entryPoint.c_str(),
 			target.c_str(),
 			compileFlags,
-			0,                                     // È¿°ú ÄÄÆÄÀÏ ÇÃ·¡±× (»ç¿ë ¾È ÇÔ)
+			0,                                     // íš¨ê³¼ ì»´íŒŒì¼ í”Œë˜ê·¸ (ì‚¬ìš© ì•ˆ í•¨)
 			outBlob,
 			errorBlob.GetAddressOf()
 		);
 
 		if (FAILED(hr))
 		{
-			// ÄÄÆÄÀÏ ¿¡·¯ ¸Ş½ÃÁö°¡ ÀÖÀ¸¸é Ãâ·Â (¹®¹ı ¿À·ù, Å¸ÀÔ ºÒÀÏÄ¡ µî)
+			// ì»´íŒŒì¼ ì—ëŸ¬ ë©”ì‹œì§€ê°€ ìˆìœ¼ë©´ ì¶œë ¥ (ë¬¸ë²• ì˜¤ë¥˜, íƒ€ì… ë¶ˆì¼ì¹˜ ë“±)
 			if (errorBlob)
 			{
 				LOG_ERROR("Shader compilation failed: %s", static_cast<const char*>(errorBlob->GetBufferPointer()));
 			}
 			else
 			{
-				// errorBlobÀÌ ¾ø´Â °æ¿ì ÆÄÀÏ ¾øÀ½ ¶Ç´Â ½Ã½ºÅÛ ¿À·ù
+				// errorBlobì´ ì—†ëŠ” ê²½ìš° íŒŒì¼ ì—†ìŒ ë˜ëŠ” ì‹œìŠ¤í…œ ì˜¤ë¥˜
 				LOG_ERROR("Shader compilation failed with HRESULT: 0x%08X", hr);
 			}
 			return false;
@@ -68,14 +68,14 @@ namespace Graphics
 		ID3DBlob** outBlob
 	)
 	{
-		// 1´Ü°è: CSO ÆÄÀÏÀ» ¸Ş¸ğ¸®·Î ÀĞ±â
+		// 1ë‹¨ê³„: CSO íŒŒì¼ì„ ë©”ëª¨ë¦¬ë¡œ ì½ê¸°
 		vector<char> csoData;
 		if (!ReadFileToMemory(csoFilePath, csoData))
 		{
 			return false;
 		}
 
-		// 2´Ü°è: ºó ID3DBlob »ı¼º
+		// 2ë‹¨ê³„: ë¹ˆ ID3DBlob ìƒì„±
 		HRESULT hr = D3DCreateBlob(csoData.size(), outBlob);
 		if (FAILED(hr))
 		{
@@ -83,8 +83,8 @@ namespace Graphics
 			return false;
 		}
 
-		// 3´Ü°è: ÆÄÀÏ µ¥ÀÌÅÍ¸¦ BlobÀ¸·Î º¹»ç
-		// memcpy »ç¿ë ÀÌÀ¯: ´Ü¼ø ¹ÙÀÌÆ® º¹»ç·Î °¡Àå ºü¸§
+		// 3ë‹¨ê³„: íŒŒì¼ ë°ì´í„°ë¥¼ Blobìœ¼ë¡œ ë³µì‚¬
+		// memcpy ì‚¬ìš© ì´ìœ : ë‹¨ìˆœ ë°”ì´íŠ¸ ë³µì‚¬ë¡œ ê°€ì¥ ë¹ ë¦„
 		memcpy(
 			(*outBlob)->GetBufferPointer(),
 			csoData.data(),
@@ -100,7 +100,7 @@ namespace Graphics
 		vector<char>& outData
 	)
 	{
-		// ios::ate: ÆÄÀÏ ³¡¿¡¼­ ½ÃÀÛÇÏ¿© tellg()·Î Å©±â Áï½Ã È®ÀÎ °¡´É
+		// ios::ate: íŒŒì¼ ëì—ì„œ ì‹œì‘í•˜ì—¬ tellg()ë¡œ í¬ê¸° ì¦‰ì‹œ í™•ì¸ ê°€ëŠ¥
 		ifstream file(filePath, ios::binary | ios::ate);
 		if (!file.is_open())
 		{
@@ -108,11 +108,11 @@ namespace Graphics
 			return false;
 		}
 
-		// ÇöÀç À§Ä¡(ÆÄÀÏ ³¡)¿¡¼­ Å©±â È®ÀÎ ÈÄ Ã³À½À¸·Î µÇµ¹¸²
+		// í˜„ì¬ ìœ„ì¹˜(íŒŒì¼ ë)ì—ì„œ í¬ê¸° í™•ì¸ í›„ ì²˜ìŒìœ¼ë¡œ ë˜ëŒë¦¼
 		streamsize fileSize = file.tellg();
 		file.seekg(0, ios::beg);
 
-		// ÇÑ ¹ø¿¡ ÀüÃ¼ ÆÄÀÏ ÀĞ±â (ÀÛÀº ¼ÎÀÌ´õ ÆÄÀÏ¿¡ È¿À²Àû)
+		// í•œ ë²ˆì— ì „ì²´ íŒŒì¼ ì½ê¸° (ì‘ì€ ì…°ì´ë” íŒŒì¼ì— íš¨ìœ¨ì )
 		outData.resize(static_cast<size_t>(fileSize));
 		if (!file.read(outData.data(), fileSize))
 		{

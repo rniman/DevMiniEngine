@@ -1,22 +1,22 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Core/Types.h"
 #include "Platform/PlatformTypes.h"
 #include "Platform/Window.h"
 #include "Platform/Input.h"
 
-// OS Å¸ÀÔ Àü¹æ ¼±¾ğ (Windows.h ¿À¿° ¹æÁö)
+// OS íƒ€ì… ì „ë°© ì„ ì–¸ (Windows.h ì˜¤ì—¼ ë°©ì§€)
 struct HWND__;
 struct HINSTANCE__;
 
 namespace Platform
 {
     /**
-     * @brief Win32 API À©µµ¿ì ±¸Çö
+     * @brief Win32 API ìœˆë„ìš° êµ¬í˜„
      *
-     * Windows ÇÃ·§Æû¿ë Window ÀÎÅÍÆäÀÌ½º ±¸ÇöÃ¼ÀÔ´Ï´Ù.
+     * Windows í”Œë«í¼ìš© Window ì¸í„°í˜ì´ìŠ¤ êµ¬í˜„ì²´ì…ë‹ˆë‹¤.
      *
-     * @note ³»ºÎ ±¸Çö Å¬·¡½º - »ç¿ëÀÚ´Â Window ÀÎÅÍÆäÀÌ½º¸¦ ÅëÇØ Á¢±Ù
+     * @note ë‚´ë¶€ êµ¬í˜„ í´ë˜ìŠ¤ - ì‚¬ìš©ìëŠ” Window ì¸í„°í˜ì´ìŠ¤ë¥¼ í†µí•´ ì ‘ê·¼
      */
     class Win32Window : public Window
     {
@@ -24,7 +24,7 @@ namespace Platform
         Win32Window();
         ~Win32Window() override;
 
-        // Window ÀÎÅÍÆäÀÌ½º ±¸Çö
+        // Window ì¸í„°í˜ì´ìŠ¤ êµ¬í˜„
         bool Create(const WindowDesc& desc) override;
         void Destroy() override;
         void ProcessEvents() override;
@@ -40,11 +40,11 @@ namespace Platform
         void SetEventCallback(EventCallback callback) override;
 
     private:
-        // Win32 Àü¿ë ÃÊ±âÈ­
+        // Win32 ì „ìš© ì´ˆê¸°í™”
         bool RegisterWindowClass();
         void UnregisterWindowClass();
 
-        // Win32 ¸Ş½ÃÁö ÇÚµé·¯ (Á¤Àû - OS Äİ¹é)
+        // Win32 ë©”ì‹œì§€ í•¸ë“¤ëŸ¬ (ì •ì  - OS ì½œë°±)
         static LRESULT CALLBACK WindowProc(
             HWND__* hwnd,
             UINT msg,
@@ -52,32 +52,32 @@ namespace Platform
             LPARAM lParam
         );
         
-        // ÀÎ½ºÅÏ½º ¸Ş½ÃÁö ÇÚµé·¯
+        // ì¸ìŠ¤í„´ìŠ¤ ë©”ì‹œì§€ í•¸ë“¤ëŸ¬
         LRESULT  HandleMessage(
             UINT msg,
             WPARAM wParam,
             LPARAM lParam
         );
 
-        // ¸â¹ö º¯¼ö
+        // ë©¤ë²„ ë³€ìˆ˜
 
-        // Win32 ÇÚµé
-        HWND__* mHwnd;           // À©µµ¿ì ÇÚµé
-        HINSTANCE__* mHInstance; // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ÀÎ½ºÅÏ½º
+        // Win32 í•¸ë“¤
+        HWND__* mHwnd;           // ìœˆë„ìš° í•¸ë“¤
+        HINSTANCE__* mHInstance; // ì• í”Œë¦¬ì¼€ì´ì…˜ ì¸ìŠ¤í„´ìŠ¤
 
-        // À©µµ¿ì »óÅÂ
+        // ìœˆë„ìš° ìƒíƒœ
         Core::uint32 mWidth;
         Core::uint32 mHeight;
         bool mShouldClose;
         bool mIsFullscreen;
 
-        // ÀÔ·Â ¸Å´ÏÀú
+        // ì…ë ¥ ë§¤ë‹ˆì €
         Input mInput;
 
-        // ÀÌº¥Æ® Äİ¹é
+        // ì´ë²¤íŠ¸ ì½œë°±
         EventCallback mEventCallback;
 
-        // À©µµ¿ì Å¬·¡½º ÀÌ¸§
+        // ìœˆë„ìš° í´ë˜ìŠ¤ ì´ë¦„
         static constexpr const wchar_t* CLASS_NAME = L"DevMiniEngineWindowClass";
     };
 

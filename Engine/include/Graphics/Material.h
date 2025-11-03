@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Graphics/GraphicsTypes.h"
 #include <string>
@@ -7,19 +7,19 @@ namespace Graphics
 {
 
 	/**
-	 * @brief ºí·»µå ¸ğµå ÇÁ¸®¼Â ¿­°ÅÇü
+	 * @brief ë¸”ë Œë“œ ëª¨ë“œ í”„ë¦¬ì…‹ ì—´ê±°í˜•
 	 *
-	 * D3D12 ºí·»µå »óÅÂÀÇ ÀÏ¹İÀûÀÎ Á¶ÇÕÀ» Á¦°øÇÕ´Ï´Ù.
+	 * D3D12 ë¸”ë Œë“œ ìƒíƒœì˜ ì¼ë°˜ì ì¸ ì¡°í•©ì„ ì œê³µí•©ë‹ˆë‹¤.
 	 */
 	enum class BlendMode
 	{
-		Opaque,      // ºÒÅõ¸í (ºí·»µù ºñÈ°¼ºÈ­)
-		AlphaBlend,  // ¾ËÆÄ ºí·»µù (SrcAlpha, InvSrcAlpha)
-		Additive     // °¡»ê ºí·»µù (SrcAlpha, One)
+		Opaque,      // ë¶ˆíˆ¬ëª… (ë¸”ë Œë”© ë¹„í™œì„±í™”)
+		AlphaBlend,  // ì•ŒíŒŒ ë¸”ë Œë”© (SrcAlpha, InvSrcAlpha)
+		Additive     // ê°€ì‚° ë¸”ë Œë”© (SrcAlpha, One)
 	};
 
 	/**
-	 * @brief Material »ı¼ºÀ» À§ÇÑ ¼³Á¤ ±¸Á¶Ã¼
+	 * @brief Material ìƒì„±ì„ ìœ„í•œ ì„¤ì • êµ¬ì¡°ì²´
 	 */
 	struct MaterialDesc
 	{
@@ -28,10 +28,10 @@ namespace Graphics
 		const char* vsEntryPoint = "VSMain";
 		const char* psEntryPoint = "PSMain";
 
-		// ºí·»µå ¸ğµå (ÇÁ¸®¼Â Á¦°ø)
+		// ë¸”ë Œë“œ ëª¨ë“œ (í”„ë¦¬ì…‹ ì œê³µ)
 		BlendMode blendMode = BlendMode::Opaque;
 
-		// D3D12 ³×ÀÌÆ¼ºê Å¸ÀÔ Á÷Á¢ »ç¿ë
+		// D3D12 ë„¤ì´í‹°ë¸Œ íƒ€ì… ì§ì ‘ ì‚¬ìš©
 		D3D12_CULL_MODE cullMode = D3D12_CULL_MODE_BACK;
 		D3D12_FILL_MODE fillMode = D3D12_FILL_MODE_SOLID;
 
@@ -39,45 +39,45 @@ namespace Graphics
 		bool depthWriteEnabled = true;
 		D3D12_COMPARISON_FUNC depthComparisonFunc = D3D12_COMPARISON_FUNC_LESS;
 
-		// PSO »ı¼º¿¡ ÇÊ¿äÇÑ Ãß°¡ ¼³Á¤
+		// PSO ìƒì„±ì— í•„ìš”í•œ ì¶”ê°€ ì„¤ì •
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE primitiveTopology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		Core::uint32 numRenderTargets = 1;
-		DXGI_FORMAT rtvFormats[8] = { DXGI_FORMAT_R8G8B8A8_UNORM };  // ÃÖ´ë 8°³
+		DXGI_FORMAT rtvFormats[8] = { DXGI_FORMAT_R8G8B8A8_UNORM };  // ìµœëŒ€ 8ê°œ
 		DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-		// MSAA ¼³Á¤
+		// MSAA ì„¤ì •
 		Core::uint32 sampleCount = 1;
 		Core::uint32 sampleQuality = 0;
 		Core::uint32 sampleMask = 0xFFFFFFFF;
 	};
 
 	/**
-	 * @brief ·»´õ¸µ¿¡ ÇÊ¿äÇÑ ¼ÎÀÌ´õ, »óÅÂ, ÆÄ¶ó¹ÌÅÍ¸¦ Ä¸½¶È­ÇÏ´Â Material Å¬·¡½º
+	 * @brief ë Œë”ë§ì— í•„ìš”í•œ ì…°ì´ë”, ìƒíƒœ, íŒŒë¼ë¯¸í„°ë¥¼ ìº¡ìŠí™”í•˜ëŠ” Material í´ë˜ìŠ¤
 	 *
-	 * MaterialÀº PSO »ı¼º¿¡ ÇÊ¿äÇÑ ¸ğµç ·»´õ¸µ »óÅÂ Á¤º¸¸¦ °ü¸®ÇÕ´Ï´Ù.
-	 * ¼ÎÀÌ´õ °æ·Î, ºí·»µå »óÅÂ, ·¡½ºÅÍ¶óÀÌÀú »óÅÂ, ±íÀÌ-½ºÅÙ½Ç »óÅÂ¸¦ Æ÷ÇÔÇÕ´Ï´Ù.
+	 * Materialì€ PSO ìƒì„±ì— í•„ìš”í•œ ëª¨ë“  ë Œë”ë§ ìƒíƒœ ì •ë³´ë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
+	 * ì…°ì´ë” ê²½ë¡œ, ë¸”ë Œë“œ ìƒíƒœ, ë˜ìŠ¤í„°ë¼ì´ì € ìƒíƒœ, ê¹Šì´-ìŠ¤í…ì‹¤ ìƒíƒœë¥¼ í¬í•¨í•©ë‹ˆë‹¤.
 	 */
 	class Material
 	{
 	public:
 		/**
-		 * @brief MaterialDesc¸¦ »ç¿ëÇÑ »ı¼ºÀÚ
+		 * @brief MaterialDescë¥¼ ì‚¬ìš©í•œ ìƒì„±ì
 		 *
-		 * @param desc Material ¼³Á¤ Á¤º¸
+		 * @param desc Material ì„¤ì • ì •ë³´
 		 */
 		explicit Material(const MaterialDesc& desc);
 
 		/**
-		 * @brief ±âº» »ı¼ºÀÚ (Opaque Material)
+		 * @brief ê¸°ë³¸ ìƒì„±ì (Opaque Material)
 		 */
 		Material();
 		~Material() = default;
 
-		// º¹»ç Çã¿ë (¼³Á¤ Á¤º¸¸¸ º¹»ç)
+		// ë³µì‚¬ í—ˆìš© (ì„¤ì • ì •ë³´ë§Œ ë³µì‚¬)
 		Material(const Material&) = default;
 		Material& operator=(const Material&) = default;
 
-		// ÀÌµ¿ Çã¿ë
+		// ì´ë™ í—ˆìš©
 		Material(Material&&) noexcept = default;
 		Material& operator=(Material&&) noexcept = default;
 
@@ -91,7 +91,7 @@ namespace Graphics
 		D3D12_RASTERIZER_DESC GetRasterizerState() const { return mRasterizerDesc; }
 		D3D12_DEPTH_STENCIL_DESC GetDepthStencilState() const { return mDepthStencilDesc; }
 
-		// PSO »ı¼º ½Ã ÇÊ¿äÇÑ Ãß°¡ ¼³Á¤
+		// PSO ìƒì„± ì‹œ í•„ìš”í•œ ì¶”ê°€ ì„¤ì •
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE GetPrimitiveTopology() const { return mPrimitiveTopology; }
 		Core::uint32 GetNumRenderTargets() const { return mNumRenderTargets; }
 		const DXGI_FORMAT* GetRTVFormats() const { return mRTVFormats; }
@@ -101,43 +101,43 @@ namespace Graphics
 		Core::uint32 GetSampleMask() const { return mSampleMask; }
 
 		/**
-		 * @brief Material ¼³Á¤ ±â¹İ ÇØ½Ã °ª °è»ê
+		 * @brief Material ì„¤ì • ê¸°ë°˜ í•´ì‹œ ê°’ ê³„ì‚°
 		 *
-		 * PSO Ä³½Ì¿¡ »ç¿ëµË´Ï´Ù.
+		 * PSO ìºì‹±ì— ì‚¬ìš©ë©ë‹ˆë‹¤.
 		 *
-		 * @return Material °íÀ¯ ÇØ½Ã °ª
+		 * @return Material ê³ ìœ  í•´ì‹œ ê°’
 		 */
 		size_t GetHash() const;
 
 	private:
 		/**
-		 * @brief BlendMode¸¦ D3D12_BLEND_DESC·Î º¯È¯
+		 * @brief BlendModeë¥¼ D3D12_BLEND_DESCë¡œ ë³€í™˜
 		 */
 		static D3D12_BLEND_DESC CreateBlendDesc(BlendMode mode);
 
 		/**
-		 * @brief ±íÀÌ Å×½ºÆ® ¼³Á¤À» D3D12_DEPTH_STENCIL_DESC·Î º¯È¯
+		 * @brief ê¹Šì´ í…ŒìŠ¤íŠ¸ ì„¤ì •ì„ D3D12_DEPTH_STENCIL_DESCë¡œ ë³€í™˜
 		 */
 		static D3D12_DEPTH_STENCIL_DESC CreateDepthStencilDesc(bool depthTest, bool depthWrite, D3D12_COMPARISON_FUNC depthComparisonFunc);
 
 		/**
-		 * @brief ¹®ÀÚ¿­ ÇØ½Ã °è»ê ÇïÆÛ ÇÔ¼ö
+		 * @brief ë¬¸ìì—´ í•´ì‹œ ê³„ì‚° í—¬í¼ í•¨ìˆ˜
 		 */
 		static size_t HashString(const std::wstring& str);
 		static size_t HashString(const std::string& str);
 
-		// ¼ÎÀÌ´õ Á¤º¸
+		// ì…°ì´ë” ì •ë³´
 		std::wstring mVertexShaderPath;
 		std::wstring mPixelShaderPath;
 		std::string mVSEntryPoint;
 		std::string mPSEntryPoint;
 
-		// ·»´õ »óÅÂ
+		// ë Œë” ìƒíƒœ
 		D3D12_BLEND_DESC mBlendDesc;
 		D3D12_RASTERIZER_DESC mRasterizerDesc;
 		D3D12_DEPTH_STENCIL_DESC mDepthStencilDesc;
 
-		// PSO »ı¼º ¼³Á¤
+		// PSO ìƒì„± ì„¤ì •
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE mPrimitiveTopology;
 		Core::uint32 mNumRenderTargets;
 		DXGI_FORMAT mRTVFormats[8];  // D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT
@@ -146,7 +146,7 @@ namespace Graphics
 		Core::uint32 mSampleQuality;
 		Core::uint32 mSampleMask;
 
-		// Ä³½ÌÀ» À§ÇÑ ÇØ½Ã (Áö¿¬ °è»ê)
+		// ìºì‹±ì„ ìœ„í•œ í•´ì‹œ (ì§€ì—° ê³„ì‚°)
 		mutable size_t mCachedHash = 0;
 	};
 

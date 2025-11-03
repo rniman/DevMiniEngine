@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <DirectXMath.h>
 #include "Core/Types.h"
@@ -6,40 +6,40 @@
 namespace Math
 {
     //=============================================================================
-    // º¤ÅÍ Å¸ÀÔ
+    // ë²¡í„° íƒ€ì…
     //=============================================================================
 
-    // ÀúÀå¿ë º¤ÅÍ Å¸ÀÔ (¸Ş¸ğ¸® È¿À²Àû)
-    using Vector2 = DirectX::XMFLOAT2;  // 2D º¤ÅÍ (8 bytes)
-    using Vector3 = DirectX::XMFLOAT3;  // 3D º¤ÅÍ (12 bytes)
-    using Vector4 = DirectX::XMFLOAT4;  // 4D º¤ÅÍ (16 bytes)
+    // ì €ì¥ìš© ë²¡í„° íƒ€ì… (ë©”ëª¨ë¦¬ íš¨ìœ¨ì )
+    using Vector2 = DirectX::XMFLOAT2;  // 2D ë²¡í„° (8 bytes)
+    using Vector3 = DirectX::XMFLOAT3;  // 3D ë²¡í„° (12 bytes)
+    using Vector4 = DirectX::XMFLOAT4;  // 4D ë²¡í„° (16 bytes)
 
-    // SIMD °è»ê¿ë º¤ÅÍ (16 bytes aligned, ¿¬»ê ÃÖÀûÈ­)
+    // SIMD ê³„ì‚°ìš© ë²¡í„° (16 bytes aligned, ì—°ì‚° ìµœì í™”)
     using VectorSIMD = DirectX::XMVECTOR;
 
     //=============================================================================
-    // Çà·Ä Å¸ÀÔ
+    // í–‰ë ¬ íƒ€ì…
     //=============================================================================
 
-    // ÀúÀå¿ë Çà·Ä Å¸ÀÔ
-    using Matrix3x3 = DirectX::XMFLOAT3X3;  // 3x3 Çà·Ä (36 bytes)
-    using Matrix4x4 = DirectX::XMFLOAT4X4;  // 4x4 Çà·Ä (64 bytes)
+    // ì €ì¥ìš© í–‰ë ¬ íƒ€ì…
+    using Matrix3x3 = DirectX::XMFLOAT3X3;  // 3x3 í–‰ë ¬ (36 bytes)
+    using Matrix4x4 = DirectX::XMFLOAT4X4;  // 4x4 í–‰ë ¬ (64 bytes)
 
-    // SIMD °è»ê¿ë Çà·Ä (¿¬»ê ÃÖÀûÈ­)
+    // SIMD ê³„ì‚°ìš© í–‰ë ¬ (ì—°ì‚° ìµœì í™”)
     using MatrixSIMD = DirectX::XMMATRIX;
 
     //=============================================================================
-    // ÄõÅÍ´Ï¾ğ
+    // ì¿¼í„°ë‹ˆì–¸
     //=============================================================================
 
-    // ÀúÀå¿ë ÄõÅÍ´Ï¾ğ (È¸Àü Ç¥Çö)
+    // ì €ì¥ìš© ì¿¼í„°ë‹ˆì–¸ (íšŒì „ í‘œí˜„)
     using Quaternion = DirectX::XMFLOAT4;
 
-    // SIMD °è»ê¿ë ÄõÅÍ´Ï¾ğ
+    // SIMD ê³„ì‚°ìš© ì¿¼í„°ë‹ˆì–¸
     using QuaternionSIMD = DirectX::XMVECTOR;
 
     //=============================================================================
-    // °øÅë »ó¼ö
+    // ê³µí†µ ìƒìˆ˜
     //=============================================================================
 
     constexpr Core::float32 PI = 3.14159265358979323846f;
@@ -49,11 +49,11 @@ namespace Math
     constexpr Core::float32 RAD_TO_DEG = 57.2957795130823208767f;
 
     //=============================================================================
-    // º¯È¯ ÇïÆÛ ÇÔ¼ö
-    // Storage Å¸ÀÔ ¡ê SIMD Å¸ÀÔ °£ º¯È¯
+    // ë³€í™˜ í—¬í¼ í•¨ìˆ˜
+    // Storage íƒ€ì… â†” SIMD íƒ€ì… ê°„ ë³€í™˜
     //=============================================================================
 
-    // Vector3 º¯È¯
+    // Vector3 ë³€í™˜
     inline VectorSIMD LoadVector3(const Vector3& v)
     {
         return DirectX::XMLoadFloat3(&v);
@@ -64,7 +64,7 @@ namespace Math
         DirectX::XMStoreFloat3(&out, v);
     }
 
-    // Matrix4x4 º¯È¯
+    // Matrix4x4 ë³€í™˜
     inline MatrixSIMD LoadMatrix(const Matrix4x4& m)
     {
         return DirectX::XMLoadFloat4x4(&m);

@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Core/Logging/LogMacros.h"
 
@@ -36,7 +36,7 @@ namespace Graphics
 		mType = type;
 		mNumDescriptors = numDescriptors;
 
-		// Descriptor Heap ª˝º∫
+		// Descriptor Heap ÏÉùÏÑ±
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 		heapDesc.Type = type;
 		heapDesc.NumDescriptors = static_cast<UINT>(numDescriptors);
@@ -50,10 +50,10 @@ namespace Graphics
 			return false;
 		}
 
-		// Descriptor ≈©±‚ ∞°¡Æø¿±‚
+		// Descriptor ÌÅ¨Í∏∞ Í∞ÄÏ†∏Ïò§Í∏∞
 		mDescriptorSize = device->GetDescriptorHandleIncrementSize(type);
 
-		// Ω√¿€ «⁄µÈ ∞°¡Æø¿±‚
+		// ÏãúÏûë Ìï∏Îì§ Í∞ÄÏ†∏Ïò§Í∏∞
 		mCPUStart = mHeap->GetCPUDescriptorHandleForHeapStart();
 		if (shaderVisible)
 		{
