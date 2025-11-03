@@ -8,6 +8,86 @@
 
 ---
 
+## 2025-11-03 - 텍스처 시스템 구현 완성
+
+### Tasks
+- [x] Texture 클래스 구현 (WIC/DDS 로더)
+- [x] SRV 생성 및 Descriptor Heap 관리
+- [x] Root Signature에 Descriptor Table 추가
+- [x] 텍스처 샘플링 셰이더 작성
+- [x] 큐브 UV 매핑 (24개 정점)
+- [x] 13_TexturedCube 샘플 완성
+
+### Decisions
+
+**Texture 클래스**
+- WIC Loader: PNG, JPG 등 일반 이미지
+- DDS Loader: 압축 텍스처, 밉맵 지원
+- Upload Heap으로 GPU 전송 후 즉시 해제
+
+**Root Signature 구조**
+- Root Parameter 0: CBV (b0) - MVP 행렬
+- Root Parameter 1: SRV Descriptor Table (t0) - 텍스처
+- Static Sampler (s0): Linear 필터링, Wrap 모드
+
+**큐브 정점 확장**
+- 8개 → 24개 정점 (6면 × 4정점)
+- 이유: 각 면마다 독립적인 UV 좌표 필요
+
+### Issues Encountered
+
+**Shader Compilation Error (X3000)**
+- 원인: UTF-8 BOM 존재
+- 해결: "UTF-8 서명 없음"으로 재저장
+
+**Descriptor Table 바인딩 순서**
+- 문제: SRV가 셰이더에서 인식 안 됨
+- 원인: Root Signature 설정 전에 Descriptor Table 바인딩
+- 해결: 올바른 순서 준수
+```cpp
+  cmdList->SetGraphicsRootSignature(rootSignature);
+  cmdList->SetDescriptorHeaps(1, heaps);
+  cmdList->SetGraphicsRootDescriptorTable(1, srvHandle);
+```
+
+**UV 매핑 왜곡**
+- 원인: 8개 정점으로 큐브 생성 시 UV 중복 불가
+- 해결: 24개 독립 정점 사용
+
+### Lessons Learned
+
+**텍스처 파이프라인**
+- Upload Heap은 일시적, Default Heap은 영구적
+- Resource Barrier로 상태 전이 필수
+- WaitForIdle()로 GPU 완료 대기 후 Upload Buffer 해제
+
+**바인딩 순서**
+- Root Signature → Descriptor Heap → Descriptor Table 순서 엄수
+- PSO는 캐싱되므로 매 프레임 재생성 불필요
+
+**메시 설계**
+- UV/Normal 등 면마다 다른 속성이 필요하면 정점 독립 필수
+- 24개 정점 큐브는 표준 구현
+
+### Code Statistics
+- 새 클래스: Texture
+- 수정 클래스: Mesh, Material
+- 새 샘플: 13_TexturedCube
+- 빌드 경고: 0개
+
+### Next Steps
+
+**즉시 다음: 텍스처 시스템 확장**
+- [ ] 다중 텍스처 지원 (Diffuse, Normal, Specular)
+- [ ] Descriptor 자동 할당 시스템
+- [ ] 밉맵 지원
+
+**이후: 조명 시스템**
+- [ ] Normal Map 추가
+- [ ] Phong 또는 PBR 조명 모델
+
+---
+
 ## 2025-10-30 - Depth-Stencil Buffer 및 3D 카메라 렌더링 구현
 
 ### Tasks
