@@ -1,0 +1,35 @@
+# 파일 인코딩 및 줄 끝 문자열 설정을 위한 최상위 설정
+root = true
+
+# 모든 파일에 대한 일반 설정
+[*]
+# IDE에서 파일의 끝에 빈 줄을 추가할지 여부
+insert_final_newline = true 
+# 줄 끝 문자열(Windows 표준인 CRLF 사용)
+end_of_line = crlf 
+# 모든 파일의 문자 인코딩을 UTF-8로 지정 (C4819 이슈와 Git 호환성에 유리)
+charset = utf-8 
+# 파일 끝에 빈 줄 추가
+insert_final_newline = true 
+# 후행 공백 제거
+trim_trailing_whitespace = true
+
+# C/C++ 파일에 대한 특정 설정
+[*.{cpp,h,hpp,c}]
+# 들여쓰기에 공백을 사용할지 탭을 사용할지 지정
+indent_style = tab 
+# 들여쓰기 크기: 4칸 (탭 하나의 크기를 4칸 공백으로 처리)
+indent_size = 4 
+tab_width = 4
+
+# 셰이더 파일에 대한 설정 (일반적으로 Visual Studio 기본값 사용)
+[*.hlsl]
+indent_style = tab
+# 들여쓰기 크기: 4칸 (탭 하나의 크기를 4칸 공백으로 처리)
+indent_size = 4 
+tab_width = 4
+
+# JSON 및 기타 구성 파일 (2칸 들여쓰기 사용 예시)
+[*.json]
+indent_style = space
+indent_size = 2
