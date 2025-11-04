@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "Graphics/Material.h"
+#include "Graphics/Texture.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"  
 #include "Core/Logging/Logger.h"
 
 using namespace std;
@@ -83,6 +85,110 @@ namespace Graphics
 		{
 			mRTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 		}
+	}
+
+	bool Material::AllocateDescriptors(ID3D12Device* device, DX12DescriptorHeap* heap)
+	{
+		if (!device || !heap)
+		{
+			LOG_ERROR("[Material] Device or Heap is null");
+			return false;
+		}
+
+		if (mDescriptorStartIndex != INVALID_DESCRIPTOR_INDEX)
+		{
+			LOG_WARN("[Material] Descriptors already allocated. Freeing first.");
+			FreeDescriptors(heap);
+		}
+
+		// 7개 연속 슬롯 할당
+		constexpr uint32 slotCount = static_cast<uint32>(TextureType::Count);
+		mDescriptorStartIndex = heap->AllocateBlock(slotCount);
+
+		if (mDescriptorStartIndex == INVALID_DESCRIPTOR_INDEX)
+		{
+			LOG_ERROR("[Material] Failed to allocate descriptor block");
+			return false;
+		}
+
+		LOG_INFO(
+			"[Material] Allocated descriptor block [%u ~ %u]",
+			mDescriptorStartIndex,
+			mDescriptorStartIndex + slotCount - 1
+		);
+
+		// 각 텍스처 타입별로 SRV 생성
+		for (size_t i = 0; i < static_cast<size_t>(TextureType::Count); ++i)
+		{
+			TextureType type = static_cast<TextureType>(i);
+			uint32 descriptorIndex = mDescriptorStartIndex + static_cast<uint32>(i);
+
+			if (mTextures[i] && mTextures[i]->IsInitialized())
+			{
+				// 실제 텍스처의 SRV 생성
+				if (!mTextures[i]->CreateSRV(device, heap, descriptorIndex))
+				{
+					LOG_ERROR(
+						"[Material] Failed to create SRV for texture type: %s",
+						TextureTypeToString(type)
+					);
+					FreeDescriptors(heap);
+					return false;
+				}
+
+				LOG_TRACE(
+					"[Material] Created SRV for %s at descriptor %u",
+					TextureTypeToString(type),
+					descriptorIndex
+				);
+			}
+			else
+			{
+				// 빈 슬롯에는 Dummy SRV 생성
+				CreateDummySRV(device, heap, descriptorIndex);
+
+				LOG_TRACE(
+					"[Material] Created Dummy SRV for %s at descriptor %u",
+					TextureTypeToString(type),
+					descriptorIndex
+				);
+			}
+		}
+
+		LOG_INFO("[Material] All descriptors allocated successfully");
+		return true;
+	}
+
+	void Material::FreeDescriptors(DX12DescriptorHeap* heap)
+	{
+		if (!heap)
+		{
+			LOG_ERROR("[Material] Heap is null");
+			return;
+		}
+
+		if (mDescriptorStartIndex == INVALID_DESCRIPTOR_INDEX)
+		{
+			LOG_WARN("[Material] No descriptors to free");
+			return;
+		}
+
+		constexpr uint32 slotCount = static_cast<uint32>(TextureType::Count);
+		heap->FreeBlock(mDescriptorStartIndex, slotCount);
+
+		LOG_INFO(
+			"[Material] Freed descriptor block [%u ~ %u]",
+			mDescriptorStartIndex,
+			mDescriptorStartIndex + slotCount - 1
+		);
+
+		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
+	}
+
+	void Material::SetTexture(TextureType type, const std::shared_ptr<Texture>& texture)
+	{
+		size_t index = static_cast<size_t>(type);
+		mTextures[index] = texture;
 	}
 
 	D3D12_BLEND_DESC Material::CreateBlendDesc(BlendMode mode)
@@ -173,6 +279,48 @@ namespace Graphics
 		return depthStencilDesc;
 	}
 
+	std::shared_ptr<Texture> Material::GetTexture(TextureType type) const
+	{
+		size_t index = static_cast<size_t>(type);
+		return mTextures[index];
+	}
+
+	bool Material::HasTexture(TextureType type) const
+	{
+		size_t index = static_cast<size_t>(type);
+		return mTextures[index] != nullptr;
+	}
+
+	uint32 Material::GetTextureCount() const
+	{
+		uint32 count = 0;
+		for (const auto& texture : mTextures)
+		{
+			if (texture != nullptr)
+			{
+				++count;
+			}
+		}
+		return count;
+	}
+
+	D3D12_GPU_DESCRIPTOR_HANDLE Material::GetDescriptorTableHandle(const DX12DescriptorHeap* heap) const
+	{
+		if (!heap)
+		{
+			LOG_ERROR("[Material] Heap is null");
+			return {};
+		}
+
+		if (mDescriptorStartIndex == INVALID_DESCRIPTOR_INDEX)
+		{
+			LOG_ERROR("[Material] Descriptors not allocated");
+			return {};
+		}
+
+		return heap->GetGPUHandle(mDescriptorStartIndex);
+	}
+
 	size_t Material::GetHash() const
 	{
 		// 캐시된 해시가 있으면 반환
@@ -200,6 +348,35 @@ namespace Graphics
 
 		mCachedHash = hash;
 		return mCachedHash;
+	}
+
+	void Material::CreateDummySRV(ID3D12Device* device, DX12DescriptorHeap* heap, uint32 index)
+	{
+		// 1x1 검은색 텍스처 대신, null descriptor 생성
+        // D3D12에서는 null descriptor를 명시적으로 생성할 수 없으므로
+        // 기본 텍스처 리소스를 생성하거나 전역 Dummy 텍스처를 사용해야 합니다.
+        
+        // 방법 1: Null Descriptor (간단하지만 샘플링 시 문제 가능)
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Texture2D.MipLevels = 1;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+        srvDesc.Texture2D.PlaneSlice = 0;
+        srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+        D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = heap->GetCPUHandle(index);
+        
+        // nullptr 리소스로 SRV 생성 (Null Descriptor)
+        device->CreateShaderResourceView(
+            nullptr,  // null resource
+            &srvDesc,
+            cpuHandle
+        );
+
+        // 방법 2: 실제 1x1 Dummy 텍스처 생성 (더 안전하지만 복잡)
+        // TODO: 향후 TextureManager에서 전역 Dummy 텍스처 관리
 	}
 
 	size_t Material::HashString(const wstring& str)

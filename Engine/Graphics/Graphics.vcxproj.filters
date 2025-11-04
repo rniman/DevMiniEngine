@@ -163,9 +163,6 @@
     <ClInclude Include="..\include\Graphics\DX12\DX12DepthStencilBuffer.h">
       <Filter>Header Files\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Graphics\VertexTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Graphics\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -177,6 +174,9 @@
     </ClInclude>
     <ClInclude Include="..\..\ThirdParty\Microsoft\D3DX12\d3dx12.h">
       <Filter>Microsoft\D3DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Graphics\TextureType.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

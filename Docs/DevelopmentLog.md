@@ -8,6 +8,91 @@
 
 ---
 
+## 2025-11-04 - 다중 텍스처 시스템 완성
+
+### Tasks
+- [x] Root Signature Descriptor Table 확장 (t0~t6)
+- [x] Material 다중 텍스처 관리 시스템
+- [x] Descriptor 자동 할당 및 Dummy SRV 생성
+- [x] HLSL 셰이더 다중 텍스처 선언
+- [x] 렌더링 파이프라인 통합 (Diffuse + Normal)
+
+### Decisions
+
+**Descriptor Table 구조**
+- 연속된 7개 SRV 슬롯 (t0~t6)
+- TextureType::Count 기반 동적 크기 설정
+- 빈 슬롯은 Null Descriptor 자동 생성
+
+**텍스처 로딩 전략**
+- Diffuse: BrickWall17_1K_BaseColor.png
+- Normal: BrickWall17_1K_Normal.png
+- 나머지 5개: Dummy SRV (검은색 반환)
+
+**Material API 설계**
+- SetTexture(TextureType, Texture) - 타입 안전 설정
+- AllocateDescriptors() - 자동 리소스 할당
+- GetDescriptorTableHandle() - 렌더링 시 바인딩
+
+### Implementation
+
+**Root Signature (라인 275-285)**
+```cpp
+CD3DX12_DESCRIPTOR_RANGE1 srvRange;
+srvRange.Init(
+    D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+    static_cast<UINT>(Graphics::TextureType::Count), // 7개
+    0  // t0 시작
+);
+```
+
+**렌더링 바인딩 (라인 458-464)**
+```cpp
+cmdList->SetGraphicsRootDescriptorTable(
+    1,  // Root Parameter Index
+    material.GetDescriptorTableHandle(&srvDescriptorHeap)
+);
+```
+
+### Results
+
+- **성공적인 다중 텍스처 렌더링 확인**
+- Diffuse + Normal 텍스처 동시 로드
+- 나머지 5개 슬롯 Dummy SRV로 안정적 동작
+- PSO 캐싱과 함께 원활한 렌더링 파이프라인
+
+### Lessons Learned
+
+**Descriptor Table 효율성**
+- 7개 텍스처를 한 번의 SetGraphicsRootDescriptorTable 호출로 바인딩
+- Root Signature 크기 절약 (vs. 개별 Root Descriptor)
+
+**Null Descriptor 처리**
+- 빈 슬롯에 Null Descriptor 생성으로 셰이더 안정성 확보
+- 향후 전역 Dummy 텍스처로 개선 예정
+
+**타입 안전 설계**
+- TextureType enum으로 하드코딩 방지
+- 컴파일 타임 타입 체크
+
+### Next Steps
+
+**즉시 다음: Normal Map 조명**
+- [ ] Tangent/Bitangent 정점 속성 추가
+- [ ] TBN 행렬 계산
+- [ ] Normal Map 기반 Phong Lighting
+
+**이후: PBR 파이프라인**
+- [ ] Specular, Roughness, Metallic 텍스처 활용
+- [ ] IBL (Diffuse + Specular Irradiance Map)
+- [ ] 밉맵 생성 자동화
+
+**최적화**
+- [ ] Descriptor Heap Free List 재사용
+- [ ] 전역 Dummy 텍스처 시스템
+
+---
+
 ## 2025-11-03 - 텍스처 시스템 구현 완성
 
 ### Tasks

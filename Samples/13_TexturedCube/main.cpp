@@ -49,12 +49,11 @@ struct MVPConstants
 // 함수 선언
 // ============================================================================
 
-// 제안: 함수명 변경
-bool InitializeTexture(
+bool InitializeMaterialTextures(
 	Graphics::DX12Device& device,
 	Graphics::DX12Renderer& renderer,
 	Graphics::DX12DescriptorHeap& srvDescriptorHeap,
-	Graphics::Texture& diffuseTexture
+	Graphics::Material& material
 )
 {
 	// SRV용 Descriptor Heap 생성
@@ -69,26 +68,29 @@ bool InitializeTexture(
 		return false;
 	}
 
-	// 텍스처 로드
-	if (!diffuseTexture.LoadFromFile(
+	auto diffuseTex = std::make_shared<Graphics::Texture>();
+	diffuseTex->LoadFromFile(
 		device.GetDevice(),
 		device.GetGraphicsQueue(),
 		device.GetCommandContext(renderer.GetCurrentFrameIndex()),
-		L"../../Assets/Textures/test.png"
-	))
-	{
-		LOG_ERROR("Failed to load texture");
-		return false;
-	}
+		L"../../Assets/Textures/BrickWall17_1K_BaseColor.png"
+	);
 
-	// SRV 생성
-	if (!diffuseTexture.CreateSRV(
+	auto normalTex = std::make_shared<Graphics::Texture>();
+	normalTex->LoadFromFile(
 		device.GetDevice(),
-		&srvDescriptorHeap,
-		0
-	))
+		device.GetGraphicsQueue(),
+		device.GetCommandContext(renderer.GetCurrentFrameIndex()),
+		L"../../Assets/Textures/BrickWall17_1K_Normal.png"
+	);
+
+	material.SetTexture(Graphics::TextureType::Diffuse, diffuseTex);
+	material.SetTexture(Graphics::TextureType::Normal, normalTex);
+
+	// Descriptor 할당
+	if (!material.AllocateDescriptors(device.GetDevice(), &srvDescriptorHeap))
 	{
-		LOG_ERROR("Failed to create SRV");
+		LOG_ERROR("Failed to allocate material descriptors");
 		return false;
 	}
 
@@ -147,8 +149,7 @@ bool InitializeForCube(
 	Graphics::DX12PipelineStateCache& pipelineStateCache,
 	Graphics::DX12ConstantBuffer& constantBuffer,
 	Graphics::DX12DepthStencilBuffer& depthStencilBuffer,
-	Graphics::DX12DescriptorHeap& srvDescriptorHeap,
-	Graphics::Texture& diffuseTexture
+	Graphics::DX12DescriptorHeap& srvDescriptorHeap
 )
 {
 	LOG_INFO("Initializing Cube Resources...");
@@ -271,7 +272,11 @@ bool InitializeForCube(
 
 	// SRV Descriptor Table (t0)
 	CD3DX12_DESCRIPTOR_RANGE1 srvRange;
-	srvRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);  // t0
+	srvRange.Init(
+		D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+		static_cast<UINT>(Graphics::TextureType::Count),
+		0
+	);  // t0 ~ t6
 	rootParameters[1].InitAsDescriptorTable(
 		1,
 		&srvRange,
@@ -316,7 +321,7 @@ bool InitializeForCube(
 		return false;
 	}
 
-	InitializeTexture(device, renderer, srvDescriptorHeap, diffuseTexture);
+	InitializeMaterialTextures(device, renderer, srvDescriptorHeap, material);
 
 	LOG_INFO("Camera Resources initialization completed successfully");
 	return true;
@@ -364,8 +369,7 @@ void RenderFrame(
 	Core::float32 timeInSeconds,
 	Graphics::PerspectiveCamera& camera,
 	Graphics::DX12DepthStencilBuffer& depthStencilBuffer,
-	Graphics::DX12DescriptorHeap& srvDescriptorHeap,
-	Graphics::Texture& diffuseTexture
+	Graphics::DX12DescriptorHeap& srvDescriptorHeap
 )
 {
 	auto* swapChain = device.GetSwapChain();
@@ -453,11 +457,11 @@ void RenderFrame(
 	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap.GetHeap() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 
-	// SRV Descriptor Table 바인딩 (Root Parameter 1)
 	cmdList->SetGraphicsRootDescriptorTable(
 		1,
-		diffuseTexture.GetSRVHandle()
+		material.GetDescriptorTableHandle(&srvDescriptorHeap)
 	);
+
 
 	ID3D12PipelineState* pipelineState = DX12PipelineStateCache.GetOrCreatePipelineState(
 		material,
@@ -515,7 +519,7 @@ int main()
 	auto& logger = Core::Logging::Logger::GetInstance();
 	logger.AddSink(std::make_unique<Core::Logging::ConsoleSink>(true));
 
-	LOG_INFO("=== 12_CameraRendering Sample Started ===");
+	LOG_INFO("=== 13_TexturedCube ===");
 
 	// 윈도우 생성
 	Platform::WindowDesc windowDesc;
@@ -567,8 +571,6 @@ int main()
 	Graphics::DX12DepthStencilBuffer depthStencilBuffer;
 	Graphics::DX12DescriptorHeap srvDescriptorHeap;
 
-	Graphics::Texture diffuseTexture;
-
 	Graphics::MaterialDesc materialDesc;
 	materialDesc.vertexShaderPath = L"TexturedShader.hlsl";
 	materialDesc.pixelShaderPath = L"TexturedShader.hlsl";
@@ -585,8 +587,7 @@ int main()
 		DX12PipelineStateCache,
 		constantBuffer,
 		depthStencilBuffer,
-		srvDescriptorHeap,
-		diffuseTexture
+		srvDescriptorHeap
 	))
 	{
 		LOG_ERROR("Failed to initialize Cube Resources");
@@ -638,8 +639,7 @@ int main()
 			timeInSeconds,
 			camera,
 			depthStencilBuffer,
-			srvDescriptorHeap,
-			diffuseTexture
+			srvDescriptorHeap
 		);
 
 		input.Reset();
