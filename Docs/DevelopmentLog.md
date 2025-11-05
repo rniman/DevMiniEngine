@@ -8,6 +8,136 @@
 
 ---
 
+## 2025-11-05 - Framework 모듈 구축 및 엔진 구조 리팩토링
+
+### Tasks
+- [x] Framework 모듈 생성 및 프로젝트 구조 설계
+- [x] Application 베이스 클래스 구현 (라이프사이클 관리)
+- [x] ResourceManager 시스템 구현
+- [x] Scene/GameObject 시스템 구현 (ECS 전환 준비)
+- [x] Framework 전용 Precompiled Header 구성
+- [x] 13_TexturedCube 샘플 리팩토링 (500줄 → 200줄)
+- [x] Core::Timing::Timer 구현 (고정밀 타이머)
+
+### Decisions
+
+**Framework 모듈 위치 선정**
+- 새로운 최상위 통합 레이어로 Framework 모듈 추가
+- 기존 Core/Math/Platform/Graphics 모듈 위에 위치
+- 의존성: Framework → Graphics/Platform/Core/Math (단방향)
+- 목적: 하위 모듈들을 통합하는 애플리케이션 프레임워크 제공
+
+**Application 아키텍처**
+- 템플릿 메서드 패턴 적용 (Initialize → Update → Render → Shutdown)
+- 가상 함수로 사용자 커스터마이징 지점 제공
+- 엔진 초기화와 사용자 초기화 분리
+- Window, Device, Renderer 생명주기 자동 관리
+
+**ResourceManager 설계**
+- 중앙 집중식 리소스 관리 (Mesh, Material, Texture)
+- std::shared_ptr 기반 참조 카운팅
+- 중복 로딩 방지 (캐싱)
+- 파일 경로를 키로 사용하여 텍스처 재사용
+
+**Scene/GameObject 시스템**
+- 임시 GameObject 기반 구조 (향후 ECS Entity로 전환)
+- Transform 컴포넌트 내장
+- Scene이 렌더링 파이프라인 소유
+- 카메라를 Scene 레벨에서 관리
+
+**Timer 모듈 위치**
+- Core::Timing 네임스페이스에 배치 (Framework 아님)
+- 이유: 기초 시스템으로 모든 모듈에서 필요
+- QueryPerformanceCounter 사용 (Windows)
+- 50개 샘플 평균화로 안정적인 delta time
+
+### Implementation
+
+**모듈 의존성 구조**
+```
+Samples (TexturedCubeApp)
+         ↓ uses
+    [Framework]  ← 새 모듈
+    ↙    ↓    ↘
+Graphics Platform Core
+    ↓     ↓     ↓  
+   Core  Math  Core
+```
+
+**Application 라이프사이클**
+```cpp
+class Application
+{
+protected:
+    virtual bool OnInitialize() = 0;  // 사용자 초기화
+    virtual void OnUpdate(float dt) = 0;
+    virtual void OnRender() = 0;
+    virtual void OnShutdown() = 0;
+    
+public:
+    int Run()  // 진입점
+    {
+        Initialize();     // 엔진 초기화
+        OnInitialize();   // 사용자 초기화
+        RunMainLoop();    // 게임 루프
+        OnShutdown();     // 사용자 정리
+        Shutdown();       // 엔진 정리
+    }
+};
+```
+
+**리팩토링 전/후 비교**
+```cpp
+// Before: main.cpp (500+ 줄)
+- 모든 초기화 코드가 main에 집중
+- 리소스 관리 산재
+- 렌더링 로직과 게임 로직 혼재
+
+// After: TexturedCubeApp (200줄)
+- Application 상속으로 보일러플레이트 제거
+- ResourceManager로 리소스 중앙 관리
+- Scene/GameObject로 논리적 구조화
+```
+
+**Timer 통합**
+```cpp
+// 프레임 시간 측정
+mTimer.Tick(60.0f);  // 60 FPS 제한 옵션
+float deltaTime = mTimer.GetDeltaTime();  // 평균화된 값
+
+// 프로파일링 지원
+PROFILE_SCOPE("Render");  // 자동 시간 측정
+```
+
+### Results
+
+- **코드 품질 향상**: main 파일 크기 60% 감소, 관심사 분리 달성
+- **재사용성 증가**: 새 샘플 프로젝트 생성 시간 대폭 단축
+- **확장성 확보**: 조명, PBR, Bindless Resources 추가 준비 완료
+- **성능 모니터링**: FPS 및 프레임 시간 실시간 추적 가능
+- **ECS 준비**: GameObject → Entity 전환 경로 확보
+
+### Lessons Learned
+
+- **Framework 필요성**: 엔진 복잡도 증가 시 통합 레이어 필수
+- **타이머 위치**: 기초 시스템은 Core에, 게임 시스템은 Framework에
+- **Scene 추상화**: 렌더링 세부사항을 애플리케이션에서 분리 성공
+
+### Issues Encountered
+
+- **순환 의존성**: Framework ↔ Graphics 초기 설계 문제 → 단방향으로 해결
+- **프레임 스파이크**: 디버거 중단 시 큰 delta time → 1초 이상 값 필터링
+
+### Next Steps
+- [ ] 조명 시스템 구현 (Phong/PBR)
+- [ ] GameObject → ECS Entity 전환
+- [ ] 리소스 핫 리로딩 지원
+- [ ] ImGui 통합 (디버그 UI)
+- [ ] 멀티스레드 렌더링 준비
+- [ ] Bindless Resources 구현
+
+---
+
 ## 2025-11-04 - 다중 텍스처 시스템 완성
 
 ### Tasks
