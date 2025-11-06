@@ -250,7 +250,7 @@ private:
 	{
 		Framework::ApplicationDesc desc;
 		desc.applicationName = "TexturedCubeApp";
-		desc.windowTitle = "13_TexturedCube - DevMiniEngine";
+		desc.windowTitle = "08_TexturedCube - DevMiniEngine";
 		desc.windowWidth = 1280;
 		desc.windowHeight = 720;
 		desc.enableVSync = true;
