@@ -1,113 +1,131 @@
-﻿#pragma once
+﻿// Engine/include/Graphics/DX12/DX12Renderer.h
+#pragma once
+
 #include "Graphics/GraphicsTypes.h"
+#include "Graphics/RenderTypes.h"
+#include "Math/MathTypes.h"
+#include <memory>
 
 namespace Graphics
 {
+	// TODO: 향후 렌더러 설정을 커스터마이징하고 싶다면
+	//struct RendererDesc
+	//{
+	//	bool enableShadows = true;
+	//	bool enablePostProcessing = false;
+	//	uint32 maxLights = 128;
+	//	uint32 shadowMapSize = 2048;
+	//};
+
+	//bool DX12Renderer::Initialize(
+	//	DX12Device* device,
+	//	uint32 width,
+	//	uint32 height,
+	//	const RendererDesc& desc = {})
+	//{
+	//	// desc를 사용한 커스터마이징
+	//}
+
+
+	// 전방 선언
+	class DX12Device;
+	class DX12SwapChain;
+	class DX12CommandQueue;
+	class DX12CommandContext;
+	class DX12RootSignature;
+	class DX12PipelineStateCache;
+	class DX12ShaderCompiler;
+	class DX12ConstantBuffer;
+	class DX12DepthStencilBuffer;
+	class DX12DescriptorHeap;
+
 	/**
 	 * @brief DirectX 12 기반 렌더러 클래스
 	 *
-	 * CPU-GPU 파이프라이닝을 관리하고 매 프레임 렌더링을 수행합니다.
-	 * FRAME_BUFFER_COUNT 개의 프레임 리소스를 순환하며 사용합니다.
+	 * 실제 렌더링을 담당하는 핵심 클래스
+	 * Scene에서 수집한 FrameData를 받아 GPU에 제출
 	 */
 	class DX12Renderer
 	{
 	public:
-		DX12Renderer() = default;
-		~DX12Renderer() = default;
+		DX12Renderer();
+		~DX12Renderer();
 
 		DX12Renderer(const DX12Renderer&) = delete;
 		DX12Renderer& operator=(const DX12Renderer&) = delete;
 
-		// TODO: Game 클래스가 매 프레임 호출할 유일한 public 함수
-		// bool Render();
+		bool Initialize(
+			DX12Device* device,
+			Core::uint32 width,
+			Core::uint32 height
+		);
+
+		bool CreateDefaultRootSignature();
+
+		void Shutdown();
 
 		/**
-		 * @brief 다음 프레임으로 인덱스 이동 (Ring Buffer 방식)
+		 * @brief 윈도우 크기 변경 처리
 		 */
-		void MoveFrameIndex()
-		{
-			mCurrentFrameIndex = (mCurrentFrameIndex + 1) % FRAME_BUFFER_COUNT;
-		}
+		void OnResize(Core::uint32 width, Core::uint32 height);
 
 		/**
-		 * @brief 특정 프레임의 Fence 값 조회
-		 * @param index 프레임 인덱스 (0 ~ FRAME_BUFFER_COUNT-1)
+		 * @brief 프레임 렌더링 (메인 진입점)
+		 * @param frameData Scene에서 수집한 렌더링 데이터
 		 */
-		Core::uint64 GetFrameFenceValue(Core::uint32 index) const
-		{
-			GRAPHICS_ASSERT(index < FRAME_BUFFER_COUNT, "Frame index out of range");
-			return mFrameFenceValues[index];
-		}
+		void RenderFrame(const FrameData& frameData);
 
-		/**
-		 * @brief 현재 프레임의 Fence 값 조회
-		 */
-		Core::uint64 GetCurrentFrameFenceValue() const
-		{
-			return mFrameFenceValues[mCurrentFrameIndex];
-		}
+		void MoveFrameIndex() { mCurrentFrameIndex = (mCurrentFrameIndex + 1) % FRAME_BUFFER_COUNT; }
 
-		/**
-		 * @brief 현재 프레임 인덱스 조회
-		 */
-		Core::uint32 GetCurrentFrameIndex() const
-		{
-			return mCurrentFrameIndex;
-		}
+		void SetCurrentFrameFenceValue(Core::uint64 value) { mFrameFenceValues[mCurrentFrameIndex] = value; }
 
-		/**
-		 * @brief 특정 프레임의 Fence 값 설정
-		 * @param index 프레임 인덱스 (0 ~ FRAME_BUFFER_COUNT-1)
-		 * @param value 설정할 Fence 값
-		 */
-		void SetFrameFenceValue(Core::uint32 index, Core::uint64 value)
-		{
-			GRAPHICS_ASSERT(index < FRAME_BUFFER_COUNT, "Frame index out of range");
-			mFrameFenceValues[index] = value;
-		}
+		// Getters
+		Core::uint32 GetCurrentFrameIndex() const { return mCurrentFrameIndex; }
+		Core::uint64 GetCurrentFrameFenceValue() const { return mFrameFenceValues[mCurrentFrameIndex]; }
 
-		/**
-		 * @brief 현재 프레임의 Fence 값 설정
-		 * @param value 설정할 Fence 값
-		 */
-		void SetCurrentFrameFenceValue(Core::uint64 value)
-		{
-			mFrameFenceValues[mCurrentFrameIndex] = value;
-		}
-
+		DX12DescriptorHeap* GetSrvDescriptorHeap() { return mSrvDescriptorHeap.get(); }
+		DX12ShaderCompiler* GetShaderCompiler() { return mShaderCompiler.get(); }
 	private:
-		// TODO: [Future] 렌더링에 필요한 참조 (소유하지 않음)
-		// DX12Device* mDevice = nullptr;
-		// DX12CommandQueue* mCommandQueue = nullptr;
-		// DX12SwapChain* mSwapChain = nullptr;
+		// 렌더링 파이프라인 단계
+		bool BeginFrame();
+		void Clear(const float* clearColor);
+		void SetupPipeline();
+		void DrawRenderItems(const std::vector<RenderItem>& items);
+		void EndFrame();
+		void Present(bool vsync);
 
-		// TODO: [Future Enhancement] FrameResource 구조체로 리팩토링
-		// 현재: 프레임별 Fence 값만 추적
-		// 미래: 프레임별 리소스(CommandAllocator, ConstantBuffer 등)를
-		//       FrameResource 구조체로 캡슐화
-		//
-		// struct FrameResource
-		// {
-		//     Core::uint64 FenceValue = 0;
-		//     ComPtr<ID3D12CommandAllocator> CommandAllocator;
-		//     std::unique_ptr<DX12ConstantBuffer<PassConstants>> PassCB;
-		// };
-		// std::array<FrameResource, FRAME_BUFFER_COUNT> mFrameResources;
+		// 헬퍼 함수
+		ID3D12GraphicsCommandList* GetCurrentCommandList();
+		DX12CommandContext* GetCurrentCommandContext();
+		void UpdateViewportAndScissor();
 
-		/**
-		 * @brief CPU-GPU 동기화를 위한 프레임별 Fence 값
-		 *
-		 * mFrameFenceValues[i]: i번째 프레임의 GPU 작업이 완료되는 시점을 나타내는 Fence 값
-		 * CPU는 i번째 프레임 리소스를 재사용하기 전에 해당 Fence 값에 도달했는지 확인해야 함
-		 */
+		// 디바이스 참조 (소유하지 않음)
+		DX12Device* mDevice = nullptr;
+
+		std::unique_ptr<DX12RootSignature> mRootSignature;
+		std::unique_ptr<DX12PipelineStateCache> mPipelineStateCache;
+		std::unique_ptr<DX12ShaderCompiler> mShaderCompiler;
+		std::unique_ptr<DX12ConstantBuffer> mConstantBuffer;
+		std::unique_ptr<DX12DepthStencilBuffer> mDepthStencilBuffer;
+		std::unique_ptr<DX12DescriptorHeap> mSrvDescriptorHeap;
+
+		// 향후 추가될 리소스들
+		// std::unique_ptr<DX12ConstantBuffer> mLightConstantBuffer;
+		// std::unique_ptr<DX12DescriptorHeap> mSamplerHeap;
+
+		// 렌더 타겟 설정
+		Core::uint32 mWidth = 0;
+		Core::uint32 mHeight = 0;
+		D3D12_VIEWPORT mViewport = {};
+		D3D12_RECT mScissorRect = {};
+		float mClearColor[4] = { 0.392f, 0.584f, 0.929f, 1.0f };  // Cornflower Blue
+
+		// 프레임 동기화
 		std::array<Core::uint64, FRAME_BUFFER_COUNT> mFrameFenceValues = { 0 };
-
-		/**
-		 * @brief 현재 CPU가 작업 중인 프레임 인덱스 (0 ~ FRAME_BUFFER_COUNT-1)
-		 *
-		 * Ring Buffer 방식으로 순환: 0 → 1 → 2 → 0 → ...
-		 */
 		Core::uint32 mCurrentFrameIndex = 0;
+
+		// 상태
+		bool mIsInitialized = false;
 	};
 
 } // namespace Graphics

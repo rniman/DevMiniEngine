@@ -157,7 +157,7 @@ namespace Graphics
 		LOG_GRAPHICS_INFO("Mesh shutdown complete");
 	}
 
-	void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
+	void Mesh::Draw(ID3D12GraphicsCommandList* commandList) const
 	{
 		if (!mInitialized)
 		{

@@ -353,30 +353,30 @@ namespace Graphics
 	void Material::CreateDummySRV(ID3D12Device* device, DX12DescriptorHeap* heap, uint32 index)
 	{
 		// 1x1 검은색 텍스처 대신, null descriptor 생성
-        // D3D12에서는 null descriptor를 명시적으로 생성할 수 없으므로
-        // 기본 텍스처 리소스를 생성하거나 전역 Dummy 텍스처를 사용해야 합니다.
-        
-        // 방법 1: Null Descriptor (간단하지만 샘플링 시 문제 가능)
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.Texture2D.MipLevels = 1;
-        srvDesc.Texture2D.MostDetailedMip = 0;
-        srvDesc.Texture2D.PlaneSlice = 0;
-        srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+		// D3D12에서는 null descriptor를 명시적으로 생성할 수 없으므로
+		// 기본 텍스처 리소스를 생성하거나 전역 Dummy 텍스처를 사용해야 합니다.
+		
+		// 방법 1: Null Descriptor (간단하지만 샘플링 시 문제 가능)
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Texture2D.MipLevels = 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.PlaneSlice = 0;
+		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-        D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = heap->GetCPUHandle(index);
-        
-        // nullptr 리소스로 SRV 생성 (Null Descriptor)
-        device->CreateShaderResourceView(
-            nullptr,  // null resource
-            &srvDesc,
-            cpuHandle
-        );
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = heap->GetCPUHandle(index);
+		
+		// nullptr 리소스로 SRV 생성 (Null Descriptor)
+		device->CreateShaderResourceView(
+			nullptr,  // null resource
+			&srvDesc,
+			cpuHandle
+		);
 
-        // 방법 2: 실제 1x1 Dummy 텍스처 생성 (더 안전하지만 복잡)
-        // TODO: 향후 TextureManager에서 전역 Dummy 텍스처 관리
+		// 방법 2: 실제 1x1 Dummy 텍스처 생성 (더 안전하지만 복잡)
+		// TODO: 향후 TextureManager에서 전역 Dummy 텍스처 관리
 	}
 
 	size_t Material::HashString(const wstring& str)

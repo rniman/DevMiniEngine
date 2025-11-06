@@ -178,5 +178,8 @@
     <ClInclude Include="..\include\Graphics\TextureType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Graphics\RenderTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

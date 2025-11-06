@@ -164,7 +164,7 @@ namespace Graphics
 		 *
 		 * @param commandList 바인딩 및 드로우 커맨드를 기록할 커맨드 리스트
 		 */
-		void Draw(ID3D12GraphicsCommandList* commandList);
+		void Draw(ID3D12GraphicsCommandList* commandList) const;
 
 		// Getters
 		size_t GetVertexCount() const { return mVertexBuffer.GetVertexCount(); }

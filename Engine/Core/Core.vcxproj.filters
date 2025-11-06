@@ -21,6 +21,12 @@
     <Filter Include="Header Files\Logging">
       <UniqueIdentifier>{f6812a44-8f88-4831-ae28-dd33b028028d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Timing">
+      <UniqueIdentifier>{7eddb7dd-f830-4075-9695-5f2f2f25fbcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Timing">
+      <UniqueIdentifier>{9514ad44-c869-439c-9b21-2116341508c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Core\Assert.h">
@@ -65,6 +71,12 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Core\Timing\Timer.h">
+      <Filter>Header Files\Timing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Core\Timing\ScopedTimer.h">
+      <Filter>Header Files\Timing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core\Logging\ConsoleSink.cpp">
@@ -93,6 +105,12 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Core\Timing\Timer.cpp">
+      <Filter>Source Files\Timing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Core\Timing\ScopedTimer.cpp">
+      <Filter>Source Files\Timing</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
