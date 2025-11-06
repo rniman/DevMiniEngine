@@ -2,18 +2,18 @@
 
 **[한국어](./README.md)** | **English**
 
-**DirectX 12-based Learning Mini Game Engine**
+**DirectX 12-based Mini Game Engine for Learning**
 
 ## Project Overview
 
-DevMiniEngine is a personal learning and portfolio game engine project based on DirectX 12. It was created to learn and experiment with ECS (Entity Component System) architecture and modern C++ design patterns.
+DevMiniEngine is a personal learning and portfolio project based on DirectX 12. It is designed to learn and experiment with ECS (Entity Component System) architecture and modern C++ design patterns.
 
-### Main Goals
+### Key Objectives
 
 - **ECS Architecture Learning**: Implementation of data-oriented design and entity-component systems
-- **Modern Graphics Technology**: Building modern rendering pipelines using DirectX 12
+- **Modern Graphics Technology**: Building modern rendering pipeline using DirectX 12
 - **Game Engine Fundamentals**: Implementation of core engine systems including physics, AI, and terrain generation
-- **Portfolio Creation**: Production-level code quality and documentation
+- **Portfolio Development**: Professional-level code quality and documentation
 
 ## Implementation Status
 
@@ -21,171 +21,113 @@ DevMiniEngine is a personal learning and portfolio game engine project based on 
 
 **Phase 1: Foundation Systems (100% Complete)**
 
-**Core System**
+**Core Systems**
 - Memory Management System
   - LinearAllocator: O(1) bump pointer allocation
   - PoolAllocator: O(1) fixed-size object pooling
   - StackAllocator: LIFO allocation using markers
-  - Test Coverage: 01_MemoryTest, 02_PoolAllocatorTest, 03_StackAllocatorTest
-
+- Timing System
+  - High-precision timer (QueryPerformanceCounter)
+  - Frame time averaging (50 samples)
+  - FPS measurement and profiling tools
 - Logging System
   - Multi-output Sink architecture (Console, File)
-  - Thread-safe logging with Mutex
-  - Category-based filtering (Core, Graphics, Physics, AI, Audio, Input, Memory)
+  - Category-based filtering
   - Color-coded console output
-  - Test Coverage: 05_LoggingTest
 
 **Math Library**
 - SIMD-optimized vector/matrix operations (DirectXMath wrapper)
 - Vector2, Vector3, Vector4
-- Matrix3x3, Matrix4x4 (row-major)
+- Matrix4x4 (row-major)
 - Quaternion operations
-- Transform utilities (Translation, Rotation, Scaling)
-- Camera matrices (LookAt, Perspective, Orthographic)
-- Test Coverage: 04_MathTest
+- Transform utilities
+- Camera matrices (LookAt, Perspective)
 
 **Platform Layer**
 - Win32 window creation and management
 - Event handling system
-- Input system
-  - Keyboard state tracking (pressed/held/released)
-  - Mouse state tracking (buttons, position, wheel)
-  - Double buffering for frame accuracy
-- Test Coverage: 06_WindowTest, 07_InputTest
+- Input system (keyboard, mouse)
 
-**Phase 2: DirectX 12 Graphics (25% Complete)**
+**Phase 2: DirectX 12 Graphics & Framework (100% Complete)**
 
-**DirectX 12 Initialization (Complete)**
-- DX12Device: Device and Factory creation, GPU adapter selection
-- DX12CommandQueue: Command Queue creation and GPU synchronization
-- DX12SwapChain: Double-buffered SwapChain creation
-- DX12DescriptorHeap: RTV Descriptor Heap management
-- DX12CommandContext: Command Allocator/List management and Resource Barrier
-- First rendering success (Clear screen)
-- Test Coverage: 08_DX12Init
+**DirectX 12 Rendering**
+- Complete rendering pipeline
+  - Vertex/Index Buffer
+  - Shader compilation system
+  - Pipeline State Object (PSO)
+  - Root Signature
+  - Constant Buffer
+  - Depth-Stencil Buffer
+  - DX12Renderer
+    - Owns all rendering resources
+    - Separation of Scene and rendering responsibilities
+- Multi-texture support (7 types)
+  - Diffuse, Normal, Specular, Roughness, Metallic, AO, Emissive
+- 3D transformation and camera
+  - MVP matrix transformation
+  - PerspectiveCamera implementation
 
-### In Progress
-
-**Phase 2: DirectX 12 Graphics**
-- Next Priority: Triangle rendering (Vertex Buffer, Shader compilation, PSO)
+**Framework Architecture**
+- Application lifecycle management
+  - Template method pattern
+  - Separation of engine/user initialization
+- ResourceManager
+  - Centralized management of Mesh, Material, Texture
+  - Caching and duplicate loading prevention
+- Scene/GameObject system
+  - Transform hierarchy
+  - Rendering data collection (What/How separation)
 
 ### Project Statistics
 
-- Total Lines of Code: ~3,000
-- Implemented Modules: 5/12 subsystems
-- Test Coverage: 8 sample projects
-- Compiler Warnings: 0 (Level 4)
-
-## Key Features
-
-### Graphics (Partial Implementation)
-- DirectX 12-based rendering system (initialization complete)
-  - Device and Command Queue creation
-  - SwapChain and Descriptor Heap management
-  - Command List recording and execution
-  - Resource state transitions via Resource Barrier
-- RHI (Render Hardware Interface) abstraction layer (planned)
-- PBR (Physically Based Rendering) support (planned)
-- High-level rendering system (Material, Mesh, Camera) (planned)
-
-### ECS Architecture (Planned)
-- Entity-based game object management
-- Component-based data structures
-- System-based logic processing
-- Efficient memory layout
-
-### Physics Engine (Planned)
-- Basic collision detection
-- Rigid body dynamics
-- Physics World simulation
-
-### Game AI (Planned)
-- A* pathfinding algorithm
-- NavMesh-based navigation
+- Total lines of code: ~5,000+
+- Implemented modules: 5 (Core, Math, Platform, Graphics, Framework)
+- Test coverage: 8 sample projects
+- Compiler warnings: 0 (Level 4)
 
 ## Project Structure
 ```
 DevMiniEngine/
-├── Engine/                          # Engine Core
+├── Engine/                          # Engine core
 │   ├── include/                     # Public headers for all modules
 │   │   ├── Core/                    # Core headers
-│   │   │   ├── Memory/              # Memory management headers
-│   │   │   └── Logging/             # Logging system headers
-│   │   ├── Math/                    # Math library headers
-│   │   ├── Platform/                # Platform layer headers
-│   │   │   ├── Windows/             # Win32 headers
-│   │   │   └── Input/               # Input system headers
-│   │   ├── Graphics/                # Graphics headers
-│   │   │   ├── DX12/                # DirectX 12 headers
-│   │   │   ├── RHI/                 # RHI headers (planned)
-│   │   │   └── Renderer/            # High-level rendering headers (planned)
-│   │   ├── ECS/                     # ECS headers (planned)
-│   │   ├── Physics/                 # Physics engine headers (planned)
-│   │   ├── AI/                      # Game AI headers (planned)
-│   │   └── Scene/                   # Scene management headers (planned)
+│   │   │   ├── Memory/              # Memory management
+│   │   │   ├── Logging/             # Logging system
+│   │   │   └── Timing/              # Timer system
+│   │   ├── Math/                    # Math library
+│   │   ├── Platform/                # Platform layer
+│   │   ├── Graphics/                # Graphics
+│   │   │   ├── DX12/                # DirectX 12
+│   │   │   ├── Camera/              # Camera system
+│   │   │   └── RenderTypes.h        # Rendering types
+│   │   └── Framework/               # Framework layer
+│   │       ├── Application.h        # Application base
+│   │       ├── Resources/           # Resource management
+│   │       └── Scene/               # Scene management
 │   │
 │   ├── src/                         # Implementation for all modules
-│   │   ├── Core/                    # Core implementation
-│   │   │   ├── Memory/              # Memory management implementation
-│   │   │   └── Logging/             # Logging system implementation
-│   │   ├── Math/                    # Math library implementation
-│   │   ├── Platform/                # Platform layer implementation
-│   │   │   ├── Windows/             # Win32 implementation
-│   │   │   └── Input/               # Input system implementation
-│   │   ├── Graphics/                # Graphics implementation
-│   │   │   ├── DX12/                # DirectX 12 implementation
-│   │   │   ├── RHI/                 # RHI implementation (planned)
-│   │   │   └── Renderer/            # High-level rendering implementation (planned)
-│   │   ├── ECS/                     # ECS implementation (planned)
-│   │   ├── Physics/                 # Physics engine implementation (planned)
-│   │   ├── AI/                      # Game AI implementation (planned)
-│   │   └── Scene/                   # Scene management implementation (planned)
+│   │   └── (same structure)
 │   │
 │   ├── Core/                        # Core module project
-│   │   └── Core.vcxproj
 │   ├── Math/                        # Math module project
-│   │   └── Math.vcxproj
 │   ├── Platform/                    # Platform module project
-│   │   └── Platform.vcxproj
 │   ├── Graphics/                    # Graphics module project
-│   │   └── Graphics.vcxproj
-│   │
-│   ├── Sandbox/                     # Sandbox game project
-│   │   ├── Assets/                  # Game assets
-│   │   ├── Source/                  # Game source
-│   │   └── Sandbox.vcxproj
-│   │
-│   └── DemoGame/                    # Demo game project (planned)
-│       ├── Assets/
-│       ├── Source/
-│       └── DemoGame.vcxproj
+│   └── Framework/                   # Framework module project
 │
-├── Samples/                         # Learning sample projects
-│   ├── 01_MemoryTest/               # LinearAllocator test
-│   ├── 02_PoolAllocatorTest/        # PoolAllocator test
-│   ├── 03_StackAllocatorTest/       # StackAllocator test
-│   ├── 04_MathTest/                 # Math library test
-│   ├── 05_LoggingTest/              # Logging system test
-│   ├── 06_WindowTest/               # Window creation test
-│   ├── 07_InputTest/                # Input system test
-│   └── 08_DX12Init/                 # DirectX 12 initialization test
+├── Samples/                         # Sample projects
+│   ├── 01_MemoryTest/
+│   ├── ...
+│   └── 08_TexturedCube/             # Textured cube rendering
 │
-├── Docs/                            # Documentation
-│   ├── Sample
-│   │   └── 08_DX12Init.md           # 08_DX12Init Sample Documentation
-│   │
-│   ├── Architecture.md              # Detailed architecture guide
-│   ├── CodingConvention.md          # Coding standards
-│   └── DevelopmentLog.md            # Development history
+├── Assets/                          # Assets
+│   └── Textures/                    # Texture files
+│       └── BrickWall/               # PBR texture set
 │
-├── bin/                             # Build output
-│   ├── Debug/
-│   └── Release/
-│
-└── intermediate/                    # Intermediate build files
+└── Docs/                            # Documentation
+    ├── Architecture.md
+    ├── CodingConvention.md
+    └── DevelopmentLog.md
 ```
-
-For detailed architecture design and module dependencies, see the [Architecture Document](./Docs/Architecture.md).
 
 ## Build and Run
 
@@ -194,7 +136,8 @@ For detailed architecture design and module dependencies, see the [Architecture 
 - **OS**: Windows 10/11 (64-bit)
 - **IDE**: Visual Studio 2022 or later
 - **SDK**: Windows 10 SDK (10.0.19041.0 or later)
-- **DirectX**: DirectX 12 capable GPU
+- **DirectX**: DirectX 12-capable GPU
+- **C++ Standard**: C++20
 
 ### Build Instructions
 
@@ -206,131 +149,341 @@ cd DevMiniEngine
 
 2. **Open Solution**
 ```bash
-# Open with Visual Studio 2022
 DevMiniEngine.sln
 ```
 
-3. **Select Build Configuration**
-   - `Debug` - For debugging (optimizations disabled)
-   - `Release` - For release (optimizations enabled)
+3. **Build Configuration**
+   - `Debug` - For debugging
+   - `Release` - Optimized build
 
 4. **Build**
-   - `Ctrl + Shift + B` or from menu `Build > Build Solution`
+   - `Ctrl + Shift + B`
 
-### Run Samples
+### Running Examples
 ```bash
-# Example: Run memory allocator test
-bin/Debug/01_MemoryTest.exe
-
-# Example: Run DirectX 12 initialization test
-bin/Debug/08_DX12Init.exe
+# Run textured cube sample
+bin/Debug/08_TexturedCube.exe
 ```
-
-## Sample Projects
-
-| Sample | Status | Description | Learning Content |
-|--------|--------|-------------|------------------|
-| 01_MemoryTest | Complete | LinearAllocator test | Custom memory allocation |
-| 02_PoolAllocatorTest | Complete | PoolAllocator test | Object pooling |
-| 03_StackAllocatorTest | Complete | StackAllocator test | Scope allocation |
-| 04_MathTest | Complete | Math library test | SIMD vectors, matrices |
-| 05_LoggingTest | Complete | Logging system test | Structured logging |
-| 06_WindowTest | Complete | Window creation | Win32 API, events |
-| 07_InputTest | Complete | Input handling | Keyboard, mouse tracking |
-| 08_DX12Init | Complete | DirectX 12 initialization | Device, SwapChain, Clear |
-| 09_HelloTriangle | Planned | Basic rendering | Vertex Buffer, Shader, PSO |
-
-## Tech Stack
-
-### Core Technologies
-- **C++20**: Modern C++ standard
-- **DirectX 12**: Low-level graphics API
-- **Win32 API**: Windows platform interface
-- **DirectXMath**: SIMD-optimized math library
-
-### Development Tools
-- **Visual Studio 2022**: Primary development environment
-- **Git/GitHub**: Version control
-- **RenderDoc**: Graphics debugging (planned)
-- **PIX**: DirectX 12 profiling (planned)
-
-## Documentation
-
-- [Architecture Guide](./Docs/Architecture.md) - Complete engine design and structure
-- [Coding Convention](./Docs/CodingConvention.md) - Project coding rules
-- [Development Log](./Docs/DevelopmentLog.md) - Detailed development history
 
 ## Roadmap
 
-### Phase 1: Foundation (100% Complete)
+### Phase 1-2: Foundation Systems (100% Complete)
 - [x] Project structure
-- [x] Core system
-  - [x] Memory allocators (Linear, Pool, Stack)
-  - [x] Logging system (Console, File sinks)
-  - [x] Assertion macros
-- [x] Math library (Vector, Matrix, Quaternion with SIMD)
+- [x] Core systems (memory, logging, timer)
+- [x] Math library (SIMD)
 - [x] Platform layer (Window, Input)
+- [x] DirectX 12 initialization and rendering pipeline
+- [x] Mesh and texture system
+- [x] Camera system
+- [x] Framework architecture (Application, ResourceManager, Scene)
 
-### Phase 2: Graphics (25% Complete)
-- [x] DirectX 12 initialization
-- [ ] Basic rendering pipeline (Vertex Buffer, Shader, PSO)
-- [ ] Mesh and texture loading
-- [ ] Camera system
+**Current State:** Complete PBR texture set loading and shader binding pipeline (Diffuse, Normal, Metallic, Roughness, etc. 7 types). Current rendering uses Diffuse map as baseline; shader implementation utilizing loaded PBR maps is next step.
 
-### Phase 3: Advanced ECS (Not Started)
-- [ ] ECS core implementation
-- [ ] Component queries
-- [ ] System dependencies
-- [ ] Event system
+---
 
-### Phase 4: Gameplay Systems (Not Started)
-- [ ] Physics engine integration
-- [ ] Collision detection
-- [ ] AI pathfinding (A*)
-- [ ] Terrain generation
+### Phase 3: ECS Architecture & Debug Tools
+**Goal:** Core implementation of data-oriented design
 
-### Phase 5: Future Plans
-- [ ] Threading system (Job system, thread pool)
-- [ ] PBR materials
-- [ ] Shadow mapping
-- [ ] Post-processing
+- [ ] **ECS Core**
+  - [ ] Entity Manager (create/destroy/recycle)
+  - [ ] Component Storage (Archetype-based)
+  - [ ] System Framework (execution order management)
+- [ ] **Core Components & Systems**
+  - [ ] TransformComponent (hierarchy, World Matrix caching)
+  - [ ] TransformSystem (Dirty Flag propagation)
+- [ ] **Query System**
+  - [ ] Component composition queries
+  - [ ] Query caching and optimization
+- [ ] **Debug Tools (early adoption)**
+  - [ ] ImGui integration
+  - [ ] ECS Inspector (Entity/Component editing)
+  - [ ] Performance monitoring (FPS, Draw Calls)
 
-## Code Quality
+**Upon Completion:** Manage 1000 entities, real-time editing with ImGui
 
-- Warning Level: 4 (Maximum)
-- Active Warnings: 0
-- C++ Standard: C++20
-- Code Style: Enforced through CodingConvention.md
+---
 
-## Contributing
+### Phase 3.5: Job System (Optional)
+**Goal:** Basic multithreading infrastructure
 
-This project is for personal learning purposes, but feedback and suggestions are always welcome!
+- [ ] Worker thread pool
+- [ ] Job dispatcher
+- [ ] TransformSystem parallelization
+- [ ] Performance benchmark (Single vs Multi-thread)
 
-### How to Provide Feedback
-- **Issues**: Bug reports or feature suggestions
-- **Discussions**: Technical questions or idea sharing
+**Note:** Can be postponed to Phase 9 (after sufficient parallelizable work)
+
+---
+
+### Phase 4: DX12 Infrastructure Expansion & Asset Pipeline
+**Goal:** Asset pipeline for productivity improvement
+
+- [ ] **Descriptor Management Enhancement**
+  - [ ] SRV/UAV Descriptor Heap integration
+  - [ ] Descriptor pool and recycling
+  - [ ] Frame-based allocation
+- [ ] **Resource Upload Optimization**
+  - [ ] Upload buffer ring
+  - [ ] Async Copy Queue (optional)
+- [ ] **Asset Pipeline**
+  - [ ] glTF 2.0 loader (mesh, PBR materials, hierarchy)
+  - [ ] DDS/BCn texture pipeline
+  - [ ] Automatic mipmap generation
+- [ ] **Shader System Expansion**
+  - [ ] DXC compiler (Shader Model 6.6+)
+  - [ ] Shader Reflection (automatic Root Signature)
+  - [ ] Hot Reload (optional)
+- [ ] **ECS Rendering Integration**
+  - [ ] MeshRendererComponent
+  - [ ] RenderSystem (ECS query-based)
+
+**Upon Completion:** Blender model loading, ECS-based rendering
+
+---
+
+### Phase 4.5: Frame Graph & Culling
+**Goal:** Efficient rendering pipeline
+
+- [ ] **Frame Graph**
+  - [ ] Pass/Resource dependency graph
+  - [ ] Automatic Barrier insertion
+  - [ ] Resource Lifetime management
+- [ ] **Culling System**
+  - [ ] Frustum Culling (CPU)
+  - [ ] AABB Bounding Box
+- [ ] **Asset Pipeline Expansion (optional)**
+  - [ ] Hot Reload (textures, shaders)
+
+**Upon Completion:** Efficient rendering of 1000 objects
+
+---
+
+### Phase 5: PBR & Post-Processing
+**Goal:** Realistic rendering
+
+- [ ] **PBR Material**
+  - [ ] Metallic-Roughness workflow
+  - [ ] Cook-Torrance BRDF
+  - [ ] IBL (Skybox, PMREM, Irradiance Map)
+  - [ ] Uber Shader & Permutations
+- [ ] **Post-Processing**
+  - [ ] Tone mapping (Reinhard, ACES)
+  - [ ] Auto Exposure
+  - [ ] Bloom
+  - [ ] TAA (Temporal Anti-Aliasing)
+
+**Upon Completion:** Various objects with PBR materials, IBL lighting
+
+---
+
+### 🎯 Phase 5.5: Physics Integration (Portfolio Milestone)
+**Goal:** Create playable prototype
+
+> **Important:** Portfolio video production possible from this point!
+
+- [ ] **Physics Engine Integration**
+  - [ ] Choose Jolt Physics or Bullet
+  - [ ] Physics World initialization
+- [ ] **Physics Components (ECS)**
+  - [ ] RigidBodyComponent (Mass, Velocity)
+  - [ ] ColliderComponent (Box, Sphere, Capsule)
+  - [ ] Physics Material (Friction, Restitution)
+- [ ] **PhysicsSystem**
+  - [ ] Transform ↔ Physics Engine synchronization
+  - [ ] Fixed Timestep
+  - [ ] Collision events (OnCollisionEnter/Exit)
+- [ ] **Sandbox Demo**
+  - [ ] Cubes falling with gravity
+  - [ ] Player pushing objects (Mouse Ray)
+  - [ ] Edit RigidBody properties with ImGui
+- [ ] **Physics Debug Rendering**
+  - [ ] Collider wireframe
+  - [ ] Contact Point display
+
+**Upon Completion:** PBR materials + Physics interaction demo (portfolio material secured)
+
+---
+
+### Phase 6: Shadows & Ambient
+**Goal:** Enhanced visual fidelity
+
+- [ ] **Shadow Mapping**
+  - [ ] Basic Shadow Map (Depth, PCF)
+  - [ ] Cascaded Shadow Maps (CSM)
+  - [ ] Cascade boundary blending
+- [ ] **Ambient Occlusion**
+  - [ ] SSAO (Screen Space Ambient Occlusion)
+  - [ ] Bilateral Blur
+- [ ] **Additional Effects (optional)**
+  - [ ] SSR (Screen Space Reflections)
+  - [ ] DOF (Depth of Field)
+
+**Upon Completion:** Physics sandbox + dynamic shadows + SSAO
+
+---
+
+### Phase 7: Compute Shaders & GPU Acceleration
+**Goal:** Utilize GPU computation
+
+- [ ] **Compute Pipeline**
+  - [ ] Dispatch framework
+  - [ ] UAV (Unordered Access View) management
+- [ ] **GPU Particle System**
+  - [ ] Compute Shader-based simulation
+  - [ ] Indirect Drawing
+  - [ ] Interaction with Physics objects
+- [ ] **GPU Culling (optional)**
+  - [ ] Frustum Culling (Compute)
+  - [ ] Hi-Z Occlusion Culling
+
+**Upon Completion:** 100K particles + Physics interaction
+
+---
+
+### Phase 8: Bindless & GPU Driven
+**Goal:** Modern rendering techniques
+
+- [ ] **Bindless Resources**
+  - [ ] Descriptor Indexing (SM 6.6+)
+  - [ ] Unbounded Descriptor Arrays
+  - [ ] Material ID → Descriptor Index mapping
+- [ ] **GPU Driven Rendering**
+  - [ ] ExecuteIndirect / DrawIndirect
+  - [ ] GPU-generated Draw Calls
+  - [ ] Mesh Shaders (optional, DX12 Ultimate)
+- [ ] **Resource Management**
+  - [ ] GPU memory allocator
+  - [ ] Async Upload tuning
+
+**Upon Completion:** 10K unique meshes + Physics rendering
+
+---
+
+### Phase 9: Job System Expansion (if Phase 3.5 was skipped)
+**Goal:** CPU parallelization
+
+- [ ] Job System implementation (see Phase 3.5)
+- [ ] ECS System parallelization
+- [ ] PhysicsSystem parallelization
+- [ ] Render thread separation
+
+---
+
+### Phase 10: AI & Gameplay Systems
+**Goal:** Game logic framework
+
+- [ ] **Navigation**
+  - [ ] NavMesh generation (Recast)
+  - [ ] A* Pathfinding
+  - [ ] Path Following
+- [ ] **Behavior Tree**
+  - [ ] Executor (Selector, Sequence, Action)
+  - [ ] Blackboard (shared data)
+- [ ] **Gameplay Framework**
+  - [ ] Event System (type-safe)
+  - [ ] Game State management
+
+**Upon Completion:** AI agents chase player, avoid Physics objects
+
+---
+
+### Phase 11: Audio & Tools
+**Goal:** Enhanced completeness
+
+- [ ] **Audio System**
+  - [ ] XAudio2 integration
+  - [ ] 3D Spatialization
+  - [ ] Sound effects on collision
+- [ ] **Debug Tools Enhancement**
+  - [ ] ECS Inspector (add/remove components)
+  - [ ] Profiler (CPU/GPU Timeline)
+  - [ ] Console (command system)
+
+**Upon Completion:** Complete game engine experience
+
+---
+
+### Phase 12: Demo Game & Polish
+**Goal:** Portfolio completion
+
+- [ ] **Demo Game (Simple TPS)**
+  - [ ] Physics Character Controller
+  - [ ] Shooting system (Raycast + Force)
+  - [ ] Enemy AI (NavMesh + Physics)
+  - [ ] UI (health, ammo)
+- [ ] **Optimization**
+  - [ ] CPU/GPU Profiling
+  - [ ] Physics performance optimization
+  - [ ] LOD (Level of Detail)
+- [ ] **Portfolio Documentation**
+  - [ ] Technical blog (ECS + Physics integration)
+  - [ ] Video recording (gameplay + technical explanation)
+  - [ ] GitHub README update
+
+**Final Result:** Playable TPS demo, ready for portfolio submission
+
+---
+
+## Backlog (On-Demand)
+
+Features to be added selectively as needed:
+
+- [ ] **Deferred Rendering** - Compare/switch with Forward+
+- [ ] **Tessellation & Geometry Shaders** - Adaptive terrain
+- [ ] **Standalone Editor** - Independent editor beyond ImGui tools
+- [ ] **Scripting** - Lua/Python bindings
+- [ ] **Procedural Terrain** - Heightmap/Voxel-based
+- [ ] **Raytracing (DXR)** - DX12 Ultimate-based (requires RTX GPU)
+- [ ] **Advanced Animation** - Blend trees, IK
+- [ ] **Volumetric Effects** - Fog, Clouds
+- [ ] **Network Replication** - ECS component replication, multiplayer
+
+---
+
+## Key Features
+
+### Architecture
+- **Modular Design**: Clear separation of concerns and dependency management
+- **ECS Architecture**: Data-oriented design (planned)
+- **Framework Pattern**: Automatic Application lifecycle management
+- **What/How Separation**: Scene (logic) and Renderer (implementation) separation
+
+### Rendering
+- **Multi-texture**: PBR workflow ready
+- **Efficient Resource Management**: Centralized ResourceManager
+- **Frame Buffering**: Triple buffering for CPU-GPU parallelism
+
+### Code Quality
+- **Modern C++20**: Smart pointers, lambdas, constexpr utilization
+- **Consistent Coding Convention**: Documented style guide
+- **Comprehensive Logging**: Category-based debugging support
+
+## Documentation
+
+- [Architecture Guide](./Docs/Architecture.md) - Engine design and structure
+- [Coding Convention](./Docs/CodingConvention.md) - Coding rules
+- [Development Log](./Docs/DevelopmentLog.md) - Development history
 
 ## License
 
-This project is open-sourced under the [MIT License](./LICENSE).
+This project is released under the [MIT License](./LICENSE).
 
 ## Developer
 
 **rniman**
 - GitHub: [@rniman](https://github.com/rniman)
 - Email: shinmg00@gmail.com
-- Blog: [Tech Blog](https://rniman.github.io/)
 
 ## Acknowledgments
 
 - [DirectX 12 Official Documentation](https://docs.microsoft.com/en-us/windows/win32/direct3d12/)
-- [Learn OpenGL](https://learnopengl.com/) - Graphics concepts
-- [Game Programming Patterns](https://gameprogrammingpatterns.com/) - Design patterns
+- [Learn OpenGL](https://learnopengl.com/) - Graphics concept learning
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
 - [3D Game Programming with DirectX 12 by Frank Luna](http://www.d3dcoder.net/)
 
 ---
 
-Last Updated: 2025-10-15
+**Last Updated:** 2025-11-06  
+**Roadmap Version:** v3.2 (Portfolio-focused)
 
-⭐ If this project helps you, please consider giving it a star!
+⭐ If this project helped you, please give it a star!
