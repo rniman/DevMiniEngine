@@ -747,16 +747,14 @@ void CreateBuffer(
     ID3D12Device* device,
     size_t size,
     D3D12_RESOURCE_FLAGS flags,
-    D3D12_RESOURCE_STATES initialState
-);
+    D3D12_RESOURCE_STATES initialState);
 
 // 함수 호출
 CreateBuffer(
     mDevice.Get(),
     bufferSize,
     D3D12_RESOURCE_FLAG_NONE,
-    D3D12_RESOURCE_STATE_COMMON
-);
+    D3D12_RESOURCE_STATE_COMMON);
 ```
 
 ### 줄바꿈 하지 않아도 되는 경우
@@ -779,15 +777,13 @@ bool CheckCollision(const AABB& a, const AABB& b, Vector3& normal);
 std::shared_ptr<CommandQueue> CreateCommandQueue(
     const ComPtr<ID3D12Device>& device,
     D3D12_COMMAND_LIST_TYPE type,
-    D3D12_COMMAND_QUEUE_PRIORITY priority
-);
+    D3D12_COMMAND_QUEUE_PRIORITY priority);
 
 // 한 줄이 100자를 명백히 초과
 void InitializeGraphicsSystem(
     const WindowDesc& windowDesc,
     const RenderSettings& settings,
-    bool enableValidation
-);
+    bool enableValidation);
 ```
 
 ### 판단 기준
@@ -814,8 +810,7 @@ void CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPE
 void CreateGraphicsPipelineState(
     ID3D12Device* device,
     const D3D12_GRAPHICS_PIPELINE_STATE_DESC* desc,
-    ID3D12PipelineState** outState
-);
+    ID3D12PipelineState** outState);
 ```
 
 ### 실전 팁
@@ -832,11 +827,15 @@ public:
     
     // 또는
     void SetViewport(
-        float x, float y, float w, float h
-    );
+        float x, 
+        float y, 
+        float w, 
+        float h);
     void SetScissor(
-        int x, int y, int w, int h
-    );
+        int x, 
+        int y, 
+        int w, 
+        int h);
 };
 ```
 
@@ -854,8 +853,7 @@ bool success = mSwapChain->Initialize(
     mQueue->GetQueue(),
     hwnd,
     width,
-    height
-);
+    height);
 
 if (!success)
 {
@@ -866,14 +864,12 @@ if (!success)
 
 **허용: if문 안에서 직접 호출**
 ```cpp
-// 허용 - 닫는 괄호는 함수 시작과 같은 들여쓰기
 if (!mSwapChain->Initialize(
-        mFactory.Get(),
-        mQueue->GetQueue(),
-        hwnd,
-        width,
-        height
-    ))
+    mFactory.Get(),
+    mQueue->GetQueue(),
+    hwnd,
+    width,
+    height))
 {
     LOG_ERROR("Initialization failed");
     return false;
@@ -884,9 +880,9 @@ if (!mSwapChain->Initialize(
 ```cpp
 // 나쁜 예: 닫는 괄호 위치 불명확
 if (!mSwapChain->Initialize(
-        mFactory.Get(),
-        mQueue->GetQueue()
-        ))  // ❌ 혼란스러움
+    mFactory.Get(),
+    mQueue->GetQueue()
+    ))
 {
 }
 
