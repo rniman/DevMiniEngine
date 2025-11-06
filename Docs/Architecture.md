@@ -1,152 +1,148 @@
-# DevMiniEngine 아키텍처
-
-> **참고**: 이 문서는 계획된 아키텍처와 구현된 아키텍처를 모두 설명합니다. 구현 상태는 명확하게 표시되어 있습니다.
+# DevMiniEngine 아키텍처 문서
 
 ## 목차
-
-- [개요](#개요)
-- [설계 철학](#설계-철학)
-- [핵심 아키텍처](#핵심-아키텍처)
-- [모듈 상세](#모듈-상세)
-- [데이터 흐름](#데이터-흐름)
-- [메모리 관리](#메모리-관리)
-- [스레딩 모델](#스레딩-모델)
-- [향후 고려사항](#향후-고려사항)
+1. [개요](#개요)
+2. [설계 원칙](#설계-원칙)
+3. [모듈 아키텍처](#모듈-아키텍처)
+4. [프레임 플로우](#프레임-플로우)
+5. [메모리 관리](#메모리-관리)
+6. [렌더링 아키텍처](#렌더링-아키텍처)
+7. [로드맵](#로드맵)
+8. [구현 진행 상황](#구현-진행-상황)
+9. [참고 자료](#참고-자료)
 
 ---
 
 ## 개요
 
-DevMiniEngine은 DirectX 12와 현대적인 C++ 관행을 기반으로 하는 학습 중심 게임 엔진으로 설계되었습니다. 아키텍처는 다음을 강조합니다:
+DevMiniEngine은 DirectX 12 기반의 학습용 게임 엔진 프로젝트입니다. ECS(Entity Component System) 아키텍처와 다양한 그래픽스 기술을 학습하고 실험하는 것을 목표로 합니다.
 
-- **데이터 지향 설계**: 최적의 캐시 성능을 위한 ECS 아키텍처
-- **모듈화**: 엔진 서브시스템 간 명확한 관심사 분리
-- **추상화**: 잠재적 그래픽스 API 유연성을 위한 RHI 레이어
-- **현대적 C++**: 깔끔하고 효율적인 코드를 위한 C++20 기능 활용
+### 핵심 기술 스택
+- **Graphics API**: DirectX 12
+- **언어**: C++20
+- **빌드 시스템**: Visual Studio 2022
+- **아키텍처**: 모듈식 설계, ECS (계획 중)
 
-### 주요 아키텍처 목표
-
-1. **교육적 가치**: 학습을 위한 명확하고 읽기 쉬운 코드 구조
-2. **성능**: 데이터 지향 설계와 효율적인 메모리 레이아웃
-3. **유지보수성**: 최소한의 의존성을 가진 모듈식 설계
-4. **확장성**: 새로운 기능과 시스템 추가 용이
-
----
-
-## 설계 철학
-
-### 1. Entity Component System (ECS)
-
-**왜 ECS인가?**
-- 캐시 친화적인 데이터 레이아웃
-- 데이터와 로직의 명확한 분리
-- 시스템 병렬화 용이
-- 유연한 엔티티 구성
-
-**핵심 개념:**
-```cpp
-// Entity: 단순한 ID
-using Entity = uint32_t;
-
-// Component: 순수 데이터
-struct TransformComponent
-{
-    Vector3 position;
-    Quaternion rotation;
-    Vector3 scale;
-};
-
-// System: 순수 로직
-class RenderSystem : public System
-{
-    void Update(World& world, float deltaTime) override;
-};
-```
-
-### 2. 데이터 지향 설계
-
-**원칙:**
-- 연속된 배열에 저장되는 컴포넌트 (SoA - Structure of Arrays)
-- 시스템이 컴포넌트 배열을 효율적으로 순회
-- 포인터 추적 최소화
-- 캐시 친화적인 메모리 접근 패턴
-
-### 3. 의존성 관리
-
-**모듈 계층:**
-```
-┌─────────────────────────────────────┐
-│        애플리케이션 레이어            │
-├─────────────────────────────────────┤
-│      씬 / 게임플레이 시스템          │
-├─────────────────────────────────────┤
-│  그래픽스│ 물리 │ AI │ 지형         │
-├─────────────────────────────────────┤
-│         ECS 프레임워크               │
-├─────────────────────────────────────┤
-│   Core (메모리, 스레딩, 로깅)        │
-├─────────────────────────────────────┤
-│      Math (독립적)                  │
-├─────────────────────────────────────┤
-│       Platform (Win32)              │
-└─────────────────────────────────────┘
-```
-
-**의존성 규칙:**
-- 하위 레이어는 상위 레이어에 대해 알지 못함
-- Math 모듈은 완전히 독립적
-- Core는 Platform에만 의존
-- 모든 게임 시스템은 ECS에 의존
+### 프로젝트 목표
+1. DirectX 12 저수준 API 완전 이해
+2. ECS 아키텍처 패턴 학습 및 구현
+3. 최신 그래픽스 기술 실험 (PBR, IBL, Shadow Mapping 등)
+4. 포트폴리오용 데모 제작
 
 ---
 
-## 모듈 상세
+## 설계 원칙
 
-### 레이어 분석
+### 1. 모듈화 (Modularity)
+각 시스템은 명확한 책임과 인터페이스를 가진 독립적인 모듈로 구성됩니다.
+
+**모듈 간 의존성 규칙:**
+```
+Framework → Graphics → Platform → Core
+          ↘ Math   ↗
+```
+
+### 2. 추상화 레벨 분리
+- **High-Level**: Framework (Application, Scene, GameObject)
+- **Mid-Level**: Graphics (Mesh, Material, Texture, Camera)
+- **Low-Level**: DX12 (Device, CommandQueue, DescriptorHeap)
+
+### 3. What/How 분리
+- **What**: Scene이 무엇을 렌더링할지 결정 (논리)
+- **How**: Renderer가 어떻게 렌더링할지 구현 (DirectX 12)
+
+### 4. 메모리 효율성
+- 커스텀 할당자 (Linear, Pool, Stack)
+- CPU-GPU 메모리 동기화 최적화
+- 리소스 캐싱 및 재사용
+
+---
+
+## 모듈 아키텍처
+
+### 디렉토리 구조
+```
+DevMiniEngine/
+├── Engine/
+│   ├── include/
+│   │   ├── Core/                        # Core 레이어
+│   │   │   ├── Memory/                  # 메모리 관리
+│   │   │   ├── Logging/                 # 로깅 시스템
+│   │   │   └── Timing/                  # 타이머 시스템
+│   │   ├── Math/                        # Math 레이어
+│   │   ├── Platform/                    # Platform 레이어
+│   │   │   ├── Window/                  # 윈도우 관리
+│   │   │   └── Input/                   # 입력 처리
+│   │   ├── Graphics/                    # Graphics 레이어
+│   │   │   ├── DX12/                    # DirectX 12 구현
+│   │   │   └── Camera/                  # 카메라 시스템
+│   │   └── Framework/                   # Framework 레이어
+│   │       ├── Application.h            # 애플리케이션 베이스
+│   │       ├── Resources/               # 리소스 관리
+│   │       └── Scene/                   # 씬 관리
+│   │
+│   ├── src/                             # 모든 모듈의 구현
+│   │
+│   ├── Core/                            # Core 모듈 프로젝트
+│   ├── Math/                            # Math 모듈 프로젝트
+│   ├── Platform/                        # Platform 모듈 프로젝트
+│   ├── Graphics/                        # Graphics 모듈 프로젝트
+│   └── Framework/                       # Framework 모듈 프로젝트
+│
+├── Samples/                             # 샘플 프로젝트
+│   ├── 01_MemoryTest/
+│   ├── ...
+│   └── 08_TexturedCube/                 # 텍스처 큐브 렌더링
+│
+├── Assets/                              # 에셋
+│   └── Textures/                        # 텍스처 파일
+│       └── BrickWall/                   # PBR 텍스처 세트
+│
+└── Docs/                                # 문서
+    ├── Architecture.md
+    ├── CodingConvention.md
+    └── DevelopmentLog.md
+```
+
+### 모듈 설명
 
 #### 1. Platform 레이어 (구현 완료)
-**책임**: OS별 기능 추상화
+**책임**: OS 종속적인 기능 추상화
 
-**상태**: Windows용으로 완전히 구현됨
+**핵심 클래스:**
 
 ```cpp
-// Platform/include/Platform/Window.h
+// Platform/include/Platform/Window/Window.h
 class Window
 {
 public:
-    virtual bool Create(const WindowDesc& desc) = 0;
-    virtual void ProcessEvents() = 0;
-    virtual WindowHandle GetNativeHandle() const = 0;
-    virtual Input& GetInput() = 0;
-};
-
-// Platform/src/Windows/Win32Window.cpp
-class Win32Window : public Window
-{
-    // Win32 특정 구현
+    bool Initialize(const WindowDesc& desc);
+    void ProcessMessages();
+    void Show();
+    void Hide();
+    
+    HWND GetHandle() const { return mHandle; }
+    uint32 GetWidth() const { return mWidth; }
+    uint32 GetHeight() const { return mHeight; }
+    
+private:
+    HWND mHandle = nullptr;
+    uint32 mWidth = 0;
+    uint32 mHeight = 0;
 };
 ```
 
-**구성 요소:**
-- 윈도우 관리 (Win32 구현)
-- 이벤트 처리 시스템
-- 입력 시스템 (키보드, 마우스)
-  - 프레임 정확 입력을 위한 더블 버퍼링
-  - Pressed/held/released 상태 추적
-- 고해상도 타이머 (계획됨)
-
 **테스트 커버리지**: 06_WindowTest, 07_InputTest
 
-**설계 결정사항:**
-- Window가 Input 인스턴스를 소유 (싱글톤 아님)
-- 각 윈도우가 독립적인 입력 상태 보유
-- 플랫폼별 생성을 위한 팩토리 패턴
-- Windows.h 오염 최소화를 위한 전방 선언
+**기능:**
+- Win32 Window 관리 (생성, 메시지 처리, 이벤트)
+- 입력 시스템 (키보드, 마우스)
+- 프레임 시작/종료 시 입력 상태 업데이트
+- 델타 타임 측정
 
 **성능:**
-- 윈도우 생성: ~5 ms
-- ProcessEvents: 프레임당 ~0.01-0.05 ms
-- 입력 추적: 무시할 수 있는 오버헤드 (~0.001 ms)
+- 입력 폴링: ~1 마이크로초 오버헤드
+- 윈도우 메시지 처리: 이벤트 기반 (프레임당 가변)
 
 #### 2. Math 레이어 (구현 완료)
 **책임**: 수학적 기본 요소 및 연산
@@ -225,36 +221,6 @@ private:
     size_t mSize;
     size_t mOffset;
 };
-
-// Core/include/Core/Memory/PoolAllocator.h
-class PoolAllocator : public Allocator
-{
-public:
-    PoolAllocator(size_t chunkSize, size_t chunkCount);
-    void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) override;
-    void Deallocate(void* ptr) override;  // O(1) 해제
-    
-private:
-    void* mMemory;
-    size_t mChunkSize;
-    void* mFreeList;  // 프리 청크의 연결 리스트
-};
-
-// Core/include/Core/Memory/StackAllocator.h
-class StackAllocator : public Allocator
-{
-public:
-    using Marker = size_t;
-    
-    explicit StackAllocator(size_t size);
-    void* Allocate(size_t size, size_t alignment = DEFAULT_ALIGNMENT) override;
-    Marker GetMarker() const;
-    void FreeToMarker(Marker marker);  // LIFO 해제
-    
-private:
-    void* mMemory;
-    size_t mOffset;
-};
 ```
 
 **기능:**
@@ -262,11 +228,6 @@ private:
 - 포괄적인 로깅 통합
 - 스레드 안전 어설션 매크로 (CORE_ASSERT, CORE_VERIFY)
 - 메모리 추적 (할당 크기/횟수)
-
-**향후 개선사항:**
-- 디버그 경계 검사
-- 메모리 누수 감지
-- 할당 통계/프로파일링
 
 ##### 로깅 시스템 (구현 완료)
 **상태**: 다중 출력 지원과 함께 완전히 구현됨
@@ -298,7 +259,7 @@ public:
 private:
     std::vector<std::unique_ptr<LogSink>> mSinks;
     LogLevel mMinLevel = LogLevel::Trace;
-    std::mutex mMutex;  // 스레드 안전
+    std::mutex mMutex;
 };
 
 // Core/include/Core/Logging/LogMacros.h
@@ -306,11 +267,6 @@ private:
     Logger::GetInstance().Log(LogLevel::Info, LogCategory::Core, \
         FormatLog(format, ##__VA_ARGS__), __FILE__, __LINE__)
 
-#define LOG_ERROR(format, ...) \
-    Logger::GetInstance().Log(LogLevel::Error, LogCategory::Core, \
-        FormatLog(format, ##__VA_ARGS__), __FILE__, __LINE__)
-
-// 카테고리별 매크로
 #define LOG_GRAPHICS_INFO(format, ...) \
     Logger::GetInstance().Log(LogLevel::Info, LogCategory::Graphics, \
         FormatLog(format, ##__VA_ARGS__), __FILE__, __LINE__)
@@ -320,409 +276,555 @@ private:
 - 전역 접근성을 위한 싱글톤 패턴
 - 확장 가능한 출력 시스템을 위한 Sink 패턴
 - 편의성과 컴파일 타임 최적화를 위한 매크로 기반 API
-- Printf 스타일 포매팅 (간단하고 외부 의존성 없음)
+- Printf 스타일 포매팅
 - Release 빌드에서 Trace/Debug 컴파일 타임 제거
 
-**주요 기능:**
-- Mutex 보호를 통한 스레드 안전 로깅
-- 카테고리 기반 필터링
-- 컬러 코딩된 콘솔 출력 (Windows Terminal 호환)
-- 전체 타임스탬프와 소스 위치가 있는 파일 로깅
-- Release 빌드에서 Trace/Debug 로그의 오버헤드 제로 (~0 ns)
-- Debug 오버헤드: 로그당 ~50 마이크로초
-
 **성능:**
-```cpp
-// Debug 빌드
-LOG_INFO("Message");  // ~50 µs 오버헤드
+- Debug 빌드: 로그당 ~50 마이크로초 오버헤드
+- Release 빌드: Trace/Debug는 컴파일 제거됨, 0 오버헤드
 
-// Release 빌드
-LOG_TRACE("Debug info");  // 컴파일 제거됨, 0 오버헤드
-LOG_DEBUG("Debug info");  // 컴파일 제거됨, 0 오버헤드
-LOG_INFO("Message");      // ~50 µs 오버헤드
-```
-
-**사용 예시:**
-```cpp
-// 기본 로깅
-LOG_INFO("엔진이 성공적으로 초기화되었습니다");
-LOG_WARN("메모리 예산에 맞추기 위해 텍스처 품질이 감소되었습니다");
-LOG_ERROR("에셋 로드 실패: %s", filename);
-
-// 카테고리별 로깅
-LOG_GRAPHICS_INFO("%d개의 삼각형 렌더링 중", count);
-LOG_PHYSICS_WARN("충돌 감지됨 위치 (%.2f, %.2f, %.2f)", x, y, z);
-LOG_MEMORY_DEBUG("LinearAllocator가 %zu 바이트를 할당했습니다", size);
-
-// Memory allocators와의 통합
-LinearAllocator frameAlloc(10 * MB);
-void* data = frameAlloc.Allocate(1024);
-// 자동으로 로그: "LinearAllocator가 0x...에 1024 바이트를 할당했습니다"
-```
-
-**향후 개선사항:**
-- 고빈도 시나리오를 위한 비동기 로깅
-- 로그 파일 회전 (크기/날짜 기반)
-- 로그 분석 도구를 위한 JSON 출력 Sink
-
-##### 스레딩 (계획됨)
-**상태**: 시작 안 됨
-
-```cpp
-// Core/include/Core/Threading/JobSystem.h
-class JobSystem
-{
-public:
-    void Schedule(Job* job);
-    void Wait(JobHandle handle);
-};
-```
-
-**컨테이너 (계획됨)**
-- 엔진 사용에 최적화된 커스텀 컨테이너
-
-#### 4. ECS 레이어 (계획됨)
-**책임**: Entity-Component-System 프레임워크
+##### 타이밍 시스템 (구현 완료)
+**상태**: 고정밀 타이머 완전히 구현됨
 
 **핵심 클래스:**
-
 ```cpp
-// ECS/include/ECS/World.h
-class World
+// Core/include/Core/Timing/Timer.h
+class Timer
 {
 public:
-    Entity CreateEntity();
-    void DestroyEntity(Entity entity);
-    
-    template<typename T>
-    T* AddComponent(Entity entity);
-    
-    template<typename T>
-    T* GetComponent(Entity entity);
-    
-    void RegisterSystem(std::unique_ptr<System> system);
-    void Update(float deltaTime);
+    void Start();
+    void Tick();
+    float32 GetDeltaTime() const;
+    float32 GetTotalTime() const;
     
 private:
-    EntityManager mEntityManager;
-    ComponentManager mComponentManager;
-    SystemManager mSystemManager;
+    int64 mFrequency;
+    int64 mStartTime;
+    int64 mCurrentTime;
+    int64 mPreviousTime;
+    
+    static constexpr uint32 SAMPLE_COUNT = 50;
+    std::array<float32, SAMPLE_COUNT> mDeltaTimeSamples;
+    uint32 mSampleIndex;
 };
 ```
 
-**컴포넌트 저장:**
-```cpp
-// ECS/include/ECS/ComponentArray.h
-template<typename T>
-class ComponentArray
-{
-private:
-    std::array<T, MAX_ENTITIES> mComponents;
-    std::unordered_map<Entity, size_t> mEntityToIndex;
-    std::unordered_map<size_t, Entity> mIndexToEntity;
-    size_t mSize = 0;
-};
-```
+**기능:**
+- QueryPerformanceCounter 사용 (Windows 고정밀 타이머)
+- 50개 샘플 평균화로 안정적인 delta time
+- 총 경과 시간 추적
 
-#### 5. Graphics 레이어 (부분 구현)
-
+#### 4. Graphics 레이어 (구현 완료)
 **책임**: 렌더링 시스템 및 DirectX 12 추상화
 
-**상태**: DirectX 12 초기화 완료, 고수준 렌더링 계획됨
+**핵심 구성 요소:**
 
-**구현된 컴포넌트:**
+##### DirectX 12 초기화 (구현 완료)
+**상태**: 완전히 작동하는 렌더링 파이프라인
 
-##### DirectX 12 초기화 (완료)
+**클래스:**
+- **DX12Device**: DXGI Factory, Adapter, Device 관리
+- **DX12CommandQueue**: Graphics/Compute/Copy 큐 관리
+- **DX12SwapChain**: 프레젠테이션 및 백 버퍼 관리
+- **DX12CommandContext**: Command List 및 Allocator 풀링
+- **DX12DescriptorHeap**: RTV, DSV, CBV/SRV/UAV 관리
+- **DX12Fence**: CPU-GPU 동기화
 
-**DX12Device**
 ```cpp
 // Graphics/include/Graphics/DX12/DX12Device.h
 class DX12Device
 {
 public:
-    bool Initialize();
+    bool Initialize(bool useWarp = false, bool enableDebugLayer = false);
+    
     ID3D12Device* GetDevice() const { return mDevice.Get(); }
+    DX12CommandQueue* GetGraphicsQueue() { return &mGraphicsQueue; }
+    DX12CommandContext* GetCommandContext(uint32 frameIndex);
     
 private:
-    ComPtr mDevice;
-    ComPtr mFactory;
+    Microsoft::WRL::ComPtr<ID3D12Device> mDevice;
+    DX12CommandQueue mGraphicsQueue;
+    std::vector<std::unique_ptr<DX12CommandContext>> mContexts;
 };
 ```
 
-- DXGI Factory4 생성 및 GPU 어댑터 선택
-- Feature Level 감지 (12.1 → 11.0)
-- Debug Layer 활성화 (Debug 빌드)
-- 테스트: 08_DX12Init
+**프레임 버퍼링 전략:**
+- 트리플 버퍼링 (3개의 백 버퍼)
+- 프레임별 리소스 (CommandAllocator, ConstantBuffer)
+- Fence 기반 CPU-GPU 동기화
 
-**DX12CommandQueue**
+**이중 인덱싱 시스템:**
 ```cpp
-// Graphics/include/Graphics/DX12/DX12CommandQueue.h
-class DX12CommandQueue
+// currentFrameIndex: CPU 순차 인덱스 (0 → 1 → 2 → 0...)
+// backBufferIndex: GPU 비순차 인덱스 (Present 순서)
+uint32 currentFrameIndex = 0;
+uint32 backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+```
+
+##### 메시 시스템 (구현 완료)
+**클래스:**
+- **Mesh**: 정점/인덱스 버퍼 관리
+- **DX12VertexBuffer**: 정점 데이터 GPU 업로드
+- **DX12IndexBuffer**: 인덱스 데이터 GPU 업로드
+
+```cpp
+// Graphics/include/Graphics/Mesh.h
+class Mesh
 {
 public:
-    bool Initialize(ID3D12Device* device);
-    void ExecuteCommandLists(ID3D12CommandList** lists, UINT count);
-    void WaitForIdle();
+    bool Initialize(
+        ID3D12Device* device,
+        DX12CommandQueue* queue,
+        DX12CommandContext* context,
+        const void* vertexData,
+        uint32 vertexCount,
+        uint32 vertexStride,
+        const uint16* indexData,
+        uint32 indexCount
+    );
+    
+    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
+    D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const;
+    uint32 GetIndexCount() const { return mIndexCount; }
     
 private:
-    ComPtr mQueue;
-    ComPtr mFence;
-    UINT64 mFenceValue = 0;
+    std::unique_ptr<DX12VertexBuffer> mVertexBuffer;
+    std::unique_ptr<DX12IndexBuffer> mIndexBuffer;
+    uint32 mVertexCount;
+    uint32 mIndexCount;
 };
 ```
 
-- Direct Command Queue 생성
-- Fence를 통한 GPU 동기화
-- 커맨드 리스트 실행 관리
+##### 텍스처 시스템 (구현 완료)
+**상태**: PBR 워크플로우 지원 완료
 
-**DX12SwapChain**
+**PBR 텍스처 타입 (7종):**
 ```cpp
-// Graphics/include/Graphics/DX12/DX12SwapChain.h
-class DX12SwapChain
+// Graphics/include/Graphics/TextureType.h
+enum class TextureType : uint32
+{
+    Diffuse = 0,     // t0 - 기본 색상
+    Normal,          // t1 - 노말 맵
+    Specular,        // t2 - 스페큘러 맵
+    Roughness,       // t3 - 거칠기 맵
+    Metallic,        // t4 - 금속성 맵
+    AO,              // t5 - Ambient Occlusion
+    Emissive,        // t6 - 발광 맵
+    Count
+};
+```
+
+**Texture 클래스:**
+```cpp
+// Graphics/include/Graphics/Texture.h
+class Texture
 {
 public:
-    bool Initialize(IDXGIFactory4* factory, ID3D12CommandQueue* queue, 
-                   HWND hwnd, UINT width, UINT height);
-    void Present();
-    UINT GetCurrentBackBufferIndex() const;
+    bool LoadFromFile(
+        ID3D12Device* device,
+        DX12CommandQueue* queue,
+        DX12CommandContext* context,
+        const wchar_t* filename
+    );
+    
+    bool CreateSRV(
+        ID3D12Device* device,
+        DX12DescriptorHeap* heap,
+        uint32 descriptorIndex
+    );
+    
+    ID3D12Resource* GetResource() const { return mTextureResource.Get(); }
     
 private:
-    ComPtr mSwapChain;
-    static constexpr UINT BufferCount = 2;
+    Microsoft::WRL::ComPtr<ID3D12Resource> mTextureResource;
+    Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
 };
 ```
 
-- FLIP_DISCARD 스왑 효과를 사용한 더블 버퍼링
-- Tearing 지원
-- 백 버퍼 리소스 관리
+**로더 지원:**
+- WIC Loader: PNG, JPG (일반 이미지)
+- DDS Loader: DDS (압축 텍스처, 밉맵)
 
-**DX12DescriptorHeap**
+##### Material 시스템 (구현 완료)
+**책임**: 셰이더, 텍스처, 렌더 상태 관리
+
 ```cpp
-// Graphics/include/Graphics/DX12/DX12DescriptorHeap.h
-class DX12DescriptorHeap
+// Graphics/include/Graphics/Material.h
+class Material
 {
 public:
-    bool Initialize(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, 
-                   UINT numDescriptors);
-    D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT index) const;
+    explicit Material(const MaterialDesc& desc);
+    
+    // PBR 텍스처 설정
+    void SetTexture(TextureType type, const std::shared_ptr<Texture>& texture);
+    
+    // Descriptor Table 할당 (7개 연속 슬롯)
+    bool AllocateDescriptors(ID3D12Device* device, DX12DescriptorHeap* heap);
+    void FreeDescriptors(DX12DescriptorHeap* heap);
+    
+    // 렌더링 시 바인딩
+    D3D12_GPU_DESCRIPTOR_HANDLE GetDescriptorTableHandle(const DX12DescriptorHeap* heap) const;
+    
+    // PSO 생성 정보
+    D3D12_BLEND_DESC GetBlendState() const;
+    D3D12_RASTERIZER_DESC GetRasterizerState() const;
+    D3D12_DEPTH_STENCIL_DESC GetDepthStencilState() const;
     
 private:
-    ComPtr mHeap;
-    UINT mDescriptorSize = 0;
+    uint32 mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
+    std::array<std::shared_ptr<Texture>, static_cast<size_t>(TextureType::Count)> mTextures;
 };
 ```
 
-- RTV Descriptor Heap 관리
-- CPU/GPU 디스크립터 핸들 계산
+**Descriptor Table 구조:**
+- 연속된 7개 SRV 슬롯 (t0~t6)
+- 빈 슬롯은 Null Descriptor 자동 생성
+- 한 번의 `SetGraphicsRootDescriptorTable` 호출로 바인딩
 
-**DX12CommandContext**
+##### 카메라 시스템 (구현 완료)
+**클래스:**
+- **PerspectiveCamera**: 원근 투영 카메라
+- **OrthographicCamera** (계획 중): 직교 투영 카메라
+
 ```cpp
-// Graphics/include/Graphics/DX12/DX12CommandContext.h
-class DX12CommandContext
+// Graphics/include/Graphics/Camera/PerspectiveCamera.h
+class PerspectiveCamera
 {
 public:
-    bool Initialize(ID3D12Device* device, UINT bufferCount);
-    void Reset(UINT frameIndex);
-    void Close();
-    void TransitionBarrier(ID3D12Resource* resource, 
-                          D3D12_RESOURCE_STATES before,
-                          D3D12_RESOURCE_STATES after);
+    void SetLookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
+    void SetPerspective(float32 fovY, float32 aspectRatio, float32 nearZ, float32 farZ);
+    
+    void UpdateViewMatrix();
+    void UpdateProjectionMatrix();
+    
+    Matrix4x4 GetViewMatrix() const { return mView; }
+    Matrix4x4 GetProjectionMatrix() const { return mProjection; }
+    Vector3 GetPosition() const { return mPosition; }
     
 private:
-    std::vector<ComPtr> mAllocators;
-    ComPtr mCommandList;
+    Vector3 mPosition;
+    Vector3 mTarget;
+    Vector3 mUp;
+    
+    float32 mFovY;
+    float32 mAspectRatio;
+    float32 mNearZ;
+    float32 mFarZ;
+    
+    Matrix4x4 mView;
+    Matrix4x4 mProjection;
 };
 ```
 
-- 프레임별 Command Allocator 관리
-- Command List 기록 및 리셋
-- Resource Barrier를 통한 리소스 상태 전환
+##### 렌더링 파이프라인 (구현 완료)
+**DX12Renderer 클래스:**
+- Root Signature 관리
+- Pipeline State Object (PSO) 캐싱
+- Shader 컴파일
+- ConstantBuffer 관리
+- DepthStencilBuffer 관리
 
-**테스트 커버리지**: 08_DX12Init
-
-**구현 하이라이트:**
-- 첫 렌더링 성공: Cornflower Blue 클리어 스크린
-- Feature Level에 따른 유연한 초기화
-- 프레임당 독립적인 Command Allocator (더블 버퍼링)
-- 로깅 시스템과 완전 통합
-
-**설계 결정사항:**
-- ComPtr을 사용한 자동 참조 카운팅
-- 프레임별 리소스 분리 (CPU/GPU 병렬성)
-- Resource Barrier 명시적 관리
-- 에러 처리를 위한 HRESULT 검사
-
-**다음 단계 (계획됨):**
-- Vertex Buffer 생성 및 관리
-- Shader 컴파일 파이프라인
-- Pipeline State Object (PSO) 생성
-- 삼각형 렌더링
-
-##### RHI 레이어 (계획됨)
-
-**RHI (Render Hardware Interface):**
+**렌더링 플로우:**
 ```cpp
-// Graphics/include/Graphics/RHI/Device.h
-class Device
+// Scene에서 렌더링 데이터 수집
+FrameData frameData;
+scene->CollectRenderData(frameData);
+
+// Renderer가 실제 렌더링 수행
+renderer->BeginFrame();
+renderer->RenderFrame(frameData);
+renderer->EndFrame();
+renderer->Present();
+```
+
+**RenderItem 구조:**
+```cpp
+// Graphics/include/Graphics/RenderTypes.h
+struct RenderItem
+{
+    Mesh* mesh;
+    Material* material;
+    Matrix4x4 worldMatrix;
+    Matrix4x4 mvpMatrix;  // HLSL용 전치 완료
+};
+
+struct FrameData
+{
+    std::vector<RenderItem> opaqueItems;
+    std::vector<RenderItem> transparentItems;  // 향후 지원
+    Matrix4x4 viewMatrix;
+    Matrix4x4 projectionMatrix;
+    Vector3 cameraPosition;
+};
+```
+
+#### 5. Framework 레이어 (구현 완료)
+**책임**: 고수준 애플리케이션 프레임워크 및 리소스 관리
+
+**모듈 위치**: 최상위 통합 레이어
+**의존성**: Framework → Graphics/Platform/Core/Math (단방향)
+
+##### Application 클래스 (구현 완료)
+**템플릿 메서드 패턴 적용**
+
+```cpp
+// Framework/include/Framework/Application.h
+class Application
 {
 public:
-    virtual CommandList* CreateCommandList() = 0;
-    virtual Buffer* CreateBuffer(const BufferDesc& desc) = 0;
-    virtual Texture* CreateTexture(const TextureDesc& desc) = 0;
-};
-
-// Graphics/include/Graphics/DX12/DX12Device.h
-class DX12Device : public Device
-{
-    // DirectX 12 구현
-};
-```
-
-**렌더링 아키텍처:**
-```
-┌──────────────────────────────────┐
-│      고수준 렌더러                │ ← Material, Mesh, Camera
-├──────────────────────────────────┤
-│   Render Graph (계획됨)          │ ← Frame graph, pass 순서
-├──────────────────────────────────┤
-│         RHI 레이어 (계획됨)      │ ← API 추상화
-├──────────────────────────────────┤
-│      DirectX 12 API (부분 구현)  │ ← 저수준 구현 (초기화 완료)
-└──────────────────────────────────┘
-```
-
-#### 6. Physics 레이어 (계획됨)
-
-**아키텍처:**
-```cpp
-// Physics/include/Physics/PhysicsWorld.h
-class PhysicsWorld
-{
-public:
-    void Step(float deltaTime);
-    void AddRigidBody(RigidBody* body);
-    void RemoveRigidBody(RigidBody* body);
+    explicit Application(const ApplicationDesc& desc);
+    virtual ~Application();
+    
+    int Run();
+    
+protected:
+    // 사용자 커스터마이징 지점
+    virtual bool OnInitialize() { return true; }
+    virtual void OnUpdate(float32 deltaTime) {}
+    virtual void OnRender() {}
+    virtual void OnShutdown() {}
+    
+    // 접근자
+    DX12Device* GetDevice() { return &mDevice; }
+    DX12Renderer* GetRenderer() { return &mRenderer; }
+    Window* GetWindow() { return &mWindow; }
     
 private:
-    void BroadPhase();
-    void NarrowPhase();
-    void SolveConstraints();
+    void Initialize();
+    void Update();
+    void Render();
+    void Shutdown();
+    
+    // 엔진 시스템
+    Window mWindow;
+    Input mInput;
+    DX12Device mDevice;
+    DX12Renderer mRenderer;
+    Timer mTimer;
+    
+    bool mIsRunning = false;
 };
 ```
 
-**ECS 통합:**
+**라이프사이클:**
+1. `Initialize()` - 엔진 초기화
+2. `OnInitialize()` - 사용자 초기화
+3. Loop:
+   - `Update()` - 입력 처리, 타이머 업데이트
+   - `OnUpdate(deltaTime)` - 사용자 업데이트
+   - `OnRender()` - 사용자 렌더링
+   - `Render()` - 프레임 제출
+4. `OnShutdown()` - 사용자 정리
+5. `Shutdown()` - 엔진 정리
+
+##### ResourceManager 클래스 (구현 완료)
+**중앙 집중식 리소스 관리**
+
 ```cpp
-// Physics/include/Physics/Systems/PhysicsSystem.h
-class PhysicsSystem : public System
+// Framework/include/Framework/Resources/ResourceManager.h
+class ResourceManager
 {
 public:
-    void Update(World& world, float deltaTime) override
-    {
-        // ECS 컴포넌트와 물리 월드 동기화
-        SyncTransforms(world);
-        
-        // 물리 시뮬레이션 스텝
-        mPhysicsWorld.Step(deltaTime);
-        
-        // 결과를 ECS에 다시 작성
-        UpdateTransforms(world);
-    }
+    ResourceManager(DX12Device* device, DX12Renderer* renderer);
+    
+    // Mesh 관리
+    std::shared_ptr<Mesh> CreateMesh(const std::string& name);
+    std::shared_ptr<Mesh> GetMesh(const std::string& name) const;
+    bool RemoveMesh(const std::string& name);
+    
+    // Material 관리
+    std::shared_ptr<Material> CreateMaterial(
+        const std::string& name,
+        const std::wstring& vertexShader,
+        const std::wstring& pixelShader
+    );
+    std::shared_ptr<Material> GetMaterial(const std::string& name) const;
+    bool RemoveMaterial(const std::string& name);
+    
+    // Texture 관리 (자동 캐싱)
+    std::shared_ptr<Texture> LoadTexture(const std::wstring& path);
+    std::shared_ptr<Texture> GetTexture(const std::wstring& path) const;
+    bool RemoveTexture(const std::wstring& path);
+    
+    void Clear();
     
 private:
-    PhysicsWorld mPhysicsWorld;
+    DX12Device* mDevice;
+    DX12Renderer* mRenderer;
+    
+    std::unordered_map<std::string, std::shared_ptr<Mesh>> mMeshes;
+    std::unordered_map<std::string, std::shared_ptr<Material>> mMaterials;
+    std::unordered_map<std::wstring, std::shared_ptr<Texture>> mTextures;
 };
 ```
 
-#### 7. Scene 레이어 (계획됨)
+**기능:**
+- `std::shared_ptr` 기반 참조 카운팅
+- 중복 로딩 방지 (경로 기반 캐싱)
+- 생명주기 자동 관리
 
-**Scene Graph vs ECS:**
-- ECS가 엔티티 데이터와 로직 처리
-- Scene은 고수준 조직화 제공
-- SceneManager가 씬 전환 처리
+##### Scene/GameObject 시스템 (구현 완료)
+**임시 구현 (향후 ECS로 전환 예정)**
 
 ```cpp
-// Scene/include/Scene/Scene.h
+// Framework/include/Framework/Scene/GameObject.h
+class GameObject
+{
+public:
+    explicit GameObject(const std::string& name);
+    
+    // Transform
+    void SetPosition(const Vector3& position);
+    void SetRotation(const Quaternion& rotation);
+    void SetScale(const Vector3& scale);
+    Matrix4x4 GetWorldMatrix() const;
+    
+    // 렌더링 컴포넌트
+    void SetMesh(std::shared_ptr<Mesh> mesh);
+    void SetMaterial(std::shared_ptr<Material> material);
+    
+    std::shared_ptr<Mesh> GetMesh() const { return mMesh; }
+    std::shared_ptr<Material> GetMaterial() const { return mMaterial; }
+    
+    // 활성화 상태
+    void SetActive(bool active);
+    bool IsActive() const { return mIsActive; }
+    
+    virtual void Update(float32 deltaTime);
+    
+private:
+    std::string mName;
+    bool mIsActive = true;
+    
+    Vector3 mPosition = {0, 0, 0};
+    Quaternion mRotation = {0, 0, 0, 1};
+    Vector3 mScale = {1, 1, 1};
+    
+    std::shared_ptr<Mesh> mMesh;
+    std::shared_ptr<Material> mMaterial;
+};
+```
+
+```cpp
+// Framework/include/Framework/Scene/Scene.h
 class Scene
 {
 public:
-    void Load();
-    void Unload();
-    void Update(float deltaTime);
+    Scene();
+    ~Scene();
     
-    Entity CreateGameObject(const std::string& name);
+    // GameObject 관리
+    GameObject* CreateGameObject(const std::string& name);
+    GameObject* FindGameObject(const std::string& name);
+    bool RemoveGameObject(const std::string& name);
+    void ClearGameObjects();
+    
+    // 카메라
+    PerspectiveCamera* GetMainCamera();
+    
+    // 업데이트
+    void Update(float32 deltaTime);
+    
+    // 렌더링 데이터 수집 (렌더링하지 않음!)
+    void CollectRenderData(FrameData& outFrameData) const;
     
 private:
-    World mWorld;
-    std::string mName;
-    bool mIsLoaded = false;
+    std::vector<std::unique_ptr<GameObject>> mGameObjects;
+    std::unordered_map<std::string, GameObject*> mGameObjectMap;
+    PerspectiveCamera mMainCamera;
 };
 ```
 
+**What/How 분리:**
+- `Scene::CollectRenderData()`: 무엇을 렌더링할지 수집
+- `DX12Renderer::RenderFrame()`: 어떻게 렌더링할지 구현
+
 ---
 
-## 데이터 흐름
+## 프레임 플로우
 
-### 프레임 업데이트 사이클
-
+### 메인 루프 시퀀스
 ```
 ┌─────────────────────────────────────────┐
 │  1. Platform: 윈도우 이벤트 처리         │
-│     - 입력 이벤트                       │
-│     - 윈도우 크기 변경 등               │
+│     - 입력 이벤트                        │
+│     - 윈도우 크기 변경 등                │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
 │  2. Input: 입력 상태 업데이트            │
-│     - 키보드, 마우스                    │
-│     - 프레임 시작 시 Update()           │
-│     - 프레임 종료 시 Reset()            │
+│     - 키보드, 마우스                     │
+│     - 프레임 시작 시 Update()            │
+│     - 프레임 종료 시 Reset()             │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
-│  3. 게임 로직 시스템 (ECS)              │
-│     - AISystem                          │
-│     - PhysicsSystem                     │
-│     - GameplaySystem                    │
+│  3. Timer: Delta Time 계산               │
+│     - Tick()                             │
+│     - 50 샘플 평균화                     │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
-│  4. 렌더링 (ECS)                        │
-│     - CameraSystem                      │
-│     - RenderSystem                      │
-│       → 컬링                            │
-│       → 렌더 큐 정렬                    │
-│       → 드로우 콜 제출                  │
+│  4. Application::OnUpdate(deltaTime)     │
+│     - 게임 로직                          │
+│     - GameObject 업데이트                │
+│     - Scene 업데이트                     │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
-│  5. 프레임 제출                         │
+│  5. Application::OnRender()              │
+│     - Scene::CollectRenderData()         │
+│     - Renderer::RenderFrame()            │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│  6. Renderer::Present()                  │
+│     - SwapChain::Present()               │
+│     - Fence 시그널                       │
 └─────────────────────────────────────────┘
 ```
 
-### 렌더 프레임 플로우 (계획됨)
-
+### 렌더 프레임 플로우
 ```
 ┌──────────────────────────────────────────┐
-│  RenderSystem::Update()                  │
+│  Scene::CollectRenderData()              │
+│  - GameObject 순회                       │
+│  - Mesh/Material 수집                    │
+│  - MVP 행렬 계산                         │
+│  - RenderItem 생성                       │
 └────────────────┬─────────────────────────┘
                  │
 ┌────────────────▼─────────────────────────┐
-│  렌더 큐 빌드                            │
-│  - 가시 엔티티 순회                      │
-│  - 렌더 컴포넌트 추출                    │
-│  - 머티리얼/깊이로 정렬                  │
+│  Renderer::BeginFrame()                  │
+│  - WaitForFenceValue (CPU 동기화)        │
+│  - Reset CommandAllocator/List           │
+│  - Transition: Present → RenderTarget    │
 └────────────────┬─────────────────────────┘
                  │
 ┌────────────────▼─────────────────────────┐
-│  커맨드 리스트 기록                      │
-│  - 렌더 패스 시작                        │
-│  - 파이프라인 상태 바인딩                │
-│  - Indexed/Instanced 드로우              │
-│  - 렌더 패스 종료                        │
+│  Renderer::RenderFrame(FrameData)        │
+│  - ClearRenderTarget / DepthStencil      │
+│  - SetViewport / Scissor                 │
+│  - RenderItem 순회:                      │
+│    * PSO 캐시 또는 생성                  │
+│    * SetPipelineState                    │
+│    * SetGraphicsRootSignature            │
+│    * SetGraphicsRootConstantBufferView   │
+│    * SetGraphicsRootDescriptorTable      │
+│    * DrawIndexedInstanced                │
 └────────────────┬─────────────────────────┘
                  │
 ┌────────────────▼─────────────────────────┐
-│  제출 & 제시                             │
+│  Renderer::EndFrame()                    │
+│  - Transition: RenderTarget → Present    │
+│  - Execute CommandList                   │
+└────────────────┬─────────────────────────┘
+                 │
+┌────────────────▼─────────────────────────┐
+│  Renderer::Present()                     │
+│  - SwapChain::Present()                  │
+│  - Signal Fence                          │
+│  - MoveToNextFrame()                     │
 └──────────────────────────────────────────┘
 ```
 
@@ -736,227 +838,439 @@ private:
 
 1. **영구 메모리**: 전체 애플리케이션 수명 동안 유지
    - 엔진 코어 시스템
-   - 로드된 리소스
+   - 로드된 리소스 (Mesh, Texture, Material)
 
 2. **레벨 메모리**: 씬 변경 시 클리어
-   - 씬 엔티티
+   - Scene GameObject
    - 레벨 특정 리소스
 
-3. **프레임 메모리**: 매 프레임 리셋
-   - 임시 계산
-   - 렌더 커맨드 버퍼
+3. **프레임 메모리**: 매 프레임 클리어
+   - 임시 데이터 (RenderItem 등)
+   - UI 레이아웃 계산
 
-**할당자 타입 (모두 구현됨):**
+### 할당자 사용 가이드
 
+| 할당자 | 사용 사례 | 할당 해제 |
+|--------|----------|----------|
+| LinearAllocator | 프레임 임시 데이터, 레벨 로딩 | Reset (전체) |
+| PoolAllocator | 엔티티, 컴포넌트, 파티클 | Deallocate (개별) |
+| StackAllocator | 중첩 스코프, AI 탐색 트리 | FreeToMarker (부분) |
+
+### GPU 메모리 관리
+
+**버퍼 타입:**
+- **DEFAULT Heap**: GPU 전용 메모리 (최적 성능)
+- **UPLOAD Heap**: CPU → GPU 전송용
+- **READBACK Heap**: GPU → CPU 전송용 (디버깅)
+
+**프레임 리소스 관리:**
 ```cpp
-// Core/include/Core/Memory/Allocators.h
-
-// 프레임별 데이터를 위한 Linear 할당자
-class LinearAllocator
+struct FrameResource
 {
-    // 빠른 할당, 대량 해제
-    // O(1) 할당, 개별 할당 해제 불가
+    ComPtr<ID3D12CommandAllocator> commandAllocator;
+    std::unique_ptr<DX12ConstantBuffer> constantBuffer;
+    uint64 fenceValue;
 };
 
-// 고정 크기 객체를 위한 Pool 할당자
-template<typename T>
-class PoolAllocator
-{
-    // O(1) 할당/해제
-    // 프리 리스트 구현
-};
-
-// 스코프 할당을 위한 Stack 할당자
-class StackAllocator
-{
-    // LIFO 할당 패턴
-    // 부분 해제를 위한 마커 지원
-};
+std::array<FrameResource, FRAME_BUFFER_COUNT> mFrameResources;
 ```
-
-**사용 예시:**
-```cpp
-// 프레임별 할당
-void RenderSystem::Update(World& world, float deltaTime)
-{
-    LinearAllocator frameAlloc(10 * MB);
-    
-    // 임시 렌더 커맨드 할당
-    auto* commands = static_cast<RenderCommand*>(
-        frameAlloc.Allocate(sizeof(RenderCommand) * entityCount)
-    );
-    
-    // ... commands 사용
-    
-    // Reset()을 통해 스코프 종료 시 자동 해제
-    frameAlloc.Reset();
-}
-
-// 객체 풀링
-PoolAllocator particlePool(sizeof(Particle), 1000);
-Particle* p = static_cast<Particle*>(particlePool.Allocate());
-// ... 파티클 사용
-particlePool.Deallocate(p);  // 풀로 반환
-
-// 중첩된 스코프
-StackAllocator stack(1 * MB);
-auto marker1 = stack.GetMarker();
-{
-    void* temp = stack.Allocate(1024);
-    // ... temp 사용
-    
-    auto marker2 = stack.GetMarker();
-    {
-        void* innerTemp = stack.Allocate(512);
-        // ... innerTemp 사용
-    }
-    stack.FreeToMarker(marker2);  // 내부 스코프 해제
-}
-stack.FreeToMarker(marker1);  // 모두 해제
-```
-
-**성능 특성:**
-- LinearAllocator: 10,000회 할당에 ~0.5 ms
-- PoolAllocator: 10,000회 할당/해제 사이클에 ~2 ms
-- StackAllocator: 10,000회 할당에 ~0.8 ms
-- 표준 new/delete: ~50-100 ms (10-100배 느림)
 
 ---
 
-## 스레딩 모델
+## 렌더링 아키텍처
 
-**스레딩 모델의 경우 계획 상태로 구현 X**
+### DirectX 12 동기화
 
-### 스레드 아키텍처
-
-```
-┌────────────────────────────────────────┐
-│          메인 스레드                   │
-│  - 게임 로직                           │
-│  - ECS 시스템 업데이트 (순차)          │
-│  - 렌더 커맨드 기록                    │
-└────────────────────────────────────────┘
-
-┌────────────────────────────────────────┐
-│         렌더 스레드                    │
-│  - 커맨드 리스트 제출                  │
-│  - 리소스 업로드                       │
-│  - GPU 동기화                          │
-└────────────────────────────────────────┘
-
-┌────────────────────────────────────────┐
-│          Job 스레드들                  │
-│  - 병렬 시스템 실행                    │
-│  - 물리 broad phase                    │
-│  - 컬링                                │
-│  - 에셋 로딩                           │
-└────────────────────────────────────────┘
-```
-
-### Job 시스템
-
+**Fence 기반 동기화:**
 ```cpp
-// Core/include/Core/Threading/Job.h
-struct Job
-{
-    std::function<void()> function;
-    std::atomic<int> unfinishedJobs;
-    Job* parent = nullptr;
-};
+// 프레임 시작
+uint64 currentFenceValue = mFrameResources[currentFrameIndex].fenceValue;
+commandQueue->WaitForFenceValue(currentFenceValue);
 
-class JobSystem
+// 명령 기록 및 실행
+// ...
+
+// 프레임 종료
+uint64 newFenceValue = commandQueue->Signal();
+mFrameResources[currentFrameIndex].fenceValue = newFenceValue;
+```
+
+**핵심 원칙:**
+- WaitForIdle 사용 금지 (CPU 유휴 시간 증가)
+- 프레임별 Fence Value 추적
+- CPU-GPU 병렬 작업 최대화
+
+### Pipeline State Object (PSO) 캐싱
+
+**DX12PipelineStateCache:**
+```cpp
+class DX12PipelineStateCache
 {
 public:
-    JobHandle Schedule(Job* job);
-    void Wait(JobHandle handle);
+    ID3D12PipelineState* GetOrCreate(
+        const Material& material,
+        DX12RootSignature* rootSignature,
+        const D3D12_INPUT_LAYOUT_DESC& inputLayout
+    );
     
-    // Parallel-for 헬퍼
-    template<typename Func>
-    void ParallelFor(size_t count, size_t batchSize, Func func);
+private:
+    std::unordered_map<size_t, ComPtr<ID3D12PipelineState>> mCache;
 };
 ```
 
-**사용법:**
+**해시 키 구성:**
+- 셰이더 경로
+- 블렌드 상태
+- 래스터라이저 상태
+- 깊이-스텐실 상태
+- 입력 레이아웃
+
+### Descriptor 관리
+
+**Descriptor Heap 구조:**
 ```cpp
-// 병렬 컴포넌트 처리
-jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
+class DX12DescriptorHeap
 {
-    ProcessEntity(entities[i]);
-});
+public:
+    // 연속 블록 할당 (Descriptor Table용)
+    uint32 AllocateBlock(uint32 count);
+    void FreeBlock(uint32 startIndex, uint32 count);
+    
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(uint32 index) const;
+    D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(uint32 index) const;
+    
+private:
+    ComPtr<ID3D12DescriptorHeap> mHeap;
+    uint32 mDescriptorSize;
+    uint32 mCurrentOffset;
+    std::queue<std::pair<uint32, uint32>> mFreeBlocks;  // 향후 재사용
+};
 ```
+
+**Material Descriptor 할당:**
+- Material당 7개 연속 SRV (PBR 텍스처)
+- 한 번의 `SetGraphicsRootDescriptorTable` 호출로 바인딩
 
 ---
 
-## 향후 고려사항
+## 로드맵
 
-### Phase 1: 기반 (100% 완료)
+### Phase 1-2: 기반 시스템 (100% 완료)
 - [x] 프로젝트 구조
-- [x] Core 시스템
-  - [x] 메모리 할당자 (Linear, Pool, Stack)
-  - [x] 로깅 시스템 (Console, File sinks)
-  - [x] 어설션 매크로
-- [x] Math 라이브러리 (SIMD와 함께 Vector, Matrix, Quaternion)
+- [x] Core 시스템 (메모리, 로깅, 타이머)
+- [x] Math 라이브러리 (SIMD)
 - [x] Platform 레이어 (Window, Input)
+- [x] DirectX 12 초기화 및 렌더링 파이프라인
+- [x] 메시 및 텍스처 시스템
+- [x] 카메라 시스템
+- [x] Framework 아키텍처 (Application, ResourceManager, Scene)
+- [x] PBR 텍스처 시스템 (7종 텍스처 타입 지원)
+- [x] Scene/Renderer 분리 (What/How 분리)
 
-### Phase 2: 그래픽스 (25% 완료)
-- [x] DirectX 12 초기화
-- [ ] 기본 렌더링 파이프라인 (Vertex Buffer, Shader, PSO)
-- [ ] 메시 및 텍스처 로딩
-- [ ] 카메라 시스템
+**현재 상태:** PBR 텍스처 셋(Diffuse, Normal, Specular, Roughness, Metallic, AO, Emissive)의 완벽한 로딩 및 셰이더 바인딩 파이프라인 구축 완료.
 
-### Phase 3: 고급 ECS (시작 안 됨)
-- [ ] 컴포넌트 쿼리
-- [ ] 시스템 의존성
-- [ ] 이벤트 시스템
-- [ ] Archetype 최적화
+### Phase 3: ECS 아키텍처 & 디버그 툴
+**목표:** 데이터 지향 설계의 핵심 구현
 
-### Phase 4: 게임플레이 시스템 (시작 안 됨)
-- [ ] 물리 통합
-- [ ] 충돌 감지
-- [ ] AI 길찾기 (A*)
-- [ ] 지형 생성
+- [ ] **ECS Core**
+  - [ ] Entity Manager (생성/삭제/재활용)
+  - [ ] Component Storage (Archetype 기반)
+  - [ ] System Framework (실행 순서 관리)
+- [ ] **Core Components & Systems**
+  - [ ] TransformComponent (계층 구조, World Matrix 캐싱)
+  - [ ] TransformSystem (Dirty Flag 전파)
+- [ ] **Query System**
+  - [ ] 컴포넌트 조합 쿼리
+  - [ ] Query 캐싱 및 최적화
+- [ ] **디버그 툴 (조기 도입)**
+  - [ ] ImGui 통합
+  - [ ] ECS Inspector (Entity/Component 편집)
+  - [ ] 성능 모니터링 (FPS, Draw Call)
 
-### Phase 5: 고급 렌더링 (시작 안 됨)
-- [ ] PBR 머티리얼
-- [ ] 그림자 매핑
-- [ ] 포스트 프로세싱
-- [ ] Render graph
+**완료 시:** 1000개 Entity 관리, ImGui로 실시간 편집
 
-### Phase 6: 향후 계획
-- [ ] 스레딩 시스템 (Job system, thread pool)
-- [ ] 툴 (에셋 파이프라인, 리소스 핫 리로딩)
-- [ ] ImGui 디버그 UI
-- [ ] 기본 에디터 프로토타입
+---
+
+### Phase 3.5: Job System (선택적)
+**목표:** 기본 멀티스레딩 인프라
+
+- [ ] 워커 스레드 풀
+- [ ] Job 디스패처
+- [ ] TransformSystem 병렬화
+- [ ] 성능 벤치마크 (Single vs Multi-thread)
+
+**참고:** Phase 9로 연기 가능 (병렬화할 작업이 충분해진 후)
+
+---
+
+### Phase 4: DX12 인프라 확장 & Asset Pipeline
+**목표:** 생산성 향상을 위한 에셋 파이프라인
+
+- [ ] **Descriptor 관리 고도화**
+  - [ ] SRV/UAV Descriptor Heap 통합
+  - [ ] Descriptor 풀 및 재활용
+  - [ ] Frame-based 할당
+- [ ] **리소스 업로드 최적화**
+  - [ ] Upload 버퍼 링
+  - [ ] Async Copy Queue (선택적)
+- [ ] **Asset Pipeline**
+  - [ ] glTF 2.0 로더 (메쉬, PBR 재질, 계층구조)
+  - [ ] DDS/BCn 텍스처 파이프라인
+  - [ ] Mipmap 생성 자동화
+- [ ] **Shader 시스템 확장**
+  - [ ] DXC 컴파일러 (Shader Model 6.6+)
+  - [ ] Shader Reflection (자동 Root Signature)
+  - [ ] Hot Reload (선택적)
+- [ ] **ECS 렌더링 통합**
+  - [ ] MeshRendererComponent
+  - [ ] RenderSystem (ECS 쿼리 기반)
+
+**완료 시:** Blender 모델 로딩, ECS 기반 렌더링
+
+---
+
+### Phase 4.5: Frame Graph & Culling
+**목표:** 효율적인 렌더링 파이프라인
+
+- [ ] **Frame Graph**
+  - [ ] Pass/Resource 의존성 그래프
+  - [ ] 자동 Barrier 삽입
+  - [ ] Resource Lifetime 관리
+- [ ] **Culling System**
+  - [ ] Frustum Culling (CPU)
+  - [ ] AABB Bounding Box
+- [ ] **Asset Pipeline 확장 (선택적)**
+  - [ ] Hot Reload (텍스처, 셰이더)
+
+**완료 시:** 1000개 오브젝트 효율적 렌더링
+
+---
+
+### Phase 5: PBR & Post-Processing
+**목표:** 사실적인 렌더링
+
+- [ ] **PBR Material**
+  - [ ] Metallic-Roughness 워크플로우
+  - [ ] Cook-Torrance BRDF
+  - [ ] IBL (Skybox, PMREM, Irradiance Map)
+  - [ ] Uber Shader & Permutations
+- [ ] **Post-Processing**
+  - [ ] 톤매핑 (Reinhard, ACES)
+  - [ ] Auto Exposure
+  - [ ] Bloom
+  - [ ] TAA (Temporal Anti-Aliasing)
+
+**완료 시:** PBR 재질의 다양한 오브젝트, IBL 조명
+
+---
+
+### Phase 5.5: Physics Integration (포트폴리오 마일스톤)
+**목표:** 플레이 가능한 프로토타입 제작
+
+> **중요:** 이 시점부터 포트폴리오 영상 제작 가능!
+
+- [ ] **Physics Engine 통합**
+  - [ ] Jolt Physics 또는 Bullet 선택
+  - [ ] Physics World 초기화
+- [ ] **Physics Components (ECS)**
+  - [ ] RigidBodyComponent (Mass, Velocity)
+  - [ ] ColliderComponent (Box, Sphere, Capsule)
+  - [ ] Physics Material (Friction, Restitution)
+- [ ] **PhysicsSystem**
+  - [ ] Transform ↔ Physics Engine 동기화
+  - [ ] Fixed Timestep
+  - [ ] 충돌 이벤트 (OnCollisionEnter/Exit)
+- [ ] **샌드박스 데모**
+  - [ ] 중력으로 떨어지는 큐브들
+  - [ ] 플레이어가 오브젝트 밀기 (마우스 Ray)
+  - [ ] ImGui로 RigidBody 속성 편집
+- [ ] **물리 디버그 렌더링**
+  - [ ] Collider 와이어프레임
+  - [ ] Contact Point 표시
+
+**완료 시:** PBR 재질 + Physics 상호작용 데모 (포트폴리오 소재 확보)
+
+---
+
+### Phase 6: Shadows & Ambient
+**목표:** 시각적 완성도 향상
+
+- [ ] **Shadow Mapping**
+  - [ ] 기본 Shadow Map (Depth, PCF)
+  - [ ] Cascaded Shadow Maps (CSM)
+  - [ ] Cascade 경계 블렌딩
+- [ ] **Ambient Occlusion**
+  - [ ] SSAO (Screen Space Ambient Occlusion)
+  - [ ] Bilateral Blur
+- [ ] **추가 효과 (선택적)**
+  - [ ] SSR (Screen Space Reflections)
+  - [ ] DOF (Depth of Field)
+
+**완료 시:** Physics 샌드박스 + 동적 그림자 + SSAO
+
+---
+
+### Phase 7: Compute Shaders & GPU 가속
+**목표:** GPU 연산 활용
+
+- [ ] **Compute Pipeline**
+  - [ ] Dispatch 프레임워크
+  - [ ] UAV (Unordered Access View) 관리
+- [ ] **GPU Particle System**
+  - [ ] Compute Shader 기반 시뮬레이션
+  - [ ] Indirect Drawing
+  - [ ] Physics 오브젝트와 상호작용
+- [ ] **GPU Culling (선택적)**
+  - [ ] Frustum Culling (Compute)
+  - [ ] Hi-Z Occlusion Culling
+
+**완료 시:** 10만 개 파티클 + Physics 상호작용
+
+---
+
+### Phase 8: Bindless & GPU Driven
+**목표:** 최신 렌더링 기법
+
+- [ ] **Bindless Resources**
+  - [ ] Descriptor Indexing (SM 6.6+)
+  - [ ] Unbounded Descriptor Arrays
+  - [ ] Material ID → Descriptor Index 매핑
+- [ ] **GPU Driven Rendering**
+  - [ ] ExecuteIndirect / DrawIndirect
+  - [ ] GPU가 Draw Call 생성
+  - [ ] Mesh Shaders (선택적, DX12 Ultimate)
+- [ ] **Resource Management**
+  - [ ] GPU 메모리 할당자
+  - [ ] Async Upload 튜닝
+
+**완료 시:** 1만 개 고유 메쉬 + Physics 렌더링
+
+---
+
+### Phase 9: Job System 확장 (Phase 3.5를 건너뛴 경우)
+**목표:** CPU 병렬화
+
+- [ ] Job System 구현 (Phase 3.5 참고)
+- [ ] ECS System 병렬화
+- [ ] PhysicsSystem 병렬화
+- [ ] 렌더 스레드 분리
+
+---
+
+### Phase 10: AI & Gameplay Systems
+**목표:** 게임 로직 프레임워크
+
+- [ ] **Navigation**
+  - [ ] NavMesh 생성 (Recast)
+  - [ ] A* Pathfinding
+  - [ ] Path Following
+- [ ] **Behavior Tree**
+  - [ ] Executor (Selector, Sequence, Action)
+  - [ ] Blackboard (공유 데이터)
+- [ ] **Gameplay Framework**
+  - [ ] Event System (타입 안전)
+  - [ ] Game State 관리
+
+**완료 시:** AI 에이전트가 플레이어 추적, Physics 오브젝트 회피
+
+---
+
+### Phase 11: Audio & Tools
+**목표:** 완성도 향상
+
+- [ ] **Audio System**
+  - [ ] XAudio2 통합
+  - [ ] 3D Spatialization
+  - [ ] 충돌 시 사운드 효과
+- [ ] **Debug Tools 고도화**
+  - [ ] ECS Inspector (컴포넌트 추가/삭제)
+  - [ ] Profiler (CPU/GPU Timeline)
+  - [ ] Console (명령어 시스템)
+
+**완료 시:** 완전한 게임 엔진 경험
+
+---
+
+### Phase 12: 데모 게임 & 폴리싱
+**목표:** 포트폴리오 완성
+
+- [ ] **Demo Game (Simple TPS)**
+  - [ ] Physics Character Controller
+  - [ ] 발사 시스템 (Raycast + Force)
+  - [ ] Enemy AI (NavMesh + Physics)
+  - [ ] UI (체력, 탄약)
+- [ ] **Optimization**
+  - [ ] CPU/GPU Profiling
+  - [ ] Physics 성능 최적화
+  - [ ] LOD (Level of Detail)
+- [ ] **포트폴리오 문서화**
+  - [ ] 기술 블로그 (ECS + Physics 통합)
+  - [ ] 영상 녹화 (플레이 + 기술 설명)
+  - [ ] GitHub README 업데이트
+
+**최종 결과:** 플레이 가능한 TPS 데모, 포트폴리오 제출 가능
+
+### 백로그 (Backlog / On-Demand)
+
+향후 필요에 따라 선택적으로 추가할 기능들:
+
+- [ ] **Deferred Rendering** - Forward+와 비교/전환
+- [ ] **Tessellation & Geometry Shaders** - 적응형 지형
+- [ ] **독립형 Editor** - ImGui 툴을 넘어선 독립 에디터
+- [ ] **Scripting** - Lua/Python 바인딩
+- [ ] **Procedural Terrain** - Heightmap/Voxel 기반
+- [ ] **Raytracing (DXR)** - DX12 Ultimate 기반 (RTX GPU 필요)
+- [ ] **Advanced Animation** - 블렌딩 트리, IK
+- [ ] **Volumetric Effects** - Fog, Clouds
+- [ ] **Network Replication** - ECS 컴포넌트 복제, 멀티플레이어
 
 ---
 
 ## 구현 진행 상황
 
 ### 완료된 시스템
-| 시스템 | 상태 | 테스트 커버리지 | 코드 라인 수 |
-|--------|------|----------------|-------------|
-| Platform 레이어 | 완료 | 2개 테스트 | ~650 |
-| 메모리 관리 | 완료 | 3개 테스트 | ~600 |
-| Math 라이브러리 | 완료 | 1개 테스트 | ~400 |
-| 로깅 시스템 | 완료 | 1개 테스트 | ~300 |
-| DirectX 12 초기화 | 완료 | 1개 테스트 | ~800 |
-| **합계** | **12개 중 5개 서브시스템** | **8개 테스트** | **~3,000** |
+| 시스템 | 상태 | 테스트 커버리지 | 주요 기능 |
+|--------|------|----------------|----------|
+| **Core** |
+| Memory | 완료 | 3개 테스트 | Linear/Pool/Stack 할당자 |
+| Logging | 완료 | 1개 테스트 | 멀티 Sink, 카테고리별 필터링 |
+| Timing | 완료 | - | 고정밀 타이머, 50 샘플 평균화 |
+| **Math** |
+| Math Library | 완료 | 1개 테스트 | SIMD 최적화, DirectXMath 래퍼 |
+| **Platform** |
+| Window | 완료 | 2개 테스트 | Win32 윈도우, 메시지 처리 |
+| Input | 완료 | 1개 테스트 | 키보드/마우스 |
+| **Graphics** |
+| DX12 Init | 완료 | 1개 테스트 | Device, Queue, SwapChain |
+| Mesh System | 완료 | - | Vertex/Index Buffer |
+| Texture System | 완료 | - | WIC/DDS 로더, PBR 7종 텍스처 |
+| Material System | 완료 | - | Descriptor Table, PSO 생성 정보 |
+| Camera | 완료 | - | Perspective Camera |
+| Renderer | 완료 | - | Scene/Renderer 분리, PSO 캐싱 |
+| **Framework** |
+| Application | 완료 | - | 템플릿 메서드 패턴 |
+| ResourceManager | 완료 | - | 중앙 집중식 리소스 관리 |
+| Scene/GameObject | 완료 | - | 임시 구현 (ECS 전 단계) |
+| **합계** | **15개 주요 서브시스템** | **8개 테스트** | **~10,000 라인** |
 
-### 진행 중
-- 삼각형 렌더링 (Vertex Buffer, Shader 컴파일, PSO)
-
-### 계획됨
-- 스레딩 시스템
-- RHI 추상화 레이어
-- 고수준 렌더링 시스템
-- ECS 프레임워크
-- 물리 엔진
-- AI 시스템
-- 씬 관리
+### 샘플 프로그램
+1. `01_MemoryTest` - LinearAllocator
+2. `02_PoolAllocatorTest` - PoolAllocator
+3. `03_StackAllocatorTest` - StackAllocator
+4. `04_MathTest` - Math 라이브러리
+5. `05_LoggingTest` - 로깅 시스템
+6. `06_WindowTest` - Window 생성
+7. `07_InputTest` - 입력 처리
+8. `08_DXInit` - DirectX 12 초기화
+9. `09_HelloTriangle` - 삼각형 렌더링
+10. `10_IndexedCube` - 인덱스 버퍼 사용
+11. `11_RotatingCube` - MVP 변환
+12. `12_TexturedCube` - 단일 텍스처 렌더링
+13. `13_MultiTextureCube` - PBR 다중 텍스처 렌더링
 
 ---
 
-## 참고 자료 및 영감
+## 참고 자료
 
 ### 게임 엔진 아키텍처
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
@@ -970,22 +1284,26 @@ jobSystem.ParallelFor(entityCount, 64, [&](size_t i)
 ### DirectX 12
 - [DirectX 12 Programming Guide](https://docs.microsoft.com/en-us/windows/win32/direct3d12/directx-12-programming-guide)
 - [3D Game Programming with DirectX 12 by Frank Luna](http://www.d3dcoder.net/)
+- [DirectX Graphics Samples](https://github.com/microsoft/DirectX-Graphics-Samples)
 
-### 스레딩 & 성능
-- [C++ Concurrency in Action by Anthony Williams](https://www.manning.com/books/c-plus-plus-concurrency-in-action)
-- [Intel Threading Building Blocks](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html)
+### PBR
+- [Physically Based Rendering by Matt Pharr, Wenzel Jakob, Greg Humphreys](https://www.pbr-book.org/)
+- [Real Shading in Unreal Engine 4](https://blog.selfshadow.com/publications/s2013-shading-course/)
+- [LearnOpenGL - PBR Theory](https://learnopengl.com/PBR/Theory)
 
 ---
 
 ## 문서 히스토리
 
-- **2025-10-15**: DirectX 12 초기화 완료 (Device, CommandQueue, SwapChain, DescriptorHeap, CommandContext)
+- **2025-11-07**: Framework 모듈 추가, PBR 텍스처 시스템 완성, Phase 1-2 완료 상태 반영
+- **2025-11-05**: Scene/Renderer 분리 완성, Timer 시스템 추가
+- **2025-10-15**: DirectX 12 초기화 완료
 - **2025-10-13**: Platform 레이어 구현, 입력 시스템 세부사항 업데이트
 - **2025-10-11**: 구현된 시스템으로 업데이트 (Memory, Math, Logging)
 - **2025-10-05**: 초기 아키텍처 설계 문서
 
 ---
 
-**참고**: 이 아키텍처는 프로젝트가 발전하고 새로운 요구사항이 등장함에 따라 변경될 수 있습니다. 실제 경험이 설계 개선으로 이어질 수 있습니다.
+**참고**: 이 아키텍처는 프로젝트가 발전하고 새로운 요구사항이 등장함에 따라 변경될 수 있습니다. 실제 경험이 설계 개선으로 이어질 것입니다.
 
-**최종 업데이트**: 2025-10-23
+**최종 업데이트**: 2025-11-07
