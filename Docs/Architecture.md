@@ -969,6 +969,8 @@ private:
 
 **현재 상태:** PBR 텍스처 셋(Diffuse, Normal, Specular, Roughness, Metallic, AO, Emissive)의 완벽한 로딩 및 셰이더 바인딩 파이프라인 구축 완료.
 
+---
+
 ### Phase 3: ECS 아키텍처 & 디버그 툴
 **목표:** 데이터 지향 설계의 핵심 구현
 
@@ -976,18 +978,30 @@ private:
   - [ ] Entity Manager (생성/삭제/재활용)
   - [ ] Component Storage (Archetype 기반)
   - [ ] System Framework (실행 순서 관리)
+
 - [ ] **Core Components & Systems**
   - [ ] TransformComponent (계층 구조, World Matrix 캐싱)
   - [ ] TransformSystem (Dirty Flag 전파)
+  - [ ] MeshComponent & MaterialComponent
+  - [ ] RenderSystem (ECS 기반 렌더링)
+
+- [ ] **기초 조명 시스템 (Phong)**
+  - [ ] DirectionalLightComponent
+  - [ ] PointLightComponent  
+  - [ ] LightingSystem (Phong Shading)
+  - [ ] Normal Map 지원 (TBN 행렬)
+
 - [ ] **Query System**
   - [ ] 컴포넌트 조합 쿼리
   - [ ] Query 캐싱 및 최적화
+
 - [ ] **디버그 툴 (조기 도입)**
   - [ ] ImGui 통합
   - [ ] ECS Inspector (Entity/Component 편집)
+  - [ ] 조명 파라미터 실시간 조정
   - [ ] 성능 모니터링 (FPS, Draw Call)
 
-**완료 시:** 1000개 Entity 관리, ImGui로 실시간 편집
+**완료 시:** 1000개 Entity 관리, Phong 조명, ImGui로 실시간 편집
 
 ---
 

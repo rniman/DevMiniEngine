@@ -185,21 +185,33 @@ bin/Debug/08_TexturedCube.exe
 **Goal:** Core implementation of data-oriented design
 
 - [ ] **ECS Core**
-  - [ ] Entity Manager (create/destroy/recycle)
+  - [ ] Entity Manager (create/delete/recycle)
   - [ ] Component Storage (Archetype-based)
   - [ ] System Framework (execution order management)
+
 - [ ] **Core Components & Systems**
   - [ ] TransformComponent (hierarchy, World Matrix caching)
   - [ ] TransformSystem (Dirty Flag propagation)
+  - [ ] MeshComponent & MaterialComponent
+  - [ ] RenderSystem (ECS-based rendering)
+
+- [ ] **Basic Lighting System (Phong)**
+  - [ ] DirectionalLightComponent
+  - [ ] PointLightComponent  
+  - [ ] LightingSystem (Phong Shading)
+  - [ ] Normal Map support (TBN matrix)
+
 - [ ] **Query System**
-  - [ ] Component composition queries
+  - [ ] Component combination queries
   - [ ] Query caching and optimization
-- [ ] **Debug Tools (early adoption)**
+
+- [ ] **Debug Tools (Early Introduction)**
   - [ ] ImGui integration
   - [ ] ECS Inspector (Entity/Component editing)
+  - [ ] Real-time lighting parameter adjustment
   - [ ] Performance monitoring (FPS, Draw Calls)
 
-**Upon Completion:** Manage 1000 entities, real-time editing with ImGui
+**Upon Completion:** 1000 Entity management, Phong lighting, real-time editing with ImGui
 
 ---
 
