@@ -6,6 +6,120 @@
 > **참고**: 2025-10-15까지는 영어로 작성되었습니다. 
 > 2025-10-16부터는 명확성과 효율성을 위해 한글로 작성합니다.
 
+## 2025-11-06 - 렌더링 아키텍처 리팩토링 및 소유권 정리
+
+### Tasks
+- [x] Scene의 렌더링 책임을 DX12Renderer로 이동
+- [x] RenderTypes 구조체 정의 (RenderItem, FrameData)
+- [x] DX12Renderer가 모든 렌더링 리소스 소유하도록 변경
+- [x] Scene::CollectRenderData 구현 (What/How 분리)
+- [x] 렌더링 파이프라인 소유권 구조 명확화
+
+### Decisions
+
+**렌더링 책임 분리 (What vs How)**
+- Scene: "무엇을 그릴 것인가" - GameObject 관리, Transform 계산, 렌더 데이터 수집
+- DX12Renderer: "어떻게 그릴 것인가" - DirectX 12 API 호출, GPU 명령 제출, 리소스 관리
+- RenderTypes 도입으로 Scene과 Renderer 간 인터페이스 정의
+
+**소유권 구조 재설계**
+- 이전: TexturedCubeApp이 렌더링 리소스 소유 (잘못된 구조)
+- 이후: DX12Renderer가 모든 렌더링 리소스 소유
+- 이유: 응집도 향상, 책임 명확화, API 독립성 확보
+
+**RenderTypes 설계**
+```cpp
+struct RenderItem {
+    const Mesh* mesh;
+    const Material* material;
+    Matrix4x4 worldMatrix;
+    Matrix4x4 mvpMatrix;  // 미리 계산된 MVP
+};
+
+struct FrameData {
+    Matrix4x4 viewMatrix;
+    Matrix4x4 projectionMatrix;
+    std::vector opaqueItems;
+    std::vector transparentItems;  // 향후
+};
+```
+
+### Implementation
+
+**새로운 소유권 구조**
+```
+Application (Framework)
+├── DX12Device (소유)
+├── DX12Renderer (소유)
+│   ├── RootSignature (소유)
+│   ├── PipelineStateCache (소유)
+│   ├── ShaderCompiler (소유)
+│   ├── ConstantBuffer (소유)
+│   ├── DepthStencilBuffer (소유)
+│   └── SrvDescriptorHeap (소유)
+└── Window (소유)
+
+TexturedCubeApp
+├── Scene (소유)
+└── ResourceManager (소유)
+```
+
+**렌더링 플로우 변경**
+```cpp
+// Before: Scene이 직접 렌더링
+void Scene::Render(...) {
+    // SwapChain 접근 ❌
+    // Command List 관리 ❌
+    // Resource Barrier ❌
+    // PSO 설정 ❌
+}
+
+// After: 책임 분리
+void Scene::CollectRenderData(FrameData& data) {
+    // GameObject 순회 ✅
+    // MVP 계산 ✅
+}
+
+void DX12Renderer::RenderFrame(const FrameData& data) {
+    // DirectX 12 API 호출 ✅
+    // GPU 명령 제출 ✅
+}
+```
+
+### Results
+
+- **API 독립성 달성**: Scene이 DirectX 12를 전혀 모름
+- **테스트 용이성**: Scene 로직을 DirectX 없이 테스트 가능
+- **코드 복잡도 감소**: 각 클래스가 단일 책임만 가짐
+- **확장성 향상**: 렌더링 최적화(정렬, 배칭, 인스턴싱)가 Renderer에 집중
+- **유지보수성 개선**: DirectX 변경사항이 DX12Renderer에 국한
+
+### Lessons Learned
+
+- **리팩토링 타이밍**: Scene::Render가 500줄 넘어가면 즉시 분리 필요
+- **소유권 원칙**: 사용하는 곳이 아닌 논리적으로 속한 곳이 소유
+- **ShaderCompiler 위치**: PipelineStateCache가 사용하지만 Renderer가 소유 (향후 확장성)
+- **인터페이스 설계**: RenderTypes로 모듈 간 깨끗한 경계 구성
+
+### Issues Resolved
+
+- **중복 소유권**: DepthStencilBuffer를 App과 Renderer가 모두 소유 → Renderer만 소유
+- **책임 혼재**: Scene이 low-level 렌더링 담당 → 분리 완료
+- **의존성 문제**: Scene이 DirectX 헤더 포함 → 제거 완료
+
+### Performance Improvements
+
+- **Draw Call 정렬 준비**: RenderItem 구조로 정렬 가능
+- **Frustum Culling 준비**: CollectRenderData에서 컬링 추가 용이
+- **Instancing 준비**: 동일 메시/머티리얼 그룹화 가능
+
+### Next Steps
+- [ ] 조명 시스템 Phase 1 (Directional Light + Phong Shading)
+- [ ] Normal Mapping 적용
+- [ ] ImGui 통합 (실시간 파라미터 조정)
+- [ ] 멀티 오브젝트 렌더링 및 간단한 씬 구성
+- [ ] Draw Call 최적화 (정렬, 배칭)
+
 ---
 
 ## 2025-11-05 - Framework 모듈 구축 및 엔진 구조 리팩토링
