@@ -6,6 +6,11 @@
 #include "Math/MathTypes.h"
 #include <memory>
 
+namespace Framework
+{
+	class ResourceManager;
+}
+
 namespace Graphics
 {
 	// TODO: 향후 렌더러 설정을 커스터마이징하고 싶다면
@@ -71,7 +76,9 @@ namespace Graphics
 
 		/**
 		 * @brief 프레임 렌더링 (메인 진입점)
+		 *
 		 * @param frameData Scene에서 수집한 렌더링 데이터
+		 * @param resourceMgr ResourceManager (텍스처 조회용)
 		 */
 		void RenderFrame(const FrameData& frameData);
 
@@ -90,7 +97,15 @@ namespace Graphics
 		bool BeginFrame();
 		void Clear(const float* clearColor);
 		void SetupPipeline();
+
+		/**
+		 * @brief 렌더 아이템 그리기
+		 *
+		 * @param items 렌더링할 아이템 목록
+		 * @param resourceMgr ResourceManager (텍스처 조회용)
+		 */
 		void DrawRenderItems(const std::vector<RenderItem>& items);
+
 		void EndFrame();
 		void Present(bool vsync);
 

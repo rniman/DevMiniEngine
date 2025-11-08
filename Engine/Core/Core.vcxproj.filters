@@ -77,6 +77,9 @@
     <ClInclude Include="..\include\Core\Timing\ScopedTimer.h">
       <Filter>Header Files\Timing</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Core\Hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core\Logging\ConsoleSink.cpp">

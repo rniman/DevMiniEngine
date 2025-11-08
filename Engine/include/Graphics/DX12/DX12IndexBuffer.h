@@ -78,7 +78,7 @@ namespace Graphics
 		bool CreateUploadBuffer(ID3D12Device* device, size_t bufferSize);
 
 		ComPtr<ID3D12Resource> mIndexBuffer;              // GPU 전용 인덱스 버퍼 (Default Heap)
-		ComPtr<ID3D12Resource> mUploadBuffer;             // CPU→GPU 업로드 버퍼 (Upload Heap)
+		ComPtr<ID3D12Resource> mUploadBuffer;             // CPU-GPU 업로드 버퍼 (Upload Heap)
 		D3D12_INDEX_BUFFER_VIEW mIndexBufferView = {};   // 렌더링에 사용할 View
 		size_t mIndexCount = 0;                    // 인덱스 개수
 		DXGI_FORMAT mIndexFormat = DXGI_FORMAT_UNKNOWN;  // 인덱스 포맷 (R16_UINT 또는 R32_UINT)

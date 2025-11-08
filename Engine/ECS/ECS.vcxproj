@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{57ba2280-2faa-49ad-8665-fe9fa10fefe1}</ProjectGuid>
-    <RootNamespace>Framework</RootNamespace>
+    <ProjectGuid>{c5cd04f2-4441-40fd-9f61-f60262b85543}</ProjectGuid>
+    <RootNamespace>ECS</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -93,9 +93,9 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,9 +111,9 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,9 +127,9 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,9 +145,9 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,22 +155,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.vcxproj">
-      <Project>{3ea077be-cd29-4842-b740-1d746785c778}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Graphics\Graphics.vcxproj">
-      <Project>{f1ab72ef-77af-4cdc-a6cf-ee061480bddb}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Platform\Platform.vcxproj">
-      <Project>{0c51d24b-1769-489b-9c9c-14edba1f7ec8}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\Framework\Application.cpp" />
-    <ClCompile Include="..\src\Framework\Resources\ResourceManager.cpp" />
-    <ClCompile Include="..\src\Framework\Scene\GameObject.cpp" />
-    <ClCompile Include="..\src\Framework\Scene\Scene.cpp" />
-    <ClCompile Include="Framework.cpp" />
+    <ClCompile Include="..\src\ECS\Component.cpp" />
+    <ClCompile Include="..\src\ECS\Entity.cpp" />
+    <ClCompile Include="..\src\ECS\Registry.cpp" />
+    <ClCompile Include="..\src\ECS\System.cpp" />
+    <ClCompile Include="..\src\ECS\Systems\TransformSystem.cpp" />
+    <ClCompile Include="ECS.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -179,12 +169,23 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\Framework\Application.h" />
-    <ClInclude Include="..\include\Framework\Resources\ResourceId.h" />
-    <ClInclude Include="..\include\Framework\Resources\ResourceManager.h" />
-    <ClInclude Include="..\include\Framework\Scene\GameObject.h" />
-    <ClInclude Include="..\include\Framework\Scene\Scene.h" />
+    <ClInclude Include="..\include\ECS\Component.h" />
+    <ClInclude Include="..\include\ECS\Components\MaterialComponent.h" />
+    <ClInclude Include="..\include\ECS\Components\MeshComponent.h" />
+    <ClInclude Include="..\include\ECS\Components\TransformComponent.h" />
+    <ClInclude Include="..\include\ECS\Entity.h" />
+    <ClInclude Include="..\include\ECS\Registry.h" />
+    <ClInclude Include="..\include\ECS\System.h" />
+    <ClInclude Include="..\include\ECS\Systems\TransformSystem.h" />
     <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.vcxproj">
+      <Project>{3ea077be-cd29-4842-b740-1d746785c778}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Graphics\Graphics.vcxproj">
+      <Project>{f1ab72ef-77af-4cdc-a6cf-ee061480bddb}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

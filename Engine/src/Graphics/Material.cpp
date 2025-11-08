@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Graphics/Material.h"
 #include "Graphics/Texture.h"
-#include "Graphics/DX12/DX12DescriptorHeap.h"  
+#include "Framework/Resources/ResourceManager.h"
 #include "Core/Logging/Logger.h"
 
 using namespace std;
@@ -47,6 +47,11 @@ namespace Graphics
 		{
 			mRTVFormats[i] = desc.rtvFormats[i];
 		}
+
+		for (auto& id : mTextureIds)
+		{
+			id = Framework::ResourceId::Invalid();
+		}
 	}
 
 	Material::Material()
@@ -85,9 +90,18 @@ namespace Graphics
 		{
 			mRTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 		}
+
+		for (auto& id : mTextureIds)
+		{
+			id = Framework::ResourceId::Invalid();
+		}
 	}
 
-	bool Material::AllocateDescriptors(ID3D12Device* device, DX12DescriptorHeap* heap)
+	bool Material::AllocateDescriptors(
+		ID3D12Device* device,
+		DX12DescriptorHeap* heap,
+		Framework::ResourceManager* resourceMgr
+	)
 	{
 		if (!device || !heap)
 		{
@@ -123,32 +137,50 @@ namespace Graphics
 			TextureType type = static_cast<TextureType>(i);
 			uint32 descriptorIndex = mDescriptorStartIndex + static_cast<uint32>(i);
 
-			if (mTextures[i] && mTextures[i]->IsInitialized())
+			// ResourceId가 유효한지 확인
+			if (mTextureIds[i].IsValid())
 			{
-				// 실제 텍스처의 SRV 생성
-				if (!mTextures[i]->CreateSRV(device, heap, descriptorIndex))
-				{
-					LOG_ERROR(
-						"[Material] Failed to create SRV for texture type: %s",
-						TextureTypeToString(type)
-					);
-					FreeDescriptors(heap);
-					return false;
-				}
+				// ResourceManager에서 실제 Texture 포인터 조회
+				Texture* texture = resourceMgr->GetTexture(mTextureIds[i]);
 
-				LOG_TRACE(
-					"[Material] Created SRV for %s at descriptor %u",
-					TextureTypeToString(type),
-					descriptorIndex
-				);
+				if (texture && texture->IsInitialized())
+				{
+					// 실제 텍스처의 SRV 생성
+					if (!texture->CreateSRV(device, heap, descriptorIndex))
+					{
+						LOG_ERROR(
+							"[Material] Failed to create SRV for texture type: %s (ID: 0x%llX)",
+							TextureTypeToString(type),
+							mTextureIds[i].id
+						);
+						FreeDescriptors(heap);
+						return false;
+					}
+
+					LOG_TRACE(
+						"[Material] Created SRV for %s at descriptor %u (ID: 0x%llX)",
+						TextureTypeToString(type),
+						descriptorIndex,
+						mTextureIds[i].id
+					);
+				}
+				else
+				{
+					LOG_WARN(
+						"[Material] Texture not found for type %s (ID: 0x%llX), creating Dummy SRV",
+						TextureTypeToString(type),
+						mTextureIds[i].id
+					);
+					CreateDummySRV(device, heap, descriptorIndex);
+				}
 			}
 			else
 			{
-				// 빈 슬롯에는 Dummy SRV 생성
+				// ResourceId가 Invalid → Dummy SRV 생성
 				CreateDummySRV(device, heap, descriptorIndex);
 
 				LOG_TRACE(
-					"[Material] Created Dummy SRV for %s at descriptor %u",
+					"[Material] Created Dummy SRV for %s at descriptor %u (no texture)",
 					TextureTypeToString(type),
 					descriptorIndex
 				);
@@ -185,10 +217,41 @@ namespace Graphics
 		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
 	}
 
-	void Material::SetTexture(TextureType type, const std::shared_ptr<Texture>& texture)
+	void Material::SetTexture(TextureType type, Framework::ResourceId textureId)
 	{
 		size_t index = static_cast<size_t>(type);
-		mTextures[index] = texture;
+		mTextureIds[index] = textureId;
+
+		LOG_DEBUG(
+			"[Material] Set texture %s to ID: 0x%llX",
+			TextureTypeToString(type),
+			textureId.id
+		);
+	}
+
+	Framework::ResourceId Material::GetTextureId(TextureType type) const
+	{
+		size_t index = static_cast<size_t>(type);
+		return mTextureIds[index];
+	}
+
+	bool Material::HasTexture(TextureType type) const
+	{
+		size_t index = static_cast<size_t>(type);
+		return mTextureIds[index].IsValid();
+	}
+
+	uint32 Material::GetTextureCount() const
+	{
+		uint32 count = 0;
+		for (const auto& id : mTextureIds)
+		{
+			if (id.IsValid())
+			{
+				++count;
+			}
+		}
+		return count;
 	}
 
 	D3D12_BLEND_DESC Material::CreateBlendDesc(BlendMode mode)
@@ -279,30 +342,30 @@ namespace Graphics
 		return depthStencilDesc;
 	}
 
-	std::shared_ptr<Texture> Material::GetTexture(TextureType type) const
-	{
-		size_t index = static_cast<size_t>(type);
-		return mTextures[index];
-	}
+	//std::shared_ptr<Texture> Material::GetTexture(TextureType type) const
+	//{
+	//	size_t index = static_cast<size_t>(type);
+	//	return mTextures[index];
+	//}
 
-	bool Material::HasTexture(TextureType type) const
-	{
-		size_t index = static_cast<size_t>(type);
-		return mTextures[index] != nullptr;
-	}
+	//bool Material::HasTexture(TextureType type) const
+	//{
+	//	size_t index = static_cast<size_t>(type);
+	//	return mTextures[index] != nullptr;
+	//}
 
-	uint32 Material::GetTextureCount() const
-	{
-		uint32 count = 0;
-		for (const auto& texture : mTextures)
-		{
-			if (texture != nullptr)
-			{
-				++count;
-			}
-		}
-		return count;
-	}
+	//uint32 Material::GetTextureCount() const
+	//{
+	//	uint32 count = 0;
+	//	for (const auto& texture : mTextures)
+	//	{
+	//		if (texture != nullptr)
+	//		{
+	//			++count;
+	//		}
+	//	}
+	//	return count;
+	//}
 
 	D3D12_GPU_DESCRIPTOR_HANDLE Material::GetDescriptorTableHandle(const DX12DescriptorHeap* heap) const
 	{

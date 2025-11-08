@@ -2,10 +2,16 @@
 
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/TextureType.h"
-#include "DX12/DX12DescriptorHeap.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"
+#include "Framework/Resources/ResourceId.h" 
 #include <string>
 #include <array>
 #include <memory>
+
+namespace Framework
+{
+	class ResourceManager;
+}
 
 namespace Graphics
 {
@@ -56,9 +62,9 @@ namespace Graphics
 		uint32 sampleMask = 0xFFFFFFFF;
 
 		// 텍스쳐 경로
-		const wchar_t* diffuseTexturePath = nullptr;
-		const wchar_t* normalTexturePath = nullptr;
-		const wchar_t* specularTexturePath = nullptr;
+		// const wchar_t* diffuseTexturePath = nullptr;
+		// const wchar_t* normalTexturePath = nullptr;
+		// const wchar_t* specularTexturePath = nullptr;
 	};
 
 
@@ -85,11 +91,9 @@ namespace Graphics
 		Material();
 		~Material() = default;
 
-		// 복사 허용 (설정 정보만 복사)
+		// 복사, 이동 허용 
 		Material(const Material&) = default;
 		Material& operator=(const Material&) = default;
-
-		// 이동 허용
 		Material(Material&&) noexcept = default;
 		Material& operator=(Material&&) noexcept = default;
 
@@ -101,9 +105,14 @@ namespace Graphics
 		 *
 		 * @param device D3D12 Device
 		 * @param heap Descriptor Heap (CBV_SRV_UAV 타입)
+		 * @param resourceMgr ResourceManager (텍스쳐 조회)
 		 * @return 할당 성공 여부
 		 */
-		bool AllocateDescriptors(ID3D12Device* device, DX12DescriptorHeap* heap);
+		bool AllocateDescriptors(
+			ID3D12Device* device,
+			DX12DescriptorHeap* heap,
+			Framework::ResourceManager* resourceMgr
+		);
 
 		/**
 		 * @brief Descriptor 블록 해제
@@ -112,13 +121,11 @@ namespace Graphics
 		 */
 		void FreeDescriptors(DX12DescriptorHeap* heap);
 
-		/**
-		 * @brief 특정 타입의 텍스처 설정
-		 *
-		 * @param type 텍스처 타입
-		 * @param texture 텍스처 공유 포인터
-		 */
-		void SetTexture(TextureType type, const std::shared_ptr<Texture>& texture);
+		// ResourceId 기반 텍스쳐 설정
+		void SetTexture(TextureType type, Framework::ResourceId textureId);
+		Framework::ResourceId GetTextureId(TextureType type) const;
+		bool HasTexture(TextureType type) const;
+		uint32 GetTextureCount() const;
 
 		// Getters
 		const wchar_t* GetVertexShaderPath() const { return mVertexShaderPath.c_str(); }
@@ -139,10 +146,10 @@ namespace Graphics
 		uint32 GetSampleQuality() const { return mSampleQuality; }
 		uint32 GetSampleMask() const { return mSampleMask; }
 
-		// Texture 관련
-		std::shared_ptr<Texture> GetTexture(TextureType type) const;
-		bool HasTexture(TextureType type) const;
-		uint32 GetTextureCount() const;
+		//// Texture 관련
+		//std::shared_ptr<Texture> GetTexture(TextureType type) const;
+		//bool HasTexture(TextureType type) const;
+		//uint32 GetTextureCount() const;
 
 		/**
 		 * @brief Descriptor Table의 GPU Handle 획득
@@ -160,21 +167,21 @@ namespace Graphics
 
 
 		/**
-		 * @brief 모든 텍스처 순회
+		 * @brief ResourceId 기반 텍스처 순회
 		 *
 		 * 렌더링 시 바인딩할 텍스처를 순회합니다.
-		 *
+		 * 
 		 * @param func 각 텍스처에 대해 호출할 함수
-		 *             void(TextureType type, const std::shared_ptr<Texture>& texture)
+		 *
 		 */
 		template<typename Func>
-		void ForEachTexture(Func&& func) const
+		void ForEachTextureId(Func&& func) const
 		{
 			for (size_t i = 0; i < static_cast<size_t>(TextureType::Count); ++i)
 			{
-				if (mTextures[i])
+				if (mTextureIds[i].IsValid())
 				{
-					func(static_cast<TextureType>(i), mTextures[i]);
+					func(static_cast<TextureType>(i), mTextureIds[i]);
 				}
 			}
 		}
@@ -243,7 +250,9 @@ namespace Graphics
 		uint32 mSampleMask;
 
 		uint32 mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
-		std::array<std::shared_ptr<Texture>, static_cast<size_t>(TextureType::Count)> mTextures;
+
+		// Resource Id를 통해 관리
+		std::array<Framework::ResourceId, static_cast<size_t>(TextureType::Count)> mTextureIds;
 
 		// 캐싱을 위한 해시 (지연 계산)
 		mutable size_t mCachedHash = 0;

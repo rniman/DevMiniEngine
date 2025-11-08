@@ -83,10 +83,10 @@ namespace Core
              *   stack.FreeToMarker(marker2);  // data2 해제
              *   stack.FreeToMarker(marker1);  // data1 해제
              *
-             * @note LIFO 순서 필수: marker2 → marker1 순서로 해제해야 함
+             * @note LIFO 순서 필수: marker2 - marker1 순서로 해제해야 함
              * @note 할당 카운트는 업데이트되지 않음 (근사값으로 유지)
              * @warning marker > mOffset인 경우 assertion 실패
-             * @warning 잘못된 순서 (marker1 → marker2)로 호출하면 안 됨
+             * @warning 잘못된 순서 (marker1 - marker2)로 호출하면 안 됨
              */
             void FreeToMarker(Marker marker);
 

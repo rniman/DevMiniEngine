@@ -78,7 +78,7 @@ namespace Graphics
 		bool CreateUploadBuffer(ID3D12Device* device, size_t bufferSize);
 
 		ComPtr<ID3D12Resource> mVertexBuffer;				// GPU 전용 버텍스 버퍼 (Default Heap)
-		ComPtr<ID3D12Resource> mUploadBuffer;				// CPU→GPU 업로드 버퍼 (Upload Heap)
+		ComPtr<ID3D12Resource> mUploadBuffer;				// CPU-GPU 업로드 버퍼 (Upload Heap)
 		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView = {};	// 렌더링에 사용할 View
 		size_t mVertexCount = 0;							// 버텍스 개수
 		size_t mVertexStride = 0;							// 버텍스 하나의 크기 (바이트)

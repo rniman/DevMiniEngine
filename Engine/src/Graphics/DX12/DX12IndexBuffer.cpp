@@ -86,7 +86,7 @@ namespace Graphics
 			bufferSize
 		);
 
-		// COPY_DEST → INDEX_BUFFER 상태 전이
+		// COPY_DEST - INDEX_BUFFER 상태 전이
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			mIndexBuffer.Get(),
 			D3D12_RESOURCE_STATE_COPY_DEST,

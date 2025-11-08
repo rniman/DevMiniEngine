@@ -1,5 +1,4 @@
-﻿// Engine/src/Graphics/DX12/DX12Renderer.cpp
-#include "pch.h"
+﻿#include "pch.h"
 #include "Graphics/DX12/DX12Renderer.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12SwapChain.h"
@@ -13,6 +12,7 @@
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
+#include "Graphics/Texture.h" 
 #include "Math/MathUtils.h"
 
 namespace Graphics
@@ -270,11 +270,12 @@ namespace Graphics
 		auto* cmdList = cmdContext->GetCommandList();
 		auto* backBuffer = mDevice->GetSwapChain()->GetCurrentBackBuffer();
 
-		// 리소스 전이: PRESENT → RENDER_TARGET
+		// 리소스 전이: PRESENT - RENDER_TARGET
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer,
 			D3D12_RESOURCE_STATE_PRESENT,
-			D3D12_RESOURCE_STATE_RENDER_TARGET);
+			D3D12_RESOURCE_STATE_RENDER_TARGET
+		);
 		cmdList->ResourceBarrier(1, &barrier);
 
 		return true;
@@ -298,7 +299,8 @@ namespace Graphics
 			1.0f,  // Depth
 			0,     // Stencil
 			0,
-			nullptr);
+			nullptr
+		);
 
 		// Render Target 설정
 		cmdList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
@@ -329,11 +331,18 @@ namespace Graphics
 
 		for (const auto& item : items)
 		{
+			if (!item.material || !item.mesh)
+			{
+				LOG_WARN("Invalid RenderItem (material or mesh is null)");
+				continue;
+			}
+
 			// PSO 가져오기/생성
 			ID3D12PipelineState* pso = mPipelineStateCache->GetOrCreatePipelineState(
 				*item.material,
 				mRootSignature->GetRootSignature(),
-				item.mesh->GetInputLayout());
+				item.mesh->GetInputLayout()
+			);
 
 			if (!pso)
 			{
@@ -352,10 +361,18 @@ namespace Graphics
 			D3D12_GPU_VIRTUAL_ADDRESS cbvAddress = mConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
 			cmdList->SetGraphicsRootConstantBufferView(0, cbvAddress);
 
-			// 텍스처 설정 (Root Parameter 1)
-			cmdList->SetGraphicsRootDescriptorTable(
-				1,
-				item.material->GetDescriptorTableHandle(mSrvDescriptorHeap.get()));
+			// 텍스처 설정 (Material의 Descriptor Table 사용)
+			// Material.AllocateDescriptors()에서 이미 SRV 생성 완료
+			if (item.material->HasAllocatedDescriptors())
+			{
+				D3D12_GPU_DESCRIPTOR_HANDLE tableHandle = item.material->GetDescriptorTableHandle(mSrvDescriptorHeap.get());
+
+				cmdList->SetGraphicsRootDescriptorTable(1, tableHandle);
+			}
+			else
+			{
+				LOG_WARN("Material has no allocated descriptors");
+			}
 
 			// 메시 그리기
 			item.mesh->Draw(cmdList);
@@ -368,11 +385,12 @@ namespace Graphics
 		auto* cmdList = cmdContext->GetCommandList();
 		auto* backBuffer = mDevice->GetSwapChain()->GetCurrentBackBuffer();
 
-		// 리소스 전이: RENDER_TARGET → PRESENT
+		// 리소스 전이: RENDER_TARGET - PRESENT
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer,
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_PRESENT);
+			D3D12_RESOURCE_STATE_PRESENT
+		);
 		cmdList->ResourceBarrier(1, &barrier);
 
 		// Command List 닫기

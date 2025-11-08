@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Core\Assert.h" />
+    <ClInclude Include="..\include\Core\Hash.h" />
     <ClInclude Include="..\include\Core\Logging\ConsoleSink.h" />
     <ClInclude Include="..\include\Core\Logging\FileSink.h" />
     <ClInclude Include="..\include\Core\Logging\Logger.h" />

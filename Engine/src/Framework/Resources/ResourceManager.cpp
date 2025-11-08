@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Framework/Resources/ResourceManager.h"
+#include "Core/Hash.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
 #include "Graphics/Texture.h"
@@ -21,58 +22,90 @@ namespace Framework
 		LOG_INFO("ResourceManager destroyed");
 	}
 
-	std::shared_ptr<Graphics::Mesh> ResourceManager::CreateMesh(const std::string& name)
+	//=========================================================================
+	// Mesh 관리
+	//=========================================================================
+
+	ResourceId ResourceManager::CreateMesh(const std::string& name)
 	{
+		// 이름을 64비트 해시로 변환
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
 		// 이미 존재하는지 확인
-		auto it = mMeshes.find(name);
+		auto it = mMeshes.find(id);
 		if (it != mMeshes.end())
 		{
-			LOG_WARN("Mesh '%s' already exists", name.c_str());
-			return it->second;
+			LOG_WARN("Mesh '%s' already exists (ID: 0x%llX)", name.c_str(), id.id);
+			return id;
 		}
 
 		// 새 메시 생성
 		auto mesh = std::make_shared<Graphics::Mesh>();
-		mMeshes[name] = mesh;
+		mMeshes[id] = mesh;
+		mMeshNames[id] = name;  // 디버깅용 역참조
 
-		LOG_DEBUG("Created mesh: %s", name.c_str());
-		return mesh;
+		LOG_DEBUG("Created mesh: %s (ID: 0x%llX)", name.c_str(), id.id);
+		return id;
 	}
 
-	std::shared_ptr<Graphics::Mesh> ResourceManager::GetMesh(const std::string& name) const
+	Graphics::Mesh* ResourceManager::GetMesh(ResourceId id)
 	{
-		auto it = mMeshes.find(name);
+		auto it = mMeshes.find(id);
 		if (it != mMeshes.end())
 		{
-			return it->second;
+			return it->second.get();
+		}
+
+		LOG_WARN("Mesh not found: ID 0x%llX", id.id);
+		return nullptr;
+	}
+
+	const Graphics::Mesh* ResourceManager::GetMesh(ResourceId id) const
+	{
+		auto it = mMeshes.find(id);
+		if (it != mMeshes.end())
+		{
+			return it->second.get();
 		}
 		return nullptr;
 	}
 
-	bool ResourceManager::RemoveMesh(const std::string& name)
+	bool ResourceManager::RemoveMesh(ResourceId id)
 	{
-		auto it = mMeshes.find(name);
+		auto it = mMeshes.find(id);
 		if (it != mMeshes.end())
 		{
 			it->second->Shutdown();
 			mMeshes.erase(it);
-			LOG_DEBUG("Removed mesh: %s", name.c_str());
+			mMeshNames.erase(id);
+
+			LOG_DEBUG("Removed mesh: ID 0x%llX", id.id);
 			return true;
 		}
 		return false;
 	}
 
-	std::shared_ptr<Graphics::Material> ResourceManager::CreateMaterial(
+	//=========================================================================
+	// Material 관리
+	//=========================================================================
+
+	ResourceId ResourceManager::CreateMaterial(
 		const std::string& name,
 		const std::wstring& vertexShader,
-		const std::wstring& pixelShader)
+		const std::wstring& pixelShader
+	)
 	{
+		// 이름을 64비트 해시로 변환
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
 		// 이미 존재하는지 확인
-		auto it = mMaterials.find(name);
+		auto it = mMaterials.find(id);
 		if (it != mMaterials.end())
 		{
-			LOG_WARN("Material '%s' already exists", name.c_str());
-			return it->second;
+			LOG_WARN("Material '%s' already exists (ID: 0x%llX)", name.c_str(), id.id);
+			return id;
 		}
 
 		// 새 머티리얼 생성
@@ -81,84 +114,169 @@ namespace Framework
 		desc.pixelShaderPath = pixelShader.c_str();
 
 		auto material = std::make_shared<Graphics::Material>(desc);
-		mMaterials[name] = material;
+		mMaterials[id] = material;
+		mMaterialNames[id] = name;
 
-		LOG_DEBUG("Created material: %s", name.c_str());
-		return material;
+		LOG_DEBUG("Created material: %s (ID: 0x%llX)", name.c_str(), id.id);
+		return id;
 	}
 
-	std::shared_ptr<Graphics::Material> ResourceManager::GetMaterial(const std::string& name) const
+	Graphics::Material* ResourceManager::GetMaterial(ResourceId id)
 	{
-		auto it = mMaterials.find(name);
+		auto it = mMaterials.find(id);
 		if (it != mMaterials.end())
 		{
-			return it->second;
+			return it->second.get();
+		}
+
+		LOG_WARN("Material not found: ID 0x%llX", id.id);
+		return nullptr;
+	}
+
+	const Graphics::Material* ResourceManager::GetMaterial(ResourceId id) const
+	{
+		auto it = mMaterials.find(id);
+		if (it != mMaterials.end())
+		{
+			return it->second.get();
 		}
 		return nullptr;
 	}
 
-	bool ResourceManager::RemoveMaterial(const std::string& name)
+	bool ResourceManager::RemoveMaterial(ResourceId id)
 	{
-		auto it = mMaterials.find(name);
+		auto it = mMaterials.find(id);
 		if (it != mMaterials.end())
 		{
 			mMaterials.erase(it);
-			LOG_DEBUG("Removed material: %s", name.c_str());
+			mMaterialNames.erase(id);
+
+			LOG_DEBUG("Removed material: ID 0x%llX", id.id);
 			return true;
 		}
 		return false;
 	}
 
-	std::shared_ptr<Graphics::Texture> ResourceManager::LoadTexture(const std::wstring& path)
+	//=========================================================================
+	// Texture 관리
+	//=========================================================================
+
+	ResourceId ResourceManager::LoadTexture(const std::string& path)
 	{
-		// 이미 로드된 텍스처인지 확인
-		auto it = mTextures.find(path);
+		// UTF-8 경로를 해시 (일관성 보장!)
+		ResourceId id;
+		id.id = Core::Hash64(path);
+
+		// 이미 로드됨?
+		auto it = mTextures.find(id);
 		if (it != mTextures.end())
 		{
-			return it->second;
+			LOG_DEBUG("Texture already loaded: %s (ID: 0x%llX)", path.c_str(), id.id);
+			return id;
 		}
 
-		// 새 텍스처 로드
-		auto texture = std::make_shared<Graphics::Texture>();
+		// DirectX는 wstring 필요 → 변환
+		std::wstring wpath = Core::UTF8ToWString(path);
 
-		// 현재 프레임 인덱스 가져오기
+		auto texture = std::make_shared<Graphics::Texture>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
 		if (!texture->LoadFromFile(
 			mDevice->GetDevice(),
 			mDevice->GetGraphicsQueue(),
 			mDevice->GetCommandContext(frameIndex),
-			path.c_str()))
+			wpath.c_str()))  // Win32 API에 wstring 전달
 		{
-			LOG_ERROR("Failed to load texture: %ls", path.c_str());
-			return nullptr;
+			LOG_ERROR("Failed to load texture: %s", path.c_str());
+			return ResourceId::Invalid();
 		}
 
-		mTextures[path] = texture;
-		LOG_DEBUG("Loaded texture: %ls", path.c_str());
-		return texture;
+		mTextures[id] = texture;
+		mTexturePaths[id] = path;  // UTF-8로 저장!
+
+		LOG_DEBUG("Loaded texture: %s (ID: 0x%llX)", path.c_str(), id.id);
+		return id;
 	}
 
-	std::shared_ptr<Graphics::Texture> ResourceManager::GetTexture(const std::wstring& path) const
+	ResourceId ResourceManager::LoadTextureW(const std::wstring& path)
 	{
-		auto it = mTextures.find(path);
+		return LoadTexture(Core::WStringToUTF8(path));
+	}
+
+	Graphics::Texture* ResourceManager::GetTexture(ResourceId id)
+	{
+		auto it = mTextures.find(id);
 		if (it != mTextures.end())
 		{
-			return it->second;
+			return it->second.get();
+		}
+
+		LOG_WARN("Texture not found: ID 0x%llX", id.id);
+		return nullptr;
+	}
+
+	const Graphics::Texture* ResourceManager::GetTexture(ResourceId id) const
+	{
+		auto it = mTextures.find(id);
+		if (it != mTextures.end())
+		{
+			return it->second.get();
 		}
 		return nullptr;
 	}
 
-	bool ResourceManager::RemoveTexture(const std::wstring& path)
+	bool ResourceManager::RemoveTexture(ResourceId id)
 	{
-		auto it = mTextures.find(path);
+		auto it = mTextures.find(id);
 		if (it != mTextures.end())
 		{
 			mTextures.erase(it);
-			LOG_DEBUG("Removed texture: %ls", path.c_str());
+			mTexturePaths.erase(id);
+
+			LOG_DEBUG("Removed texture: ID 0x%llX", id.id);
 			return true;
 		}
 		return false;
+	}
+
+	//=========================================================================
+	// 디버깅 & 편의 함수
+	//=========================================================================
+
+	ResourceId ResourceManager::FindMeshByName(const std::string& name) const
+	{
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
+		if (mMeshes.find(id) != mMeshes.end())
+		{
+			return id;
+		}
+		return ResourceId::Invalid();
+	}
+
+	ResourceId ResourceManager::FindMaterialByName(const std::string& name) const
+	{
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
+		if (mMaterials.find(id) != mMaterials.end())
+		{
+			return id;
+		}
+		return ResourceId::Invalid();
+	}
+
+	ResourceId ResourceManager::FindTextureByPath(const std::string& path) const
+	{
+		ResourceId id;
+		id.id = Core::Hash64(path);
+
+		if (mTextures.find(id) != mTextures.end())
+		{
+			return id;
+		}
+		return ResourceId::Invalid();
 	}
 
 	void ResourceManager::Clear()
@@ -166,15 +284,19 @@ namespace Framework
 		LOG_INFO("Clearing all resources...");
 
 		// 메시 정리
-		for (auto& [name, mesh] : mMeshes)
+		for (auto& [id, mesh] : mMeshes)
 		{
 			mesh->Shutdown();
 		}
 		mMeshes.clear();
+		mMeshNames.clear();
 
 		// 머티리얼과 텍스처는 자동으로 정리됨 (shared_ptr)
 		mMaterials.clear();
+		mMaterialNames.clear();
+
 		mTextures.clear();
+		mTexturePaths.clear();
 
 		LOG_INFO("All resources cleared");
 	}

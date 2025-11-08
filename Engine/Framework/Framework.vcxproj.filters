@@ -56,5 +56,8 @@
     <ClInclude Include="..\include\Framework\Scene\Scene.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Framework\Resources\ResourceId.h">
+      <Filter>Header Files\Resources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

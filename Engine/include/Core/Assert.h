@@ -1,5 +1,4 @@
-﻿// Engine/include/Core/Assert.h
-#pragma once
+﻿#pragma once
 
 /**
  * @file Assert.h

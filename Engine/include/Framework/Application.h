@@ -93,7 +93,7 @@ namespace Framework
 		bool Initialize();
 		void Shutdown();
 		void RunMainLoop();
-	
+
 		ApplicationDesc mDesc;
 		bool mIsRunning = false;
 		bool mIsInitialized = false;

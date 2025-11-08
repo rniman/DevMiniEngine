@@ -71,7 +71,7 @@ namespace Graphics
 			static_cast<UINT64>(bufferSize)
 		);
 
-		// COPY_DEST → VERTEX_AND_CONSTANT_BUFFER 상태 전이
+		// COPY_DEST - VERTEX_AND_CONSTANT_BUFFER 상태 전이
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			mVertexBuffer.Get(),
 			D3D12_RESOURCE_STATE_COPY_DEST,
