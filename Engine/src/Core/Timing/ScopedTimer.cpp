@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "Core/Timing/ScopedTimer.h"
-
 #include "Core/Logging/LogMacros.h"
 #include "Core/Types.h"
 

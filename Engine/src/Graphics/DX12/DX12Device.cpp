@@ -1,12 +1,13 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12Device.h"
+#include "Graphics/DX12/DX12CommandContext.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12SwapChain.h"
-#include "Graphics/DX12/DX12CommandContext.h"
-#include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {
+	DX12Device::DX12Device() = default;
+
 	DX12Device::~DX12Device()
 	{
 		Shutdown();

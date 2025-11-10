@@ -1,10 +1,5 @@
 ﻿#include "pch.h"
 #include "Core/Logging/Logger.h"
-#include "Core/Logging/LogSink.h"
-#include "Core/Logging/LogTypes.h"
-#include "Core/Types.h"
-#include <memory>
-#include <mutex>
 
 using namespace std;
 

@@ -1,8 +1,7 @@
 ﻿#include "pch.h"
 #include "Graphics/Camera/PerspectiveCamera.h"
 #include "Math/MathUtils.h"
-#include "Core/Logging/LogMacros.h"
-#include "Core/Assert.h"
+#include "Math/MathTypes.h"
 
 using namespace Math;
 

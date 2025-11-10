@@ -1,20 +1,8 @@
 ﻿#include "pch.h"
 #include "Framework/Scene/Scene.h"
 #include "Framework/Scene/GameObject.h"
-#include "Graphics/Mesh.h"
-#include "Graphics/Material.h"
-
-#include "Graphics/DX12/DX12Device.h"
-#include "Graphics/DX12/DX12SwapChain.h"
-#include "Graphics/DX12/DX12CommandQueue.h"
-#include "Graphics/DX12/DX12CommandContext.h"
-
-#include "Graphics/DX12/DX12Renderer.h"
-#include "Graphics/DX12/DX12RootSignature.h"
-#include "Graphics/DX12/DX12ConstantBuffer.h"
-#include "Graphics/DX12/DX12DepthStencilBuffer.h"
-#include "Graphics/DX12/DX12DescriptorHeap.h"
-#include "Graphics/DX12/DX12PipelineStateCache.h"
+#include "Core/Logging/LogMacros.h"
+#include "Math/MathTypes.h"
 #include "Math/MathUtils.h"
 
 namespace Framework

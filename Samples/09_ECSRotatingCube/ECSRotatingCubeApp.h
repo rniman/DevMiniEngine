@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #include "Framework/Application.h"
 
 #include "Core/Types.h"

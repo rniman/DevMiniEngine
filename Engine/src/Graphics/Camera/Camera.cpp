@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Graphics/Camera/Camera.h"
 #include "Math/MathUtils.h"
+#include "Math/MathTypes.h"
 
 using namespace Math;
 

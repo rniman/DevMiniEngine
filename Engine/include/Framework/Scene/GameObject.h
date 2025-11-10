@@ -1,6 +1,4 @@
-﻿// Engine/include/Framework/Scene/GameObject.h
-#pragma once
-
+﻿#pragma once
 #include "Core/Types.h"
 #include "Math/MathTypes.h"
 #include <memory>

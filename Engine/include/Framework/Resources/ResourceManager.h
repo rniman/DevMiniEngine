@@ -1,10 +1,8 @@
 ﻿#pragma once
-
-#include "Core/Types.h"
 #include "Framework/Resources/ResourceId.h"
 #include <memory>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 namespace Graphics
 {

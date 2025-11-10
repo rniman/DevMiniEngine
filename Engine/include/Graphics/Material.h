@@ -1,12 +1,10 @@
 ﻿#pragma once
-
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/TextureType.h"
-#include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Framework/Resources/ResourceId.h" 
 #include <string>
 #include <array>
-#include <memory>
+
 
 namespace Framework
 {
@@ -15,6 +13,7 @@ namespace Framework
 
 namespace Graphics
 {
+	class DX12DescriptorHeap;
 	class Texture;
 
 	/**
@@ -163,7 +162,7 @@ namespace Graphics
 		/**
 		 * @brief Descriptor가 할당되었는지 확인
 		 */
-		bool HasAllocatedDescriptors() const { return mDescriptorStartIndex != INVALID_DESCRIPTOR_INDEX; }
+		bool HasAllocatedDescriptors() const;
 
 
 		/**
@@ -249,7 +248,7 @@ namespace Graphics
 		uint32 mSampleQuality;
 		uint32 mSampleMask;
 
-		uint32 mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
+		uint32 mDescriptorStartIndex;
 
 		// Resource Id를 통해 관리
 		std::array<Framework::ResourceId, static_cast<size_t>(TextureType::Count)> mTextureIds;

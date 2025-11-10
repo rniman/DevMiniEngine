@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include <string>
+#include <vector>
 
 namespace Graphics
 {

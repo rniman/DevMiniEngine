@@ -1,10 +1,7 @@
 ﻿#include "pch.h"
 #include "Core/Memory/StackAllocator.h"
-
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h"
-#include "Core/Memory/MemoryConfig.h"
-#include "Core/Types.h"
 
 using namespace std;
 

@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
-#include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {

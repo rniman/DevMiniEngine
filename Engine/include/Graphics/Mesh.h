@@ -1,9 +1,8 @@
 ﻿#pragma once
-
-#include "Math/MathTypes.h"
 #include "Graphics/GraphicsTypes.h"
-#include "Graphics/DX12/DX12VertexBuffer.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
+#include "Graphics/DX12/DX12VertexBuffer.h"
+#include "Math/MathTypes.h"
 
 namespace Graphics
 {

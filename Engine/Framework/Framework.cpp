@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "Framework/Application.h"
 
 namespace Framework
 {

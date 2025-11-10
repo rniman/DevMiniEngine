@@ -1,9 +1,11 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12SwapChain.h"
-#include "Core/Logging/LogMacros.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"
 
 namespace Graphics
 {
+	DX12SwapChain::DX12SwapChain() = default;
+
 	DX12SwapChain::~DX12SwapChain()
 	{
 		Shutdown();

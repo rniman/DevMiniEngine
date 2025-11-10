@@ -1,21 +1,6 @@
 ﻿#include "pch.h"
 #include "Core/Timing/Timer.h"
-
 #include "Core/Logging/LogMacros.h"
-#include "Core/Types.h"
-
-#ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <Windows.h>
-#elif defined(__linux__)
-#include <time.h>
-// Linux 구현 (향후 추가)
-#endif
 
 namespace Core::Timing
 {

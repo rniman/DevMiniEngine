@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Graphics/GraphicsTypes.h"
-#include <d3d12.h> 
 
 namespace Graphics
 {

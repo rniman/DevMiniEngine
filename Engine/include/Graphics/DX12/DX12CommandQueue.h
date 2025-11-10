@@ -98,8 +98,6 @@ namespace Graphics
 		bool CreateFence(ID3D12Device* device);
 		const char* GetCommandListTypeString(D3D12_COMMAND_LIST_TYPE type) const;
 
-		// 멤버 변수
-
 		// DirectX Resources
 		ComPtr<ID3D12CommandQueue> mCommandQueue;
 		ComPtr<ID3D12Fence> mFence;

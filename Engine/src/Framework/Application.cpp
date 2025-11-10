@@ -1,14 +1,12 @@
 ﻿#include "pch.h"
 #include "Framework/Application.h"
-#include "Core/Timing/ScopedTimer.h"  
-#include "Platform/Window.h"
-#include "Platform/Input.h"
+#include "Core/Timing/ScopedTimer.h"
+#include "Core/Logging/LogMacros.h"
 #include "Graphics/DX12/DX12Device.h"
-#include "Graphics/DX12/DX12CommandQueue.h"
-#include "Graphics/DX12/DX12CommandContext.h"
-#include "Graphics/DX12/DX12SwapChain.h"
-
 #include "Graphics/DX12/DX12Renderer.h"
+#include "Platform/Input.h"
+#include "Platform/PlatformTypes.h"
+#include "Platform/Window.h"
 
 namespace Framework
 {

@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-#include "Core/Types.h"
+#include "Graphics/GraphicsTypes.h"
 #include "Math/MathTypes.h"
 #include "Math/MathUtils.h"
 #include <vector>

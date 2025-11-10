@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 #include "Graphics/Material.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Graphics/Texture.h"
 #include "Framework/Resources/ResourceManager.h"
-#include "Core/Logging/Logger.h"
 
 using namespace std;
 
@@ -52,6 +52,8 @@ namespace Graphics
 		{
 			id = Framework::ResourceId::Invalid();
 		}
+
+		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
 	}
 
 	Material::Material()
@@ -95,6 +97,8 @@ namespace Graphics
 		{
 			id = Framework::ResourceId::Invalid();
 		}
+		
+		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
 	}
 
 	bool Material::AllocateDescriptors(
@@ -383,6 +387,8 @@ namespace Graphics
 
 		return heap->GetGPUHandle(mDescriptorStartIndex);
 	}
+
+	bool Material::HasAllocatedDescriptors() const { return mDescriptorStartIndex != INVALID_DESCRIPTOR_INDEX; }
 
 	size_t Material::GetHash() const
 	{

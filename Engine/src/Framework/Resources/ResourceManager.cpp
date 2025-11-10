@@ -1,11 +1,14 @@
 ﻿#include "pch.h"
 #include "Framework/Resources/ResourceManager.h"
+#include "Core/Logging/LogMacros.h"
 #include "Core/Hash.h"
-#include "Graphics/Mesh.h"
-#include "Graphics/Material.h"
-#include "Graphics/Texture.h"
+#include "Core/Types.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
+#include "Graphics/Material.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/Texture.h"
+
 
 namespace Framework
 {

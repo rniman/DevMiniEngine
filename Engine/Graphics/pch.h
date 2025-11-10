@@ -1,66 +1,84 @@
 ﻿#pragma once
 
 //=============================================================================
-// Windows API
+// 컴파일러 설정
 //=============================================================================
-#ifdef _WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#define NOMINMAX  // min/max 매크로 충돌 방지 (추천)
-	#include <windows.h>
-	#include <wrl/client.h>
+// min/max 매크로 충돌 방지 (Windows.h 이전에 정의 필요)
+#ifndef NOMINMAX
+#define NOMINMAX
 #endif
 
 //=============================================================================
-// DirectX 12
+// Windows API (플랫폼별)
 //=============================================================================
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-//#include <DirectXPackedVector.h>
-//#include <DirectXColors.h>
-//#include <DirectXCollision.h>
-
-// dxgidebug.h는 나중에 추가
-// #ifdef _DEBUG
-// #include <dxgidebug.h>
-// #endif
-
-#pragma warning(push, 0)
-#include "d3dx12.h"
-#pragma warning(pop)
-
-// DirectX 라이브러리 링크
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "d3dcompiler.lib")
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN     // Windows 헤더 최소화
+#include <windows.h>
+#endif
 
 //=============================================================================
-// 표준 라이브러리
+// Graphics Types (프로젝트 공통)
 //=============================================================================
-#include <cstdint>
-#include <memory>
-#include <vector>
-#include <array>
-#include <string>
-#include <unordered_map>
-#include <map>
-#include <algorithm>
-#include <functional>
-#include <stdexcept>  // std::runtime_error
+#include "Graphics/GraphicsTypes.h"
 
+//=============================================================================
+// 표준 라이브러리 - 기본 타입
+//=============================================================================
+#include <cstdint>      // uint32_t 등
+#include <cstddef>      // size_t, nullptr_t
+#include <cassert>      // assert
 
-// 멀티스레딩
-//#include <thread>
-//#include <mutex>
-//#include <atomic>
+//=============================================================================
+// 표준 라이브러리 - 메모리 관리
+//=============================================================================
+#include <memory>       // unique_ptr, shared_ptr, make_unique
 
-// 성능 측정
-//#include <chrono>
+//=============================================================================
+// 표준 라이브러리 - 컨테이너
+//=============================================================================
+#include <vector>       // 동적 배열
+#include <array>        // 정적 배열
+#include <string>       // 문자열
+#include <unordered_map> // 해시맵
+#include <map>          // 정렬된 맵
+// 필요 시 추가:
+// #include <set>
+// #include <unordered_set>
+// #include <queue>
+// #include <deque>
 
-// 유틸리티
-//#include <utility>
-//#include <optional>
-//#include <variant>
+//=============================================================================
+// 표준 라이브러리 - 알고리즘 & 유틸리티
+//=============================================================================
+#include <algorithm>    // std::sort, std::find 등
+#include <functional>   // std::function, 람다
+#include <utility>      // std::pair, std::move, std::forward
+#include <stdexcept>    // std::runtime_error
+
+//=============================================================================
+// 표준 라이브러리 - 확장 기능 (C++17/20)
+//=============================================================================
+// #include <optional>     // std::optional
+// #include <variant>      // std::variant
+// #include <string_view>  // std::string_view (C++17)
+// #include <span>         // std::span (C++20)
+
+//=============================================================================
+// 표준 라이브러리 - 멀티스레딩 (필요 시)
+//=============================================================================
+// #include <thread>
+// #include <mutex>
+// #include <atomic>
+// #include <condition_variable>
+
+//=============================================================================
+// 표준 라이브러리 - 시간/성능 측정 (필요 시)
+//=============================================================================
+// #include <chrono>
+
+//=============================================================================
+// 표준 라이브러리 - 스트림/파일 (필요 시)
+//=============================================================================
+// #include <fstream>
+// #include <sstream>
+// #include <iostream>

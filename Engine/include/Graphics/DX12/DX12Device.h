@@ -29,7 +29,7 @@ namespace Graphics
 	class DX12Device
 	{
 	public:
-		DX12Device() = default;
+		DX12Device();
 		~DX12Device();
 
 		// Non-copyable

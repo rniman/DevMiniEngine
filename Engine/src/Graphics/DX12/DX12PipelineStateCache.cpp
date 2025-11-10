@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12PipelineStateCache.h"
-#include "Core/Logging/Logger.h"
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Graphics/Material.h"
 

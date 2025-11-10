@@ -1,15 +1,14 @@
 ﻿#include "pch.h" 
 #include "Graphics/Texture.h"
-#include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
+#include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
-#include "Core/Logging/LogMacros.h"
-
-#include <filesystem>
 
 // WIC/DDS Texture Loader (DirectXTK12)
 #include "WICTextureLoader12.h"
 #include "DDSTextureLoader12.h"
+
+#include <filesystem>
 
 using namespace std;
 

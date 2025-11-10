@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Framework/Scene/GameObject.h"
+#include "Core/Logging/LogMacros.h"
 #include "Math/MathUtils.h"
 
 namespace Framework

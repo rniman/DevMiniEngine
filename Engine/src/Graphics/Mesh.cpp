@@ -1,8 +1,7 @@
 ﻿#include "pch.h"
 #include "Graphics/Mesh.h"
-#include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12CommandContext.h"
-#include "Core/Logging/LogMacros.h"
+#include "Graphics/DX12/DX12CommandQueue.h"
 
 namespace Graphics
 {

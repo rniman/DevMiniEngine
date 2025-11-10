@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
-#include "Core/Logging/LogMacros.h"
 
 namespace Graphics
 {
@@ -13,7 +12,8 @@ namespace Graphics
 		ID3D12Device* device,
 		D3D12_DESCRIPTOR_HEAP_TYPE type,
 		uint32 numDescriptors,
-		bool shaderVisible)
+		bool shaderVisible
+	)
 	{
 		if (!device)
 		{

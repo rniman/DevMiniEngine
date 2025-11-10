@@ -1,5 +1,4 @@
-﻿// Engine/include/Framework/Resources/ResourceId.h
-#pragma once
+﻿#pragma once
 #include "Core/Types.h"
 #include <functional>
 

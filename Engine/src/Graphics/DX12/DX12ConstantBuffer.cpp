@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12ConstantBuffer.h"
-#include "Core/Logging/LogMacros.h"
-#include "Core/Assert.h"
+
 
 using namespace Core;
 

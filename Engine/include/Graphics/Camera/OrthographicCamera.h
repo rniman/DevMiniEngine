@@ -1,9 +1,6 @@
 ﻿#pragma once
-
-#include "Graphics/GraphicsTypes.h"
-#include "Math/MathTypes.h"
-
 #include "Graphics/Camera/Camera.h"
+#include "Graphics/GraphicsTypes.h"
 
 namespace Graphics
 {

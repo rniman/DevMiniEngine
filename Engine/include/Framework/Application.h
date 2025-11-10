@@ -1,8 +1,6 @@
-﻿// Engine/include/Framework/Application.h
-#pragma once
-
-#include "Core/Types.h"
+﻿#pragma once
 #include "Core/Timing/Timer.h" 
+#include "Core/Types.h"
 #include <memory>
 
 namespace Platform

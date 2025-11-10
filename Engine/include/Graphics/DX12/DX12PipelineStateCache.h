@@ -1,8 +1,8 @@
 ﻿#pragma once
-
 #include "Graphics/GraphicsTypes.h"
+#include <functional>
 #include <unordered_map>
-#include <memory>
+
 
 namespace Graphics
 {

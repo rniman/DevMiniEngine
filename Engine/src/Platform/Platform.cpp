@@ -8,14 +8,14 @@
 
 namespace Platform
 {
-    std::unique_ptr<Window> CreatePlatformWindow()
-    {
+	std::unique_ptr<Window> CreatePlatformWindow()
+	{
 #ifdef _WIN32
-        return std::make_unique<Win32Window>();
+		return std::make_unique<Win32Window>();
 #else
 #error "Unsupported platform: Only Windows is currently supported"
-        return nullptr;
+		return nullptr;
 #endif
-    }
+	}
 
 } // namespace Platform

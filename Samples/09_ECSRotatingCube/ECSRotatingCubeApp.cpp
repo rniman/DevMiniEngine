@@ -6,7 +6,6 @@
 
 // Core Engine
 #include "Core/Logging/LogMacros.h"
-#include "Core/Types.h"
 
 // Math
 #include "Math/MathTypes.h"

@@ -1,9 +1,9 @@
 ﻿#pragma once
-
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/RenderTypes.h"
-#include "Math/MathTypes.h"
+#include <array>
 #include <memory>
+#include <vector>
 
 namespace Framework
 {

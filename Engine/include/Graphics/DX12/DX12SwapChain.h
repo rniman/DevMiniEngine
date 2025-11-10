@@ -1,8 +1,13 @@
 ﻿#pragma once
-#include "Graphics/DX12/DX12DescriptorHeap.h"
+#include "Graphics/GraphicsTypes.h"
+#include <memory>
+#include <vector>
+
 
 namespace Graphics
 {
+	class DX12DescriptorHeap;
+
 	/**
 	 * @brief DirectX 12 SwapChain 관리 클래스
 	 *
@@ -12,7 +17,7 @@ namespace Graphics
 	class DX12SwapChain
 	{
 	public:
-		DX12SwapChain() = default;
+		DX12SwapChain();
 		~DX12SwapChain();
 
 		// Non-copyable
@@ -90,11 +95,11 @@ namespace Graphics
 		std::unique_ptr<DX12DescriptorHeap> mRTVHeap;
 
 		// SwapChain Properties
-		size_t mCurrentBackBufferIndex;
-		Core::uint32 mBufferCount;
-		Core::uint32 mWidth;
-		Core::uint32 mHeight;
-		DXGI_FORMAT mFormat;
+		size_t mCurrentBackBufferIndex = 0;
+		Core::uint32 mBufferCount = FRAME_BUFFER_COUNT;
+		Core::uint32 mWidth = 1280;
+		Core::uint32 mHeight = 720;
+		DXGI_FORMAT mFormat = {};
 		bool mTearingAllowed = false;
 	};
 
