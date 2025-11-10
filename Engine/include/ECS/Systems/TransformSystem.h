@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "ECS/Components/TransformComponent.h"
-#include "Math/MathUtils.h"
 #include "Core/Types.h"
 
 namespace ECS

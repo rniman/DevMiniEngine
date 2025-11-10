@@ -1,14 +1,12 @@
-﻿// Engine/include/ECS/Registry.h
-#pragma once
-#include "Core/Types.h"
+﻿#pragma once
 #include "ECS/Entity.h"
-#include "ECS/Component.h"
 #include "Core/Assert.h"
-#include <vector>
-#include <unordered_map>
-#include <queue>
+#include "Core/Types.h"
 #include <memory>
+#include <queue>
 #include <typeindex>
+#include <unordered_map>
+#include <vector>
 
 namespace ECS
 {

@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "Core/Types.h"
 #include "Math/MathTypes.h"
 
 namespace ECS

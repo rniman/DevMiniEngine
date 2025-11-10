@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "ECS/Systems/TransformSystem.h"
+#include "Math/MathUtils.h"
+#include "Math/MathTypes.h"
 
 namespace ECS
 {
