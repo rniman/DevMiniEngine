@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #include "Core/Logging/LogTypes.h"
 
 namespace Core

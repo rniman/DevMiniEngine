@@ -1,15 +1,6 @@
 ﻿#pragma once
-
-/**
- * @file Types.h
- *  엔진 전역 기본 타입 정의
- *
- * 플랫폼 독립적인 고정 크기 정수 타입과 부동소수점 타입을 정의합니다.
- * 모든 엔진 코드는 표준 타입(int, unsigned 등) 대신 이 타입들을 사용합니다.
- */
-
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 namespace Core
 {

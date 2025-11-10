@@ -18,8 +18,8 @@ namespace Graphics
 	{
 		const Mesh* mesh = nullptr;
 		const Material* material = nullptr;
-		Math::Matrix4x4 worldMatrix;
-		Math::Matrix4x4 mvpMatrix;  // 미리 계산된 MVP (셰이더 전달용)
+		Math::Matrix4x4 worldMatrix = Math::MatrixIdentity();
+		Math::Matrix4x4 mvpMatrix = Math::MatrixIdentity();  // 미리 계산된 MVP (셰이더 전달용)
 
 		// 향후 확장
 		// Core::uint32 stencilRef = 0;

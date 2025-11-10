@@ -1,17 +1,27 @@
-﻿// Samples/09_ECSRotatingCube/ECSRotatingCubeApp.h
-#pragma once
+﻿#pragma once
 
 #include "Framework/Application.h"
-#include "Framework/Resources/ResourceManager.h"
-#include "Framework/Scene/Scene.h"
-#include "ECS/Registry.h"
+
+#include "Core/Types.h"
 #include "ECS/Entity.h"
-#include "ECS/Components/TransformComponent.h"
-#include "ECS/Components/MeshComponent.h"
-#include "ECS/Components/MaterialComponent.h"
-#include "Framework/Resources/ResourceId.h"
 #include "Graphics/Camera/PerspectiveCamera.h"
-#include "Graphics/RenderTypes.h"
+
+#include <memory>
+
+namespace ECS
+{
+	class Registry;
+}
+
+namespace Framework
+{
+	class ResourceManager;
+}
+
+namespace Graphics
+{
+	struct FrameData;
+}
 
 /**
  * @brief ECS 아키텍처 기반 회전하는 큐브 샘플
@@ -68,6 +78,5 @@ private:
 	// 회전 속도 (도/초)
 	Core::float32 mRotationSpeed = 90.0f;
 
-	std::unique_ptr<Framework::Scene> mScene;
 	std::unique_ptr<Framework::ResourceManager> mResourceManager;
 };

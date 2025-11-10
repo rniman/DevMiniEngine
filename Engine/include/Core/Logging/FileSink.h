@@ -1,6 +1,6 @@
 ﻿#pragma once
-
 #include "Core/Logging/LogSink.h"
+#include "Core/Logging/LogTypes.h"
 #include <fstream>
 #include <string>
 

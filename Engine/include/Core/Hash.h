@@ -1,7 +1,8 @@
-﻿// Engine/include/Core/Hash.h
-#pragma once
+﻿#pragma once
 #include "Core/Types.h"
 #include <string>
+#include <stringapiset.h>
+#include <WinNls.h>
 
 namespace Core
 {

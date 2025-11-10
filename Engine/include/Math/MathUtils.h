@@ -1,8 +1,9 @@
 ﻿#pragma once
-
 #include "Core/Types.h"
 #include "Math/MathTypes.h"
-#include "cmath"
+#include <cstdlib>
+#include <cmath>
+#include <DirectXMath.h>
 
 namespace Math 
 {

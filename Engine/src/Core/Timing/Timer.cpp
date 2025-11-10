@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 #include "Core/Timing/Timer.h"
+
 #include "Core/Logging/LogMacros.h"
-#include <cmath>
-#include <algorithm>
+#include "Core/Types.h"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -31,7 +31,7 @@ namespace Core::Timing
 	{
 #ifdef _WIN32
 		// Windows 고정밀 타이머 초기화
-		int64 countsPerSec;
+		int64 countsPerSec = 0;
 		if (QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&countsPerSec)))
 		{
 			mSecondsPerCount = 1.0 / static_cast<float64>(countsPerSec);
@@ -119,9 +119,11 @@ namespace Core::Timing
 		else
 		{
 			// 오래된 값을 제거하고 새 값 추가
-			std::rotate(mFrameTimeHistory.begin(),
+			std::rotate(
+				mFrameTimeHistory.begin(),
 				mFrameTimeHistory.begin() + 1,
-				mFrameTimeHistory.end());
+				mFrameTimeHistory.end()
+			);
 			mFrameTimeHistory[MAX_SAMPLE_COUNT - 1] = mRawDeltaTime;
 		}
 

@@ -1,5 +1,10 @@
 ﻿#include "pch.h"
 #include "Core/Logging/Logger.h"
+#include "Core/Logging/LogSink.h"
+#include "Core/Logging/LogTypes.h"
+#include "Core/Types.h"
+#include <memory>
+#include <mutex>
 
 using namespace std;
 
@@ -18,7 +23,7 @@ namespace Core
             LogCategory category,
             const string& message,
             const char* file,  // 이미 const
-            int line
+			Core::int32 line
         )
         {
             if (level < mMinLevel)

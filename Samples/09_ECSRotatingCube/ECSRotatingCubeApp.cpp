@@ -1,16 +1,39 @@
 ﻿#include "ECSRotatingCubeApp.h"
-#include "Framework/Application.h"
+
+// Framework
+#include "Framework/Resources/ResourceId.h"
+#include "Framework/Resources/ResourceManager.h"
+
+// Core Engine
+#include "Core/Logging/LogMacros.h"
+#include "Core/Types.h"
+
+// Math
+#include "Math/MathTypes.h"
+#include "Math/MathUtils.h"
+
+// Platform
 #include "Platform/Window.h"
 
-#include "ECS/Systems/TransformSystem.h"
-#include "Graphics/Mesh.h"
+// Graphics
 #include "Graphics/Material.h"
-#include "Math/MathUtils.h"
-#include "Core/Logging/Logger.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/RenderTypes.h"
+#include "Graphics/TextureType.h"
 
+// Graphics - DX12
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
 
+// ECS
+#include "ECS/Components/MaterialComponent.h"
+#include "ECS/Components/MeshComponent.h"
+#include "ECS/Components/TransformComponent.h"
+#include "ECS/Registry.h"
+#include "ECS/Systems/TransformSystem.h"
+
+// Standard Library
+#include <memory>
 
 ECSRotatingCubeApp::ECSRotatingCubeApp()
 	: Application(GetAppDesc())
@@ -31,9 +54,6 @@ bool ECSRotatingCubeApp::OnInitialize()
 		GetDevice(),
 		GetRenderer()
 	);
-
-	// 씬 생성
-	mScene = std::make_unique<Framework::Scene>();
 
 	// 렌더링 리소스 초기화
 	if (!GetRenderer()->Initialize(

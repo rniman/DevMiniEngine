@@ -1,7 +1,11 @@
-﻿// Samples/09_ECSRotatingCube/main.cpp
-#include "ECSRotatingCubeApp.h"
-#include "Core/Logging/Logger.h"
+﻿#include "ECSRotatingCubeApp.h"
+
 #include "Core/Logging/ConsoleSink.h"
+#include "Core/Logging/Logger.h"
+#include "Core/Logging/LogMacros.h"
+
+#include <exception>
+#include <memory>
 
 int main()
 {

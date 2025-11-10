@@ -1,12 +1,6 @@
 ﻿#pragma once
-
-/**
- * @file Assert.h
- * @brief 런타임 조건 검증 매크로
- */
-
 #include <cassert>
-#include <stdexcept>
+#include <cstdarg>
 #include <cstdio>
 #include <string>
 

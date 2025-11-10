@@ -1,11 +1,11 @@
 ﻿#pragma once
-
-#include "Core/Logging/LogTypes.h"
 #include "Core/Logging/LogSink.h"
+#include "Core/Logging/LogTypes.h"
 #include "Core/Types.h"
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 namespace Core
 {
@@ -27,13 +27,13 @@ namespace Core
              * 
              * @note 최소 로그 레벨보다 낮은 메시지는 필터링됨
              */
-            void Log(
-                LogLevel level,
-                LogCategory category,
-                const std::string& message,
-                const char* file,
-                Core::int32 line
-            );
+			void Log(
+				LogLevel level,
+				LogCategory category,
+				const std::string& message,
+				const char* file,
+				Core::int32 line
+			);
 
             /**
              * @brief 출력 대상(Sink) 추가

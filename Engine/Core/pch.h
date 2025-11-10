@@ -13,20 +13,17 @@
 //=============================================================================
 // 표준 라이브러리
 //=============================================================================
+#include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstdlib>
-
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
 #include <memory>
-#include <vector>
-#include <array>
+#include <sstream>
 #include <string>
 #include <unordered_map>
-#include <map>
-#include <algorithm>
-#include <functional>
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-#include <iomanip>
+#include <vector>

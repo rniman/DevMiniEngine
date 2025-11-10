@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #include "Core/Types.h"
 #include <array>
 #include <string>
@@ -108,7 +107,7 @@ namespace Core::Timing
 		int64 mCurrentTime = 0;
 
 		// 프레임 시간 평균화
-		static constexpr uint32 MAX_SAMPLE_COUNT = 50;
+		static constexpr size_t MAX_SAMPLE_COUNT = 50;
 		std::array<float32, MAX_SAMPLE_COUNT> mFrameTimeHistory = {};
 		uint32 mSampleCount = 0;
 

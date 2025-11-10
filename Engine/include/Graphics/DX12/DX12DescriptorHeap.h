@@ -1,6 +1,11 @@
 ﻿#pragma once
+
+#include "Core/Types.h"
 #include "Graphics/GraphicsTypes.h"
-#include <queue> 
+
+#include "d3d12.h"
+
+#include <queue>
 
 namespace Graphics
 {

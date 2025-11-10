@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "Core/Types.h"
 
 namespace Core
 {

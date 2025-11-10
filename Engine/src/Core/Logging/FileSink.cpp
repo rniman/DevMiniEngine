@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "Core/Logging/FileSink.h"
-
+#include "Core/Logging/LogTypes.h"
 
 using namespace std;
 

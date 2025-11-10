@@ -1,7 +1,6 @@
 ﻿#pragma once
-
-#include <DirectXMath.h>
 #include "Core/Types.h"
+#include <DirectXMath.h>
 
 namespace Math
 {

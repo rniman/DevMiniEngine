@@ -1,6 +1,4 @@
 ﻿#pragma once
-
-#include "Core/Types.h"
 #include "Core/Timing/Timer.h"
 #include <string>
 

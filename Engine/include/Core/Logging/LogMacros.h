@@ -1,8 +1,8 @@
 ﻿#pragma once
-
 #include "Core/Logging/Logger.h"
-#include <cstdio>  // snprintf
-#include <cstring> // strrchr
+#include "Core/Logging/LogTypes.h"
+#include <cstring>
+#include <string>
 
 namespace Core
 {
@@ -20,7 +20,7 @@ namespace Core
         template<typename... Args>
         std::string FormatLog(const char* format, Args... args)
         {
-            char buffer[1024];
+			char buffer[1024] = {};
             snprintf(buffer, sizeof(buffer), format, args...);
             return std::string(buffer);
         }

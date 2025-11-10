@@ -1,5 +1,4 @@
-﻿// Engine/include/Graphics/DX12/DX12Renderer.h
-#pragma once
+﻿#pragma once
 
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/RenderTypes.h"
