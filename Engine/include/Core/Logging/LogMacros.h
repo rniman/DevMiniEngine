@@ -82,11 +82,51 @@ namespace Core
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
+//-----------------------------------------------------------------------------
 // 특정 카테고리 매크로
+//-----------------------------------------------------------------------------
+
+// Graphics 카테고리
+#define LOG_GRAPHICS_TRACE(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Trace, \
+        Core::Logging::LogCategory::Graphics, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_GRAPHICS_DEBUG(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Debug, \
+        Core::Logging::LogCategory::Graphics, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
 #define LOG_GRAPHICS_INFO(format, ...) \
     Core::Logging::Logger::GetInstance().Log( \
         Core::Logging::LogLevel::Info, \
         Core::Logging::LogCategory::Graphics, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_GRAPHICS_WARN(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Warn, \
+        Core::Logging::LogCategory::Graphics, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_GRAPHICS_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::Graphics, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+// Physics 카테고리
+#define LOG_PHYSICS_INFO(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Info, \
+        Core::Logging::LogCategory::Physics, \
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
@@ -97,10 +137,127 @@ namespace Core
         Core::Logging::FormatLog(format, ##__VA_ARGS__), \
         Core::Logging::GetFileName(__FILE__), __LINE__)
 
+#define LOG_PHYSICS_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::Physics, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+// AI 카테고리
+#define LOG_AI_INFO(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Info, \
+        Core::Logging::LogCategory::AI, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_AI_WARN(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Warn, \
+        Core::Logging::LogCategory::AI, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_AI_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::AI, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+// Audio 카테고리
+#define LOG_AUDIO_INFO(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Info, \
+        Core::Logging::LogCategory::Audio, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_AUDIO_WARN(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Warn, \
+        Core::Logging::LogCategory::Audio, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_AUDIO_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::Audio, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+// Input 카테고리
+#define LOG_INPUT_INFO(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Info, \
+        Core::Logging::LogCategory::Input, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_INPUT_WARN(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Warn, \
+        Core::Logging::LogCategory::Input, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_INPUT_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::Input, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+// Memory 카테고리
+#define LOG_MEMORY_TRACE(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Trace, \
+        Core::Logging::LogCategory::Memory, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_MEMORY_DEBUG(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Debug, \
+        Core::Logging::LogCategory::Memory, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_MEMORY_INFO(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Info, \
+        Core::Logging::LogCategory::Memory, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_MEMORY_WARN(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Warn, \
+        Core::Logging::LogCategory::Memory, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
+#define LOG_MEMORY_ERROR(format, ...) \
+    Core::Logging::Logger::GetInstance().Log( \
+        Core::Logging::LogLevel::Error, \
+        Core::Logging::LogCategory::Memory, \
+        Core::Logging::FormatLog(format, ##__VA_ARGS__), \
+        Core::Logging::GetFileName(__FILE__), __LINE__)
+
 // Release 빌드 최적화: Trace/Debug 로그 제거
 #ifdef NDEBUG
 #undef LOG_TRACE
 #undef LOG_DEBUG
+#undef LOG_GRAPHICS_TRACE
+#undef LOG_GRAPHICS_DEBUG
+#undef LOG_MEMORY_TRACE
+#undef LOG_MEMORY_DEBUG
 #define LOG_TRACE(format, ...) ((void)0)
 #define LOG_DEBUG(format, ...) ((void)0)
+#define LOG_GRAPHICS_TRACE ((void)0)
+#define LOG_GRAPHICS_DEBUG ((void)0)
+#define LOG_MEMORY_TRACE ((void)0)
+#define LOG_MEMORY_DEBUG ((void)0)
 #endif
