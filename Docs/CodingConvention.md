@@ -23,6 +23,7 @@
 19. [안티패턴](#19-안티패턴)
 20. [전처리 지시자 및 매크로](#20-전처리-지시자-및-매크로)
 21. [기본 타입 사용 규칙](#21-기본-타입-사용-규칙)
+22. [ECS Component 작성 규칙](#22-ECS-Component-작성-규칙)
 
 ---
 
@@ -1043,42 +1044,51 @@ private:
 
 ### 기본 원칙
 - 헤더에서는 전방 선언(forward declaration) 우선
-- 실제 구현 필요 시에만 include
+- **직접 사용하는 헤더는 명시적으로 include** (.h에 있어도 .cpp에서 다시 명시)
+- **예외**: 부모 클래스 헤더 + PCH는 생략 가능
 
-```cpp
-// 전방 선언
-class Device;
-class CommandQueue;
+---
 
-// 필요 시에만 include
-#include <d3d12.h>
-```
+### include 정렬 순서
 
-### include가 필요한 경우
-- 클래스 크기/레이아웃 정보 필요
-- 상속 관계 정의
-- 템플릿 사용
-- 인라인 함수 구현
+**5단계 구조**
+1. PCH (`pch.h`)
+2. 자기 헤더 (.cpp만)
+3. 같은 모듈 헤더
+4. 다른 모듈 헤더
+5. 서드파티 → 표준 라이브러리
 
-### Platform 레이어 특수 사례
+---
 
-```cpp
-// Win32 API 오염 최소화를 위한 전방 선언
-// Platform/include/Platform/Windows/Win32Window.h
-struct HWND__;      // Windows 타입 전방 선언
-struct HINSTANCE__;
+### 정렬 규칙
 
-class Win32Window
-{
-private:
-    HWND__* mHwnd;  // 헤더에서 void* 대신 타입 안전한 전방 선언
-};
+**그룹 구분**
+- **10줄 미만**: 정렬 순서만 준수 혹은 추가 빈 줄만으로 구분
+- **10줄 이상**: 빈 줄 + 모듈별 주석 추가 (`// Framework`, `// Core` 등)
 
-// 실제 Windows.h include는 .cpp에서만
-// Platform/src/Windows/Win32Window.cpp
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-```
+**그룹 내**
+- 알파벳 순서 정렬
+
+---
+
+### 전방 선언
+
+포인터/참조만 사용 시 헤더에서 전방 선언 우선, 실제 include는 .cpp에서만.
+
+---
+
+### 요약
+
+| 순서 | 그룹 |
+|------|------|
+| 0 | PCH |
+| 1 | 자기 헤더 (.cpp만) |
+| 2 | 같은 모듈 |
+| 3 | 다른 모듈 |
+| 4 | 서드파티 |
+| 5 | 표준 라이브러리 |
+
+**핵심**: 10줄 이상 시 그룹 빈 줄 + 주석, 그룹 내 알파벳 순, 직접 사용하면 명시, 부모 클래스+PCH(또는 공통 헤더) 제외
 
 ---
 
@@ -1678,4 +1688,74 @@ private:
 
 ---
 
-**최종 업데이트**: 2025-10-29
+## 22. ECS Component 작성 규칙
+
+### 기본 원칙
+Component는 **순수 데이터(POD)** 만 포함하며, 로직은 System으로 분리합니다.
+```cpp
+// 올바른 Component
+struct TransformComponent
+{
+    Vector3 position = Vector3::Zero;
+    Quaternion rotation = Quaternion::Identity;
+    Vector3 scale = Vector3::One;
+};
+
+// 잘못된 Component
+struct TransformComponent
+{
+    Vector3 position;
+    void Translate(Vector3 delta);  // 로직 금지 → System으로!
+};
+```
+
+**이유**: 데이터 지향 설계(DOD), 캐시 친화성, 직렬화 용이
+
+---
+
+### 리소스 참조
+
+리소스는 **ResourceId(8 bytes)** 로 참조하고, 스마트 포인터 직접 저장을 금지합니다.
+```cpp
+// ResourceId 사용
+struct MeshComponent { ResourceId meshId; };
+
+// shared_ptr 금지
+struct MeshComponent { std::shared_ptr<Mesh> mesh; };
+```
+
+**이유**: 메모리 효율성, 순환 참조 방지, 직렬화 가능
+
+---
+
+### 초기화
+
+기본 생성자를 제공하고 모든 멤버에 기본값을 지정합니다.
+```cpp
+struct TransformComponent
+{
+    Vector3 position = Vector3::Zero;
+    Quaternion rotation = Quaternion::Identity;
+    Vector3 scale = Vector3::One;
+};
+```
+
+**이유**: 미초기화 버그 방지, Registry::AddComponent 안전성 보장
+
+---
+
+### 요약
+
+| 항목 | 규칙 | 이유 |
+|------|------|------|
+| **데이터** | 순수 POD만 | 캐시 친화성, 직렬화 |
+| **로직** | 금지, System으로 | 데이터 지향 설계 |
+| **리소스** | ResourceId 사용 | 메모리 효율, 순환 참조 방지 |
+| **초기화** | 기본값 제공 | 버그 방지 |
+| **크기** | 64 bytes 이하 권장 | 캐시 효율성 |
+
+**핵심 원칙**: Component = Data, System = Logic
+
+---
+
+**최종 업데이트**: 2025-11-11
