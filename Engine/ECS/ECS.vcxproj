@@ -93,7 +93,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -111,7 +111,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -127,7 +127,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -145,7 +145,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -158,7 +158,8 @@
     <ClCompile Include="..\src\ECS\Component.cpp" />
     <ClCompile Include="..\src\ECS\Entity.cpp" />
     <ClCompile Include="..\src\ECS\Registry.cpp" />
-    <ClCompile Include="..\src\ECS\System.cpp" />
+    <ClCompile Include="..\src\ECS\SystemManager.cpp" />
+    <ClCompile Include="..\src\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="..\src\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="ECS.cpp" />
     <ClCompile Include="pch.cpp">
@@ -174,8 +175,11 @@
     <ClInclude Include="..\include\ECS\Components\MeshComponent.h" />
     <ClInclude Include="..\include\ECS\Components\TransformComponent.h" />
     <ClInclude Include="..\include\ECS\Entity.h" />
+    <ClInclude Include="..\include\ECS\ISystem.h" />
     <ClInclude Include="..\include\ECS\Registry.h" />
-    <ClInclude Include="..\include\ECS\System.h" />
+    <ClInclude Include="..\include\ECS\RegistryView.h" />
+    <ClInclude Include="..\include\ECS\SystemManager.h" />
+    <ClInclude Include="..\include\ECS\Systems\RenderSystem.h" />
     <ClInclude Include="..\include\ECS\Systems\TransformSystem.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

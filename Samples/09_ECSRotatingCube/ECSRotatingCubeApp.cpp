@@ -28,7 +28,9 @@
 #include "ECS/Components/MaterialComponent.h"
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/TransformComponent.h"
+#include "ECS/SystemManager.h"
 #include "ECS/Registry.h"
+#include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/TransformSystem.h"
 
 // Standard Library
@@ -89,6 +91,15 @@ void ECSRotatingCubeApp::InitializeECS()
 
 	// Registry 생성
 	mRegistry = std::make_unique<ECS::Registry>();
+
+	// SystemManager 생성
+	mSystemManager = std::make_unique<ECS::SystemManager>(mRegistry.get());
+
+	// System 등록
+	mSystemManager->RegisterSystem<ECS::RenderSystem>(
+		mResourceManager.get(),
+		&mCamera
+	);
 
 	// Cube Entity 생성
 	CreateCubeEntity();
@@ -319,28 +330,28 @@ void ECSRotatingCubeApp::OnUpdate(Core::float32 deltaTime)
 		Math::DegToRad(mRotationSpeed) * deltaTime,
 		0.0f
 	};
-	ECS::TransformSystem::Rotate(*transform, yAxisRotation);
+	//ECS::TransformSystem::Rotate(*transform, yAxisRotation);
 
-	mCamera.UpdateViewMatrix();
-	mCamera.UpdateProjectionMatrix();
+	// 큐브 회전 (기존 방식)
+	if (transform)
+	{
+		//ECS::TransformSystem::Rotate(*transform, deltaTime * mRotationSpeed);
+		ECS::TransformSystem::Rotate(*transform, yAxisRotation);
+	}
+
+	mSystemManager->UpdateSystems(deltaTime);
 }
 
 void ECSRotatingCubeApp::OnRender()
 {
-	// FrameData 준비
-	Graphics::FrameData frameData;
-	frameData.Clear();
+	auto* renderSystem = mSystemManager->GetSystem<ECS::RenderSystem>();
+	if (renderSystem)
+	{
+		const Graphics::FrameData& frameData = renderSystem->GetFrameData();
 
-	// 카메라 정보 설정
-	frameData.viewMatrix = mCamera.GetViewMatrix();
-	frameData.projectionMatrix = mCamera.GetProjectionMatrix();
-	frameData.cameraPosition = mCamera.GetPosition();
-
-	// ECS에서 렌더링 가능한 Entity 수집
-	CollectRenderData(frameData);
-
-	// 렌더링
-	GetRenderer()->RenderFrame(frameData);
+		// 렌더러에 제출
+		GetRenderer()->RenderFrame(frameData);
+	}
 }
 
 void ECSRotatingCubeApp::CollectRenderData(Graphics::FrameData& outFrameData)
@@ -402,7 +413,9 @@ void ECSRotatingCubeApp::OnShutdown()
 		mRegistry->DestroyEntity(mCubeEntity);
 	}
 
+	mSystemManager.reset();
 	mRegistry.reset();
+	mResourceManager.reset();
 
 	LOG_INFO("[ECSRotatingCube] Shutdown complete");
 }

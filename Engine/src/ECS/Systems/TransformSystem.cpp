@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "ECS/Systems/TransformSystem.h"
+#include "ECS/Registry.h"
 #include "Math/MathUtils.h"
 #include "Math/MathTypes.h"
 
@@ -73,10 +74,47 @@ namespace ECS
 		);
 
 		// 행렬 곱: S * R * T
-		Math::Matrix4x4 worldMatrix = Math::MatrixMultiply(scaleMatrix, rotationMatrix);
-		worldMatrix = Math::MatrixMultiply(worldMatrix, translationMatrix);
+		Math::Matrix4x4 localMatrix = Math::MatrixMultiply(scaleMatrix, rotationMatrix);
+		localMatrix = Math::MatrixMultiply(localMatrix, translationMatrix);
 
-		return worldMatrix;
+		return localMatrix;
+	}
+
+	Math::Matrix4x4 TransformSystem::GetWorldMatrix(const TransformComponent& transform)
+	{
+		// Phase 3.2: 부모-자식 계층 구조 미구현
+		// 현재는 Local Matrix = World Matrix
+		// Phase 3.5에서 부모 Transform 재귀 계산 추가 예정
+
+		Math::Matrix4x4 scaleMatrix = Math::MatrixScaling(
+			transform.scale.x,
+			transform.scale.y,
+			transform.scale.z
+		);
+
+		Math::Matrix4x4 rotationMatrix = Math::MatrixRotationQuaternion(
+			transform.rotation
+		);
+
+		Math::Matrix4x4 translationMatrix = Math::MatrixTranslation(
+			transform.position.x,
+			transform.position.y,
+			transform.position.z
+		);
+
+		// SRT 순서로 결합
+		Math::Matrix4x4 localMatrix = Math::MatrixMultiply(scaleMatrix, rotationMatrix);
+		localMatrix = Math::MatrixMultiply(localMatrix, translationMatrix);
+
+		// TODO (Phase 3.5): 부모 Transform과 결합
+		// if (transform.parentEntity.IsValid())
+		// {
+		//     auto* parentTransform = registry.GetComponent<TransformComponent>(transform.parentEntity);
+		//     Matrix4x4 parentWorld = GetWorldMatrix(*parentTransform);
+		//     return MatrixMultiply(localMatrix, parentWorld);
+		// }
+
+		return localMatrix;
 	}
 
 } // namespace ECS

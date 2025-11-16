@@ -10,6 +10,9 @@
 
 namespace ECS
 {
+	template<typename... Components>
+	class RegistryView;
+
 	// 컴포넌트 저장소 인터페이스 (타입 소거)
 	class IComponentStorage
 	{
@@ -121,6 +124,23 @@ namespace ECS
 		// 통계
 		Core::uint32 GetEntityCount() const { return static_cast<Core::uint32>(mEntities.size()); }
 		Core::uint32 GetRecycledCount() const { return static_cast<Core::uint32>(mFreeIds.size()); }
+
+		/**
+		 * @brief 특정 Component 조합을 가진 Entity들을 조회
+		 *
+		 * @tparam Components 조회할 Component 타입들
+		 * @return View 객체 (range-based for loop 사용 가능)
+		 *
+		 * @note 구현은 RegistryView.h
+		 * @example
+		 * auto view = registry.CreateView<TransformComponent, MeshComponent>();
+		 * for (Entity entity : view)
+		 * {
+		 *     // entity는 Transform과 Mesh를 모두 가지고 있음
+		 * }
+		 */
+		template<typename... Components>
+		RegistryView<Components...> CreateView();
 
 	private:
 		// Entity 관리

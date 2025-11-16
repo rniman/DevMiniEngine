@@ -35,10 +35,13 @@
     <ClCompile Include="..\src\ECS\Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ECS\System.cpp">
+    <ClCompile Include="..\src\ECS\SystemManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ECS\Systems\TransformSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ECS\Systems\RenderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,7 +58,7 @@
     <ClInclude Include="..\include\ECS\Component.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ECS\System.h">
+    <ClInclude Include="..\include\ECS\SystemManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\ECS\Components\TransformComponent.h">
@@ -69,6 +72,15 @@
     </ClInclude>
     <ClInclude Include="..\include\ECS\Components\MaterialComponent.h">
       <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ECS\ISystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ECS\RegistryView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ECS\Systems\RenderSystem.h">
+      <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

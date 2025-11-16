@@ -1,5 +1,7 @@
 ﻿#pragma once
+#include "ECS/Entity.h"
 #include "Math/MathTypes.h"
+
 
 namespace ECS
 {
@@ -14,7 +16,7 @@ namespace ECS
 		Math::Vector3 position = { 0.0f, 0.0f, 0.0f };
 		Math::Quaternion rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
 		Math::Vector3 scale = { 1.0f, 1.0f, 1.0f };
-
+		
 		// TODO: Phase 3+에서 추가 예정
 		// Entity parent = Entity::Invalid();
 		// bool worldMatrixDirty = true;

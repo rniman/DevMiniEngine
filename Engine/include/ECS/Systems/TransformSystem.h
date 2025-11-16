@@ -4,6 +4,8 @@
 
 namespace ECS
 {
+	class Registry;
+
 	/**
 	 * @brief Transform 관련 모든 로직을 처리하는 시스템
 	 *
@@ -73,13 +75,23 @@ namespace ECS
 		//=====================================================================
 
 		/**
-		 * @brief Local Transform을 World Matrix로 변환
+		 * @brief TransformComponent의 로컬 S, R, T 값으로 로컬 변환 행렬을 생성합니다.
 		 * @param transform Transform 컴포넌트
-		 * @return World Matrix (4x4)
+		 * @return 로컬 변환 행렬 (4x4)
 		 *
 		 * @note S * R * T 순서로 변환 (Scale -> Rotation -> Translation)
 		 */
 		static Math::Matrix4x4 GetLocalMatrix(const TransformComponent& transform);
+
+
+		/**
+		 * @brief World Matrix 반환
+		 * @param transform Transform 컴포넌트
+		 * @return 월드 변환 행렬 (4x4)
+		 * 
+		 * @note 현재는 부모 행렬을 처리하지 않아 Local Matrix와 동일
+		 */
+		static Math::Matrix4x4 GetWorldMatrix(const TransformComponent& transform);
 
 		// Phase 3+에서 추가 예정
 		// static Math::Matrix4x4 GetWorldMatrix(Registry& registry, Entity entity);

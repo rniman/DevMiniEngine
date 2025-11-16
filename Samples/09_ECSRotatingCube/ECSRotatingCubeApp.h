@@ -9,6 +9,7 @@
 
 namespace ECS
 {
+	class SystemManager;
 	class Registry;
 }
 
@@ -65,8 +66,9 @@ private:
 	void SetupMaterial();
 	void CollectRenderData(Graphics::FrameData& outFrameData);
 
-	// ECS Registry
+	// ECS
 	std::unique_ptr<ECS::Registry> mRegistry;
+	std::unique_ptr<ECS::SystemManager> mSystemManager; 
 
 	// Entity
 	ECS::Entity mCubeEntity;
