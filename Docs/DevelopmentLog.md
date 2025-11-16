@@ -23,6 +23,120 @@
 ```
 ---
 
+## 2025-11-15 - Phase 3.2: System Framework 구축
+
+### Tasks
+- [x] ISystem 인터페이스 설계 및 구현
+- [x] RegistryView<T...> Query 패턴 구현
+- [x] SystemManager 구현 (등록, 생명주기, 실행 순서 관리)
+- [x] RenderSystem 구현 (FrameData 수집)
+- [x] Registry에 CreateView<T...>() 추가
+- [x] 09_ECSRotatingCube 샘플 SystemManager로 전환
+- [x] 빌드 및 동작 검증
+
+### Decisions
+
+**ISystem 인터페이스**
+- 생명주기: OnInitialize → OnUpdate (필수) → OnShutdown
+- 활성화 제어: SetActive/IsActive로 System 활성화 관리
+- 이유: 명확한 생명주기 + 선택적 초기화/종료
+
+**RegistryView<T...> Query 패턴**
+- Fold Expression으로 여러 Component 조합 쿼리
+- 즉시 평가: View 생성 시 Entity 수집
+- Range-based for 지원
+- 이유: 직관적인 API, 효율적인 Entity 순회
+
+**SystemManager**
+- 등록 순서 = 실행 순서 (명시적)
+- LIFO 종료 (역순 Shutdown)
+- std::type_index로 중복 등록 방지
+- 이유: 간단하면서도 안전한 실행 순서 보장
+
+**RenderSystem 역할 (과도기)**
+- 현재: 카메라 업데이트 + 데이터 수집 (혼재)
+- Phase 3.2.1: CameraSystem 추가 후 수집만 담당
+- 이유: System Framework 검증 우선, 올바른 책임 분리는 다음 단계
+
+### Implementation
+
+**새로 추가된 파일**
+```
+Engine/include/ECS/
+├── ISystem.h
+├── RegistryView.h
+├── SystemManager.h
+└── Systems/RenderSystem.h
+
+Engine/src/ECS/
+├── SystemManager.cpp
+└── Systems/RenderSystem.cpp
+```
+
+**Registry.h 수정**
+- RegistryView<T...> 전방 선언
+- CreateView<T...>() 함수 선언
+- 파일 끝에 RegistryView.h include
+
+**RenderTypes.h 통일**
+- RenderObject → RenderItem
+- renderObjects → opaqueItems
+- FrameData::Clear() 추가
+
+### Results
+
+**코드 구조 개선**
+- Application 코드 간결화 (CollectRenderData 제거)
+- SystemManager가 자동 실행
+- 새 System 추가 용이 (RegisterSystem 한 줄)
+
+**아키텍처 검증**
+- System 등록 및 실행 순서 제어
+- View를 통한 Component 조합 쿼리
+- System 간 독립성
+- 기존 기능 유지 (큐브 회전)
+
+**메모리 및 성능**
+- SystemManager: ~100 bytes
+- RegistryView: 즉시 평가 (Phase 3.5 캐싱 예정)
+- RenderSystem: FrameData 재사용
+
+### Issues Resolved
+
+**View 타입명 모호성**
+- 문제: View<T...> 너무 일반적
+- 해결: RegistryView<T...>로 명확화
+
+### Lessons Learned
+
+**System 책임 분리**
+- RenderSystem이 카메라 업데이트는 임시 방편
+- 각 System은 한 가지 책임 (Single Responsibility)
+
+**Component에 계산 결과 캐싱**
+- System이 계산한 결과를 Component에 저장
+- 다른 System은 이미 계산된 값 사용 (복사만)
+- Dirty Flag 패턴으로 최적화 가능
+
+**등록 순서 = 실행 순서**
+- 의존성 있는 System은 순서 중요
+- 명시적이지만 실수 가능 (Phase 3.3+ Priority 고려)
+
+**ECS 핵심 패턴**
+- Entity = 핸들 (Id + Version)
+- Component = 데이터 (POD)
+- System = 로직
+- Registry = 저장소
+- View = 쿼리
+
+### Next Steps
+- [ ] Phase 3.2.1: CameraComponent 추가 (강력 권장)
+- [ ] Phase 3.3: Lighting System (Phong Shading)
+- [ ] Phase 3.4: ImGui + ECS Inspector
+- [ ] Phase 3.5: Transform 계층 구조 + Query 최적화
+
+---
+
 ## 2025-11-08 - Phase 3.1: ECS Foundation & ResourceId 시스템
 
 ### Tasks
@@ -115,4 +229,4 @@ Component (ResourceId 8B)
 
 ---
 
-**최종 업데이트**: 2025-11-09
+**최종 업데이트**: 2025-11-15
