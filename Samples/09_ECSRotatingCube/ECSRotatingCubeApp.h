@@ -3,7 +3,6 @@
 
 #include "Core/Types.h"
 #include "ECS/Entity.h"
-#include "Graphics/Camera/PerspectiveCamera.h"
 
 #include <memory>
 
@@ -26,10 +25,10 @@ namespace Graphics
 /**
  * @brief ECS 아키텍처 기반 회전하는 큐브 샘플
  *
- * Phase 3: ECS Core 시연
+ * Phase 3.2.1: CameraComponent 통합
  * - Registry를 통한 Entity 관리
- * - Component 기반 데이터 저장
- * - TransformSystem을 통한 회전
+ * - Component 기반 데이터 저장 (Transform, Mesh, Material, Camera)
+ * - System을 통한 로직 처리 (TransformSystem, CameraSystem)
  * - ResourceId 기반 리소스 참조
  */
 class ECSRotatingCubeApp : public Framework::Application
@@ -61,20 +60,18 @@ private:
 
 	// ECS 초기화
 	void InitializeECS();
+	void CreateCameraEntity();
 	void CreateCubeEntity();
 	void SetupMeshData();
 	void SetupMaterial();
-	void CollectRenderData(Graphics::FrameData& outFrameData);
 
 	// ECS
 	std::unique_ptr<ECS::Registry> mRegistry;
-	std::unique_ptr<ECS::SystemManager> mSystemManager; 
+	std::unique_ptr<ECS::SystemManager> mSystemManager;
 
 	// Entity
+	ECS::Entity mCameraEntity;
 	ECS::Entity mCubeEntity;
-
-	// 카메라
-	Graphics::PerspectiveCamera mCamera;
 
 	// 회전 속도 (도/초)
 	Core::float32 mRotationSpeed = 90.0f;

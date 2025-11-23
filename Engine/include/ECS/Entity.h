@@ -9,6 +9,7 @@ namespace ECS
 		Core::uint32 id = UINT32_MAX;
 		Core::uint32 version = UINT32_MAX;
 
+		static Entity Invalid() { return Entity{}; }
 		bool IsValid() const { return id != UINT32_MAX; }
 
 		bool operator==(const Entity& other) const

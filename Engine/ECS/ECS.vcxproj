@@ -159,6 +159,7 @@
     <ClCompile Include="..\src\ECS\Entity.cpp" />
     <ClCompile Include="..\src\ECS\Registry.cpp" />
     <ClCompile Include="..\src\ECS\SystemManager.cpp" />
+    <ClCompile Include="..\src\ECS\Systems\CameraSystem.cpp" />
     <ClCompile Include="..\src\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="..\src\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="ECS.cpp" />
@@ -170,7 +171,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\ECS\Archetype.h" />
     <ClInclude Include="..\include\ECS\Component.h" />
+    <ClInclude Include="..\include\ECS\Components\CameraComponent.h" />
     <ClInclude Include="..\include\ECS\Components\MaterialComponent.h" />
     <ClInclude Include="..\include\ECS\Components\MeshComponent.h" />
     <ClInclude Include="..\include\ECS\Components\TransformComponent.h" />
@@ -179,6 +182,7 @@
     <ClInclude Include="..\include\ECS\Registry.h" />
     <ClInclude Include="..\include\ECS\RegistryView.h" />
     <ClInclude Include="..\include\ECS\SystemManager.h" />
+    <ClInclude Include="..\include\ECS\Systems\CameraSystem.h" />
     <ClInclude Include="..\include\ECS\Systems\RenderSystem.h" />
     <ClInclude Include="..\include\ECS\Systems\TransformSystem.h" />
     <ClInclude Include="pch.h" />
@@ -190,6 +194,9 @@
     <ProjectReference Include="..\Graphics\Graphics.vcxproj">
       <Project>{f1ab72ef-77af-4cdc-a6cf-ee061480bddb}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\ECS\Archetype.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

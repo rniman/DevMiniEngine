@@ -25,11 +25,14 @@
 #include "Graphics/DX12/DX12Renderer.h"
 
 // ECS
+#include "ECS/Components/CameraComponent.h"
 #include "ECS/Components/MaterialComponent.h"
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/TransformComponent.h"
 #include "ECS/SystemManager.h"
 #include "ECS/Registry.h"
+#include "ECS/RegistryView.h"
+#include "ECS/Systems/CameraSystem.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/TransformSystem.h"
 
@@ -67,16 +70,6 @@ bool ECSRotatingCubeApp::OnInitialize()
 		return false;
 	}
 
-	// 카메라 설정
-	mCamera.SetPosition({ 0.0f, 10.0f, -20.0f });
-	mCamera.SetFovYDegrees(60.0f);
-	mCamera.SetAspectRatio(
-		static_cast<Core::float32>(GetWindow()->GetWidth()) /
-		static_cast<Core::float32>(GetWindow()->GetHeight())
-	);
-	mCamera.SetNearPlane(0.1f);
-	mCamera.SetFarPlane(1000.0f);
-
 	// ECS 초기화
 	InitializeECS();
 
@@ -96,15 +89,56 @@ void ECSRotatingCubeApp::InitializeECS()
 	mSystemManager = std::make_unique<ECS::SystemManager>(mRegistry.get());
 
 	// System 등록
-	mSystemManager->RegisterSystem<ECS::RenderSystem>(
-		mResourceManager.get(),
-		&mCamera
-	);
+	mSystemManager->RegisterSystem<ECS::RenderSystem>(mResourceManager.get());
+
+	// Camera Entity 생성
+	CreateCameraEntity();
 
 	// Cube Entity 생성
 	CreateCubeEntity();
 
 	LOG_INFO("[ECS] Registry initialized");
+}
+
+void ECSRotatingCubeApp::CreateCameraEntity()
+{
+	LOG_INFO("[ECS] Creating Camera Entity...");
+
+	// 1. Entity 생성
+	mCameraEntity = mRegistry->CreateEntity();
+	LOG_DEBUG(
+		"[ECS] Created Camera Entity (ID: %u, Version: %u)",
+		mCameraEntity.id, mCameraEntity.version
+	);
+
+	// 2. Transform Component 추가
+	ECS::TransformComponent transform;
+	// LookAt 설정 (원점을 바라봄)
+	ECS::CameraSystem::SetLookAt(
+		transform,
+		Math::Vector3(0.0f, 10.0f, -20.0f),  // position
+		Math::Vector3(0.0f, 0.0f, 0.0f),      // target
+		Math::Vector3(0.0f, 1.0f, 0.0f)       // up
+	);
+	mRegistry->AddComponent(mCameraEntity, transform);
+	LOG_DEBUG("[ECS] Added TransformComponent to Camera");
+
+	// 3. Camera Component 추가
+	ECS::CameraComponent camera;
+	camera.projectionType = ECS::ProjectionType::Perspective;
+	ECS::CameraSystem::SetFovYDegrees(camera, 60.0f);
+	ECS::CameraSystem::SetAspectRatio(
+		camera,
+		static_cast<Core::float32>(GetWindow()->GetWidth()),
+		static_cast<Core::float32>(GetWindow()->GetHeight())
+	);
+	ECS::CameraSystem::SetClipPlanes(camera, 0.1f, 1000.0f);
+	camera.isMainCamera = true;  // Main Camera로 설정
+
+	mRegistry->AddComponent(mCameraEntity, camera);
+	LOG_DEBUG("[ECS] Added CameraComponent (Main Camera)");
+
+	LOG_INFO("[ECS] Camera Entity created successfully");
 }
 
 void ECSRotatingCubeApp::CreateCubeEntity()
@@ -316,29 +350,23 @@ void ECSRotatingCubeApp::SetupMaterial()
 
 void ECSRotatingCubeApp::OnUpdate(Core::float32 deltaTime)
 {
-	// Transform Component 가져오기
+	// 1. 카메라 업데이트 (View/Projection 행렬)
+	ECS::CameraSystem::UpdateAllCameras(*mRegistry);
+
+	// 2. 큐브 회전 업데이트
 	auto* transform = mRegistry->GetComponent<ECS::TransformComponent>(mCubeEntity);
-	if (!transform)
-	{
-		LOG_ERROR("[ECS] TransformComponent not found!");
-		return;
-	}
-
-	// Y축 기준 회전 (TransformSystem 사용)
-	Math::Vector3 yAxisRotation = {
-		0.0f,
-		Math::DegToRad(mRotationSpeed) * deltaTime,
-		0.0f
-	};
-	//ECS::TransformSystem::Rotate(*transform, yAxisRotation);
-
-	// 큐브 회전 (기존 방식)
 	if (transform)
 	{
-		//ECS::TransformSystem::Rotate(*transform, deltaTime * mRotationSpeed);
+		// Y축 기준 회전 (TransformSystem 사용)
+		Math::Vector3 yAxisRotation = {
+			0.0f,
+			Math::DegToRad(mRotationSpeed) * deltaTime,
+			0.0f
+		};
 		ECS::TransformSystem::Rotate(*transform, yAxisRotation);
 	}
 
+	// 3. SystemManager 업데이트 (RenderSystem 등)
 	mSystemManager->UpdateSystems(deltaTime);
 }
 
@@ -354,65 +382,22 @@ void ECSRotatingCubeApp::OnRender()
 	}
 }
 
-void ECSRotatingCubeApp::CollectRenderData(Graphics::FrameData& outFrameData)
-{
-	outFrameData.Clear();
-
-	// 카메라 정보 설정
-	outFrameData.viewMatrix = mCamera.GetViewMatrix();
-	outFrameData.projectionMatrix = mCamera.GetProjectionMatrix();
-	outFrameData.cameraPosition = mCamera.GetPosition();
-
-	// Transform + Mesh + Material 가진 모든 Entity 순회
-	// (현재는 mCubeEntity 하나만)
-
-	auto* transform = mRegistry->GetComponent<ECS::TransformComponent>(mCubeEntity);
-	auto* meshComp = mRegistry->GetComponent<ECS::MeshComponent>(mCubeEntity);
-	auto* matComp = mRegistry->GetComponent<ECS::MaterialComponent>(mCubeEntity);
-
-	if (!transform || !meshComp || !matComp)
-	{
-		return;
-	}
-
-	// ResourceId로 실제 리소스 조회
-	auto* mesh = mResourceManager->GetMesh(meshComp->meshId);
-	auto* material = mResourceManager->GetMaterial(matComp->materialId);
-
-	if (!mesh || !material)
-	{
-		LOG_WARN("Missing mesh or material for entity");
-		return;
-	}
-
-	// MVP 행렬 계산
-	Math::Matrix4x4 world = ECS::TransformSystem::GetLocalMatrix(*transform);
-	Math::Matrix4x4 view = outFrameData.viewMatrix;
-	Math::Matrix4x4 proj = outFrameData.projectionMatrix;
-
-	Math::Matrix4x4 mvp = Math::MatrixMultiply(world, view);
-	mvp = Math::MatrixMultiply(mvp, proj);
-
-	// RenderItem 생성
-	Graphics::RenderItem item;
-	item.mesh = mesh;
-	item.material = material;
-	item.worldMatrix = world;
-	item.mvpMatrix = Math::MatrixTranspose(mvp);  // HLSL용 전치
-
-	outFrameData.opaqueItems.push_back(item);
-}
-
 void ECSRotatingCubeApp::OnShutdown()
 {
 	LOG_INFO("[ECSRotatingCube] Shutting down...");
 
-	// 사용자 리소스 정리
+	// Entity 정리
+	if (mCameraEntity.IsValid() && mRegistry)
+	{
+		mRegistry->DestroyEntity(mCameraEntity);
+	}
+
 	if (mCubeEntity.IsValid() && mRegistry)
 	{
 		mRegistry->DestroyEntity(mCubeEntity);
 	}
 
+	// 시스템 정리
 	mSystemManager.reset();
 	mRegistry.reset();
 	mResourceManager.reset();

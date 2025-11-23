@@ -330,7 +330,7 @@ namespace Math
 		return out;
 	}
 
-	inline Vector3 QuaternionRotateVector(const Quaternion& q, const Vector3& v)
+	inline Vector3 Vector3RotateByQuaternion(const Vector3& v, const Quaternion& q)
 	{
 		VectorSIMD quat = DirectX::XMLoadFloat4(&q);
 		VectorSIMD vec = LoadVector3(v);
@@ -369,6 +369,34 @@ namespace Math
 		return Vector3{ pitch, yaw, roll };
 	}
 
+	// Quaternion에서 방향 벡터 추출
+	inline Vector3 QuaternionGetForward(const Quaternion& q)
+	{
+		// Forward = Quaternion * (0, 0, 1)
+		return Vector3RotateByQuaternion(Vector3(0.0f, 0.0f, 1.0f), q);
+	}
+
+	inline Vector3 QuaternionGetUp(const Quaternion& q)
+	{
+		// Up = Quaternion * (0, 1, 0)
+		return Vector3RotateByQuaternion(Vector3(0.0f, 1.0f, 0.0f), q);
+	}
+
+	inline Vector3 QuaternionGetRight(const Quaternion& q)
+	{
+		// Right = Quaternion * (1, 0, 0)
+		return Vector3RotateByQuaternion(Vector3(1.0f, 0.0f, 0.0f), q);
+	}
+
+	// Matrix에서 Quaternion 생성
+	inline Quaternion QuaternionFromRotationMatrix(const Matrix4x4& m)
+	{
+		MatrixSIMD mat = LoadMatrix(m);
+		VectorSIMD q = DirectX::XMQuaternionRotationMatrix(mat);
+		Quaternion out;
+		DirectX::XMStoreFloat4(&out, q);
+		return out;
+	}
 
 	//=============================================================================
 	// 카메라 & 투영

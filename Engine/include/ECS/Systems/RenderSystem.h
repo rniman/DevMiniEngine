@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ECS/ISystem.h"
+#include "Core/Types.h"
 #include "Graphics/RenderTypes.h"
 
 #include <memory>
@@ -9,11 +10,6 @@ namespace Framework
 	class ResourceManager;
 }
 
-namespace Graphics
-{
-	class PerspectiveCamera;
-}
-
 namespace ECS
 {
 	/**
@@ -21,6 +17,10 @@ namespace ECS
 	 *
 	 * TransformComponent + MeshComponent + MaterialComponent를 가진
 	 * Entity들을 찾아서 FrameData를 구성합니다.
+	 *
+	 * Phase 3.2.1: CameraComponent 통합
+	 * - Main Camera Entity를 자동으로 찾아서 사용
+	 * - PerspectiveCamera 포인터 의존성 제거
 	 */
 	class RenderSystem : public ISystem
 	{
@@ -29,12 +29,8 @@ namespace ECS
 		 * @brief RenderSystem 생성자
 		 *
 		 * @param resourceManager 리소스 관리자 (Mesh, Material 조회)
-		 * @param camera 렌더링에 사용할 카메라
 		 */
-		RenderSystem(
-			Framework::ResourceManager* resourceManager,
-			Graphics::PerspectiveCamera* camera
-		);
+		explicit RenderSystem(Framework::ResourceManager* resourceManager);
 
 		~RenderSystem() override = default;
 
@@ -52,16 +48,8 @@ namespace ECS
 		 */
 		const Graphics::FrameData& GetFrameData() const { return mFrameData; }
 
-		/**
-		 * @brief 카메라 설정
-		 *
-		 * @param camera 새로운 카메라 포인터
-		 */
-		void SetCamera(Graphics::PerspectiveCamera* camera) { mCamera = camera; }
-
 	private:
 		Framework::ResourceManager* mResourceManager;
-		Graphics::PerspectiveCamera* mCamera;
 		Graphics::FrameData mFrameData;
 	};
 
