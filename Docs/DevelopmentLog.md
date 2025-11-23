@@ -22,6 +22,81 @@
 - [ ] Upcoming task 2
 ```
 
+---
+
+## 2025-11-24 - Archetype 시스템 구현
+
+### Tasks
+- [x] Archetype<Components...> 템플릿 구조 구현
+- [x] 공통 Archetype 정의 (Renderable, Camera, TransformOnly)
+- [x] 컴파일 타임 유틸리티 (HasComponent, IsSameArchetype)
+- [x] 기존 코드를 Archetype 방식으로 전환
+
+### Decisions
+
+**Archetype 구조**
+- Component 조합을 타입으로 정의
+- CreateView()로 Registry::CreateView<T...>() 래핑
+- 컴파일 타임 메타프로그래밍 (HasComponent, GetComponentType)
+- 이유: Component 조합 재사용, 타입 안전성, 코드 간결화
+
+**공통 Archetype 정의**
+```cpp
+using RenderableArchetype = Archetype<Transform, Mesh, Material>;
+using CameraArchetype = Archetype<Transform, Camera>;
+```
+- 자주 사용되는 조합을 미리 정의
+- 의도가 명확한 네이밍
+- 이유: 긴 템플릿 인자 제거, 일관성 유지
+
+**사용 방식**
+```cpp
+// 기존: registry.CreateView<Transform, Mesh, Material>();
+// 변경: RenderableArchetype::CreateView(registry);
+```
+
+### Implementation
+
+**새로 추가된 파일**
+```
+Engine/include/ECS/
+├── Archetype.h
+└── Archetype.inl
+```
+
+**주요 변경**
+- RenderSystem, CameraSystem에서 Archetype 방식 사용
+- CreateView 호출을 Archetype::CreateView로 래핑
+
+### Results
+
+**가독성 및 유지보수성**
+- 긴 템플릿 인자 목록 제거
+- Component 조합 변경 시 한 곳만 수정
+- 타입 이름으로 의도 전달 (RenderableArchetype)
+
+**타입 안전성**
+- 컴파일 타임에 Component 조합 검증
+- 잘못된 조합 시 컴파일 에러
+
+**확장성**
+- 추후 Archetype 기반 Storage 최적화 가능
+- Query DSL 확장 (With, Without 조건)
+
+### Lessons Learned
+
+- using 선언으로 복잡한 템플릿을 도메인 언어로 표현
+- 컴파일 타임 검증으로 런타임 오버헤드 제거
+- 기존 시스템과 공존 가능한 점진적 개선
+- Fold Expression, std::tuple로 메타프로그래밍 구현
+
+### Next Steps
+- [ ] Phase 3.3: Lighting System 구현
+- [ ] Phase 3.4: ImGui 통합 및 ECS Inspector
+- [ ] Phase 3.5: Transform 계층 구조
+
+---
+
 ## 2025-11-23 - Phase 3.2.1: CameraComponent 통합
 
 ### Tasks
@@ -299,4 +374,4 @@ Component (ResourceId 8B)
 
 ---
 
-**최종 업데이트**: 2025-11-23
+**최종 업데이트**: 2025-11-24
