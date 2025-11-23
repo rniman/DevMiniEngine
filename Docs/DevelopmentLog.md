@@ -21,6 +21,76 @@
 - [ ] Upcoming task 1
 - [ ] Upcoming task 2
 ```
+
+## 2025-11-23 - Phase 3.2.1: CameraComponent 통합
+
+### Tasks
+- [x] CameraComponent 순수 데이터 구조 구현
+- [x] CameraSystem 정적 함수 구현
+- [x] RenderSystem에서 PerspectiveCamera 의존성 제거
+- [x] Camera Entity 통합 및 Main Camera 플래그 시스템
+- [x] Dirty Flag 패턴 적용 (viewDirty, projectionDirty)
+
+### Decisions
+
+**CameraComponent 설계**
+- 순수 데이터: ProjectionType, FOV, Aspect Ratio, Clip Planes
+- 행렬 캐싱: viewMatrix, projectionMatrix를 Component에 저장
+- Dirty Flag: 변경 시에만 재계산하여 최적화
+- Main Camera: isMainCamera 플래그로 렌더링 대상 식별
+- 이유: Component는 데이터만, 계산 결과 캐싱으로 재계산 방지
+
+**CameraSystem 정적 함수**
+- UpdateViewMatrix/ProjectionMatrix: Dirty Flag 체크 후 재계산
+- FindMainCamera: Registry에서 Main Camera Entity 자동 검색
+- Helper 함수: SetFovYDegrees, SetAspectRatio, SetLookAt 등
+- 이유: 상태 없는 정적 함수로 ECS 원칙 준수
+
+**RenderSystem 변경**
+- PerspectiveCamera 포인터 의존성 제거
+- FindMainCamera()로 Camera Entity 자동 검색
+- 이유: Camera 타입 독립적 설계
+
+### Implementation
+
+**새로 추가된 파일**
+```
+Engine/include/ECS/
+├── Components/CameraComponent.h
+└── Systems/CameraSystem.h
+
+Engine/src/ECS/Systems/CameraSystem.cpp
+```
+
+**주요 변경**
+- ECSRotatingCubeApp: PerspectiveCamera → Camera Entity
+- Transform + Camera Component 조합으로 카메라 구성
+- SetMainCamera()로 하나의 Main Camera만 보장
+
+### Results
+
+**아키텍처 개선**
+- PerspectiveCamera 클래스 완전 제거
+- Camera도 ECS 프레임워크에 통합
+- TransformComponent 재사용으로 코드 중복 제거
+- CreateView<Transform, Camera>()로 쿼리 가능
+
+**기능 유지**
+- 09_ECSRotatingCube 샘플 정상 동작
+- View/Projection 행렬 계산 결과 동일
+
+### Lessons Learned
+
+- Component에 계산 결과 캐싱하여 System 간 데이터 공유
+- 모든 게임 오브젝트를 Entity로 일관되게 관리 (Camera 예외 제거)
+- Helper 함수로 사용자 친화적 API 제공 (도 단위, 너비/높이 등)
+- Component 크기 권장(64B)은 개체 수가 적은 경우 예외 허용
+
+### Next Steps
+- [ ] Phase 3.3: Lighting System (DirectionalLight, PointLight)
+- [ ] Phase 3.4: ImGui 통합 및 ECS Inspector
+- [ ] Phase 3.5: Transform 계층 구조
+
 ---
 
 ## 2025-11-15 - Phase 3.2: System Framework 구축
@@ -229,4 +299,4 @@ Component (ResourceId 8B)
 
 ---
 
-**최종 업데이트**: 2025-11-15
+**최종 업데이트**: 2025-11-23
