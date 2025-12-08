@@ -24,6 +24,115 @@
 
 ---
 
+## 2025-12-08 - Phase 3.3 Lighting System 구현
+
+### Tasks
+- [x] DirectionalLightComponent, PointLightComponent 구현
+- [x] LightingSystem (CollectDirectionalLights, CollectPointLights)
+- [x] Phong Shading Shader (PhongVS.hlsl, PhongPS.hlsl)
+- [x] Constant Buffer 확장 (b0, b1, b2)
+- [x] Dynamic Constant Buffer Offset 시스템
+- [x] StandardVertex에 Tangent 추가
+- [x] MeshUtils (Tangent 자동 계산, Header-Only)
+- [x] Normal Mapping 적용
+- [x] 10_PhongLighting 샘플 애플리케이션
+
+### Decisions
+
+**Component 구조**
+- DirectionalLight/PointLight를 LightComponents.h 단일 파일로 통합
+- Component는 Vector3, GPU 데이터는 Vector4 (homogeneous coordinates)
+- 이유: 관련 Component 그룹화, 4x4 행렬 연산 호환성
+
+**Constant Buffer 설계**
+- 3개 분리: b0 (Object), b1 (Material), b2 (Lighting)
+- Dynamic Offset 방식으로 1000 오브젝트 지원
+- 이유: 업데이트 빈도 분리, 여러 오브젝트 효율적 처리
+
+**Tangent 계산 방식**
+- CPU 사전 계산 선택 (GPU ddx/ddy 대신)
+- Lengyel's Method + Gram-Schmidt Orthogonalization
+- 이유: 품질 보장, Phase 4 모델 로딩과 호환, 업계 표준
+
+**Vertex 구조 통일**
+- StandardVertex에 Tangent 포함 (StandardVertexWithTangent 불필요)
+- 이유: 구조 단순화, 관리 편의성
+
+**Header-Only MeshUtils**
+- Math 모듈을 헤더만으로 구현
+- 이유: 인라이닝 최적화, Math 모듈 컨벤션 준수
+
+### Issues Encountered
+
+**이슈 1: 25개 큐브 중 1개만 렌더링**
+- 원인: Constant Buffer 덮어쓰기 (같은 주소에 반복 Update)
+- 해결: mCurrentObjectCBIndex로 오브젝트별 오프셋 관리, UpdateAtOffset() 추가
+
+**이슈 2: Point Light 미작동**
+- 원인: HLSL Constant Buffer 구조체 정렬 불일치 (uint[3] vs uint3)
+- 해결: `uint padding[3]` → `uint3 padding` (12바이트 연속 블록)
+
+**이슈 3: Camera 회전 시 isDirty 미설정**
+- 원인: SetLookAt()이 Transform만 수정, CameraComponent.isDirty 미설정
+- 해결: SetLookAt()에 CameraComponent 매개변수 추가
+
+### Results
+
+**Lighting System**
+- Directional Light (태양광, 균일 조명)
+- Point Light (거리 감쇠, 색상별 4개)
+- Blinn-Phong Model (Ambient + Diffuse + Specular)
+
+**Normal Mapping**
+- 표면 디테일 표현 (벽돌 틈새, 돌출)
+- Tangent Space → World Space 변환 (TBN 행렬)
+- 자동 Tangent 계산 (MeshUtils)
+
+**샘플 애플리케이션**
+- 5×5 그리드 큐브 (25개)
+- 1 Directional Light + 4 Point Lights
+- 큐브 회전 + 카메라 회전
+
+### Notes
+
+**HLSL 정렬 규칙**
+- 구조체 배열 요소는 16바이트 배수로 정렬
+- `uint3` (12 bytes 연속) vs `uint[3]` (각 요소 개별 정렬)
+  - HLSL cbuffer 내 배열(type name[N])의 각 요소는 강제로 16바이트 정렬됨 (Stride 16)
+  - C++ uint32[3](12 bytes)과 매칭하려면 HLSL에서는 uint3(12 bytes) 벡터를 사용해야 함
+- Vector4 사용으로 자동 정렬 보장
+
+**Constant Buffer 패턴**
+- Triple Buffering (프레임별 독립 메모리)
+- Dynamic Offset (여러 오브젝트 효율적 처리)
+- BeginFrame()에서 mCurrentObjectCBIndex = 0 리셋
+
+**Tangent Space 수학**
+- Lengyel's Method: Edge/UV delta로 Tangent 계산
+- Gram-Schmidt: Tangent - (Tangent·Normal) * Normal
+- TBN 행렬: [Tangent | Bitangent | Normal]
+
+**ECS 패턴**
+- Component: 순수 데이터 (isDirty 플래그 포함)
+- System: 정적 함수, 상태 없음
+- View 패턴: CreateView<Transform, PointLight>()
+
+### Lessons Learned
+
+- DirectX 12 Constant Buffer는 256바이트 정렬 필수
+- HLSL 구조체 정렬은 C++과 다름 (배열, 벡터 주의)
+- CPU 사전 계산이 GPU 실시간 계산보다 품질/성능 우수
+- Dynamic Offset으로 많은 오브젝트 효율적 처리
+- Header-Only는 Math 유틸리티에 적합 (인라이닝 최적화)
+
+### Next Steps
+- [ ] Phase 3.4: ImGui 통합 및 실시간 파라미터 조정, ECS Inspector
+- [ ] Phase 3.5: Advanced (선택)
+- [ ] Phase 4: 모델 로딩 (Assimp 통합, FBX/OBJ 지원)
+- [ ] Phase 5: PBR Lighting (Metallic-Roughness Workflow)
+
+---
+
 ## 2025-11-24 - Archetype 시스템 구현
 
 ### Tasks
