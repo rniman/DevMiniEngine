@@ -133,6 +133,58 @@ namespace Graphics
 		// memcpy 후 자동으로 GPU에 전달됨 (Unmap 불필요)
 	}
 
+	void DX12ConstantBuffer::UpdateAtOffset(
+		Core::uint32 frameIndex,
+		Core::uint32 slotIndex,
+		const void* data,
+		size_t dataSize,
+		size_t slotSize
+	)
+	{
+		if (!mMappedData)
+		{
+			LOG_ERROR("Constant Buffer is not initialized or mapped");
+			return;
+		}
+
+		if (frameIndex >= mFrameCount)
+		{
+			LOG_ERROR("Invalid frame index: %u (max: %u)", frameIndex, mFrameCount - 1);
+			return;
+		}
+
+		if (!data)
+		{
+			LOG_ERROR("Data pointer is nullptr");
+			return;
+		}
+
+		if (dataSize > slotSize)
+		{
+			LOG_ERROR("Data size (%zu) exceeds slot size (%zu)", dataSize, slotSize);
+			return;
+		}
+
+		// 현재 프레임의 시작 위치 + 슬롯 오프셋
+		size_t frameOffset = mAlignedBufferSize * frameIndex;
+		size_t objectOffset = slotSize * slotIndex;
+		size_t totalOffset = frameOffset + objectOffset;
+
+		// 범위 체크 (안전성)
+		size_t totalBufferSize = mAlignedBufferSize * mFrameCount;
+		if (totalOffset + dataSize > totalBufferSize)
+		{
+			LOG_ERROR(
+				"Buffer overflow: offset(%zu) + size(%zu) > total(%zu)",
+				totalOffset, dataSize, totalBufferSize
+			);
+			return;
+		}
+
+		// 데이터 복사
+		memcpy(mMappedData + totalOffset, data, dataSize);
+	}
+
 	D3D12_GPU_VIRTUAL_ADDRESS DX12ConstantBuffer::GetGPUAddress(uint32 frameIndex) const
 	{
 		if (!mConstantBuffer)

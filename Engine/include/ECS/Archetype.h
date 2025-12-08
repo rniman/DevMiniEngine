@@ -106,9 +106,7 @@ namespace ECS
 	 * 위치, 회전, 스케일 정보만 가진 Entity입니다.
 	 * 빈 GameObject나 트랜스폼 노드로 사용됩니다.
 	 */
-	using TransformOnlyArchetype = Archetype<
-		TransformComponent
-	>;
+	using TransformOnlyArchetype = Archetype<TransformComponent>;
 
 	// ========== Archetype 유틸리티 ==========
 
@@ -123,7 +121,8 @@ namespace ECS
 	struct IsSameArchetype : std::is_same<
 		typename Archetype1::ComponentTypes,
 		typename Archetype2::ComponentTypes
-	> {
+	>
+	{
 	};
 
 	template<typename Archetype1, typename Archetype2>
@@ -137,7 +136,7 @@ namespace ECS
 	 */
 	template<typename ArchetypeT>
 	inline constexpr Core::uint32 GetArchetypeSize_v = ArchetypeT::ComponentCount;
-
+	
 } // namespace ECS
 
 // 템플릿 구현 include

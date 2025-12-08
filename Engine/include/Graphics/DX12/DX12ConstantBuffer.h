@@ -95,6 +95,31 @@ namespace Graphics
 		);
 
 		/**
+		 * @brief 특정 오프셋 위치에 데이터 업데이트
+		 *
+		 * 여러 오브젝트를 저장하는 큰 Constant Buffer에서
+		 * 특정 슬롯에만 데이터를 업데이트합니다.
+		 *
+		 * @param frameIndex 프레임 인덱스 (0 ~ frameCount-1)
+		 * @param slotIndex 슬롯 인덱스 (오브젝트 인덱스)
+		 * @param data 업데이트할 데이터
+		 * @param dataSize 데이터 크기
+		 * @param slotSize 각 슬롯의 크기 (256바이트 정렬 권장)
+		 */
+		void UpdateAtOffset(
+			Core::uint32 frameIndex,
+			Core::uint32 slotIndex,
+			const void* data,
+			size_t dataSize,
+			size_t slotSize
+		);
+
+		/**
+		 * @brief Mapped 메모리 포인터 반환 (고급 사용자용)
+		 */
+		Core::uint8* GetMappedData() const { return mMappedData; }
+
+		/**
 		 * @brief 특정 프레임의 Constant Buffer GPU 주소 반환
 		 *
 		 * @param frameIndex GPU 주소를 가져올 프레임 인덱스

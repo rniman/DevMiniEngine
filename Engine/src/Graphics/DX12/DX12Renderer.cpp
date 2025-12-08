@@ -18,11 +18,11 @@
 
 namespace Graphics
 {
-	// MVP 상수 버퍼 구조체
-	struct MVPConstants
-	{
-		Math::Matrix4x4 MVP;
-	};
+	//// MVP 상수 버퍼 구조체
+	//struct MVPConstants
+	//{
+	//	Math::Matrix4x4 MVP;
+	//};
 
 	DX12Renderer::DX12Renderer()
 	{
@@ -36,7 +36,8 @@ namespace Graphics
 	bool DX12Renderer::Initialize(
 		DX12Device* device,
 		Core::uint32 width,
-		Core::uint32 height)
+		Core::uint32 height
+	)
 	{
 		if (!device)
 		{
@@ -57,6 +58,11 @@ namespace Graphics
 		mWidth = width;
 		mHeight = height;
 
+		mClearColor[0] = { 0.1f };
+		mClearColor[1] = { 0.1f };
+		mClearColor[2] = { 0.1f };
+		mClearColor[3] = { 1.0f };
+
 		// 1. Shader Compiler
 		mShaderCompiler = std::make_unique<DX12ShaderCompiler>();
 
@@ -73,12 +79,52 @@ namespace Graphics
 			return false;
 		}
 
-		// 4. Constant Buffers (MVP)
-		mConstantBuffer = std::make_unique<DX12ConstantBuffer>();
-		if (!mConstantBuffer->Initialize(
+		// 4-1. MVP Constant Buffer (b0)
+		mObjectConstantBuffer = std::make_unique<DX12ConstantBuffer>();
+		if (!mObjectConstantBuffer->Initialize(
 			device->GetDevice(),
-			sizeof(Math::Matrix4x4),
-			FRAME_BUFFER_COUNT))
+			sizeof(ObjectConstants) * MAX_OBJECTS_PER_FRAME,
+			FRAME_BUFFER_COUNT
+		))
+		{
+			return false;
+		}
+
+		mMaterialConstantBuffer = std::make_unique<DX12ConstantBuffer>();
+		if (!mMaterialConstantBuffer->Initialize(
+			device->GetDevice(),
+			sizeof(MaterialConstants),
+			FRAME_BUFFER_COUNT
+		))
+		{
+			return false;
+		}
+
+		constexpr size_t lightingBufferSize = sizeof(LightingConstants);
+
+		//// 4-3. Lighting Constant Buffer (b2) - Phase 3.3
+		//// DirectionalLight[4] + PointLight[8] + metadata
+		//constexpr size_t dirLightSize = sizeof(Math::Vector4) + sizeof(Math::Vector3) + sizeof(Core::float32);  // 32 bytes
+
+		//constexpr size_t pointLightSize =
+		//	sizeof(Math::Vector4) +
+		//	sizeof(Core::float32) +
+		//	sizeof(Math::Vector3) +
+		//	sizeof(Core::float32) +
+		//	sizeof(Math::Vector3) +
+		//	sizeof(Core::float32);  // 48 bytes (padding 포함)
+
+		//constexpr size_t lightingBufferSize =
+		//	(dirLightSize * 4) +      // DirectionalLight[4] = 128 bytes
+		//	(pointLightSize * 8) +    // PointLight[8] = 384 bytes
+		//	16;                       // numDirLights, numPointLights, viewPos, padding
+
+		mLightingConstantBuffer = std::make_unique<DX12ConstantBuffer>();
+		if (!mLightingConstantBuffer->Initialize(
+			device->GetDevice(),
+			lightingBufferSize,
+			FRAME_BUFFER_COUNT
+		))
 		{
 			return false;
 		}
@@ -89,7 +135,8 @@ namespace Graphics
 			device->GetDevice(),
 			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
 			256,
-			true))
+			true
+		))
 		{
 			return false;
 		}
@@ -100,7 +147,8 @@ namespace Graphics
 			device->GetDevice(),
 			width,
 			height,
-			DXGI_FORMAT_D24_UNORM_S8_UINT))
+			DXGI_FORMAT_D24_UNORM_S8_UINT
+		))
 		{
 			return false;
 		}
@@ -115,26 +163,45 @@ namespace Graphics
 
 	bool DX12Renderer::CreateDefaultRootSignature()
 	{
-		// 기본 Root Signature 생성
-		CD3DX12_ROOT_PARAMETER1 rootParameters[2]{};
+		// Phase 3.3: 3개의 CBV + SRV Table + Sampler
+		CD3DX12_ROOT_PARAMETER1 rootParameters[4]{};
 
-		// CBV (b0) - MVP 행렬
+		// CBV (b0) - Object Constants (worldMatrix, mvpMatrix)
 		rootParameters[0].InitAsConstantBufferView(
 			0,
 			0,
 			D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-			D3D12_SHADER_VISIBILITY_VERTEX);
+			D3D12_SHADER_VISIBILITY_VERTEX
+		);
 
-		// SRV Table for Textures
+		// CBV (b1) - Material Constants
+		rootParameters[1].InitAsConstantBufferView(
+			1,
+			0,
+			D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+			D3D12_SHADER_VISIBILITY_PIXEL
+		);
+
+		// CBV (b2) - Lighting Data
+		rootParameters[2].InitAsConstantBufferView(
+			2,
+			0,
+			D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+			D3D12_SHADER_VISIBILITY_PIXEL
+		);
+
+		// SRV Table for Textures (t0~t6)
 		CD3DX12_DESCRIPTOR_RANGE1 srvRange;
 		srvRange.Init(
 			D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
 			static_cast<UINT>(Graphics::TextureType::Count),
-			0);
+			0
+		);
 
-		rootParameters[1].InitAsDescriptorTable(
+		rootParameters[3].InitAsDescriptorTable(
 			1, &srvRange,
-			D3D12_SHADER_VISIBILITY_PIXEL);
+			D3D12_SHADER_VISIBILITY_PIXEL
+		);
 
 		// Sampler
 		CD3DX12_STATIC_SAMPLER_DESC sampler(
@@ -142,16 +209,18 @@ namespace Graphics
 			D3D12_FILTER_MIN_MAG_MIP_LINEAR,
 			D3D12_TEXTURE_ADDRESS_MODE_WRAP,
 			D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP);
+			D3D12_TEXTURE_ADDRESS_MODE_WRAP
+		);
 
 		mRootSignature = std::make_unique<DX12RootSignature>();
 		return mRootSignature->Initialize(
 			mDevice->GetDevice(),
-			2,
+			4,  // 4개의 Root Parameters
 			rootParameters,
 			1,
 			&sampler,
-			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+		);
 	}
 
 	void DX12Renderer::Shutdown()
@@ -170,7 +239,12 @@ namespace Graphics
 		// 리소스 정리
 		mSrvDescriptorHeap.reset();
 		mDepthStencilBuffer.reset();
-		mConstantBuffer.reset();
+
+		// Phase 3.3: Constant Buffers 정리
+		mLightingConstantBuffer.reset();
+		mMaterialConstantBuffer.reset();
+		mObjectConstantBuffer.reset();
+
 		mPipelineStateCache.reset();
 		mShaderCompiler.reset();
 		mRootSignature.reset();
@@ -219,7 +293,9 @@ namespace Graphics
 		}
 
 		// 필수 리소스 확인
-		if (!mRootSignature || !mPipelineStateCache || !mConstantBuffer || !mSrvDescriptorHeap)
+		bool cb = !mObjectConstantBuffer || !mMaterialConstantBuffer || !mLightingConstantBuffer;
+
+		if (!mRootSignature || !mPipelineStateCache || cb || !mSrvDescriptorHeap)
 		{
 			LOG_ERROR("DX12Renderer: Required resources not set");
 			return;
@@ -236,6 +312,9 @@ namespace Graphics
 
 		// 파이프라인 설정
 		SetupPipeline();
+
+		// Phase 3.3: Lighting Constant Buffer 업데이트
+		UpdateLightingBuffer(frameData);
 
 		// 렌더 아이템 그리기
 		DrawRenderItems(frameData.opaqueItems);
@@ -278,6 +357,8 @@ namespace Graphics
 			D3D12_RESOURCE_STATE_RENDER_TARGET
 		);
 		cmdList->ResourceBarrier(1, &barrier);
+
+		mCurrentObjectCBIndex = 0;
 
 		return true;
 	}
@@ -328,18 +409,36 @@ namespace Graphics
 
 	void DX12Renderer::DrawRenderItems(const std::vector<RenderItem>& items)
 	{
-		auto* cmdList = GetCurrentCommandList();
+		if (items.empty())
+		{
+			return;
+		}
 
+		auto* cmdList = GetCurrentCommandList();
+		if (!cmdList)
+		{
+			return;
+		}
+
+		LOG_DEBUG("[DX12Renderer] Drawing %zu items", items.size());
+
+		// Root Signature 설정
+		cmdList->SetGraphicsRootSignature(mRootSignature->GetRootSignature());
+
+		// Descriptor Heap 설정
+		ID3D12DescriptorHeap* heaps[] = { mSrvDescriptorHeap->GetHeap() };
+		cmdList->SetDescriptorHeaps(1, heaps);
+
+		// 각 렌더 아이템 그리기
 		for (const auto& item : items)
 		{
-			if (!item.material || !item.mesh)
+			if (!item.mesh || !item.material)
 			{
-				LOG_WARN("Invalid RenderItem (material or mesh is null)");
 				continue;
 			}
 
-			// PSO 가져오기/생성
-			ID3D12PipelineState* pso = mPipelineStateCache->GetOrCreatePipelineState(
+			// 1. Pipeline State Object 설정
+			auto pso = mPipelineStateCache->GetOrCreatePipelineState(
 				*item.material,
 				mRootSignature->GetRootSignature(),
 				item.mesh->GetInputLayout()
@@ -347,37 +446,104 @@ namespace Graphics
 
 			if (!pso)
 			{
-				LOG_ERROR("Failed to get Pipeline State");
+				LOG_WARN("Failed to get PSO for material");
 				continue;
 			}
 
 			cmdList->SetPipelineState(pso);
 
-			// MVP 상수 버퍼 업데이트
-			MVPConstants constants;
-			constants.MVP = item.mvpMatrix;
-			mConstantBuffer->Update(mCurrentFrameIndex, &constants, sizeof(MVPConstants));
+			ObjectConstants objectData;
+			objectData.worldMatrix = Math::MatrixTranspose(item.worldMatrix);
+			objectData.mvpMatrix = item.mvpMatrix;
 
-			// CBV 설정 (Root Parameter 0)
-			D3D12_GPU_VIRTUAL_ADDRESS cbvAddress = mConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
-			cmdList->SetGraphicsRootConstantBufferView(0, cbvAddress);
+			constexpr size_t ALIGNED_OBJECT_SIZE = 256;  // 256바이트 정렬
 
-			// 텍스처 설정 (Material의 Descriptor Table 사용)
-			// Material.AllocateDescriptors()에서 이미 SRV 생성 완료
+			mObjectConstantBuffer->UpdateAtOffset(
+				mCurrentFrameIndex,      // 프레임 인덱스
+				mCurrentObjectCBIndex,   // 오브젝트 슬롯 인덱스
+				&objectData,             // 데이터
+				sizeof(ObjectConstants), // 크기
+				ALIGNED_OBJECT_SIZE      // 슬롯 크기
+			);
+
+			// GPU 주소 계산
+			D3D12_GPU_VIRTUAL_ADDRESS baseAddress = mObjectConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
+			D3D12_GPU_VIRTUAL_ADDRESS objectCbvAddress = baseAddress + (ALIGNED_OBJECT_SIZE * mCurrentObjectCBIndex);
+
+			cmdList->SetGraphicsRootConstantBufferView(0, objectCbvAddress);
+
+			MaterialConstants materialData;
+			materialData.baseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f);  // 기본 흰색
+			materialData.metallic = 0.0f;
+			materialData.roughness = 0.5f;
+			materialData.padding = Math::Vector2(0.0f, 0.0f);
+
+			mMaterialConstantBuffer->Update(mCurrentFrameIndex, &materialData, sizeof(MaterialConstants));
+
+			D3D12_GPU_VIRTUAL_ADDRESS materialCbvAddress = mMaterialConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
+			cmdList->SetGraphicsRootConstantBufferView(1, materialCbvAddress);
+
+			// 4. Lighting Constants 설정 (b2) - Phase 3.3
+			// UpdateLightingBuffer()에서 이미 업데이트됨
+			D3D12_GPU_VIRTUAL_ADDRESS lightingCbvAddress = mLightingConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
+			cmdList->SetGraphicsRootConstantBufferView(2, lightingCbvAddress);
+
+			// 5. 텍스처 설정 (Root Parameter 3)
 			if (item.material->HasAllocatedDescriptors())
 			{
 				D3D12_GPU_DESCRIPTOR_HANDLE tableHandle = item.material->GetDescriptorTableHandle(mSrvDescriptorHeap.get());
-
-				cmdList->SetGraphicsRootDescriptorTable(1, tableHandle);
+				cmdList->SetGraphicsRootDescriptorTable(3, tableHandle);
 			}
 			else
 			{
 				LOG_WARN("Material has no allocated descriptors");
 			}
 
-			// 메시 그리기
+			// 6. 메시 그리기
 			item.mesh->Draw(cmdList);
+
+			++mCurrentObjectCBIndex;
 		}
+	}
+
+	void DX12Renderer::UpdateLightingBuffer(const FrameData& frameData)
+	{
+
+		LightingConstants lightingData = {};
+
+		// 1. Directional Lights 복사
+		lightingData.numDirLights = static_cast<Core::uint32>(
+			std::min(frameData.directionalLights.size(), static_cast<size_t>(4)));
+		for (Core::uint32 i = 0; i < lightingData.numDirLights; ++i)
+		{
+			const auto& src = frameData.directionalLights[i];
+			auto& dst = lightingData.dirLights[i];
+
+			dst.direction = src.direction;
+			dst.color = src.color;
+			dst.intensity = src.intensity;
+		}
+
+		// 2. Point Lights 복사
+		lightingData.numPointLights = static_cast<Core::uint32>(
+			std::min(frameData.pointLights.size(), static_cast<size_t>(8))
+			);
+
+		for (Core::uint32 i = 0; i < lightingData.numPointLights; ++i)
+		{
+			const auto& src = frameData.pointLights[i];
+			auto& dst = lightingData.pointLights[i];
+
+			dst.position = src.position;
+			dst.rangeAndColor = src.rangeAndColor;
+			dst.intensityAndAttenuation = src.intensityAndAttenuation;
+		}
+
+		// 3. Camera Position
+		lightingData.viewPos = frameData.cameraPosition;
+
+		// 4. GPU로 업데이트
+		mLightingConstantBuffer->Update(mCurrentFrameIndex, &lightingData, sizeof(LightingConstants));
 	}
 
 	void DX12Renderer::EndFrame()

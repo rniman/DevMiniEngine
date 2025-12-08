@@ -192,6 +192,7 @@ namespace ECS
 
 	void CameraSystem::SetLookAt(
 		TransformComponent& transform,
+		CameraComponent& camera,
 		const Vector3& position,
 		const Vector3& target,
 		const Vector3& up
@@ -209,8 +210,8 @@ namespace ECS
 		// World Transform에서 Rotation만 추출
 		transform.rotation = QuaternionFromRotationMatrix(worldMatrix);
 
-		// View Dirty 플래그는 Transform 변경으로 자동 설정됨
-		// (향후 Transform에 Dirty Flag 추가 시)
+		// [중요] isDirty 플래그 설정 - View 행렬 재계산 필요
+		camera.viewDirty = true;
 	}
 
 	void CameraSystem::SetMainCamera(Registry& registry, Entity entity)

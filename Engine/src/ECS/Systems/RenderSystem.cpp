@@ -7,10 +7,12 @@
 #include "ECS/Components/CameraComponent.h"
 #include "ECS/Components/MaterialComponent.h"
 #include "ECS/Components/MeshComponent.h"
+#include "ECS/Components/LightComponents.h" 
 #include "ECS/Components/TransformComponent.h"
 #include "ECS/Registry.h"
 #include "ECS/RegistryView.h"
 #include "ECS/Systems/CameraSystem.h"
+#include "ECS/Systems/LightingSystem.h"
 #include "ECS/Systems/TransformSystem.h"
 
 // Core
@@ -41,8 +43,8 @@ namespace ECS
 
 	void RenderSystem::OnUpdate(Registry& registry, Core::float32 deltaTime)
 	{
-		// FrameData 초기화
-		mFrameData.Clear();  // opaqueItems, transparentItems 모두 클리어
+		// 이전 프레임 데이터 정리
+		mFrameData.Clear();
 
 		// Main Camera 찾기
 		Entity mainCameraEntity = CameraSystem::FindMainCamera(registry);
@@ -73,13 +75,12 @@ namespace ECS
 			mFrameData.projectionMatrix
 		);
 
+		// 4. Phase 3.3: 조명 데이터 수집
+		LightingSystem::CollectDirectionalLights(registry, mFrameData.directionalLights);
+		LightingSystem::CollectPointLights(registry, mFrameData.pointLights);
+
 		// Transform + Mesh + Material을 가진 Entity 찾기
 		auto view = RenderableArchetype::CreateView(registry);
-		//auto view = registry.CreateView<
-		//	TransformComponent,
-		//	MeshComponent,
-		//	MaterialComponent
-		//>();
 
 		// 렌더링 데이터 수집
 		for (Entity entity : view)
@@ -117,25 +118,29 @@ namespace ECS
 			renderItem.mvpMatrix = Math::MatrixMultiply(worldMatrix, viewProj);
 			renderItem.mvpMatrix = Math::MatrixTranspose(renderItem.mvpMatrix);
 
-			// Phase 3.2에서는 모두 불투명으로 처리
+			// Phase 3.3에서는 모두 불투명으로 처리
 			mFrameData.opaqueItems.push_back(renderItem);
 		}
 
 		// 통계 로깅 (디버그)
 #ifdef _DEBUG
-		if (!mFrameData.opaqueItems.empty())
-		{
-			static Core::float32 logTimer = 0.0f;
-			logTimer += deltaTime;
+		static Core::float32 logTimer = 0.0f;
+		logTimer += deltaTime;
 
-			if (logTimer >= 1.0f)
+		if (logTimer >= 1.0f)
+		{
+			if (!mFrameData.opaqueItems.empty() ||
+				!mFrameData.directionalLights.empty() ||
+				!mFrameData.pointLights.empty())
 			{
 				LOG_DEBUG(
-					"[RenderSystem] Collected %zu opaque items",
-					mFrameData.opaqueItems.size()
+					"[RenderSystem] Collected: %zu items, %zu dir lights, %zu point lights",
+					mFrameData.opaqueItems.size(),
+					mFrameData.directionalLights.size(),
+					mFrameData.pointLights.size()
 				);
-				logTimer = 0.0f;
 			}
+			logTimer = 0.0f;
 		}
 #endif
 	}

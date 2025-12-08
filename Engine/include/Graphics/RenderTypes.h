@@ -26,9 +26,34 @@ namespace Graphics
 	};
 
 	/**
+	 * @brief GPU 전달용 Directional Light 데이터
+	 *
+	 * Shader Constant Buffer 레이아웃과 일치 (16바이트 정렬)
+	 */
+	struct DirectionalLightData
+	{
+		Math::Vector4 direction;
+		Math::Vector3 color;
+		Core::float32 intensity;
+	};
+
+	/**
+	 * @brief GPU 전달용 Point Light 데이터
+	 *
+	 * Shader Constant Buffer 레이아웃과 일치 (16바이트 정렬)
+	 */
+	struct PointLightData
+	{
+		Math::Vector4 position;
+		Math::Vector4 rangeAndColor;
+		Math::Vector4 intensityAndAttenuation;
+	};
+
+	/**
 	 * @brief 프레임별 렌더링 데이터
 	 *
 	 * Scene에서 수집한 렌더링 정보를 Renderer에 전달하는 구조체
+	 * Phase 3.3: 조명 데이터 통합
 	 */
 	struct FrameData
 	{
@@ -41,15 +66,19 @@ namespace Graphics
 		std::vector<RenderItem> opaqueItems;      // 불투명 오브젝트
 		std::vector<RenderItem> transparentItems;  // 투명 오브젝트 (향후)
 
+		// Phase 3.3: 조명 데이터
+		std::vector<DirectionalLightData> directionalLights;
+		std::vector<PointLightData> pointLights;
+
 		// 향후 확장
-		// std::vector<Light> lights;
 		// std::vector<ShadowCaster> shadowCasters;
 		// EnvironmentMap* environmentMap = nullptr;
-
 		void Clear()
 		{
 			opaqueItems.clear();
 			transparentItems.clear();
+			directionalLights.clear();
+			pointLights.clear();
 		}
 	};
 

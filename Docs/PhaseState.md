@@ -11,21 +11,21 @@
 - [x] UTF-8 경로 통일
 - [x] 09_ECSRotatingCube 샘플
 
-#### 3.2 System Framework (다음 단계)
-- [ ] ISystem 인터페이스
-- [ ] SystemManager
-- [ ] RenderSystem (자동 수집)
-- [ ] Query/View 패턴
-- [ ] Registry::View<T...>() 구현
+#### 3.2 System Framework (완료)
+- [x] ISystem 인터페이스
+- [x] SystemManager
+- [x] RenderSystem (자동 수집)
+- [x] Query/View 패턴
+- [x] Registry::View<T...>() 구현
 
-#### 3.3 Lighting (예정)
-- [ ] DirectionalLightComponent
-- [ ] PointLightComponent
-- [ ] LightingSystem
-- [ ] Phong Shading
-- [ ] Normal Mapping
+#### 3.3 Lighting (완료)
+- [x] DirectionalLightComponent
+- [x] PointLightComponent
+- [x] LightingSystem
+- [x] Phong Shading
+- [x] Normal Mapping
 
-#### 3.4 Debug Tools (예정)
+#### 3.4 Debug Tools (다음 단계)
 - [ ] ImGui 통합
 - [ ] ECS Inspector
 - [ ] 성능 모니터링

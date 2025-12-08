@@ -2,103 +2,14 @@
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
 #include "Graphics/DX12/DX12VertexBuffer.h"
+#include "Graphics/VertexTypes.h"
 #include "Math/MathTypes.h"
+
 
 namespace Graphics
 {
 	class DX12CommandQueue;
 	class DX12CommandContext;
-
-	/**
-	 * @brief 기본 버텍스 구조체 (위치 + 색상)
-	 *
-	 * 첫 삼각형 렌더링을 위한 단순한 버텍스 포맷
-	 */
-	struct BasicVertex
-	{
-		Math::Vector3 position;  // 로컬 좌표계 위치
-		Math::Vector4 color;     // RGBA 색상 (0.0 ~ 1.0)
-
-		/**
-		 * @brief 이 Vertex 타입에 대한 Input Layout 반환
-		 */
-		static D3D12_INPUT_LAYOUT_DESC GetInputLayout()
-		{
-			static D3D12_INPUT_ELEMENT_DESC elements[] =
-			{
-				{
-					"POSITION",
-					0,
-					DXGI_FORMAT_R32G32B32_FLOAT,
-					0,
-					0,
-					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-					0
-				},
-				{
-					"COLOR",
-					0,
-					DXGI_FORMAT_R32G32B32A32_FLOAT,
-					0,
-					12,  // offsetof(BasicVertex, color)
-					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-					0
-				}
-			};
-
-			D3D12_INPUT_LAYOUT_DESC layout = {};
-			layout.pInputElementDescs = elements;
-			layout.NumElements = _countof(elements);
-			return layout;
-		}
-	};
-
-	struct TexturedVertex
-	{
-		Math::Vector3 position;  // POSITION
-		Math::Vector2 texCoord;  // TEXCOORD0
-		Math::Vector4 color;     // COLOR (옵션)
-
-		static D3D12_INPUT_LAYOUT_DESC GetInputLayout()
-		{
-			static D3D12_INPUT_ELEMENT_DESC elements[] =
-			{
-				{
-					"POSITION",
-					0, 
-					DXGI_FORMAT_R32G32B32_FLOAT,
-					0,
-					0,
-					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-					0
-				},
-				{
-					"TEXCOORD",
-					0,
-					DXGI_FORMAT_R32G32_FLOAT,
-					0,
-					12,
-					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 
-					0
-				},
-				{
-					"COLOR",
-					0,
-					DXGI_FORMAT_R32G32B32A32_FLOAT,
-					0, 
-					20,
-					D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 
-					0
-				}
-			};
-
-			D3D12_INPUT_LAYOUT_DESC layout = {};
-			layout.pInputElementDescs = elements;
-			layout.NumElements = _countof(elements);
-			return layout;
-		}
-	};
-
 
 	/**
 	 * @brief 렌더링 가능한 메시를 관리하는 클래스
@@ -148,7 +59,17 @@ namespace Graphics
 			DX12CommandContext* commandContext,
 			const TexturedVertex* vertices,
 			size_t vertexCount,
-			const Core::uint16* indices,
+			const uint16* indices,
+			size_t indexCount
+		);
+
+		bool InitializeStandard(
+			ID3D12Device* device,
+			DX12CommandQueue* commandQueue,
+			DX12CommandContext* commandContext,
+			const StandardVertex* vertices,
+			size_t vertexCount,
+			const uint16* indices,
 			size_t indexCount
 		);
 

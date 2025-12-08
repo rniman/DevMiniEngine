@@ -21,6 +21,10 @@ namespace ECS
 	 * Phase 3.2.1: CameraComponent 통합
 	 * - Main Camera Entity를 자동으로 찾아서 사용
 	 * - PerspectiveCamera 포인터 의존성 제거
+	 * 
+	 * Phase 3.3: Lighting System 통합
+	 * - DirectionalLight, PointLight 데이터 수집
+	 * - LightingSystem과 협력하여 조명 정보 구성
 	 */
 	class RenderSystem : public ISystem
 	{

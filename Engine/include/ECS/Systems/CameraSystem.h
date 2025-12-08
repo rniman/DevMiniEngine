@@ -114,15 +114,17 @@ namespace ECS
 		);
 
 		/**
-		 * @brief Look At 설정 (Transform에 적용)
-		 * @param transform 설정할 Transform Component
+		 * @brief 카메라를 특정 위치에서 타겟을 바라보도록 설정
+		 *
+		 * @param transform Transform Component (위치/회전 설정)
+		 * @param camera Camera Component (isDirty 플래그 설정)
 		 * @param position 카메라 위치
 		 * @param target 바라볼 타겟 위치
-		 * @param up Up 벡터 (기본값: Y-up)
-		 * @note Transform의 position과 rotation을 설정하여 viewDirty 플래그가 true로 설정됨
+		 * @param up Up 벡터
 		 */
 		static void SetLookAt(
 			TransformComponent& transform,
+			CameraComponent& camera,        // 추가!
 			const Math::Vector3& position,
 			const Math::Vector3& target,
 			const Math::Vector3& up = Math::Vector3(0.0f, 1.0f, 0.0f)
