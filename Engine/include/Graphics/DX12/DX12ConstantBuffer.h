@@ -48,7 +48,7 @@ namespace Graphics
 		bool Initialize(
 			ID3D12Device* device,
 			size_t bufferSize,
-			Core::uint32 frameCount = FRAME_BUFFER_COUNT
+			uint32 frameCount = FRAME_BUFFER_COUNT
 		);
 
 		void Shutdown();

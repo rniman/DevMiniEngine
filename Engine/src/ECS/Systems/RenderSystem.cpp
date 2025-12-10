@@ -36,12 +36,12 @@ namespace ECS
 		CORE_ASSERT(resourceManager != nullptr, "ResourceManager cannot be null");
 	}
 
-	void RenderSystem::OnInitialize(Registry& registry)
+	void RenderSystem::Initialize(Registry& registry)
 	{
 		LOG_INFO("[RenderSystem] Initialized");
 	}
 
-	void RenderSystem::OnUpdate(Registry& registry, Core::float32 deltaTime)
+	void RenderSystem::Update(Registry& registry, Core::float32 deltaTime)
 	{
 		// 이전 프레임 데이터 정리
 		mFrameData.Clear();
@@ -145,7 +145,7 @@ namespace ECS
 #endif
 	}
 
-	void RenderSystem::OnShutdown(Registry& registry)
+	void RenderSystem::Shutdown(Registry& registry)
 	{
 		mFrameData.Clear();
 		LOG_INFO("[RenderSystem] Shutdown");

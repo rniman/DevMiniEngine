@@ -289,7 +289,10 @@ namespace Framework
 		// 메시 정리
 		for (auto& [id, mesh] : mMeshes)
 		{
-			mesh->Shutdown();
+			if (mesh)
+			{
+				mesh->Shutdown();
+			}
 		}
 		mMeshes.clear();
 		mMeshNames.clear();
@@ -298,6 +301,13 @@ namespace Framework
 		mMaterials.clear();
 		mMaterialNames.clear();
 
+		for (auto& [id, texture] : mTextures)
+		{
+			if (texture)
+			{
+				texture->Shutdown();
+			}
+		}
 		mTextures.clear();
 		mTexturePaths.clear();
 

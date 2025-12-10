@@ -39,9 +39,9 @@ namespace ECS
 		~RenderSystem() override = default;
 
 		// ISystem 인터페이스 구현
-		void OnInitialize(Registry& registry) override;
-		void OnUpdate(Registry& registry, Core::float32 deltaTime) override;
-		void OnShutdown(Registry& registry) override;
+		void Initialize(Registry& registry) override;
+		void Update(Registry& registry, Core::float32 deltaTime) override;
+		void Shutdown(Registry& registry) override;
 
 		/**
 		 * @brief 수집된 렌더링 데이터 가져오기

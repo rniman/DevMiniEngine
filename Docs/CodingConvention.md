@@ -24,6 +24,7 @@
 20. [전처리 지시자 및 매크로](#20-전처리-지시자-및-매크로)
 21. [기본 타입 사용 규칙](#21-기본-타입-사용-규칙)
 22. [ECS Component 작성 규칙](#22-ECS-Component-작성-규칙)
+23. [리소스 수명주기 메서드 네이밍](#23-리소스-수명주기-메서드-네이밍)
 
 ---
 
@@ -450,257 +451,63 @@ void Update()
 
 ### 기본 원칙
 
-**프로젝트 네임스페이스**
-- 모듈별 네임스페이스 사용 (Core, Graphics, Physics 등)
-- 네임스페이스 중첩 최대 2단계까지 권장
-- 예: `Core::Memory`, `Graphics::D3D12`, `Physics::Collision`
-
-**헤더 파일 규칙 (엄격)**
+**헤더 파일 (.h)**: `using namespace` 절대 금지, 명시적 타입 사용 필수
 ```cpp
-// 헤더 파일 (.h)
+// ❌ 금지
+using namespace std;
 
-// ❌ 금지: using namespace는 절대 사용 불가
-// using namespace std;
-// using namespace Graphics;
-
-// ✅ 허용: 명시적 타입 사용
+// ✅ 허용
 std::vector<int> GetData() const;
-std::string GetName() const;
 
-// ✅ 허용: 타입 별칭
+// ✅ 타입 별칭 허용
 template<typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
 ```
 
-**구현 파일 규칙 (유연)**
-```cpp
-// 구현 파일 (.cpp)
-
-// ✅ 허용: using namespace
-using namespace std;
-using namespace Graphics;
-
-vector<int> Device::GetData() const
-{
-    return mData;
-}
-```
+**구현 파일 (.cpp)**: `using namespace` 자유롭게 사용 가능
 
 ---
 
 ### 네임스페이스 구조
 
-#### 모듈별 네임스페이스(예시)
+모듈별 구분, 중첩은 최대 2단계까지
 ```cpp
-// Core 모듈
-namespace Core
-{
-    class Types { };
-    class Time { };
-}
+// ✅ 좋은 예
+namespace Graphics::D3D12 { }
+namespace Core::Memory { }
 
-namespace Core::Memory
-{
-    class LinearAllocator { };
-    class PoolAllocator { };
-}
-
-namespace Core::Logging
-{
-    class Logger { };
-    enum class LogLevel { };
-}
-
-// Graphics 모듈
-namespace Graphics
-{
-    class Device { };
-    class SwapChain { };
-}
-
-namespace Graphics::D3D12
-{
-    class CommandQueue { };
-    class DescriptorHeap { };
-}
-
-// Physics 모듈
-namespace Physics
-{
-    class RigidBody { };
-}
-
-namespace Physics::Collision
-{
-    class CollisionDetector { };
-    struct AABB { };
-}
-```
-
-#### 중첩 제한
-```cpp
-// ✅ 좋은 예: 2단계 중첩
-namespace Graphics::D3D12
-{
-    class Device { };
-}
-
-// ⚠️ 피해야 할 예: 과도한 중첩
-namespace Engine::Graphics::D3D12::Impl::Details
-{
-    // 너무 깊음
-}
-
-// ✅ 해결책: 의미 있는 2단계로 재구성
-namespace Graphics::Internal
-{
-    // 내부 구현
-}
+// ❌ 피해야 할 예
+namespace Engine::Graphics::D3D12::Impl::Details { }
 ```
 
 ---
 
-### 헤더 파일에서 네임스페이스 사용
+### 익명 네임스페이스
 
-```cpp
-// Device.h
-#pragma once
-#include <vector>
-#include <string>
-
-template<typename T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-namespace Graphics
-{
-    class Device
-    {
-    public:
-        // 명시적 std:: 사용
-        std::vector<std::string> GetAdapterNames() const;
-        std::shared_ptr<CommandQueue> CreateCommandQueue();
-        
-        // ComPtr 별칭 사용
-        ComPtr<ID3D12Device> GetD3D12Device() const;
-        
-    private:
-        std::vector<std::string> mAdapterNames;
-        ComPtr<ID3D12Device> mDevice;
-    };
-    
-} // namespace Graphics
-```
-
----
-
-### 구현 파일에서 네임스페이스 사용
-
+구현 파일 전용 함수/상수 정의에 사용
 ```cpp
 // Device.cpp
-#include "Graphics/Device.h"
-
-// .cpp에서는 자유롭게 using 사용
-using namespace std;
-
 namespace Graphics
 {
-    vector<string> Device::GetAdapterNames() const
-    {
-        vector<string> names;
-        for (const auto& name : mAdapterNames)
-        {
-            names.push_back(name);
-        }
-        return names;
-    }
-    
-    ComPtr<ID3D12Device> Device::GetD3D12Device() const
-    {
-        return mDevice;
-    }
-    
-} // namespace Graphics
-```
-
----
-
-### 왜 헤더에서 using namespace를 금지하는가?
-
-```cpp
-// ❌ 나쁜 예: 헤더에서 using namespace
-// Device.h
-#pragma once
-using namespace std;
-
-namespace Graphics
-{
-    class Device
-    {
-    public:
-        vector<int> GetData() const;  // std::인지 불명확
-    };
-}
-
-// 다른 파일에서 include 시 의도치 않게 std 전체가 노출됨
-#include "Graphics/Device.h"
-vector<int> data;  // 혼란 발생
-```
-
-**문제점**:
-- 네임스페이스 오염
-- 이름 충돌 위험 (std::min vs DirectX::min)
-- 연쇄 전파 (include chain을 따라 확산)
-
----
-
-### 익명 네임스페이스 (구현 파일 전용)
-
-```cpp
-// Device.cpp
-#include "Graphics/Device.h"
-
-using namespace std;
-
-namespace Graphics
-{
-    namespace  // 익명 네임스페이스 - 파일 내부에서만 사용
+    namespace  // 파일 내부에서만 사용
     {
         constexpr uint32_t MAX_ADAPTERS = 8;
-        
-        bool IsHardwareAdapter(IDXGIAdapter1* adapter)
-        {
-            // ...
-        }
+        bool IsHardwareAdapter(IDXGIAdapter1* adapter);
     }
-    
-    bool Device::Initialize()
-    {
-        // 익명 네임스페이스의 함수 사용
-        if (IsHardwareAdapter(mAdapter.Get()))
-        {
-            // ...
-        }
-        return true;
-    }
-    
-} // namespace Graphics
+}
 ```
 
 ---
 
 ### 요약
 
-| 위치 | using namespace | 명시적 타입 | 타입 별칭 | 네임스페이스 중첩 |
-|------|----------------|------------|----------|------------------|
-| **헤더 파일 (.h)** | ❌ 금지 | ✅ 필수 | ✅ 허용 | 최대 2단계 권장 |
-| **구현 파일 (.cpp)** | ✅ 허용 | ✅ 선택 | ✅ 허용 | 자유 |
-| **익명 네임스페이스** | - | - | - | .cpp 전용 |
+| 위치 | using namespace | 명시적 타입 | 타입 별칭 |
+|------|----------------|------------|----------|
+| **헤더 (.h)** | 금지 | 필수 | 허용 |
+| **구현 (.cpp)** | 허용 | 선택 | 허용 |
 
-**원칙**: 
-- 헤더는 남을 위해 명시적으로
-- 구현은 나를 위해 편하게
-- 모듈별로 네임스페이스 구분하여 코드 구조 명확화
-  
+**원칙**: 헤더는 명시적으로, 구현은 편하게
+
 ---
 
 ## 9. 클래스 멤버 접근
@@ -815,7 +622,8 @@ void CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPE
 void CreateGraphicsPipelineState(
     ID3D12Device* device,
     const D3D12_GRAPHICS_PIPELINE_STATE_DESC* desc,
-    ID3D12PipelineState** outState);
+    ID3D12PipelineState** outState
+);
 ```
 
 ### 실전 팁
@@ -835,12 +643,14 @@ public:
         float x, 
         float y, 
         float w, 
-        float h);
+        float h
+    );
     void SetScissor(
         int x, 
         int y, 
         int w, 
-        int h);
+        int h
+    );
 };
 ```
 
@@ -1758,4 +1568,55 @@ struct TransformComponent
 
 ---
 
-**최종 업데이트**: 2025-11-11
+## 23. 리소스 수명주기 메서드 네이밍
+
+### 짝 메서드 규칙
+
+| 생성/시작 | 정리/종료 | 용도 |
+|----------|----------|------|
+| `Initialize()` | `Shutdown()` | 시스템/매니저 수명주기 |
+| `Create()` | `Destroy()` | 개별 리소스 생성 |
+| `Acquire()` | `Release()` | 풀에서 핸들/참조 획득 |
+| `Load()` | `Unload()` | 파일/에셋 로딩 |
+| `Open()` | `Close()` | 스트림/연결 |
+| `Begin()` | `End()` | 스코프/세션 경계 |
+
+### 단독 메서드
+
+| 메서드 | 용도 |
+|--------|------|
+| `Reset()` | 상태 초기화, 즉시 재사용 가능 |
+| `Clear()` | 컨테이너 내용 비우기 |
+
+### 선택 기준
+```cpp
+// Initialize/Shutdown: 시스템 전체 수명
+class DX12Device
+{
+    bool Initialize();
+    void Shutdown();
+};
+
+// Create/Destroy: 개별 리소스
+bool CreateSwapChain();
+void DestroySwapChain();
+
+// Acquire/Release: 풀링된 리소스
+DescriptorHandle Acquire();
+void Release(DescriptorHandle);
+
+// Reset: 재사용 (CommandContext처럼 매 프레임 초기화)
+bool Reset();
+
+// Clear: 내용만 비움 (STL 의미와 동일)
+void Clear();
+```
+
+### 필수 규칙
+- **짝 메서드는 반드시 쌍으로 구현**
+- **Shutdown/Destroy는 멱등성 보장** (여러 번 호출해도 안전)
+- **소멸자에서 방어적으로 Shutdown 호출** (누락 방지)
+
+---
+
+**최종 업데이트**: 2025-12-09

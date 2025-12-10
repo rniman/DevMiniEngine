@@ -88,8 +88,6 @@ namespace Graphics
 		mHeap.Reset();
 		mCPUStart = {};
 		mGPUStart = {};
-		mNextFreeIndex = 0;
-		mAllocatedCount = 0;
 
 		// Free List 비우기
 		while (!mFreeBlocks.empty())

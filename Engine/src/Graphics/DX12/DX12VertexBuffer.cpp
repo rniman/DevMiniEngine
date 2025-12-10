@@ -82,7 +82,7 @@ namespace Graphics
 		// 커맨드 리스트 Close 및 제출
 		commandList->Close();
 		ID3D12CommandList* commandLists[] = { commandList };
-		commandQueue->ExecuteCommandLists(commandLists, 1);
+		commandQueue->ExecuteCommandLists(1, commandLists);
 		commandQueue->WaitForIdle();
 
 		// GPU 복사 완료 - Upload Buffer 해제
@@ -145,8 +145,6 @@ namespace Graphics
 
 		mVertexBuffer.Reset();
 		mVertexBufferView = {};
-		mVertexCount = 0;
-		mVertexStride = 0;
 
 		LOG_INFO("[DX12VertexBuffer] Vertex Buffer shut down successfully");
 	}

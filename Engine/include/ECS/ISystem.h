@@ -24,7 +24,7 @@ namespace ECS
 		 *
 		 * @param registry ECS Registry 참조
 		 */
-		virtual void OnInitialize(Registry& registry) {}
+		virtual void Initialize(Registry& registry) {}
 
 		/**
 		 * @brief 매 프레임 업데이트
@@ -35,7 +35,7 @@ namespace ECS
 		 * @param registry ECS Registry 참조
 		 * @param deltaTime 이전 프레임으로부터 경과 시간 (초)
 		 */
-		virtual void OnUpdate(Registry& registry, Core::float32 deltaTime) = 0;
+		virtual void Update(Registry& registry, Core::float32 deltaTime) = 0;
 
 		/**
 		 * @brief System 종료
@@ -45,12 +45,12 @@ namespace ECS
 		 *
 		 * @param registry ECS Registry 참조
 		 */
-		virtual void OnShutdown(Registry& registry) {}
+		virtual void Shutdown(Registry& registry) {}
 
 		/**
 		 * @brief System 활성화 상태 설정
 		 *
-		 * 비활성화된 System은 OnUpdate가 호출되지 않습니다.
+		 * 비활성화된 System은 Update가 호출되지 않습니다.
 		 *
 		 * @param active 활성화 여부
 		 */

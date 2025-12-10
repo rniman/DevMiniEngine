@@ -232,7 +232,7 @@ namespace Graphics
 		// 커맨드 리스트 Close 및 제출
 		commandList->Close();
 		ID3D12CommandList* commandLists[] = { commandList };
-		commandQueue->ExecuteCommandLists(commandLists, 1);
+		commandQueue->ExecuteCommandLists(1, commandLists);
 		commandQueue->WaitForIdle();
 
 		// Upload Buffer는 자동으로 해제됨 (ComPtr)
@@ -293,10 +293,8 @@ namespace Graphics
 		LOG_TRACE("[Texture] Shutting down texture (%ux%u)", mWidth, mHeight);
 
 		mTexture.Reset();
-		mWidth = 0;
-		mHeight = 0;
-		mFormat = DXGI_FORMAT_UNKNOWN;
-		mInitialized = false;
+		mSRVGPUHandle = {};
+		mSRVGPUHandle = {};
 	}
 
 } // namespace Graphics

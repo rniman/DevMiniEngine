@@ -222,7 +222,7 @@ namespace Graphics
 		mIndexBuffer.Shutdown();
 		mInitialized = false;
 
-		LOG_GRAPHICS_INFO("Mesh shutdown complete");
+		LOG_GRAPHICS_INFO("[Mesh] Mesh shut down successfully");
 	}
 
 	void Mesh::Draw(ID3D12GraphicsCommandList* commandList) const

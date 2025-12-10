@@ -76,8 +76,8 @@ namespace Graphics
 	}
 
 	Core::uint64 DX12CommandQueue::ExecuteCommandLists(
-		ID3D12CommandList* const* commandLists,
-		Core::uint32 numCommandLists
+		Core::uint32 numCommandLists,
+		ID3D12CommandList* const* commandLists
 	)
 	{
 		if (!IsInitialized())

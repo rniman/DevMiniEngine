@@ -230,6 +230,8 @@ namespace Graphics
 			return;
 		}
 
+		LOG_INFO("[DX12Renderer] Shutting down Renderer...");
+
 		// GPU 작업 완료 대기
 		if (mDevice->GetGraphicsQueue())
 		{
@@ -253,7 +255,8 @@ namespace Graphics
 		mDevice = nullptr;
 
 		mIsInitialized = false;
-		LOG_INFO("DX12Renderer shutdown");
+
+		LOG_INFO("[DX12Renderer] Renderer shut down successfully");
 	}
 
 	void DX12Renderer::OnResize(Core::uint32 width, Core::uint32 height)
@@ -569,7 +572,7 @@ namespace Graphics
 
 		// Command List 실행
 		ID3D12CommandList* cmdLists[] = { cmdList };
-		Core::uint64 fenceValue = mDevice->GetGraphicsQueue()->ExecuteCommandLists(cmdLists, 1);
+		Core::uint64 fenceValue = mDevice->GetGraphicsQueue()->ExecuteCommandLists(1, cmdLists);
 		SetCurrentFrameFenceValue(fenceValue);
 	}
 

@@ -195,12 +195,7 @@ namespace Graphics
 		mDepthStencilBuffer.Reset();
 		mDSVHeap.Reset();
 
-		// 상태 초기화
-		mDSVHandle.ptr = 0;
-		mCurrentState = D3D12_RESOURCE_STATE_COMMON;
-		mFormat = DXGI_FORMAT_UNKNOWN;
-		mWidth = 0;
-		mHeight = 0;
+		mDSVHandle = {};
 	}
 
 	//#ifdef _DEBUG

@@ -39,8 +39,8 @@ namespace Graphics
 		 * GPU에 작업 목록을 제출하고, 이 작업이 완료되었음을 식별하기 위한
 		 * 새로운 Fence 값을 큐에 삽입(Signal)합니다.
 		 *
+ 		 * @param numCommandLists Command List 개수
 		 * @param commandLists 실행할 Command List 배열
-		 * @param numCommandLists Command List 개수
 		 *
 		 * @return (Core::uint64) 이 작업 배치를 식별하는 고유한 Fence 값 (작업 영수증)
 		 *
@@ -51,8 +51,8 @@ namespace Graphics
 		 * 안전하게 재사용하기 전에, GPU 작업 완료를 기다리는 데 사용됩니다.
 		 */
 		Core::uint64 ExecuteCommandLists(
-			ID3D12CommandList* const* commandLists,
-			Core::uint32 numCommandLists
+			Core::uint32 numCommandLists,
+			ID3D12CommandList* const* commandLists
 		);
 
 		/**

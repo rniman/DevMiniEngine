@@ -82,7 +82,7 @@ namespace Graphics
 			return;
 		}
 
-		LOG_INFO("[DX12SwapChain] Shutting down SwapChain...");
+		LOG_GRAPHICS_INFO("[DX12SwapChain] Shutting down SwapChain...");
 
 		// RTV Heap
 		if (mRTVHeap)
@@ -97,7 +97,7 @@ namespace Graphics
 		// SwapChain 해제
 		mSwapChain.Reset();
 
-		LOG_INFO("[DX12SwapChain] SwapChain shut down successfully");
+		LOG_GRAPHICS_INFO("[DX12SwapChain] SwapChain shutdown successfully");
 	}
 
 	void DX12SwapChain::Present(bool vSync)

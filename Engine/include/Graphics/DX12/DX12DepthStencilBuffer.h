@@ -61,6 +61,8 @@ namespace Graphics
 		 */
 		bool Initialize(ID3D12Device* device, const DepthStencilBufferDesc& desc);;
 
+		void Shutdown();
+
 		/**
 		 * @brief 버퍼 크기 변경
 		 *
@@ -73,11 +75,6 @@ namespace Graphics
 		 * @note 크기가 동일하면 재생성하지 않음
 		 */
 		bool Resize(ID3D12Device* device, uint32 width, uint32 height);
-
-		/**
-		 * @brief 리소스 해제
-		 */
-		void Shutdown();
 
 		// Getters
 		ID3D12Resource* GetResource() const { return mDepthStencilBuffer.Get(); }

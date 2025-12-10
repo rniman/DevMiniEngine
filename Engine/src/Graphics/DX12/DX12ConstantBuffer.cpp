@@ -87,6 +87,22 @@ namespace Graphics
 		return true;
 	}
 
+	void DX12ConstantBuffer::Shutdown()
+	{
+		// Upload Heap은 Map된 상태로 유지되므로 Unmap 필요
+		if (mConstantBuffer && mMappedData)
+		{
+			mConstantBuffer->Unmap(0, nullptr);
+			mMappedData = nullptr;
+		}
+
+		mConstantBuffer.Reset();
+		mAlignedBufferSize = 0;
+		mFrameCount = 0;
+
+		LOG_INFO("DX12ConstantBuffer shutdown completed");
+	}
+
 	void DX12ConstantBuffer::Update(
 		uint32 frameIndex,
 		const void* data,
@@ -204,22 +220,6 @@ namespace Graphics
 		size_t offset = mAlignedBufferSize * frameIndex;
 
 		return baseAddress + offset;
-	}
-
-	void DX12ConstantBuffer::Shutdown()
-	{
-		// Upload Heap은 Map된 상태로 유지되므로 Unmap 필요
-		if (mConstantBuffer && mMappedData)
-		{
-			mConstantBuffer->Unmap(0, nullptr);
-			mMappedData = nullptr;
-		}
-
-		mConstantBuffer.Reset();
-		mAlignedBufferSize = 0;
-		mFrameCount = 0;
-
-		LOG_INFO("DX12ConstantBuffer shutdown completed");
 	}
 
 	size_t DX12ConstantBuffer::AlignSize(size_t size)

@@ -111,7 +111,7 @@ namespace ECS
 		T* systemPtr = system.get();
 
 		// 초기화
-		systemPtr->OnInitialize(*mRegistry);
+		systemPtr->Initialize(*mRegistry);
 
 		// 저장
 		mSystems.push_back(std::move(system));

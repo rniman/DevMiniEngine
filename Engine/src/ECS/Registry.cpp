@@ -7,11 +7,6 @@ namespace ECS
 	{
 	}
 
-	Registry::~Registry()
-	{
-		// Component Storage는 unique_ptr로 자동 정리됨
-	}
-
 	Entity Registry::CreateEntity()
 	{
 		Entity entity;

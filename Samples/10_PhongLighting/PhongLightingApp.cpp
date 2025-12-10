@@ -49,8 +49,7 @@ PhongLightingApp::PhongLightingApp()
 
 PhongLightingApp::~PhongLightingApp()
 {
-	OnShutdown();
-}
+ }
 
 bool PhongLightingApp::OnInitialize()
 {

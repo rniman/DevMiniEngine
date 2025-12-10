@@ -23,7 +23,7 @@ namespace ECS
 		{
 			if (system->IsActive())
 			{
-				system->OnUpdate(*mRegistry, deltaTime);
+				system->Update(*mRegistry, deltaTime);
 			}
 		}
 	}
@@ -33,7 +33,7 @@ namespace ECS
 		// 역순으로 종료 (LIFO)
 		for (auto it = mSystems.rbegin(); it != mSystems.rend(); ++it)
 		{
-			(*it)->OnShutdown(*mRegistry);
+			(*it)->Shutdown(*mRegistry);
 		}
 
 		mSystems.clear();

@@ -103,11 +103,11 @@ namespace Graphics
 
 	void DX12RootSignature::Shutdown()
 	{
-		if (mRootSignature != nullptr)
-		{
-			LOG_TRACE("Shutting down Root Signature");
-			mRootSignature.Reset();
-		}
+		LOG_GRAPHICS_INFO("[DX12RootSignature] Shutting down Root Signature...");
+
+		mRootSignature.Reset();
+
+		LOG_GRAPHICS_INFO("[DX12RootSignature] Root Signature shut down successfully");
 	}
 
 } // namespace Graphics

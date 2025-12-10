@@ -89,7 +89,7 @@ namespace ECS
 	{
 	public:
 		Registry();
-		~Registry();
+		~Registry() = default;
 
 		// Entity 생성 및 삭제
 		Entity CreateEntity();
