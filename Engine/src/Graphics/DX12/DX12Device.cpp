@@ -79,9 +79,9 @@ namespace Graphics
 		LOG_GRAPHICS_INFO("[DX12Device] Shutting down Device...");
 
 		// GPU 작업 완료 대기
-		if (mGraphicsQueue)
+		if (mCommandQueue)
 		{
-			mGraphicsQueue->WaitForIdle();
+			mCommandQueue->WaitForIdle();
 		}
 
 		// 역순으로 리소스 해제
@@ -104,10 +104,10 @@ namespace Graphics
 		}
 
 		// Command Queue
-		if (mGraphicsQueue)
+		if (mCommandQueue)
 		{
-			mGraphicsQueue->Shutdown();
-			mGraphicsQueue.reset();
+			mCommandQueue->Shutdown();
+			mCommandQueue.reset();
 		}
 
 		// DirectX 객체
@@ -137,7 +137,7 @@ namespace Graphics
 			return false;
 		}
 
-		if (!mGraphicsQueue || !mGraphicsQueue->IsInitialized())
+		if (!mCommandQueue || !mCommandQueue->IsInitialized())
 		{
 			LOG_ERROR("[DX12Device] Graphics Command Queue not initialized");
 			return false;
@@ -150,7 +150,7 @@ namespace Graphics
 		if (!mSwapChain->Initialize(
 			mDevice.Get(),
 			mFactory.Get(),
-			mGraphicsQueue->GetQueue(),
+			mCommandQueue->GetQueue(),
 			hwnd,
 			width,
 			height,
@@ -401,8 +401,8 @@ namespace Graphics
 		LOG_INFO("[DX12Device] Creating Command Queues...");
 
 		// Graphics Command Queue 생성
-		mGraphicsQueue = std::make_unique<DX12CommandQueue>();
-		if (!mGraphicsQueue->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT))
+		mCommandQueue = std::make_unique<DX12CommandQueue>();
+		if (!mCommandQueue->Initialize(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT))
 		{
 			LOG_ERROR("[DX12Device] Failed to create Graphics Command Queue");
 			return false;

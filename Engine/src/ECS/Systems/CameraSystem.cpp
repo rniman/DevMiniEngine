@@ -13,81 +13,214 @@ using namespace Math;
 
 namespace ECS
 {
-	void CameraSystem::UpdateViewMatrix(
-		const TransformComponent& transform,
-		CameraComponent& camera
+	//=============================================================================
+	// 생성자
+	//=============================================================================
+
+	CameraSystem::CameraSystem(Registry& registry)
+		: ISystem(registry)
+	{
+	}
+
+	//=============================================================================
+	// ISystem 인터페이스 구현
+	//=============================================================================
+
+	void CameraSystem::Initialize()
+	{
+		LOG_INFO("[CameraSystem] Initialized");
+	}
+
+	void CameraSystem::Update(Core::float32 deltaTime)
+	{
+		UpdateAllCameras(*GetRegistry());
+	}
+
+	void CameraSystem::Shutdown()
+	{
+		LOG_INFO("[CameraSystem] Shutdown");
+	}
+
+	//=============================================================================
+	// 고수준 API (Entity 기반)
+	//=============================================================================
+
+
+	Entity CameraSystem::FindMainCamera()
+	{
+		return FindMainCamera(*GetRegistry());
+	}
+
+	//=============================================================================
+	// 저수준 API (정적) - FindMainCamera
+	//=============================================================================
+
+	Entity CameraSystem::FindMainCamera(Registry& registry)
+	{
+		auto view = CameraOnlyArchetype::CreateView(registry);
+
+		for (Entity entity : view)
+		{
+			auto* camera = registry.GetComponent<CameraComponent>(entity);
+			if (camera && camera->isMainCamera)
+			{
+				return entity;
+			}
+		}
+
+		return Entity::Invalid();
+	}
+
+	bool CameraSystem::SetMainCamera(Entity entity)
+	{
+		auto* targetCamera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!targetCamera)
+		{
+			LOG_WARN("[CameraSystem] Entity %u has no CameraComponent", entity.id);
+			return false;
+		}
+
+		// 기존 Main Camera 해제
+		auto view = CameraOnlyArchetype::CreateView(*GetRegistry());
+		for (Entity e : view)
+		{
+			auto* camera = GetRegistry()->GetComponent<CameraComponent>(e);
+			if (camera)
+			{
+				camera->isMainCamera = false;
+			}
+		}
+
+		targetCamera->isMainCamera = true;
+		LOG_INFO("[CameraSystem] Main camera set to Entity (ID: %u)", entity.id);
+		return true;
+	}
+
+	bool CameraSystem::SetFovYDegrees(Entity entity, Core::float32 degrees)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetFovYDegrees(*camera, degrees);
+		return true;
+	}
+
+	bool CameraSystem::SetFovYRadians(Entity entity, Core::float32 radians)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetFovYRadians(*camera, radians);
+		return true;
+	}
+
+	bool CameraSystem::SetAspectRatio(Entity entity, Core::float32 aspectRatio)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetAspectRatio(*camera, aspectRatio);
+		return true;
+	}
+
+	bool CameraSystem::SetAspectRatio(Entity entity, Core::float32 width, Core::float32 height)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetAspectRatio(*camera, width, height);
+		return true;
+	}
+
+	bool CameraSystem::SetClipPlanes(Entity entity, Core::float32 nearPlane, Core::float32 farPlane)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetClipPlanes(*camera, nearPlane, farPlane);
+		return true;
+	}
+
+	bool CameraSystem::SetLookAt(
+		Entity entity,
+		const Math::Vector3& position,
+		const Math::Vector3& target,
+		const Math::Vector3& up
 	)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+
+		if (!transform || !camera)
+		{
+			LOG_WARN("[CameraSystem] Entity %u missing required components", entity.id);
+			return false;
+		}
+
+		SetLookAt(*transform, *camera, position, target, up);
+		return true;
+	}
+
+	//=============================================================================
+	// 저수준 API (Component 직접) - 정적
+	//=============================================================================
+
+	void CameraSystem::UpdateViewMatrix(const TransformComponent& transform, CameraComponent& camera)
 	{
 		if (!camera.viewDirty)
 		{
 			return;
 		}
 
-		// Rotation Matrix (Quaternion → Matrix)
-		Math::Matrix4x4 rotationMatrix = Math::MatrixRotationQuaternion(transform.rotation);
+		Math::Vector3 forward = Math::Vector3RotateByQuaternion(camera.forward, transform.rotation);
+		Math::Vector3 up = Math::Vector3RotateByQuaternion(camera.up, transform.rotation);
+		Math::Vector3 target = Math::Add(transform.position, forward);
 
-		// Rotation의 역행렬 = Transpose (직교 행렬이므로)
-		Math::Matrix4x4 invRotation = Math::MatrixTranspose(rotationMatrix);
-
-		// Translation의 역행렬 = -Position
-		Math::Vector3 pos = transform.position;
-		Math::Matrix4x4 invTranslation = Math::MatrixTranslation(-pos.x, -pos.y, -pos.z);
-
-		// View = InvTranslation * InvRotation
-		// (World = Rotation * Translation 이므로)
-		camera.viewMatrix = Math::MatrixMultiply(invTranslation, invRotation);
-
+		camera.viewMatrix = Math::MatrixLookAtLH(transform.position, target, up);
 		camera.viewDirty = false;
-
-		//// Transform의 rotation에서 forward/up 벡터 추출
-		//Vector3 position = transform.position;
-		//Quaternion rotation = transform.rotation;
-
-		//// Quaternion에서 방향 벡터 계산
-		//Vector3 forward = QuaternionGetForward(rotation);
-		//Vector3 target = Add(position, forward);
-		//Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
-
-		//// View 행렬 계산 (Left-Handed)
-		//camera.viewMatrix = MatrixLookAtLH(position, target, up);
-		//camera.viewDirty = false;
 	}
 
 	void CameraSystem::UpdateProjectionMatrix(CameraComponent& camera)
 	{
 		if (!camera.projectionDirty)
 		{
-			return; // 이미 최신 상태
+			return;
 		}
 
 		if (camera.projectionType == ProjectionType::Perspective)
 		{
-			// 원근 투영
-			CORE_ASSERT(camera.fovY > 0.0f && camera.fovY < PI, "Invalid FOV");
-			CORE_ASSERT(camera.aspectRatio > EPSILON, "Invalid aspect ratio");
-			CORE_ASSERT(
-				camera.nearPlane > 0.0f && camera.nearPlane < camera.farPlane,
-				"Invalid clip planes"
-			);
+			CORE_ASSERT(camera.fovY > 0.0f && camera.fovY < Math::PI, "Invalid FOV");
+			CORE_ASSERT(camera.aspectRatio > Math::EPSILON, "Invalid aspect ratio");
+			CORE_ASSERT(camera.nearPlane > 0.0f && camera.nearPlane < camera.farPlane, "Invalid clip planes");
 
-			camera.projectionMatrix = MatrixPerspectiveFovLH(
+			camera.projectionMatrix = Math::MatrixPerspectiveFovLH(
 				camera.fovY,
 				camera.aspectRatio,
 				camera.nearPlane,
 				camera.farPlane
 			);
 		}
-		else if (camera.projectionType == ProjectionType::Orthographic)
+		else
 		{
-			// 직교 투영
 			CORE_ASSERT(camera.orthoWidth > 0.0f, "Invalid ortho width");
 			CORE_ASSERT(camera.orthoHeight > 0.0f, "Invalid ortho height");
-			CORE_ASSERT(
-				camera.nearPlane < camera.farPlane,
-				"Invalid clip planes"
-			);
 
-			camera.projectionMatrix = MatrixOrthographicLH(
+			camera.projectionMatrix = Math::MatrixOrthographicLH(
 				camera.orthoWidth,
 				camera.orthoHeight,
 				camera.nearPlane,
@@ -100,56 +233,31 @@ namespace ECS
 
 	void CameraSystem::UpdateAllCameras(Registry& registry)
 	{
-		// Transform + Camera를 가진 Entity만 순회
 		auto view = CameraArchetype::CreateView(registry);
-		// auto view = registry.CreateView<TransformComponent, CameraComponent>();
 
 		for (Entity entity : view)
 		{
 			auto* transform = registry.GetComponent<TransformComponent>(entity);
 			auto* camera = registry.GetComponent<CameraComponent>(entity);
 
-			UpdateViewMatrix(*transform, *camera);
-			UpdateProjectionMatrix(*camera);
-		}
-	}
-
-	Entity CameraSystem::FindMainCamera(Registry& registry)
-	{
-		// CameraComponent를 가진 Entity만 순회
-		auto view = CameraOnlyArchetype::CreateView(registry);
-		// auto view = registry.CreateView<CameraComponent>();
-
-		for (Entity entity : view)
-		{
-			auto* camera = registry.GetComponent<CameraComponent>(entity);
-			if (camera->isMainCamera)
+			if (transform && camera)
 			{
-				return entity;
+				UpdateViewMatrix(*transform, *camera);
+				UpdateProjectionMatrix(*camera);
 			}
 		}
-
-		return Entity::Invalid();  // Invalid Entity
 	}
 
 	void CameraSystem::SetFovYDegrees(CameraComponent& camera, Core::float32 degrees)
 	{
-		CORE_ASSERT(
-			degrees > 0.0f && degrees < 180.0f,
-			"FOV must be between 0 and 180 degrees"
-		);
-
-		camera.fovY = DegToRad(degrees);
+		CORE_ASSERT(degrees > 0.0f && degrees < 180.0f, "FOV must be between 0 and 180 degrees");
+		camera.fovY = Math::DegToRad(degrees);
 		camera.projectionDirty = true;
 	}
 
 	void CameraSystem::SetFovYRadians(CameraComponent& camera, Core::float32 radians)
 	{
-		CORE_ASSERT(
-			radians > 0.0f && radians < PI,
-			"FOV must be between 0 and π radians"
-		);
-
+		CORE_ASSERT(radians > 0.0f && radians < Math::PI, "FOV must be between 0 and PI radians");
 		camera.fovY = radians;
 		camera.projectionDirty = true;
 	}
@@ -157,34 +265,21 @@ namespace ECS
 	void CameraSystem::SetAspectRatio(CameraComponent& camera, Core::float32 aspectRatio)
 	{
 		CORE_ASSERT(aspectRatio > 0.0f, "Aspect ratio must be positive");
-
 		camera.aspectRatio = aspectRatio;
 		camera.projectionDirty = true;
 	}
 
-	void CameraSystem::SetAspectRatio(
-		CameraComponent& camera,
-		Core::float32 width,
-		Core::float32 height
-	)
+	void CameraSystem::SetAspectRatio(CameraComponent& camera, Core::float32 width, Core::float32 height)
 	{
 		CORE_ASSERT(width > 0.0f && height > 0.0f, "Width and height must be positive");
-
 		camera.aspectRatio = width / height;
 		camera.projectionDirty = true;
 	}
 
-	void CameraSystem::SetClipPlanes(
-		CameraComponent& camera,
-		Core::float32 nearPlane,
-		Core::float32 farPlane
-	)
+	void CameraSystem::SetClipPlanes(CameraComponent& camera, Core::float32 nearPlane, Core::float32 farPlane)
 	{
-		CORE_ASSERT(
-			nearPlane > 0.0f && nearPlane < farPlane,
-			"Invalid clip planes"
-		);
-
+		CORE_ASSERT(nearPlane > 0.0f, "Near plane must be positive");
+		CORE_ASSERT(farPlane > nearPlane, "Far plane must be greater than near plane");
 		camera.nearPlane = nearPlane;
 		camera.farPlane = farPlane;
 		camera.projectionDirty = true;
@@ -193,50 +288,19 @@ namespace ECS
 	void CameraSystem::SetLookAt(
 		TransformComponent& transform,
 		CameraComponent& camera,
-		const Vector3& position,
-		const Vector3& target,
-		const Vector3& up
+		const Math::Vector3& position,
+		const Math::Vector3& target,
+		const Math::Vector3& up
 	)
 	{
-		// 카메라 위치 설정
 		transform.position = position;
 
-		// View Matrix 생성 (DirectXMath가 알아서 처리)
-		Matrix4x4 viewMatrix = MatrixLookAtLH(position, target, up);
+		Math::Vector3 forward = Math::Normalize(Math::Subtract(target, position));
 
-		// View Matrix의 역행렬 = World Transform
-		Matrix4x4 worldMatrix = MatrixInverse(viewMatrix);
-
-		// World Transform에서 Rotation만 추출
-		transform.rotation = QuaternionFromRotationMatrix(worldMatrix);
-
-		// [중요] isDirty 플래그 설정 - View 행렬 재계산 필요
-		camera.viewDirty = true;
-	}
-
-	void CameraSystem::SetMainCamera(Registry& registry, Entity entity)
-	{
-		// CameraComponent를 가진 Entity만 효율적으로 순회
-		auto view = CameraOnlyArchetype::CreateView(registry);
-		// auto view = registry.CreateView<CameraComponent>();
-
-		for (Entity e : view)
-		{
-			auto* camera = registry.GetComponent<CameraComponent>(e);
-			camera->isMainCamera = false;
-		}
-
-		// 지정된 Entity를 Main Camera로 설정
-		auto* targetCamera = registry.GetComponent<CameraComponent>(entity);
-		if (targetCamera)
-		{
-			targetCamera->isMainCamera = true;
-			LOG_INFO("[CameraSystem] Main Camera set to Entity (ID: %u)", entity.id);
-		}
-		else
-		{
-			LOG_WARN("[CameraSystem] Entity (ID: %u) has no CameraComponent", entity.id);
-		}
+		camera.viewMatrix = Math::MatrixLookAtLH(position, target, up);
+		camera.forward = forward;
+		camera.up = up;
+		camera.viewDirty = false;
 	}
 
 } // namespace ECS

@@ -23,6 +23,7 @@
 
 // Graphics - DX12
 #include "Graphics/DX12/DX12Device.h"
+#include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12Renderer.h"
 
 // ECS
@@ -49,7 +50,7 @@ PhongLightingApp::PhongLightingApp()
 
 PhongLightingApp::~PhongLightingApp()
 {
- }
+}
 
 bool PhongLightingApp::OnInitialize()
 {
@@ -87,11 +88,15 @@ void PhongLightingApp::InitializeECS()
 	// Registry 생성
 	mRegistry = std::make_unique<ECS::Registry>();
 
-	// SystemManager 생성
-	mSystemManager = std::make_unique<ECS::SystemManager>(mRegistry.get());
+	// SystemManager 생성 (참조로 전달)
+	mSystemManager = std::make_unique<ECS::SystemManager>(*mRegistry);
 
 	// System 등록 (순서 중요!)
 	// Transform → Camera → Lighting → Render
+	// Registry는 SystemManager가 자동으로 전달
+	mSystemManager->RegisterSystem<ECS::TransformSystem>();
+	mSystemManager->RegisterSystem<ECS::CameraSystem>();
+	mSystemManager->RegisterSystem<ECS::LightingSystem>();
 	mSystemManager->RegisterSystem<ECS::RenderSystem>(mResourceManager.get());
 
 	// Scene 구성
@@ -117,6 +122,8 @@ void PhongLightingApp::CreateCameraEntity()
 	ECS::CameraComponent camera;
 
 	camera.projectionType = ECS::ProjectionType::Perspective;
+
+	// 저수준 API (정적 함수) - Component 직접 조작
 	ECS::CameraSystem::SetFovYDegrees(camera, 60.0f);
 	ECS::CameraSystem::SetAspectRatio(
 		camera,
@@ -126,10 +133,10 @@ void PhongLightingApp::CreateCameraEntity()
 	ECS::CameraSystem::SetClipPlanes(camera, 0.1f, 1000.0f);
 	camera.isMainCamera = true;
 
-	// SetLookAt 호출 (Transform과 Camera 모두 전달)
+	// SetLookAt 호출 (저수준 API - Transform과 Camera 모두 전달)
 	ECS::CameraSystem::SetLookAt(
 		transform,
-		camera,                              // Camera도 전달!
+		camera,
 		Math::Vector3(0.0f, 3.0f, -3.0f),
 		Math::Vector3(0.0f, 0.0f, 0.0f),
 		Math::Vector3(0.0f, 1.0f, 0.0f)
@@ -151,8 +158,7 @@ void PhongLightingApp::CreateLightEntities()
 
 	ECS::DirectionalLightComponent dirLight;
 	dirLight.direction = Math::Normalize(Math::Vector3(0.3f, -1.0f, 0.5f));
-	 dirLight.color = Math::Vector3(1.0f, 0.95f, 0.9f);  // 따뜻한 햇빛
-	//dirLight.color = Math::Vector3(0.1f, 0.1f, 0.1f);  // 따뜻한 햇빛
+	dirLight.color = Math::Vector3(1.0f, 0.95f, 0.9f);  // 따뜻한 햇빛
 	dirLight.intensity = 0.8f;
 	dirLight.castsShadow = false;
 
@@ -186,11 +192,11 @@ void PhongLightingApp::CreateLightEntities()
 		// Point Light
 		ECS::PointLightComponent pointLight;
 		pointLight.color = setup.color;
-		pointLight.intensity = setup.intensity;  
-		pointLight.range = 5.0f;                
+		pointLight.intensity = setup.intensity;
+		pointLight.range = 5.0f;
 		pointLight.constant = 1.0f;
-		pointLight.linear = 0.045f;              
-		pointLight.quadratic = 0.0075f;          
+		pointLight.linear = 0.045f;
+		pointLight.quadratic = 0.0075f;
 
 		mRegistry->AddComponent(lightEntity, pointLight);
 
@@ -213,7 +219,7 @@ void PhongLightingApp::CreateCubeEntities()
 	);
 
 	// 그리드 형태로 큐브 배치
-	constexpr Core::int32 gridSize = 4;  // 5x5 그리드
+	constexpr Core::int32 gridSize = 4;
 	constexpr Core::float32 spacing = 10.0f;
 
 	for (Core::int32 x = -gridSize / 2; x <= gridSize / 2; ++x)
@@ -231,6 +237,8 @@ void PhongLightingApp::CreateCubeEntities()
 				static_cast<Core::float32>(z) * spacing
 			);
 			transform.scale = Math::Vector3(0.8f, 0.8f, 0.8f);
+
+			// 저수준 API (정적 함수)
 			ECS::TransformSystem::SetRotationEuler(transform, 0.0f, 0.0f, 0.0f);
 
 			mRegistry->AddComponent(cubeEntity, transform);
@@ -352,7 +360,7 @@ void PhongLightingApp::SetupSharedMeshData()
 	// 4. Mesh 초기화
 	bool success = mesh->InitializeStandard(
 		GetDevice()->GetDevice(),
-		GetDevice()->GetGraphicsQueue(),
+		GetDevice()->GetCommandQueue(),
 		GetDevice()->GetCommandContext(GetRenderer()->GetCurrentFrameIndex()),
 		vertices.data(),
 		static_cast<Core::uint32>(vertices.size()),
@@ -415,14 +423,15 @@ void PhongLightingApp::SetupSharedMaterial()
 
 void PhongLightingApp::OnUpdate(Core::float32 deltaTime)
 {
+	// System 인스턴스 가져오기 (고수준 API 사용을 위해)
+	auto* cameraSystem = mSystemManager->GetSystem<ECS::CameraSystem>();
+	auto* transformSystem = mSystemManager->GetSystem<ECS::TransformSystem>();
+
 	// [테스트] 카메라를 원형으로 회전
 	static Core::float32 cameraAngle = 0.0f;
-	 cameraAngle += deltaTime * 0.3f;
+	cameraAngle += deltaTime * 0.3f;
 
-	auto* cameraTransform = mRegistry->GetComponent<ECS::TransformComponent>(mCameraEntity);
-	auto* camera = mRegistry->GetComponent<ECS::CameraComponent>(mCameraEntity);
-
-	if (cameraTransform && camera)
+	if (cameraSystem)
 	{
 		Core::float32 radius = 20.0f;
 		Core::float32 height = 8.0f;
@@ -433,54 +442,52 @@ void PhongLightingApp::OnUpdate(Core::float32 deltaTime)
 			std::sin(cameraAngle) * radius
 		);
 
-		// SetLookAt 호출 시 Transform과 Camera 모두 전달
-		ECS::CameraSystem::SetLookAt(
-			*cameraTransform,
-			*camera,                         // Camera도 전달!
+		// 고수준 API (Entity 기반) - System 인스턴스 통해 호출
+		cameraSystem->SetLookAt(
+			mCameraEntity,
 			cameraPos,
 			Math::Vector3(0.0f, 0.0f, 0.0f),
 			Math::Vector3(0.0f, 1.0f, 0.0f)
 		);
 	}
 
-	// 1. 카메라 업데이트
-	ECS::CameraSystem::UpdateAllCameras(*mRegistry);
-
-	// 2. 큐브 회전 애니메이션
+	// 큐브 회전 애니메이션
 	mRotationAngle += deltaTime * 0.5f;
 
-	for (auto cubeEntity : mCubeEntities)
+	if (transformSystem)
 	{
-		auto* transform = mRegistry->GetComponent<ECS::TransformComponent>(cubeEntity);
-		if (transform)
+		for (auto cubeEntity : mCubeEntities)
 		{
-			ECS::TransformSystem::SetRotationEuler(
-				*transform,
-				mRotationAngle,
-				mRotationAngle * 0.7f,
-				mRotationAngle * 0.5f
+			// 고수준 API (Entity 기반)
+			transformSystem->SetRotationEuler(
+				cubeEntity,
+				Math::Vector3(
+					mRotationAngle,
+					mRotationAngle * 0.7f,
+					mRotationAngle * 0.5f
+				)
 			);
 		}
 	}
 
-	// 3. Point Light 애니메이션 (원형 회전)
-	//mPointLightTime += deltaTime * 0.5f;
+	// Point Light 애니메이션 (원형 회전) - 필요 시 주석 해제
+	// auto* lightingSystem = mSystemManager->GetSystem<ECS::LightingSystem>();
+	// mPointLightTime += deltaTime * 0.5f;
+	// for (size_t i = 0; i < mPointLightEntities.size(); ++i)
+	// {
+	//     Core::float32 angle = mPointLightTime + (Math::PI * 2.0f * i / mPointLightEntities.size());
+	//     Core::float32 radius = 10.0f;
+	//     Math::Vector3 newPos(
+	//         std::cos(angle) * radius,
+	//         3.0f + std::sin(angle * 2.0f) * 1.5f,
+	//         std::sin(angle) * radius
+	//     );
+	//     transformSystem->SetPosition(mPointLightEntities[i], newPos);
+	// }
 
-	//for (size_t i = 0; i < mPointLightEntities.size(); ++i)
-	//{
-	//	auto* transform = mRegistry->GetComponent<ECS::TransformComponent>(mPointLightEntities[i]);
-	//	if (transform)
-	//	{
-	//		Core::float32 angle = mPointLightTime + (Math::PI * 2.0f * i / mPointLightEntities.size());
-	//		Core::float32 radius = 10.0f;
-
-	//		transform->position.x = std::cos(angle) * radius;
-	//		transform->position.z = std::sin(angle) * radius;
-	//		transform->position.y = 3.0f + std::sin(angle * 2.0f) * 1.5f;
-	//	}
-	//}
-
-	// 4. SystemManager 업데이트
+	// SystemManager 업데이트 (모든 System의 Update 호출)
+	// - CameraSystem::Update() → UpdateAllCameras() 자동 호출
+	// - RenderSystem::Update() → FrameData 수집
 	mSystemManager->UpdateSystems(deltaTime);
 }
 
@@ -497,6 +504,8 @@ void PhongLightingApp::OnRender()
 void PhongLightingApp::OnShutdown()
 {
 	LOG_INFO("[PhongLighting] Shutting down...");
+
+	GetDevice()->GetCommandQueue()->WaitForIdle();
 
 	// Entities 정리
 	for (auto cubeEntity : mCubeEntities)

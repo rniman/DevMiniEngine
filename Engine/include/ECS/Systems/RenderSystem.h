@@ -1,9 +1,14 @@
-﻿#pragma once
+﻿/**
+ * @file RenderSystem.h
+ * @brief 렌더링 데이터를 수집하는 System
+ *
+ * 생성자 주입 방식으로 Registry를 받습니다.
+ * 추가로 ResourceManager도 필요합니다.
+ */
+#pragma once
 #include "ECS/ISystem.h"
 #include "Core/Types.h"
 #include "Graphics/RenderTypes.h"
-
-#include <memory>
 
 namespace Framework
 {
@@ -18,36 +23,34 @@ namespace ECS
 	 * TransformComponent + MeshComponent + MaterialComponent를 가진
 	 * Entity들을 찾아서 FrameData를 구성합니다.
 	 *
-	 * Phase 3.2.1: CameraComponent 통합
-	 * - Main Camera Entity를 자동으로 찾아서 사용
-	 * - PerspectiveCamera 포인터 의존성 제거
-	 * 
-	 * Phase 3.3: Lighting System 통합
-	 * - DirectionalLight, PointLight 데이터 수집
-	 * - LightingSystem과 협력하여 조명 정보 구성
+	 * CameraSystem과 협력하여 Main Camera를 사용하고,
+	 * LightingSystem과 협력하여 조명 정보를 수집합니다.
 	 */
 	class RenderSystem : public ISystem
 	{
 	public:
 		/**
-		 * @brief RenderSystem 생성자
-		 *
+		 * @brief 생성자
+		 * @param registry 이 System이 속한 Registry
 		 * @param resourceManager 리소스 관리자 (Mesh, Material 조회)
 		 */
-		explicit RenderSystem(Framework::ResourceManager* resourceManager);
-
+		RenderSystem(Registry& registry, Framework::ResourceManager* resourceManager);
 		~RenderSystem() override = default;
 
+		//=========================================================================
 		// ISystem 인터페이스 구현
-		void Initialize(Registry& registry) override;
-		void Update(Registry& registry, Core::float32 deltaTime) override;
-		void Shutdown(Registry& registry) override;
+		//=========================================================================
+
+		void Initialize() override;
+		void Update(Core::float32 deltaTime) override;
+		void Shutdown() override;
+
+		//=========================================================================
+		// 데이터 접근
+		//=========================================================================
 
 		/**
 		 * @brief 수집된 렌더링 데이터 가져오기
-		 *
-		 * OnUpdate에서 수집한 데이터를 반환합니다.
-		 *
 		 * @return 현재 프레임의 렌더링 데이터
 		 */
 		const Graphics::FrameData& GetFrameData() const { return mFrameData; }

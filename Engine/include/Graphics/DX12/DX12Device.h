@@ -80,7 +80,7 @@ namespace Graphics
 		IDXGIAdapter1* GetAdapter() const { return mAdapter.Get(); }
 		ID3D12Device* GetDevice() const { return mDevice.Get(); }
 		D3D_FEATURE_LEVEL GetFeatureLevel() const { return mFeatureLevel; }
-		DX12CommandQueue* GetGraphicsQueue() const { return mGraphicsQueue.get(); }
+		DX12CommandQueue* GetCommandQueue() const { return mCommandQueue.get(); }
 		DX12SwapChain* GetSwapChain() const { return mSwapChain.get(); }
 		DX12CommandContext* GetCommandContext(Core::uint32 index) const;
 		bool IsInitialized() const { return mDevice != nullptr; }
@@ -113,7 +113,7 @@ namespace Graphics
 		ComPtr<ID3D12Device> mDevice;
 
 		// Graphics Pipeline Components
-		std::unique_ptr<DX12CommandQueue> mGraphicsQueue;   // D3D12_COMMAND_LIST_TYPE_DIRECT
+		std::unique_ptr<DX12CommandQueue> mCommandQueue;   // D3D12_COMMAND_LIST_TYPE_DIRECT
 		std::unique_ptr<DX12SwapChain> mSwapChain;
 		std::array<std::unique_ptr<DX12CommandContext>, FRAME_BUFFER_COUNT> mCommandContexts;
 

@@ -1,5 +1,14 @@
-﻿#pragma once
+﻿/**
+ * @file TransformSystem.h
+ * @brief Transform 관련 로직을 처리하는 System
+ *
+ * 생성자 주입 방식으로 Registry를 받습니다.
+ * 고수준(Entity 기반)과 저수준(Component 직접) API를 모두 제공합니다.
+ */
+#pragma once
+#include "ECS/ISystem.h"
 #include "ECS/Components/TransformComponent.h"
+#include "ECS/Entity.h"
 #include "Core/Types.h"
 
 namespace ECS
@@ -7,93 +16,71 @@ namespace ECS
 	class Registry;
 
 	/**
-	 * @brief Transform 관련 모든 로직을 처리하는 시스템
+	 * @brief Transform System
 	 *
-	 * Phase 3 초기: 정적 유틸리티 함수만 제공
-	 * Phase 3+: ISystem 상속하여 계층 구조 업데이트 처리
+	 * Transform 계층 구조 업데이트를 처리합니다.
+	 * 고수준(Entity)과 저수준(Component) API를 모두 제공합니다.
 	 */
-	class TransformSystem
+	class TransformSystem : public ISystem
 	{
 	public:
-		//=====================================================================
-		// Euler Angle - Quaternion 변환 (사용자 편의 함수)
-		//=====================================================================
-
 		/**
-		 * @brief Euler Angle로 Rotation 설정
-		 * @param transform Transform 컴포넌트
-		 * @param eulerAngles Euler Angle (Radian)
+		 * @brief 생성자
+		 * @param registry 이 System이 속한 Registry
 		 */
+		explicit TransformSystem(Registry& registry);
+		~TransformSystem() override = default;
+
+		//=========================================================================
+		// ISystem 인터페이스 구현
+		//=========================================================================
+
+		void Initialize() override;
+		void Update(Core::float32 deltaTime) override;
+		void Shutdown() override;
+
+		//=========================================================================
+		// 고수준 API (Entity 기반)
+		//=========================================================================
+
+		bool SetPosition(Entity entity, const Math::Vector3& position);
+		bool GetPosition(Entity entity, Math::Vector3& outPosition);
+
+		bool SetRotationEuler(Entity entity, const Math::Vector3& eulerAngles);
+		bool SetRotation(Entity entity, const Math::Quaternion& rotation);
+		bool GetRotationEuler(Entity entity, Math::Vector3& outEuler);
+
+		bool SetScale(Entity entity, const Math::Vector3& scale);
+		bool SetScale(Entity entity, Core::float32 uniformScale);
+
+		bool Rotate(Entity entity, const Math::Vector3& eulerDelta);
+		bool RotateAround(Entity entity, const Math::Vector3& axis, Core::float32 angle);
+		bool Translate(Entity entity, const Math::Vector3& delta);
+
+		bool GetWorldMatrix(Entity entity, Math::Matrix4x4& outMatrix);
+		bool LookAt(Entity entity, const Math::Vector3& target, const Math::Vector3& up = Math::Vector3(0.0f, 1.0f, 0.0f));
+
+		//=========================================================================
+		// 저수준 API (Component 직접) - System 내부, 다른 System에서 호출
+		//=========================================================================
+
 		static void SetRotationEuler(TransformComponent& transform, const Math::Vector3& eulerAngles);
-
-		/**
-		 * @brief Euler Angle로 Rotation 설정
-		 * @param transform Transform 컴포넌트
-		 * @param pitch X축 회전 (Radian)
-		 * @param yaw Y축 회전 (Radian)
-		 * @param roll Z축 회전 (Radian)
-		 */
-		static void SetRotationEuler(
-			TransformComponent& transform,
-			Core::float32 pitch,
-			Core::float32 yaw,
-			Core::float32 roll
-		);
-
-		/**
-		 * @brief Euler Angle로 Rotation 조회
-		 * @param transform Transform 컴포넌트
-		 * @return Euler Angle (Radian)
-		 */
+		static void SetRotationEuler(TransformComponent& transform, Core::float32 pitch, Core::float32 yaw, Core::float32 roll);
 		static Math::Vector3 GetRotationEuler(const TransformComponent& transform);
 
-		//=====================================================================
-		// Transform 조작
-		//=====================================================================
-
-		/**
-		 * @brief Euler Angle만큼 회전 추가
-		 * @param transform Transform 컴포넌트
-		 * @param eulerDelta 추가 회전량 (Radian)
-		 */
 		static void Rotate(TransformComponent& transform, const Math::Vector3& eulerDelta);
+		static void RotateAround(TransformComponent& transform, const Math::Vector3& axis, Core::float32 angle);
 
-		/**
-		 * @brief 특정 축 기준 회전
-		 * @param transform Transform 컴포넌트
-		 * @param axis 회전축 (정규화 필요 없음)
-		 * @param angle 회전 각도 (Radian)
-		 */
-		static void RotateAround(
-			TransformComponent& transform,
-			const Math::Vector3& axis,
-			Core::float32 angle
-		);
-
-		//=====================================================================
-		// Matrix 계산
-		//=====================================================================
-
-		/**
-		 * @brief TransformComponent의 로컬 S, R, T 값으로 로컬 변환 행렬을 생성합니다.
-		 * @param transform Transform 컴포넌트
-		 * @return 로컬 변환 행렬 (4x4)
-		 *
-		 * @note S * R * T 순서로 변환 (Scale -> Rotation -> Translation)
-		 */
 		static Math::Matrix4x4 GetLocalMatrix(const TransformComponent& transform);
-
-
-		/**
-		 * @brief World Matrix 반환
-		 * @param transform Transform 컴포넌트
-		 * @return 월드 변환 행렬 (4x4)
-		 * 
-		 * @note 현재는 부모 행렬을 처리하지 않아 Local Matrix와 동일
-		 */
 		static Math::Matrix4x4 GetWorldMatrix(const TransformComponent& transform);
 
-		// Phase 3+에서 추가 예정
+		static Math::Vector3 GetForward(const TransformComponent& transform);
+		static Math::Vector3 GetRight(const TransformComponent& transform);
+		static Math::Vector3 GetUp(const TransformComponent& transform);
+
+		//=========================================================================
+		// Phase 3.5 예정 함수 (계층 구조)
+		//=========================================================================
 		// static Math::Matrix4x4 GetWorldMatrix(Registry& registry, Entity entity);
 		// static void MarkDirty(Registry& registry, Entity entity);
 		// static void MarkDirtyRecursive(Registry& registry, Entity entity);

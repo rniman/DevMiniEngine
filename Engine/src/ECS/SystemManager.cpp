@@ -4,17 +4,16 @@
 
 namespace ECS
 {
-	SystemManager::SystemManager(Registry* registry)
-		: mRegistry(registry)
+	SystemManager::SystemManager(Registry& registry)
+		: mRegistry(&registry)
 	{
-		CORE_ASSERT(registry != nullptr, "Registry cannot be null");
-		LOG_INFO("[SystemManager] SystemManager created");
+		LOG_INFO("[SystemManager] Created");
 	}
 
 	SystemManager::~SystemManager()
 	{
 		ShutdownAllSystems();
-		LOG_INFO("[SystemManager] SystemManager destroyed");
+		LOG_INFO("[SystemManager] Destroyed");
 	}
 
 	void SystemManager::UpdateSystems(Core::float32 deltaTime)
@@ -23,7 +22,7 @@ namespace ECS
 		{
 			if (system->IsActive())
 			{
-				system->Update(*mRegistry, deltaTime);
+				system->Update(deltaTime);
 			}
 		}
 	}
@@ -33,7 +32,7 @@ namespace ECS
 		// 역순으로 종료 (LIFO)
 		for (auto it = mSystems.rbegin(); it != mSystems.rend(); ++it)
 		{
-			(*it)->Shutdown(*mRegistry);
+			(*it)->Shutdown();
 		}
 
 		mSystems.clear();

@@ -30,24 +30,33 @@
 
 namespace ECS
 {
-	RenderSystem::RenderSystem(Framework::ResourceManager* resourceManager)
-		: mResourceManager(resourceManager)
+	//=============================================================================
+	// 생성자
+	//=============================================================================
+
+	RenderSystem::RenderSystem(Registry& registry, Framework::ResourceManager* resourceManager)
+		: ISystem(registry)
+		, mResourceManager(resourceManager)
 	{
 		CORE_ASSERT(resourceManager != nullptr, "ResourceManager cannot be null");
 	}
 
-	void RenderSystem::Initialize(Registry& registry)
+	//=============================================================================
+	// ISystem 인터페이스 구현
+	//=============================================================================
+
+	void RenderSystem::Initialize()
 	{
 		LOG_INFO("[RenderSystem] Initialized");
 	}
 
-	void RenderSystem::Update(Registry& registry, Core::float32 deltaTime)
+	void RenderSystem::Update(Core::float32 deltaTime)
 	{
 		// 이전 프레임 데이터 정리
 		mFrameData.Clear();
 
-		// Main Camera 찾기
-		Entity mainCameraEntity = CameraSystem::FindMainCamera(registry);
+		// Main Camera 찾기 (정적 함수 사용)
+		Entity mainCameraEntity = CameraSystem::FindMainCamera(*GetRegistry());
 		if (!mainCameraEntity.IsValid())
 		{
 			LOG_WARN("[RenderSystem] No main camera found!");
@@ -55,8 +64,8 @@ namespace ECS
 		}
 
 		// Camera Component 가져오기
-		auto* cameraComp = registry.GetComponent<CameraComponent>(mainCameraEntity);
-		auto* cameraTransform = registry.GetComponent<TransformComponent>(mainCameraEntity);
+		auto* cameraComp = GetRegistry()->GetComponent<CameraComponent>(mainCameraEntity);
+		auto* cameraTransform = GetRegistry()->GetComponent<TransformComponent>(mainCameraEntity);
 
 		if (!cameraComp || !cameraTransform)
 		{
@@ -75,21 +84,21 @@ namespace ECS
 			mFrameData.projectionMatrix
 		);
 
-		// 4. Phase 3.3: 조명 데이터 수집
-		LightingSystem::CollectDirectionalLights(registry, mFrameData.directionalLights);
-		LightingSystem::CollectPointLights(registry, mFrameData.pointLights);
+		// 조명 데이터 수집 (정적 함수 사용)
+		LightingSystem::CollectDirectionalLights(*GetRegistry(), mFrameData.directionalLights);
+		LightingSystem::CollectPointLights(*GetRegistry(), mFrameData.pointLights);
 
 		// Transform + Mesh + Material을 가진 Entity 찾기
-		auto view = RenderableArchetype::CreateView(registry);
+		auto view = RenderableArchetype::CreateView(*GetRegistry());
 
 		// 렌더링 데이터 수집
 		for (Entity entity : view)
 		{
-			auto* transform = registry.GetComponent<TransformComponent>(entity);
-			auto* meshComp = registry.GetComponent<MeshComponent>(entity);
-			auto* materialComp = registry.GetComponent<MaterialComponent>(entity);
+			auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+			auto* meshComp = GetRegistry()->GetComponent<MeshComponent>(entity);
+			auto* materialComp = GetRegistry()->GetComponent<MaterialComponent>(entity);
 
-			// World Matrix 계산
+			// World Matrix 계산 (정적 함수 사용)
 			Math::Matrix4x4 worldMatrix = TransformSystem::GetWorldMatrix(*transform);
 
 			// Mesh 리소스 가져오기
@@ -118,7 +127,6 @@ namespace ECS
 			renderItem.mvpMatrix = Math::MatrixMultiply(worldMatrix, viewProj);
 			renderItem.mvpMatrix = Math::MatrixTranspose(renderItem.mvpMatrix);
 
-			// Phase 3.3에서는 모두 불투명으로 처리
 			mFrameData.opaqueItems.push_back(renderItem);
 		}
 
@@ -145,7 +153,7 @@ namespace ECS
 #endif
 	}
 
-	void RenderSystem::Shutdown(Registry& registry)
+	void RenderSystem::Shutdown()
 	{
 		mFrameData.Clear();
 		LOG_INFO("[RenderSystem] Shutdown");

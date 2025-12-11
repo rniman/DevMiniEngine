@@ -11,6 +11,8 @@ namespace ECS
 	struct MeshComponent;
 	struct MaterialComponent;
 	struct CameraComponent;
+		struct DirectionalLightComponent;
+	struct PointLightComponent;
 }
 
 namespace ECS
@@ -98,6 +100,11 @@ namespace ECS
 		CameraComponent
 	>;
 
+	/**
+	 * @brief Camera Component만 가진 Entity
+	 *
+	 * Main Camera 검색 등에서 사용됩니다.
+	 */
 	using CameraOnlyArchetype = Archetype<CameraComponent>;
 
 	/**
@@ -107,6 +114,31 @@ namespace ECS
 	 * 빈 GameObject나 트랜스폼 노드로 사용됩니다.
 	 */
 	using TransformOnlyArchetype = Archetype<TransformComponent>;
+
+	// ========== Light Archetype 정의 ==========
+
+	/**
+	 * @brief Directional Light Entity
+	 *
+	 * DirectionalLightComponent만 가진 Entity입니다.
+	 * 태양광처럼 방향만 있고 위치가 없는 조명입니다.
+	 *
+	 * @note Transform이 필요 없음 (방향만 사용)
+	 */
+	using DirectionalLightArchetype = Archetype<DirectionalLightComponent>;
+
+	/**
+	 * @brief Point Light Entity
+	 *
+	 * Transform과 PointLightComponent를 가진 Entity입니다.
+	 * 위치에서 모든 방향으로 빛을 발산하는 조명입니다.
+	 *
+	 * @note Transform의 position을 조명 위치로 사용
+	 */
+	using PointLightArchetype = Archetype<
+		TransformComponent,
+		PointLightComponent
+	>;
 
 	// ========== Archetype 유틸리티 ==========
 

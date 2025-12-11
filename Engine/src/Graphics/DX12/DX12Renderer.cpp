@@ -47,7 +47,7 @@ namespace Graphics
 
 		mDevice = device;
 		DX12SwapChain* swapChain = device->GetSwapChain();
-		DX12CommandQueue* commandQueue = device->GetGraphicsQueue();
+		DX12CommandQueue* commandQueue = device->GetCommandQueue();
 
 		if (!swapChain || !commandQueue)
 		{
@@ -233,9 +233,9 @@ namespace Graphics
 		LOG_INFO("[DX12Renderer] Shutting down Renderer...");
 
 		// GPU 작업 완료 대기
-		if (mDevice->GetGraphicsQueue())
+		if (mDevice->GetCommandQueue())
 		{
-			mDevice->GetGraphicsQueue()->WaitForIdle();
+			mDevice->GetCommandQueue()->WaitForIdle();
 		}
 
 		// 리소스 정리
@@ -270,7 +270,7 @@ namespace Graphics
 		mHeight = height;
 
 		// GPU 작업 완료 대기
-		mDevice->GetGraphicsQueue()->WaitForIdle();
+		mDevice->GetCommandQueue()->WaitForIdle();
 
 		// Depth Buffer 재생성
 		mDepthStencilBuffer.reset();
@@ -334,7 +334,7 @@ namespace Graphics
 	bool DX12Renderer::BeginFrame()
 	{
 		// GPU가 현재 백 버퍼 사용을 완료할 때까지 대기
-		mDevice->GetGraphicsQueue()->WaitForFenceValue(GetCurrentFrameFenceValue());
+		mDevice->GetCommandQueue()->WaitForFenceValue(GetCurrentFrameFenceValue());
 
 		// Command Context 리셋
 		auto* cmdContext = GetCurrentCommandContext();
@@ -423,7 +423,7 @@ namespace Graphics
 			return;
 		}
 
-		LOG_DEBUG("[DX12Renderer] Drawing %zu items", items.size());
+		// LOG_DEBUG("[DX12Renderer] Drawing %zu items", items.size());
 
 		// Root Signature 설정
 		cmdList->SetGraphicsRootSignature(mRootSignature->GetRootSignature());
@@ -572,7 +572,7 @@ namespace Graphics
 
 		// Command List 실행
 		ID3D12CommandList* cmdLists[] = { cmdList };
-		Core::uint64 fenceValue = mDevice->GetGraphicsQueue()->ExecuteCommandLists(1, cmdLists);
+		Core::uint64 fenceValue = mDevice->GetCommandQueue()->ExecuteCommandLists(1, cmdLists);
 		SetCurrentFrameFenceValue(fenceValue);
 	}
 

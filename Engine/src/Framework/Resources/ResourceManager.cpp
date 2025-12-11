@@ -186,9 +186,10 @@ namespace Framework
 
 		if (!texture->LoadFromFile(
 			mDevice->GetDevice(),
-			mDevice->GetGraphicsQueue(),
+			mDevice->GetCommandQueue(),
 			mDevice->GetCommandContext(frameIndex),
-			wpath.c_str()))  // Win32 API에 wstring 전달
+			wpath.c_str()
+		))  // Win32 API에 wstring 전달
 		{
 			LOG_ERROR("Failed to load texture: %s", path.c_str());
 			return ResourceId::Invalid();
