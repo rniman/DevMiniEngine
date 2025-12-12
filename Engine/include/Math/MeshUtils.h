@@ -17,7 +17,8 @@ namespace Math
 		const std::vector<Vector3>& normals,
 		const std::vector<Vector2>& texCoords,
 		const std::vector<Core::uint16>& indices,
-		std::vector<Vector3>& outTangents)
+		std::vector<Vector3>& outTangents
+	)
 	{
 		const size_t vertexCount = positions.size();
 

@@ -208,7 +208,7 @@ namespace ECS
 
 	Math::Vector3 TransformSystem::GetRotationEuler(const TransformComponent& transform)
 	{
-		return Math::QuaternionToEuler(transform.rotation);
+		return Math::Vector3EulerFromQuaternion(transform.rotation);
 	}
 
 	void TransformSystem::Rotate(TransformComponent& transform, const Math::Vector3& eulerDelta)
