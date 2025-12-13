@@ -29,6 +29,39 @@ namespace Graphics
 	};
 
 	/**
+	 * @brief 텍스처 바인딩 플래그 (비트 플래그)
+	 *
+	 * Shader의 textureFlags와 일치해야 합니다.
+	 */
+	enum class TextureFlags : Core::uint32
+	{
+		None = 0,
+		Albedo = 1 << 0,   // 1
+		Normal = 1 << 1,   // 2
+		Metallic = 1 << 2,   // 4
+		Roughness = 1 << 3,   // 8
+		AmbientOcclusion = 1 << 4,   // 16
+		Emissive = 1 << 5    // 32
+	};
+
+	// 비트 연산자 오버로딩
+	inline TextureFlags operator|(TextureFlags a, TextureFlags b)
+	{
+		return static_cast<TextureFlags>(static_cast<Core::uint32>(a) | static_cast<Core::uint32>(b));
+	}
+
+	inline TextureFlags operator&(TextureFlags a, TextureFlags b)
+	{
+		return static_cast<TextureFlags>(static_cast<Core::uint32>(a) & static_cast<Core::uint32>(b));
+	}
+
+	inline TextureFlags& operator|=(TextureFlags& a, TextureFlags b)
+	{
+		a = a | b;
+		return a;
+	}
+
+	/**
 	 * @brief Material 생성을 위한 설정 구조체
 	 */
 	struct MaterialDesc
@@ -144,6 +177,8 @@ namespace Graphics
 		uint32 GetSampleCount() const { return mSampleCount; }
 		uint32 GetSampleQuality() const { return mSampleQuality; }
 		uint32 GetSampleMask() const { return mSampleMask; }
+
+		Core::uint32 GetTextureFlags() const;
 
 		//// Texture 관련
 		//std::shared_ptr<Texture> GetTexture(TextureType type) const;

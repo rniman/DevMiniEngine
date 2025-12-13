@@ -14,8 +14,17 @@ cbuffer MaterialConstants : register(b1)
 	float4 baseColor;
 	float metallic;
 	float roughness;
-	float2 padding;
+	uint textureFlags;
+	float padding;
 };
+
+// 플래그 정의
+static const uint TEX_ALBEDO = 1 << 0; // 1
+static const uint TEX_NORMAL = 1 << 1; // 2
+static const uint TEX_METALLIC = 1 << 2; // 4
+static const uint TEX_ROUGHNESS = 1 << 3; // 8
+static const uint TEX_AmbientOcclusion = 1 << 4; // 16
+static const uint TEX_EMISSIVE = 1 << 5; // 32
 
 // Directional Lights
 struct DirectionalLight
@@ -29,36 +38,32 @@ struct DirectionalLight
 struct PointLight
 {
 	float4 position; // xyz=위치, w=1.0
-	float range;
-	float3 color;
-	float intensity;
-	float3 attenuation; // x=Kc, y=Kl, z=Kq
-	// float4 padding1;
+	float4 rangeAndColor; // x=range, yzw=color
+	float4 intensityAndAttenuation; // x=intensity, yzw=attenuation (Kc, Kl, Kq)
 };
 
 cbuffer LightingData : register(b2)
 {
-    DirectionalLight dirLights[4];
+	DirectionalLight dirLights[4];
 	uint numDirLights;
 	uint3 padding0;
-    
 
-    PointLight pointLights[8];
+	PointLight pointLights[8];
 	uint numPointLights;
 	uint3 padding2;
-    
+
     // Camera
-	float3 viewPos; // 카메라 위치 (Specular 계산용)
+	float3 viewPos;
 	float padding3;
 };
 
 // ========== Textures & Samplers ==========
 
 Texture2D AlbedoTexture : register(t0);
-Texture2D NormalTexture : register(t1); // Phase 3.3.4에서 사용 예정
+Texture2D NormalTexture : register(t1);
 Texture2D MetallicTexture : register(t2);
 Texture2D RoughnessTexture : register(t3);
-Texture2D AOTexture : register(t4);
+Texture2D AmbientOcclusionTexture : register(t4);
 Texture2D EmissiveTexture : register(t5);
 Texture2D HeightTexture : register(t6);
 
@@ -76,14 +81,13 @@ struct PS_INPUT
 	float3 Bitangent : BITANGENT;
 };
 
-
 // ========== Normal Mapping Functions ==========
 
 /**
  * @brief TBN 행렬 생성 및 Normal Map 적용
  */
 float3 ApplyNormalMap(
-    float3 normalMap,
+    float3 tangentNormal,
     float3 worldNormal,
     float3 worldTangent,
     float3 worldBitangent)
@@ -94,10 +98,10 @@ float3 ApplyNormalMap(
         normalize(worldBitangent),
         normalize(worldNormal)
     );
-    
+
     // Tangent Space Normal을 World Space로 변환
-	float3 worldSpaceNormal = mul(normalMap, TBN);
-    
+	float3 worldSpaceNormal = mul(tangentNormal, TBN);
+
 	return normalize(worldSpaceNormal);
 }
 
@@ -108,10 +112,10 @@ float3 SampleNormalMap(Texture2D normalTex, SamplerState samp, float2 uv)
 {
     // Normal Map 샘플링 (RGB 값은 [0, 1] 범위)
 	float3 normalMap = normalTex.Sample(samp, uv).rgb;
-    
+
     // [0, 1] → [-1, 1] 변환
-	normalMap = normalMap * 2.0 - 1.0;
-    
+	normalMap = normalMap * 2.0f - 1.0f;
+
 	return normalMap;
 }
 
@@ -125,24 +129,23 @@ float3 CalculateDirectionalLight(
     float3 normal,
     float3 viewDir,
     float3 albedo,
-    float shininess
-)
+    float shininess)
 {
     // 빛이 오는 방향 (direction은 빛이 가는 방향이므로 반전)
 	float3 lightDir = normalize(-light.direction.xyz);
-    
+
     // 1. Ambient (글로벌 환경광)
 	float3 ambient = light.color * light.intensity * 0.1f * albedo;
-    
+
     // 2. Diffuse (Lambert)
 	float diff = max(dot(normal, lightDir), 0.0f);
 	float3 diffuse = diff * light.color * light.intensity * albedo;
-    
+
     // 3. Specular (Blinn-Phong)
 	float3 halfDir = normalize(lightDir + viewDir);
 	float spec = pow(max(dot(normal, halfDir), 0.0f), shininess);
 	float3 specular = spec * light.color * light.intensity;
-    
+
 	return ambient + diffuse + specular;
 }
 
@@ -155,41 +158,47 @@ float3 CalculatePointLight(
     float3 normal,
     float3 viewDir,
     float3 albedo,
-    float shininess
-)
+    float shininess)
 {
+    // 데이터 추출
+	float3 lightPos = light.position.xyz;
+	float range = light.rangeAndColor.x;
+	float3 lightColor = light.rangeAndColor.yzw;
+	float intensity = light.intensityAndAttenuation.x;
+	float3 attenuation = light.intensityAndAttenuation.yzw;
+
     // 1. 거리 및 방향 계산
-	float3 lightVec = light.position.xyz - worldPos;
+	float3 lightVec = lightPos - worldPos;
 	float distance = length(lightVec);
 
     // Range 체크 (조기 반환으로 성능 최적화)
-	if(distance > light.range)
+	if(distance > range)
 	{
 		return float3(0.0f, 0.0f, 0.0f);
 	}
-    
+
 	float3 lightDir = normalize(lightVec);
-    
+
     // 2. Attenuation 계산
     // Attenuation = 1.0 / (Kc + Kl * d + Kq * d^2)
-	float attenuation = 1.0f / (
-        light.attenuation.x + // constant
-        light.attenuation.y * distance + // linear
-        light.attenuation.z * distance * distance // quadratic
+	float atten = 1.0f / (
+        attenuation.x + // constant (Kc)
+        attenuation.y * distance + // linear (Kl)
+        attenuation.z * distance * distance // quadratic (Kq)
     );
-	attenuation = max(attenuation, 0.0f);
-    
+	atten = max(atten, 0.0f);
+
     // 3. Ambient (Point Light는 약한 Ambient)
-	float3 ambient = light.color * light.intensity * 0.05f * albedo * attenuation;
-    
+	float3 ambient = lightColor * intensity * 0.05f * albedo * atten;
+
     // 4. Diffuse (Lambert)
 	float diff = max(dot(normal, lightDir), 0.0f);
-	float3 diffuse = diff * light.color * light.intensity * albedo * attenuation;
-    
+	float3 diffuse = diff * lightColor * intensity * albedo * atten;
+
     // 5. Specular (Blinn-Phong)
 	float3 halfDir = normalize(lightDir + viewDir);
 	float spec = pow(max(dot(normal, halfDir), 0.0f), shininess);
-	float3 specular = spec * light.color * light.intensity * attenuation;
+	float3 specular = spec * lightColor * intensity * atten;
 
 	return ambient + diffuse + specular;
 }
@@ -198,18 +207,12 @@ float3 CalculatePointLight(
 
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
-    // 1. Normal 준비 (Vertex Normal 또는 Normal Map)
-	float3 normal;
-    
-    // Normal Map이 있는지 체크 (간단한 방법: 샘플링 후 기본값 확인)
-	float3 normalMapSample = NormalTexture.Sample(DefaultSampler, input.TexCoord).rgb;
-    
-    // Normal Map이 유효한지 확인 (검은색이 아니면 사용)
-	bool hasNormalMap = any(normalMapSample > 0.01f);
-    
-	if(hasNormalMap)
+    // 1. Normal 준비
+	float3 normal = normalize(input.Normal);
+
+    // Normal Map 사용 (Uniform 조건 - Warp Divergence 없음)
+	if(textureFlags & TEX_NORMAL)
 	{
-        // Normal Map 적용
 		float3 tangentNormal = SampleNormalMap(NormalTexture, DefaultSampler, input.TexCoord);
 		normal = ApplyNormalMap(
             tangentNormal,
@@ -218,26 +221,31 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
             input.Bitangent
         );
 	}
-	else
-	{
-        // Normal Map 없음 - Vertex Normal 사용
-		normal = normalize(input.Normal);
-	}
-    
+
     // 2. View Direction
 	float3 viewDir = normalize(viewPos - input.WorldPos);
-    
+
     // 3. Albedo
-	float3 albedo = AlbedoTexture.Sample(DefaultSampler, input.TexCoord).rgb;
-	albedo *= baseColor.rgb;
-    
-    // 4. Shininess
-	float shininess = lerp(128.0f, 8.0f, roughness);
-    
-    // 5. 조명 계산
+	float3 albedo = baseColor.rgb;
+	if(textureFlags & TEX_ALBEDO)
+	{
+		albedo *= AlbedoTexture.Sample(DefaultSampler, input.TexCoord).rgb;
+	}
+
+    // 4. Roughness
+	float finalRoughness = roughness;
+	if(textureFlags & TEX_ROUGHNESS)
+	{
+		finalRoughness *= RoughnessTexture.Sample(DefaultSampler, input.TexCoord).r;
+	}
+
+    // 5. Shininess (Roughness → Shininess 변환)
+	float shininess = lerp(128.0f, 8.0f, finalRoughness);
+
+    // 6. 조명 계산
 	float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-    
-    // 5-1. Directional Lights
+
+    // 6-1. Directional Lights
 	for(uint i = 0; i < numDirLights; ++i)
 	{
 		finalColor += CalculateDirectionalLight(
@@ -248,8 +256,8 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
             shininess
         );
 	}
-    
-    // 5-2. Point Lights
+
+    // 6-2. Point Lights
 	for(uint j = 0; j < numPointLights; ++j)
 	{
 		finalColor += CalculatePointLight(
@@ -262,6 +270,22 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
         );
 	}
 
-    // 6. 최종 출력
+    // 7. AmbientOcclusion (Ambient Occlusion)
+	if(textureFlags & TEX_AmbientOcclusion)
+	{
+		float AmbientOcclusion = AmbientOcclusionTexture.Sample(DefaultSampler, input.TexCoord).r;
+		finalColor *= AmbientOcclusion;
+	}
+
+    // 8. Emissive
+	if(textureFlags & TEX_EMISSIVE)
+	{
+		float3 emissive = EmissiveTexture.Sample(DefaultSampler, input.TexCoord).rgb;
+		finalColor += emissive;
+	}
+
+    // 9. Gamma Correction
+	finalColor = pow(finalColor, 1.0f / 2.2f);
+
 	return float4(finalColor, baseColor.a);
 }

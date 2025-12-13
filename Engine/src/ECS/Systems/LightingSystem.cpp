@@ -6,8 +6,6 @@
 #include "ECS/Components/TransformComponent.h"
 #include "ECS/RegistryView.h"
 #include "Core/Logging/LogMacros.h"
-#include "Math/MathUtils.h"
-
 
 namespace ECS
 {
@@ -52,7 +50,7 @@ namespace ECS
 			return false;
 		}
 
-		light->direction = Math::Normalize(direction);
+		light->direction = direction.Normalized();
 		light->isDirty = true;
 		return true;
 	}
@@ -165,7 +163,7 @@ namespace ECS
 			}
 
 			Graphics::DirectionalLightData data;
-			data.direction = Math::Vector4(light->direction.x, light->direction.y, light->direction.z, 0.0f);
+			data.direction = light->direction.ToDirection();
 			data.color = light->color;
 			data.intensity = light->intensity;
 
@@ -216,7 +214,7 @@ namespace ECS
 			}
 
 			Graphics::PointLightData data;
-			data.position = Math::Vector4(transform->position.x, transform->position.y, transform->position.z, 1.0f);
+			data.position = transform->position.ToPoint();
 			data.rangeAndColor.x = light->range;
 			data.rangeAndColor.y = light->color.x;
 			data.rangeAndColor.z = light->color.y;
@@ -264,7 +262,7 @@ namespace ECS
 
 	void LightingSystem::NormalizeDirection(DirectionalLightComponent& light)
 	{
-		light.direction = Math::Normalize(light.direction);
+		light.direction.Normalize();
 		light.isDirty = true;
 	}
 

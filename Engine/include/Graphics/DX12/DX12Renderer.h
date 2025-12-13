@@ -25,7 +25,8 @@ namespace Graphics
 		Math::Vector4 baseColor;
 		Core::float32 metallic;
 		Core::float32 roughness;
-		Math::Vector2 padding;
+		Core::uint32 textureFlags;
+		Core::float32 padding;
 	};
 
 	struct LightingConstants

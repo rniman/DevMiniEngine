@@ -35,7 +35,6 @@ namespace ECS
 		LOG_INFO("[TransformSystem] Shutdown");
 	}
 
-
 	//=============================================================================
 	// 고수준 API (Entity 기반)
 	//=============================================================================
@@ -84,7 +83,7 @@ namespace ECS
 			return false;
 		}
 
-		transform->rotation = Math::QuaternionNormalize(rotation);
+		transform->rotation = rotation.Normalized();
 		return true;
 	}
 
@@ -114,7 +113,7 @@ namespace ECS
 
 	bool TransformSystem::SetScale(Entity entity, Core::float32 uniformScale)
 	{
-		return SetScale(entity, Math::Vector3(uniformScale, uniformScale, uniformScale));
+		return SetScale(entity, Math::Vector3(uniformScale));
 	}
 
 	bool TransformSystem::Rotate(Entity entity, const Math::Vector3& eulerDelta)
@@ -149,7 +148,7 @@ namespace ECS
 			return false;
 		}
 
-		transform->position = Math::Add(transform->position, delta);
+		transform->position += delta;
 		return true;
 	}
 
@@ -165,6 +164,18 @@ namespace ECS
 		return true;
 	}
 
+	bool TransformSystem::GetWorldInvTranspose(Entity entity, Math::Matrix4x4& outMatrix)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		outMatrix = GetWorldInvTranspose(*transform);
+		return true;
+	}
+
 	bool TransformSystem::LookAt(Entity entity, const Math::Vector3& target, const Math::Vector3& up)
 	{
 		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
@@ -173,11 +184,11 @@ namespace ECS
 			return false;
 		}
 
-		Math::Vector3 forward = Math::Normalize(Math::Subtract(target, transform->position));
-		Math::Vector3 right = Math::Normalize(Math::Cross(up, forward));
-		Math::Vector3 adjustedUp = Math::Cross(forward, right);
+		Math::Vector3 forward = (target - transform->position).Normalized();
+		Math::Vector3 right = up.Cross(forward).Normalized();
+		Math::Vector3 adjustedUp = forward.Cross(right);
 
-		Math::Matrix4x4 rotMatrix = Math::MatrixIdentity();
+		Math::Matrix4x4 rotMatrix = Math::Matrix4x4::Identity();
 		rotMatrix.m[0][0] = right.x;
 		rotMatrix.m[0][1] = right.y;
 		rotMatrix.m[0][2] = right.z;
@@ -198,41 +209,43 @@ namespace ECS
 
 	void TransformSystem::SetRotationEuler(TransformComponent& transform, const Math::Vector3& eulerAngles)
 	{
-		transform.rotation = Math::QuaternionFromEuler(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+		transform.rotation = Math::QuaternionFromEuler(eulerAngles);
 	}
 
-	void TransformSystem::SetRotationEuler(TransformComponent& transform, Core::float32 pitch, Core::float32 yaw, Core::float32 roll)
+	void TransformSystem::SetRotationEuler(
+		TransformComponent& transform,
+		Core::float32 pitch,
+		Core::float32 yaw,
+		Core::float32 roll
+	)
 	{
 		transform.rotation = Math::QuaternionFromEuler(pitch, yaw, roll);
 	}
 
 	Math::Vector3 TransformSystem::GetRotationEuler(const TransformComponent& transform)
 	{
-		return Math::Vector3EulerFromQuaternion(transform.rotation);
+		return transform.rotation.ToEuler();
 	}
 
 	void TransformSystem::Rotate(TransformComponent& transform, const Math::Vector3& eulerDelta)
 	{
-		Math::Quaternion delta = Math::QuaternionFromEuler(eulerDelta.x, eulerDelta.y, eulerDelta.z);
-		transform.rotation = Math::QuaternionMultiply(transform.rotation, delta);
-		transform.rotation = Math::QuaternionNormalize(transform.rotation);
+		Math::Quaternion delta = Math::QuaternionFromEuler(eulerDelta);
+		transform.rotation = (transform.rotation * delta).Normalized();
 	}
 
 	void TransformSystem::RotateAround(TransformComponent& transform, const Math::Vector3& axis, Core::float32 angle)
 	{
 		Math::Quaternion delta = Math::QuaternionFromAxisAngle(axis, angle);
-		transform.rotation = Math::QuaternionMultiply(transform.rotation, delta);
-		transform.rotation = Math::QuaternionNormalize(transform.rotation);
+		transform.rotation = (transform.rotation * delta).Normalized();
 	}
 
 	Math::Matrix4x4 TransformSystem::GetLocalMatrix(const TransformComponent& transform)
 	{
-		Math::Matrix4x4 scaleMatrix = Math::MatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z);
+		Math::Matrix4x4 scaleMatrix = Math::MatrixScaling(transform.scale);
 		Math::Matrix4x4 rotationMatrix = Math::MatrixRotationQuaternion(transform.rotation);
-		Math::Matrix4x4 translationMatrix = Math::MatrixTranslation(transform.position.x, transform.position.y, transform.position.z);
+		Math::Matrix4x4 translationMatrix = Math::MatrixTranslation(transform.position);
 
-		Math::Matrix4x4 localMatrix = Math::MatrixMultiply(scaleMatrix, rotationMatrix);
-		return Math::MatrixMultiply(localMatrix, translationMatrix);
+		return scaleMatrix * rotationMatrix * translationMatrix;
 	}
 
 	Math::Matrix4x4 TransformSystem::GetWorldMatrix(const TransformComponent& transform)
@@ -240,18 +253,31 @@ namespace ECS
 		return GetLocalMatrix(transform);
 	}
 
+	Math::Matrix4x4 TransformSystem::GetWorldInvTranspose(const TransformComponent& transform)
+	{
+		if (IsUniformScale(transform.scale))
+		{
+			// 균등 스케일: 역전치 불필요
+			return GetWorldMatrix(transform);
+		}
+
+		// 비균등 스케일: 역전치 계산
+		return Math::MatrixTranspose(Math::MatrixInverse(GetWorldMatrix(transform)));
+	}
+
 	Math::Vector3 TransformSystem::GetForward(const TransformComponent& transform)
 	{
-		return Math::Vector3RotateByQuaternion(Math::Vector3(0.0f, 0.0f, 1.0f), transform.rotation);
+		return transform.rotation.GetForward();
 	}
 
 	Math::Vector3 TransformSystem::GetRight(const TransformComponent& transform)
 	{
-		return Math::Vector3RotateByQuaternion(Math::Vector3(1.0f, 0.0f, 0.0f), transform.rotation);
+		return transform.rotation.GetRight();
 	}
 
 	Math::Vector3 TransformSystem::GetUp(const TransformComponent& transform)
 	{
-		return Math::Vector3RotateByQuaternion(Math::Vector3(0.0f, 1.0f, 0.0f), transform.rotation);
+		return transform.rotation.GetUp();
 	}
+
 } // namespace ECS

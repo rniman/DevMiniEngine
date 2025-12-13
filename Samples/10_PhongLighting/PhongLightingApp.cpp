@@ -392,7 +392,7 @@ void PhongLightingApp::SetupSharedMaterial()
 
 	if (diffuseId.IsValid())
 	{
-		material->SetTexture(Graphics::TextureType::Diffuse, diffuseId);
+		material->SetTexture(Graphics::TextureType::Albedo, diffuseId);
 		LOG_DEBUG("[Material] Set Albedo texture: 0x%llX", diffuseId.id);
 	}
 

@@ -479,7 +479,8 @@ namespace Graphics
 			materialData.baseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f);  // 기본 흰색
 			materialData.metallic = 0.0f;
 			materialData.roughness = 0.5f;
-			materialData.padding = Math::Vector2(0.0f, 0.0f);
+			materialData.textureFlags = item.material->GetTextureFlags();
+			materialData.padding = 0.0f;
 
 			mMaterialConstantBuffer->Update(mCurrentFrameIndex, &materialData, sizeof(MaterialConstants));
 

@@ -7,7 +7,7 @@
 #include "ECS/Components/CameraComponent.h"
 #include "ECS/Components/MaterialComponent.h"
 #include "ECS/Components/MeshComponent.h"
-#include "ECS/Components/LightComponents.h" 
+#include "ECS/Components/LightComponents.h"
 #include "ECS/Components/TransformComponent.h"
 #include "ECS/Registry.h"
 #include "ECS/RegistryView.h"
@@ -27,6 +27,8 @@
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 
+// Math
+#include "Math/MathUtils.h"  // MatrixTranspose
 
 namespace ECS
 {
@@ -79,10 +81,7 @@ namespace ECS
 		mFrameData.cameraPosition = cameraTransform->position;
 
 		// VP 미리 계산
-		Math::Matrix4x4 viewProj = Math::MatrixMultiply(
-			mFrameData.viewMatrix,
-			mFrameData.projectionMatrix
-		);
+		Math::Matrix4x4 viewProj = mFrameData.viewMatrix * mFrameData.projectionMatrix;
 
 		// 조명 데이터 수집 (정적 함수 사용)
 		LightingSystem::CollectDirectionalLights(*GetRegistry(), mFrameData.directionalLights);
@@ -124,8 +123,7 @@ namespace ECS
 			renderItem.worldMatrix = worldMatrix;
 
 			// MVP 미리 계산
-			renderItem.mvpMatrix = Math::MatrixMultiply(worldMatrix, viewProj);
-			renderItem.mvpMatrix = Math::MatrixTranspose(renderItem.mvpMatrix);
+			renderItem.mvpMatrix = Math::MatrixTranspose(worldMatrix * viewProj);
 
 			mFrameData.opaqueItems.push_back(renderItem);
 		}

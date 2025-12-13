@@ -11,12 +11,12 @@ namespace Graphics
 	 */
 	enum class TextureType : uint8
 	{
-		Diffuse = 0,          // 기본 색상 텍스처 (t0)
+		Albedo = 0,          // 기본 색상 텍스처 (t0)
 		Normal,               // 노말 맵 (t1)
 		Specular,             // 스페큘러 맵 (t2)
 		Roughness,            // 거칠기 맵 (t3) - PBR용
 		Metallic,             // 메탈릭 맵 (t4) - PBR용
-		AmbientOcclusion,     // AO 맵 (t5)
+		AmbientOcclusion,     // AmbientOcclusion 맵 (t5)
 		Emissive,             // 발광 맵 (t6)
 
 		Count                 // 텍스처 타입 개수 (7개)
@@ -40,8 +40,8 @@ namespace Graphics
 	{
 		switch (type)
 		{
-		case TextureType::Diffuse:
-			return "Diffuse";
+		case TextureType::Albedo:
+			return "Albedo";
 		case TextureType::Normal:
 			return "Normal";
 		case TextureType::Specular:

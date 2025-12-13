@@ -17,8 +17,11 @@ namespace Graphics
 	{
 		const Mesh* mesh = nullptr;
 		const Material* material = nullptr;
-		Math::Matrix4x4 worldMatrix = Math::MatrixIdentity();
-		Math::Matrix4x4 mvpMatrix = Math::MatrixIdentity();  // 미리 계산된 MVP (셰이더 전달용)
+		Math::Matrix4x4 worldMatrix = Math::Matrix4x4::Identity();
+		Math::Matrix4x4 mvpMatrix = Math::Matrix4x4::Identity();
+
+		// TODO: Phase 3.5 - 비균등 스케일 지원
+		// Math::Matrix4x4 worldInvTranspose = Math::Matrix4x4::Identity();
 
 		// 향후 확장
 		// Core::uint32 stencilRef = 0;

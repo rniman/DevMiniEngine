@@ -58,14 +58,24 @@ namespace ECS
 		bool Translate(Entity entity, const Math::Vector3& delta);
 
 		bool GetWorldMatrix(Entity entity, Math::Matrix4x4& outMatrix);
-		bool LookAt(Entity entity, const Math::Vector3& target, const Math::Vector3& up = Math::Vector3(0.0f, 1.0f, 0.0f));
+		bool GetWorldInvTranspose(Entity entity, Math::Matrix4x4& outMatrix);
+		bool LookAt(
+			Entity entity,
+			const Math::Vector3& target,
+			const Math::Vector3& up = Math::Vector3::Up()
+		);
 
 		//=========================================================================
 		// 저수준 API (Component 직접) - System 내부, 다른 System에서 호출
 		//=========================================================================
 
 		static void SetRotationEuler(TransformComponent& transform, const Math::Vector3& eulerAngles);
-		static void SetRotationEuler(TransformComponent& transform, Core::float32 pitch, Core::float32 yaw, Core::float32 roll);
+		static void SetRotationEuler(
+			TransformComponent& transform,
+			Core::float32 pitch,
+			Core::float32 yaw,
+			Core::float32 roll
+		);
 		static Math::Vector3 GetRotationEuler(const TransformComponent& transform);
 
 		static void Rotate(TransformComponent& transform, const Math::Vector3& eulerDelta);
@@ -73,6 +83,7 @@ namespace ECS
 
 		static Math::Matrix4x4 GetLocalMatrix(const TransformComponent& transform);
 		static Math::Matrix4x4 GetWorldMatrix(const TransformComponent& transform);
+		static Math::Matrix4x4 GetWorldInvTranspose(const TransformComponent& transform);
 
 		static Math::Vector3 GetForward(const TransformComponent& transform);
 		static Math::Vector3 GetRight(const TransformComponent& transform);

@@ -371,6 +371,38 @@ namespace Graphics
 	//	return count;
 	//}
 
+	Core::uint32 Material::GetTextureFlags() const
+	{
+		Core::uint32 flags = 0;
+
+		if (HasTexture(TextureType::Albedo))
+		{
+			flags |= static_cast<Core::uint32>(TextureFlags::Albedo);
+		}
+		if (HasTexture(TextureType::Normal))
+		{
+			flags |= static_cast<Core::uint32>(TextureFlags::Normal);
+		}
+		if (HasTexture(TextureType::Metallic))
+		{
+			flags |= static_cast<Core::uint32>(TextureFlags::Metallic);
+		}
+		if (HasTexture(TextureType::Roughness))
+		{
+			flags |= static_cast<Core::uint32>(TextureFlags::Roughness);
+		}
+		if (HasTexture(TextureType::AmbientOcclusion))
+		{
+			flags |= static_cast<Core::uint32>(TextureFlags::AmbientOcclusion);
+		}
+		if (HasTexture(TextureType::Emissive))
+		{
+			flags |= static_cast<Core::uint32>(TextureFlags::Emissive);
+		}
+
+		return flags;
+	}
+
 	D3D12_GPU_DESCRIPTOR_HANDLE Material::GetDescriptorTableHandle(const DX12DescriptorHeap* heap) const
 	{
 		if (!heap)

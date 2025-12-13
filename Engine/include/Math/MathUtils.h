@@ -154,6 +154,21 @@ namespace Math
 		return DirectX::XMVectorGetX(angle);
 	}
 
+	inline bool IsUniformScale(const Math::Vector3& scale)
+	{
+		// 1. 가장 흔한 케이스 (1,1,1) 빠른 탈출
+		if (scale.x == 1.0f && scale.y == 1.0f && scale.z == 1.0f)
+		{
+			return true;
+		}
+
+		// 일반적인 균등 스케일 체크
+		float deltaXY = std::abs(scale.x - scale.y);
+		float deltaXZ = std::abs(scale.x - scale.z);
+
+		return (deltaXY < Math::EPSILON) && (deltaXZ < Math::EPSILON);
+	}
+
 	//=============================================================================
 	// Vector4 유틸리티 함수
 	//=============================================================================

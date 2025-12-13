@@ -462,6 +462,21 @@ namespace Math
 			return x * other.x + y * other.y + z * other.z + w * other.w;
 		}
 
+		// 벡터 회전
+		Vector3 RotateVector(const Vector3& v) const
+		{
+			VectorSIMD result = DirectX::XMVector3Rotate(v.ToSIMD(), ToSIMD());
+			return Vector3::FromSIMD(result);
+		}
+
+		// 방향 벡터 추출
+		Vector3 GetForward() const { return RotateVector(Vector3::Forward()); }
+		Vector3 GetUp() const { return RotateVector(Vector3::Up()); }
+		Vector3 GetRight() const { return RotateVector(Vector3::Right()); }
+
+		// Euler 변환 
+		inline Vector3 ToEuler() const;
+
 		// 인덱스 접근
 		Core::float32& operator[](Core::size_t index) { return (&x)[index]; }
 		const Core::float32& operator[](Core::size_t index) const { return (&x)[index]; }
@@ -630,6 +645,33 @@ namespace Math
 		}
 		bool operator!=(const Matrix4x4& other) const { return !(*this == other); }
 	};
+
+	// Quaternion::ToEuler 구현 (Matrix4x4 정의 후)
+	inline Vector3 Quaternion::ToEuler() const
+	{
+		// Quaternion을 행렬로 변환
+		MatrixSIMD rotMat = DirectX::XMMatrixRotationQuaternion(ToSIMD());
+		Matrix4x4 mat = Matrix4x4::FromSIMD(rotMat);
+
+		Core::float32 pitch, yaw, roll;
+		Core::float32 sinPitch = -mat.m[1][2];
+
+		// Gimbal Lock 체크
+		if (std::abs(sinPitch) >= 0.9999f)
+		{
+			pitch = std::copysign(HALF_PI, sinPitch);
+			yaw = std::atan2(-mat.m[0][1], mat.m[0][0]);
+			roll = 0.0f;
+		}
+		else
+		{
+			pitch = std::asin(sinPitch);
+			yaw = std::atan2(mat.m[0][2], mat.m[2][2]);
+			roll = std::atan2(mat.m[1][0], mat.m[1][1]);
+		}
+
+		return Vector3(pitch, yaw, roll);
+	}
 
 	//=============================================================================
 	// Matrix3x3 (using alias 유지 - 사용 빈도 낮음)

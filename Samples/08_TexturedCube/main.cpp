@@ -143,7 +143,7 @@ private:
 			return false;
 		}
 
-		material->SetTexture(Graphics::TextureType::Diffuse, diffuseTex);
+		material->SetTexture(Graphics::TextureType::Albedo, diffuseTex);
 		material->SetTexture(Graphics::TextureType::Normal, normalTex);
 
 		// TODO: 아키텍처 리팩토링

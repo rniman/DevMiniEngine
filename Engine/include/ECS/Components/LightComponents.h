@@ -20,7 +20,7 @@ namespace ECS
 	 */
 	struct DirectionalLightComponent
 	{
-		Math::Vector3 direction = Math::Vector3(0.0f, -1.0f, 0.0f);   // 정규화된 방향 벡터
+		Math::Vector3 direction = Math::Vector3::Down();   // 정규화된 방향 벡터
 		Math::Vector3 color = Math::Vector3(1.0f, 1.0f, 1.0f);        // RGB (0~1)
 		Core::float32 intensity = 1.0f;                               // 조명 강도
 		bool castsShadow = false;                                     // Phase 6: Shadow Map

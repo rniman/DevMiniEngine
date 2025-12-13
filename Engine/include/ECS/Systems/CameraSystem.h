@@ -42,7 +42,6 @@ namespace ECS
 		void Update(Core::float32 deltaTime) override;
 		void Shutdown() override;
 
-
 		//=========================================================================
 		// 고수준 API (Entity 기반)
 		//=========================================================================
@@ -60,7 +59,7 @@ namespace ECS
 			Entity entity,
 			const Math::Vector3& position,
 			const Math::Vector3& target,
-			const Math::Vector3& up = Math::Vector3(0.0f, 1.0f, 0.0f)
+			const Math::Vector3& up = Math::Vector3::Up()
 		);
 
 		//=========================================================================
@@ -83,9 +82,8 @@ namespace ECS
 			CameraComponent& camera,
 			const Math::Vector3& position,
 			const Math::Vector3& target,
-			const Math::Vector3& up = Math::Vector3(0.0f, 1.0f, 0.0f)
+			const Math::Vector3& up = Math::Vector3::Up()
 		);
-
 	};
 
 } // namespace ECS

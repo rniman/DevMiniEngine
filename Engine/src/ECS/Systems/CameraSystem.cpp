@@ -9,8 +9,6 @@
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h"
 
-using namespace Math;
-
 namespace ECS
 {
 	//=============================================================================
@@ -44,7 +42,6 @@ namespace ECS
 	//=============================================================================
 	// 고수준 API (Entity 기반)
 	//=============================================================================
-
 
 	Entity CameraSystem::FindMainCamera()
 	{
@@ -187,9 +184,9 @@ namespace ECS
 			return;
 		}
 
-		Math::Vector3 forward = Math::Vector3RotateByQuaternion(camera.forward, transform.rotation);
-		Math::Vector3 up = Math::Vector3RotateByQuaternion(camera.up, transform.rotation);
-		Math::Vector3 target = Math::Add(transform.position, forward);
+		Math::Vector3 forward = transform.rotation.RotateVector(camera.forward);
+		Math::Vector3 up = transform.rotation.RotateVector(camera.up);
+		Math::Vector3 target = transform.position + forward;
 
 		camera.viewMatrix = Math::MatrixLookAtLH(transform.position, target, up);
 		camera.viewDirty = false;
@@ -295,7 +292,7 @@ namespace ECS
 	{
 		transform.position = position;
 
-		Math::Vector3 forward = Math::Normalize(Math::Subtract(target, position));
+		Math::Vector3 forward = (target - position).Normalized();
 
 		camera.viewMatrix = Math::MatrixLookAtLH(position, target, up);
 		camera.forward = forward;
