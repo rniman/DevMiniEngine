@@ -236,7 +236,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 	float finalRoughness = roughness;
 	if(textureFlags & TEX_ROUGHNESS)
 	{
-		finalRoughness *= RoughnessTexture.Sample(DefaultSampler, input.TexCoord).r;
+		finalRoughness = RoughnessTexture.Sample(DefaultSampler, input.TexCoord).r;
 	}
 
     // 5. Shininess (Roughness → Shininess 변환)

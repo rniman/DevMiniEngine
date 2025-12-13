@@ -62,9 +62,9 @@ namespace Math
 		}
 
 		// 벡터 연산
-		Core::float32 Length() const { return std::sqrt(x * x + y * y); }
-		Core::float32 LengthSquared() const { return x * x + y * y; }
-		Vector2 Normalized() const
+		Core::float32 Length() const noexcept { return std::sqrt(x * x + y * y); }
+		Core::float32 LengthSquared() const noexcept { return x * x + y * y; }
+		Vector2 Normalized() const noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -73,7 +73,7 @@ namespace Math
 			}
 			return Zero();
 		}
-		void Normalize()
+		void Normalize() noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -83,41 +83,42 @@ namespace Math
 			}
 		}
 
-		Core::float32 Dot(const Vector2& other) const { return x * other.x + y * other.y; }
+		Core::float32 Dot(const Vector2& other) const noexcept { return x * other.x + y * other.y; }
 
 		// 인덱스 접근
-		Core::float32& operator[](Core::size_t index) { return (&x)[index]; }
-		const Core::float32& operator[](Core::size_t index) const { return (&x)[index]; }
+		// NOTE: 연속 메모리 레이아웃 가정 (XMFLOAT2 호환, 모든 주요 컴파일러에서 동작)
+		Core::float32& operator[](Core::size_t index) noexcept { return (&x)[index]; }
+		const Core::float32& operator[](Core::size_t index) const noexcept { return (&x)[index]; }
 
 		// 단항 연산자
-		Vector2 operator-() const { return Vector2(-x, -y); }
+		Vector2 operator-() const noexcept { return Vector2(-x, -y); }
 
 		// 이항 연산자
-		Vector2 operator+(const Vector2& other) const { return Vector2(x + other.x, y + other.y); }
-		Vector2 operator-(const Vector2& other) const { return Vector2(x - other.x, y - other.y); }
-		Vector2 operator*(Core::float32 scalar) const { return Vector2(x * scalar, y * scalar); }
-		Vector2 operator/(Core::float32 scalar) const { return Vector2(x / scalar, y / scalar); }
-		Vector2 operator*(const Vector2& other) const { return Vector2(x * other.x, y * other.y); }
-		Vector2 operator/(const Vector2& other) const { return Vector2(x / other.x, y / other.y); }
+		Vector2 operator+(const Vector2& other) const noexcept { return Vector2(x + other.x, y + other.y); }
+		Vector2 operator-(const Vector2& other) const noexcept { return Vector2(x - other.x, y - other.y); }
+		Vector2 operator*(Core::float32 scalar) const noexcept { return Vector2(x * scalar, y * scalar); }
+		Vector2 operator/(Core::float32 scalar) const noexcept { return Vector2(x / scalar, y / scalar); }
+		Vector2 operator*(const Vector2& other) const noexcept { return Vector2(x * other.x, y * other.y); }
+		Vector2 operator/(const Vector2& other) const noexcept { return Vector2(x / other.x, y / other.y); }
 
 		// 복합 대입 연산자
-		Vector2& operator+=(const Vector2& other) { x += other.x; y += other.y; return *this; }
-		Vector2& operator-=(const Vector2& other) { x -= other.x; y -= other.y; return *this; }
-		Vector2& operator*=(Core::float32 scalar) { x *= scalar; y *= scalar; return *this; }
-		Vector2& operator/=(Core::float32 scalar) { x /= scalar; y /= scalar; return *this; }
-		Vector2& operator*=(const Vector2& other) { x *= other.x; y *= other.y; return *this; }
-		Vector2& operator/=(const Vector2& other) { x /= other.x; y /= other.y; return *this; }
+		Vector2& operator+=(const Vector2& other) noexcept { x += other.x; y += other.y; return *this; }
+		Vector2& operator-=(const Vector2& other) noexcept { x -= other.x; y -= other.y; return *this; }
+		Vector2& operator*=(Core::float32 scalar) noexcept { x *= scalar; y *= scalar; return *this; }
+		Vector2& operator/=(Core::float32 scalar) noexcept { x /= scalar; y /= scalar; return *this; }
+		Vector2& operator*=(const Vector2& other) noexcept { x *= other.x; y *= other.y; return *this; }
+		Vector2& operator/=(const Vector2& other) noexcept { x /= other.x; y /= other.y; return *this; }
 
 		// 비교 연산자
-		bool operator==(const Vector2& other) const
+		bool operator==(const Vector2& other) const noexcept
 		{
 			return std::abs(x - other.x) < EPSILON && std::abs(y - other.y) < EPSILON;
 		}
-		bool operator!=(const Vector2& other) const { return !(*this == other); }
+		bool operator!=(const Vector2& other) const noexcept { return !(*this == other); }
 	};
 
 	// 스칼라 * 벡터 (교환법칙)
-	inline Vector2 operator*(Core::float32 scalar, const Vector2& v) { return v * scalar; }
+	inline Vector2 operator*(Core::float32 scalar, const Vector2& v) noexcept { return v * scalar; }
 
 	//=============================================================================
 	// Vector3
@@ -160,9 +161,9 @@ namespace Math
 		}
 
 		// 벡터 연산
-		Core::float32 Length() const { return std::sqrt(x * x + y * y + z * z); }
-		Core::float32 LengthSquared() const { return x * x + y * y + z * z; }
-		Vector3 Normalized() const
+		Core::float32 Length() const noexcept { return std::sqrt(x * x + y * y + z * z); }
+		Core::float32 LengthSquared() const noexcept { return x * x + y * y + z * z; }
+		Vector3 Normalized() const noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -171,7 +172,7 @@ namespace Math
 			}
 			return Zero();
 		}
-		void Normalize()
+		void Normalize() noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -182,8 +183,8 @@ namespace Math
 			}
 		}
 
-		Core::float32 Dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
-		Vector3 Cross(const Vector3& other) const
+		Core::float32 Dot(const Vector3& other) const noexcept { return x * other.x + y * other.y + z * other.z; }
+		Vector3 Cross(const Vector3& other) const noexcept
 		{
 			return Vector3(
 				y * other.z - z * other.y,
@@ -197,40 +198,41 @@ namespace Math
 		inline Vector4 ToDirection() const;
 
 		// 인덱스 접근
-		Core::float32& operator[](Core::size_t index) { return (&x)[index]; }
-		const Core::float32& operator[](Core::size_t index) const { return (&x)[index]; }
+		// NOTE: 연속 메모리 레이아웃 가정 (XMFLOAT3 호환, 모든 주요 컴파일러에서 동작)
+		Core::float32& operator[](Core::size_t index) noexcept { return (&x)[index]; }
+		const Core::float32& operator[](Core::size_t index) const noexcept { return (&x)[index]; }
 
 		// 단항 연산자
-		Vector3 operator-() const { return Vector3(-x, -y, -z); }
+		Vector3 operator-() const noexcept { return Vector3(-x, -y, -z); }
 
 		// 이항 연산자
-		Vector3 operator+(const Vector3& other) const { return Vector3(x + other.x, y + other.y, z + other.z); }
-		Vector3 operator-(const Vector3& other) const { return Vector3(x - other.x, y - other.y, z - other.z); }
-		Vector3 operator*(Core::float32 scalar) const { return Vector3(x * scalar, y * scalar, z * scalar); }
-		Vector3 operator/(Core::float32 scalar) const { return Vector3(x / scalar, y / scalar, z / scalar); }
-		Vector3 operator*(const Vector3& other) const { return Vector3(x * other.x, y * other.y, z * other.z); }
-		Vector3 operator/(const Vector3& other) const { return Vector3(x / other.x, y / other.y, z / other.z); }
+		Vector3 operator+(const Vector3& other) const noexcept { return Vector3(x + other.x, y + other.y, z + other.z); }
+		Vector3 operator-(const Vector3& other) const noexcept { return Vector3(x - other.x, y - other.y, z - other.z); }
+		Vector3 operator*(Core::float32 scalar) const noexcept { return Vector3(x * scalar, y * scalar, z * scalar); }
+		Vector3 operator/(Core::float32 scalar) const noexcept { return Vector3(x / scalar, y / scalar, z / scalar); }
+		Vector3 operator*(const Vector3& other) const noexcept { return Vector3(x * other.x, y * other.y, z * other.z); }
+		Vector3 operator/(const Vector3& other) const noexcept { return Vector3(x / other.x, y / other.y, z / other.z); }
 
 		// 복합 대입 연산자
-		Vector3& operator+=(const Vector3& other) { x += other.x; y += other.y; z += other.z; return *this; }
-		Vector3& operator-=(const Vector3& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
-		Vector3& operator*=(Core::float32 scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
-		Vector3& operator/=(Core::float32 scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
-		Vector3& operator*=(const Vector3& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
-		Vector3& operator/=(const Vector3& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
+		Vector3& operator+=(const Vector3& other) noexcept { x += other.x; y += other.y; z += other.z; return *this; }
+		Vector3& operator-=(const Vector3& other) noexcept { x -= other.x; y -= other.y; z -= other.z; return *this; }
+		Vector3& operator*=(Core::float32 scalar) noexcept { x *= scalar; y *= scalar; z *= scalar; return *this; }
+		Vector3& operator/=(Core::float32 scalar) noexcept { x /= scalar; y /= scalar; z /= scalar; return *this; }
+		Vector3& operator*=(const Vector3& other) noexcept { x *= other.x; y *= other.y; z *= other.z; return *this; }
+		Vector3& operator/=(const Vector3& other) noexcept { x /= other.x; y /= other.y; z /= other.z; return *this; }
 
 		// 비교 연산자
-		bool operator==(const Vector3& other) const
+		bool operator==(const Vector3& other) const noexcept
 		{
 			return std::abs(x - other.x) < EPSILON &&
 				std::abs(y - other.y) < EPSILON &&
 				std::abs(z - other.z) < EPSILON;
 		}
-		bool operator!=(const Vector3& other) const { return !(*this == other); }
+		bool operator!=(const Vector3& other) const noexcept { return !(*this == other); }
 	};
 
 	// 스칼라 * 벡터 (교환법칙)
-	inline Vector3 operator*(Core::float32 scalar, const Vector3& v) { return v * scalar; }
+	inline Vector3 operator*(Core::float32 scalar, const Vector3& v) noexcept { return v * scalar; }
 
 	//=============================================================================
 	// Vector4
@@ -275,13 +277,13 @@ namespace Math
 		}
 
 		// 하위 차원 추출
-		Vector2 XY() const { return Vector2(x, y); }
-		Vector3 XYZ() const { return Vector3(x, y, z); }
+		Vector2 XY() const noexcept { return Vector2(x, y); }
+		Vector3 XYZ() const noexcept { return Vector3(x, y, z); }
 
 		// 벡터 연산
-		Core::float32 Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
-		Core::float32 LengthSquared() const { return x * x + y * y + z * z + w * w; }
-		Vector4 Normalized() const
+		Core::float32 Length() const noexcept { return std::sqrt(x * x + y * y + z * z + w * w); }
+		Core::float32 LengthSquared() const noexcept { return x * x + y * y + z * z + w * w; }
+		Vector4 Normalized() const noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -290,7 +292,7 @@ namespace Math
 			}
 			return Zero();
 		}
-		void Normalize()
+		void Normalize() noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -302,92 +304,93 @@ namespace Math
 			}
 		}
 
-		Core::float32 Dot(const Vector4& other) const
+		Core::float32 Dot(const Vector4& other) const noexcept
 		{
 			return x * other.x + y * other.y + z * other.z + w * other.w;
 		}
 
 		// 인덱스 접근
-		Core::float32& operator[](Core::size_t index) { return (&x)[index]; }
-		const Core::float32& operator[](Core::size_t index) const { return (&x)[index]; }
+		// NOTE: 연속 메모리 레이아웃 가정 (XMFLOAT4 호환, 모든 주요 컴파일러에서 동작)
+		Core::float32& operator[](Core::size_t index) noexcept { return (&x)[index]; }
+		const Core::float32& operator[](Core::size_t index) const noexcept { return (&x)[index]; }
 
 		// 단항 연산자
-		Vector4 operator-() const { return Vector4(-x, -y, -z, -w); }
+		Vector4 operator-() const noexcept { return Vector4(-x, -y, -z, -w); }
 
 		// 이항 연산자
-		Vector4 operator+(const Vector4& other) const
+		Vector4 operator+(const Vector4& other) const noexcept
 		{
 			return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
 		}
-		Vector4 operator-(const Vector4& other) const
+		Vector4 operator-(const Vector4& other) const noexcept
 		{
 			return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
 		}
-		Vector4 operator*(Core::float32 scalar) const
+		Vector4 operator*(Core::float32 scalar) const noexcept
 		{
 			return Vector4(x * scalar, y * scalar, z * scalar, w * scalar);
 		}
-		Vector4 operator/(Core::float32 scalar) const
+		Vector4 operator/(Core::float32 scalar) const noexcept
 		{
 			return Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
 		}
-		Vector4 operator*(const Vector4& other) const
+		Vector4 operator*(const Vector4& other) const noexcept
 		{
 			return Vector4(x * other.x, y * other.y, z * other.z, w * other.w);
 		}
-		Vector4 operator/(const Vector4& other) const
+		Vector4 operator/(const Vector4& other) const noexcept
 		{
 			return Vector4(x / other.x, y / other.y, z / other.z, w / other.w);
 		}
 
 		// 복합 대입 연산자
-		Vector4& operator+=(const Vector4& other)
+		Vector4& operator+=(const Vector4& other) noexcept
 		{
 			x += other.x; y += other.y; z += other.z; w += other.w;
 			return *this;
 		}
-		Vector4& operator-=(const Vector4& other)
+		Vector4& operator-=(const Vector4& other) noexcept
 		{
 			x -= other.x; y -= other.y; z -= other.z; w -= other.w;
 			return *this;
 		}
-		Vector4& operator*=(Core::float32 scalar)
+		Vector4& operator*=(Core::float32 scalar) noexcept
 		{
 			x *= scalar; y *= scalar; z *= scalar; w *= scalar;
 			return *this;
 		}
-		Vector4& operator/=(Core::float32 scalar)
+		Vector4& operator/=(Core::float32 scalar) noexcept
 		{
 			x /= scalar; y /= scalar; z /= scalar; w /= scalar;
 			return *this;
 		}
-		Vector4& operator*=(const Vector4& other)
+		Vector4& operator*=(const Vector4& other) noexcept
 		{
 			x *= other.x; y *= other.y; z *= other.z; w *= other.w;
 			return *this;
 		}
-		Vector4& operator/=(const Vector4& other)
+		Vector4& operator/=(const Vector4& other) noexcept
 		{
 			x /= other.x; y /= other.y; z /= other.z; w /= other.w;
 			return *this;
 		}
 
 		// 비교 연산자
-		bool operator==(const Vector4& other) const
+		bool operator==(const Vector4& other) const noexcept
 		{
 			return std::abs(x - other.x) < EPSILON &&
 				std::abs(y - other.y) < EPSILON &&
 				std::abs(z - other.z) < EPSILON &&
 				std::abs(w - other.w) < EPSILON;
 		}
-		bool operator!=(const Vector4& other) const { return !(*this == other); }
+		bool operator!=(const Vector4& other) const noexcept { return !(*this == other); }
 	};
 
 	// 스칼라 * 벡터 (교환법칙)
-	inline Vector4 operator*(Core::float32 scalar, const Vector4& v) { return v * scalar; }
+	inline Vector4 operator*(Core::float32 scalar, const Vector4& v) noexcept { return v * scalar; }
 
-	inline Vector4 Vector3::ToPoint() const { return Vector4(x, y, z, 1.0f); }
-	inline Vector4 Vector3::ToDirection() const { return Vector4(x, y, z, 0.0f); }
+	inline Vector4 Vector3::ToPoint() const noexcept { return Vector4(x, y, z, 1.0f); }
+	inline Vector4 Vector3::ToDirection() const noexcept { return Vector4(x, y, z, 0.0f); }
 
 	//=============================================================================
 	// Quaternion
@@ -422,9 +425,9 @@ namespace Math
 		}
 
 		// 쿼터니언 연산
-		Core::float32 Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
-		Core::float32 LengthSquared() const { return x * x + y * y + z * z + w * w; }
-		Quaternion Normalized() const
+		Core::float32 Length() const noexcept { return std::sqrt(x * x + y * y + z * z + w * w); }
+		Core::float32 LengthSquared() const noexcept { return x * x + y * y + z * z + w * w; }
+		Quaternion Normalized() const noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -433,7 +436,7 @@ namespace Math
 			}
 			return Identity();
 		}
-		void Normalize()
+		void Normalize() noexcept
 		{
 			Core::float32 len = Length();
 			if (len > EPSILON)
@@ -445,8 +448,8 @@ namespace Math
 			}
 		}
 
-		Quaternion Conjugate() const { return Quaternion(-x, -y, -z, w); }
-		Quaternion Inverse() const
+		Quaternion Conjugate() const noexcept { return Quaternion(-x, -y, -z, w); }
+		Quaternion Inverse() const noexcept
 		{
 			Core::float32 lenSq = LengthSquared();
 			if (lenSq > EPSILON)
@@ -457,32 +460,33 @@ namespace Math
 			return Identity();
 		}
 
-		Core::float32 Dot(const Quaternion& other) const
+		Core::float32 Dot(const Quaternion& other) const noexcept
 		{
 			return x * other.x + y * other.y + z * other.z + w * other.w;
 		}
 
 		// 벡터 회전
-		Vector3 RotateVector(const Vector3& v) const
+		Vector3 RotateVector(const Vector3& v) const noexcept
 		{
 			VectorSIMD result = DirectX::XMVector3Rotate(v.ToSIMD(), ToSIMD());
 			return Vector3::FromSIMD(result);
 		}
 
 		// 방향 벡터 추출
-		Vector3 GetForward() const { return RotateVector(Vector3::Forward()); }
-		Vector3 GetUp() const { return RotateVector(Vector3::Up()); }
-		Vector3 GetRight() const { return RotateVector(Vector3::Right()); }
+		Vector3 GetForward() const noexcept { return RotateVector(Vector3::Forward()); }
+		Vector3 GetUp() const noexcept { return RotateVector(Vector3::Up()); }
+		Vector3 GetRight() const noexcept { return RotateVector(Vector3::Right()); }
 
 		// Euler 변환 
-		inline Vector3 ToEuler() const;
+		inline Vector3 ToEuler() const noexcept;
 
 		// 인덱스 접근
-		Core::float32& operator[](Core::size_t index) { return (&x)[index]; }
-		const Core::float32& operator[](Core::size_t index) const { return (&x)[index]; }
+		// NOTE: 연속 메모리 레이아웃 가정 (XMFLOAT4 호환, 모든 주요 컴파일러에서 동작)
+		Core::float32& operator[](Core::size_t index) noexcept { return (&x)[index]; }
+		const Core::float32& operator[](Core::size_t index) const noexcept { return (&x)[index]; }
 
 		// 쿼터니언 곱셈 (회전 합성)
-		Quaternion operator*(const Quaternion& other) const
+		Quaternion operator*(const Quaternion& other) const noexcept
 		{
 			return Quaternion(
 				w * other.x + x * other.w + y * other.z - z * other.y,
@@ -492,21 +496,21 @@ namespace Math
 			);
 		}
 
-		Quaternion& operator*=(const Quaternion& other)
+		Quaternion& operator*=(const Quaternion& other) noexcept
 		{
 			*this = *this * other;
 			return *this;
 		}
 
 		// 비교 연산자
-		bool operator==(const Quaternion& other) const
+		bool operator==(const Quaternion& other) const noexcept
 		{
 			return std::abs(x - other.x) < EPSILON &&
 				std::abs(y - other.y) < EPSILON &&
 				std::abs(z - other.z) < EPSILON &&
 				std::abs(w - other.w) < EPSILON;
 		}
-		bool operator!=(const Quaternion& other) const { return !(*this == other); }
+		bool operator!=(const Quaternion& other) const noexcept { return !(*this == other); }
 	};
 
 	//=============================================================================
@@ -581,47 +585,47 @@ namespace Math
 		}
 
 		// 행/열 접근
-		Vector4 GetRow(Core::size_t row) const
+		Vector4 GetRow(Core::size_t row) const noexcept
 		{
 			return Vector4(m[row][0], m[row][1], m[row][2], m[row][3]);
 		}
-		Vector4 GetColumn(Core::size_t col) const
+		Vector4 GetColumn(Core::size_t col) const noexcept
 		{
 			return Vector4(m[0][col], m[1][col], m[2][col], m[3][col]);
 		}
-		void SetRow(Core::size_t row, const Vector4& v)
+		void SetRow(Core::size_t row, const Vector4& v) noexcept
 		{
 			m[row][0] = v.x; m[row][1] = v.y; m[row][2] = v.z; m[row][3] = v.w;
 		}
-		void SetColumn(Core::size_t col, const Vector4& v)
+		void SetColumn(Core::size_t col, const Vector4& v) noexcept
 		{
 			m[0][col] = v.x; m[1][col] = v.y; m[2][col] = v.z; m[3][col] = v.w;
 		}
 
 		// Translation 추출/설정
-		Vector3 GetTranslation() const { return Vector3(m[3][0], m[3][1], m[3][2]); }
-		void SetTranslation(const Vector3& v) { m[3][0] = v.x; m[3][1] = v.y; m[3][2] = v.z; }
+		Vector3 GetTranslation() const noexcept { return Vector3(m[3][0], m[3][1], m[3][2]); }
+		void SetTranslation(const Vector3& v) noexcept { m[3][0] = v.x; m[3][1] = v.y; m[3][2] = v.z; }
 
 		// 인덱스 접근
-		Core::float32* operator[](Core::size_t row) { return m[row]; }
-		const Core::float32* operator[](Core::size_t row) const { return m[row]; }
+		Core::float32* operator[](Core::size_t row) noexcept { return m[row]; }
+		const Core::float32* operator[](Core::size_t row) const noexcept { return m[row]; }
 
 		// 행렬 곱셈
-		Matrix4x4 operator*(const Matrix4x4& other) const
+		Matrix4x4 operator*(const Matrix4x4& other) const noexcept
 		{
 			MatrixSIMD a = ToSIMD();
 			MatrixSIMD b = other.ToSIMD();
 			return FromSIMD(DirectX::XMMatrixMultiply(a, b));
 		}
 
-		Matrix4x4& operator*=(const Matrix4x4& other)
+		Matrix4x4& operator*=(const Matrix4x4& other) noexcept
 		{
 			*this = *this * other;
 			return *this;
 		}
 
 		// 행렬 * 벡터 (점 변환)
-		Vector4 operator*(const Vector4& v) const
+		Vector4 operator*(const Vector4& v) const noexcept
 		{
 			VectorSIMD vec = v.ToSIMD();
 			MatrixSIMD mat = ToSIMD();
@@ -629,7 +633,7 @@ namespace Math
 		}
 
 		// 비교 연산자
-		bool operator==(const Matrix4x4& other) const
+		bool operator==(const Matrix4x4& other) const noexcept
 		{
 			for (int i = 0; i < 4; ++i)
 			{
@@ -643,11 +647,11 @@ namespace Math
 			}
 			return true;
 		}
-		bool operator!=(const Matrix4x4& other) const { return !(*this == other); }
+		bool operator!=(const Matrix4x4& other) const noexcept { return !(*this == other); }
 	};
 
 	// Quaternion::ToEuler 구현 (Matrix4x4 정의 후)
-	inline Vector3 Quaternion::ToEuler() const
+	inline Vector3 Quaternion::ToEuler() const noexcept
 	{
 		// Quaternion을 행렬로 변환
 		MatrixSIMD rotMat = DirectX::XMMatrixRotationQuaternion(ToSIMD());

@@ -27,7 +27,7 @@ namespace Math
 	 * @param value 검사할 값
 	 * @return 0에 가까우면 true
 	 */
-	inline bool IsZero(Core::float32 value)
+	inline bool IsZero(Core::float32 value) noexcept
 	{
 		return std::abs(value) < EPSILON;
 	}
@@ -38,7 +38,7 @@ namespace Math
 	 * @param epsilon 비교 임계값
 	 * @return 0에 가까우면 true
 	 */
-	inline bool IsZero(Core::float32 value, Core::float32 epsilon)
+	inline bool IsZero(Core::float32 value, Core::float32 epsilon) noexcept
 	{
 		return std::abs(value) < epsilon;
 	}
@@ -49,7 +49,7 @@ namespace Math
 	 * @param b 두 번째 값
 	 * @return 거의 같으면 true
 	 */
-	inline bool IsEqual(Core::float32 a, Core::float32 b)
+	inline bool IsEqual(Core::float32 a, Core::float32 b) noexcept
 	{
 		return IsZero(a - b);
 	}
@@ -61,7 +61,7 @@ namespace Math
 	 * @param epsilon 비교 임계값
 	 * @return 거의 같으면 true
 	 */
-	inline bool IsEqual(Core::float32 a, Core::float32 b, Core::float32 epsilon)
+	inline bool IsEqual(Core::float32 a, Core::float32 b, Core::float32 epsilon) noexcept
 	{
 		return IsZero(a - b, epsilon);
 	}
@@ -70,32 +70,32 @@ namespace Math
 	// Vector2 유틸리티 함수
 	//=============================================================================
 
-	inline Vector2 Add(const Vector2& a, const Vector2& b) { return a + b; }
-	inline Vector2 Subtract(const Vector2& a, const Vector2& b) { return a - b; }
-	inline Vector2 Multiply(const Vector2& v, Core::float32 scalar) { return v * scalar; }
-	inline Core::float32 Dot(const Vector2& a, const Vector2& b) { return a.Dot(b); }
-	inline Core::float32 Length(const Vector2& v) { return v.Length(); }
-	inline Core::float32 LengthSquared(const Vector2& v) { return v.LengthSquared(); }
-	inline Vector2 Normalize(const Vector2& v) { return v.Normalized(); }
+	inline Vector2 Add(const Vector2& a, const Vector2& b) noexcept { return a + b; }
+	inline Vector2 Subtract(const Vector2& a, const Vector2& b) noexcept { return a - b; }
+	inline Vector2 Multiply(const Vector2& v, Core::float32 scalar) noexcept { return v * scalar; }
+	inline Core::float32 Dot(const Vector2& a, const Vector2& b) noexcept { return a.Dot(b); }
+	inline Core::float32 Length(const Vector2& v) noexcept { return v.Length(); }
+	inline Core::float32 LengthSquared(const Vector2& v) noexcept { return v.LengthSquared(); }
+	inline Vector2 Normalize(const Vector2& v) noexcept { return v.Normalized(); }
 
-	inline Core::float32 Distance(const Vector2& a, const Vector2& b)
+	inline Core::float32 Distance(const Vector2& a, const Vector2& b) noexcept
 	{
 		return (b - a).Length();
 	}
 
-	inline Vector2 Lerp(const Vector2& a, const Vector2& b, Core::float32 t)
+	inline Vector2 Lerp(const Vector2& a, const Vector2& b, Core::float32 t) noexcept
 	{
 		return Vector2::FromSIMD(DirectX::XMVectorLerp(a.ToSIMD(), b.ToSIMD(), t));
 	}
 
 	/// @brief 2D 벡터의 수직 벡터 반환 (반시계 방향 90도 회전)
-	inline Vector2 Perpendicular(const Vector2& v)
+	inline Vector2 Perpendicular(const Vector2& v) noexcept
 	{
 		return Vector2(-v.y, v.x);
 	}
 
 	/// @brief 2D 외적 (z 성분 반환, 면적 계산 등에 사용)
-	inline Core::float32 Cross2D(const Vector2& a, const Vector2& b)
+	inline Core::float32 Cross2D(const Vector2& a, const Vector2& b) noexcept
 	{
 		return a.x * b.y - a.y * b.x;
 	}
@@ -104,39 +104,39 @@ namespace Math
 	// Vector3 유틸리티 함수
 	//=============================================================================
 
-	inline Vector3 Add(const Vector3& a, const Vector3& b) { return a + b; }
-	inline Vector3 Subtract(const Vector3& a, const Vector3& b) { return a - b; }
-	inline Vector3 Multiply(const Vector3& v, Core::float32 scalar) { return v * scalar; }
-	inline Core::float32 Dot(const Vector3& a, const Vector3& b) { return a.Dot(b); }
-	inline Vector3 Cross(const Vector3& a, const Vector3& b) { return a.Cross(b); }
-	inline Core::float32 Length(const Vector3& v) { return v.Length(); }
-	inline Core::float32 LengthSquared(const Vector3& v) { return v.LengthSquared(); }
-	inline Vector3 Normalize(const Vector3& v) { return v.Normalized(); }
+	inline Vector3 Add(const Vector3& a, const Vector3& b) noexcept { return a + b; }
+	inline Vector3 Subtract(const Vector3& a, const Vector3& b) noexcept { return a - b; }
+	inline Vector3 Multiply(const Vector3& v, Core::float32 scalar) noexcept { return v * scalar; }
+	inline Core::float32 Dot(const Vector3& a, const Vector3& b) noexcept { return a.Dot(b); }
+	inline Vector3 Cross(const Vector3& a, const Vector3& b) noexcept { return a.Cross(b); }
+	inline Core::float32 Length(const Vector3& v) noexcept { return v.Length(); }
+	inline Core::float32 LengthSquared(const Vector3& v) noexcept { return v.LengthSquared(); }
+	inline Vector3 Normalize(const Vector3& v) noexcept { return v.Normalized(); }
 
-	inline Core::float32 Distance(const Vector3& a, const Vector3& b)
+	inline Core::float32 Distance(const Vector3& a, const Vector3& b) noexcept
 	{
 		return (b - a).Length();
 	}
 
-	inline Vector3 Lerp(const Vector3& a, const Vector3& b, Core::float32 t)
+	inline Vector3 Lerp(const Vector3& a, const Vector3& b, Core::float32 t) noexcept
 	{
 		return Vector3::FromSIMD(DirectX::XMVectorLerp(a.ToSIMD(), b.ToSIMD(), t));
 	}
 
 	/// @brief 벡터 반사 (입사 벡터와 법선으로 반사 벡터 계산)
-	inline Vector3 Reflect(const Vector3& incident, const Vector3& normal)
+	inline Vector3 Reflect(const Vector3& incident, const Vector3& normal) noexcept
 	{
 		return Vector3::FromSIMD(DirectX::XMVector3Reflect(incident.ToSIMD(), normal.ToSIMD()));
 	}
 
 	/// @brief 벡터를 평면에 투영
-	inline Vector3 ProjectOnPlane(const Vector3& v, const Vector3& planeNormal)
+	inline Vector3 ProjectOnPlane(const Vector3& v, const Vector3& planeNormal) noexcept
 	{
 		return v - planeNormal * v.Dot(planeNormal);
 	}
 
 	/// @brief 벡터를 다른 벡터에 투영
-	inline Vector3 ProjectOnVector(const Vector3& v, const Vector3& target)
+	inline Vector3 ProjectOnVector(const Vector3& v, const Vector3& target) noexcept
 	{
 		Core::float32 dot = v.Dot(target);
 		Core::float32 lenSq = target.LengthSquared();
@@ -148,13 +148,13 @@ namespace Math
 	}
 
 	/// @brief 두 벡터 사이의 각도 (라디안)
-	inline Core::float32 AngleBetween(const Vector3& a, const Vector3& b)
+	inline Core::float32 AngleBetween(const Vector3& a, const Vector3& b) noexcept
 	{
 		VectorSIMD angle = DirectX::XMVector3AngleBetweenVectors(a.ToSIMD(), b.ToSIMD());
 		return DirectX::XMVectorGetX(angle);
 	}
 
-	inline bool IsUniformScale(const Math::Vector3& scale)
+	inline bool IsUniformScale(const Math::Vector3& scale) noexcept
 	{
 		// 1. 가장 흔한 케이스 (1,1,1) 빠른 탈출
 		if (scale.x == 1.0f && scale.y == 1.0f && scale.z == 1.0f)
@@ -163,8 +163,8 @@ namespace Math
 		}
 
 		// 일반적인 균등 스케일 체크
-		float deltaXY = std::abs(scale.x - scale.y);
-		float deltaXZ = std::abs(scale.x - scale.z);
+		Core::float32 deltaXY = std::abs(scale.x - scale.y);
+		Core::float32 deltaXZ = std::abs(scale.x - scale.z);
 
 		return (deltaXY < Math::EPSILON) && (deltaXZ < Math::EPSILON);
 	}
@@ -173,15 +173,15 @@ namespace Math
 	// Vector4 유틸리티 함수
 	//=============================================================================
 
-	inline Vector4 Add(const Vector4& a, const Vector4& b) { return a + b; }
-	inline Vector4 Subtract(const Vector4& a, const Vector4& b) { return a - b; }
-	inline Vector4 Multiply(const Vector4& v, Core::float32 scalar) { return v * scalar; }
-	inline Core::float32 Dot(const Vector4& a, const Vector4& b) { return a.Dot(b); }
-	inline Core::float32 Length(const Vector4& v) { return v.Length(); }
-	inline Core::float32 LengthSquared(const Vector4& v) { return v.LengthSquared(); }
-	inline Vector4 Normalize(const Vector4& v) { return v.Normalized(); }
+	inline Vector4 Add(const Vector4& a, const Vector4& b) noexcept { return a + b; }
+	inline Vector4 Subtract(const Vector4& a, const Vector4& b) noexcept { return a - b; }
+	inline Vector4 Multiply(const Vector4& v, Core::float32 scalar) noexcept { return v * scalar; }
+	inline Core::float32 Dot(const Vector4& a, const Vector4& b) noexcept { return a.Dot(b); }
+	inline Core::float32 Length(const Vector4& v) noexcept { return v.Length(); }
+	inline Core::float32 LengthSquared(const Vector4& v) noexcept { return v.LengthSquared(); }
+	inline Vector4 Normalize(const Vector4& v) noexcept { return v.Normalized(); }
 
-	inline Vector4 Lerp(const Vector4& a, const Vector4& b, Core::float32 t)
+	inline Vector4 Lerp(const Vector4& a, const Vector4& b, Core::float32 t) noexcept
 	{
 		return Vector4::FromSIMD(DirectX::XMVectorLerp(a.ToSIMD(), b.ToSIMD(), t));
 	}
@@ -190,30 +190,30 @@ namespace Math
 	// 행렬 연산
 	//=============================================================================
 
-	inline Matrix4x4 MatrixMultiply(const Matrix4x4& a, const Matrix4x4& b)
+	inline Matrix4x4 MatrixMultiply(const Matrix4x4& a, const Matrix4x4& b) noexcept
 	{
 		return a * b;
 	}
 
-	inline Matrix4x4 MatrixInverse(const Matrix4x4& m)
+	inline Matrix4x4 MatrixInverse(const Matrix4x4& m) noexcept
 	{
 		VectorSIMD det;
 		MatrixSIMD result = DirectX::XMMatrixInverse(&det, m.ToSIMD());
 		return Matrix4x4::FromSIMD(result);
 	}
 
-	inline Matrix4x4 MatrixTranspose(const Matrix4x4& m)
+	inline Matrix4x4 MatrixTranspose(const Matrix4x4& m) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixTranspose(m.ToSIMD()));
 	}
 
-	inline Matrix4x4 MatrixIdentity()
+	inline Matrix4x4 MatrixIdentity() noexcept
 	{
 		return Matrix4x4::Identity();
 	}
 
 	/// @brief 역행렬 계산과 함께 행렬식 반환
-	inline Matrix4x4 MatrixInverseWithDeterminant(const Matrix4x4& m, Core::float32& outDeterminant)
+	inline Matrix4x4 MatrixInverseWithDeterminant(const Matrix4x4& m, Core::float32& outDeterminant) noexcept
 	{
 		VectorSIMD det;
 		MatrixSIMD result = DirectX::XMMatrixInverse(&det, m.ToSIMD());
@@ -222,7 +222,7 @@ namespace Math
 	}
 
 	/// @brief 행렬식 계산
-	inline Core::float32 MatrixDeterminant(const Matrix4x4& m)
+	inline Core::float32 MatrixDeterminant(const Matrix4x4& m) noexcept
 	{
 		VectorSIMD det = DirectX::XMMatrixDeterminant(m.ToSIMD());
 		return DirectX::XMVectorGetX(det);
@@ -232,27 +232,27 @@ namespace Math
 	// 변환 행렬
 	//=============================================================================
 
-	inline Matrix4x4 MatrixTranslation(Core::float32 x, Core::float32 y, Core::float32 z)
+	inline Matrix4x4 MatrixTranslation(Core::float32 x, Core::float32 y, Core::float32 z) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixTranslation(x, y, z));
 	}
 
-	inline Matrix4x4 MatrixTranslation(const Vector3& v)
+	inline Matrix4x4 MatrixTranslation(const Vector3& v) noexcept
 	{
 		return MatrixTranslation(v.x, v.y, v.z);
 	}
 
-	inline Matrix4x4 MatrixRotationX(Core::float32 angle)
+	inline Matrix4x4 MatrixRotationX(Core::float32 angle) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixRotationX(angle));
 	}
 
-	inline Matrix4x4 MatrixRotationY(Core::float32 angle)
+	inline Matrix4x4 MatrixRotationY(Core::float32 angle) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixRotationY(angle));
 	}
 
-	inline Matrix4x4 MatrixRotationZ(Core::float32 angle)
+	inline Matrix4x4 MatrixRotationZ(Core::float32 angle) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixRotationZ(angle));
 	}
@@ -262,27 +262,27 @@ namespace Math
 	 *
 	 * 회전 적용 순서: Roll(Z) -> Pitch(X) -> Yaw(Y)
 	 */
-	inline Matrix4x4 MatrixRotationRollPitchYaw(Core::float32 pitch, Core::float32 yaw, Core::float32 roll)
+	inline Matrix4x4 MatrixRotationRollPitchYaw(Core::float32 pitch, Core::float32 yaw, Core::float32 roll) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll));
 	}
 
-	inline Matrix4x4 MatrixRotationRollPitchYaw(const Vector3& angles)
+	inline Matrix4x4 MatrixRotationRollPitchYaw(const Vector3& angles) noexcept
 	{
 		return MatrixRotationRollPitchYaw(angles.x, angles.y, angles.z);
 	}
 
-	inline Matrix4x4 MatrixScaling(Core::float32 x, Core::float32 y, Core::float32 z)
+	inline Matrix4x4 MatrixScaling(Core::float32 x, Core::float32 y, Core::float32 z) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixScaling(x, y, z));
 	}
 
-	inline Matrix4x4 MatrixScaling(const Vector3& v)
+	inline Matrix4x4 MatrixScaling(const Vector3& v) noexcept
 	{
 		return MatrixScaling(v.x, v.y, v.z);
 	}
 
-	inline Matrix4x4 MatrixScaling(Core::float32 uniformScale)
+	inline Matrix4x4 MatrixScaling(Core::float32 uniformScale) noexcept
 	{
 		return MatrixScaling(uniformScale, uniformScale, uniformScale);
 	}
@@ -291,60 +291,60 @@ namespace Math
 	// 쿼터니언 연산
 	//=============================================================================
 
-	inline Quaternion QuaternionIdentity()
+	inline Quaternion QuaternionIdentity() noexcept
 	{
 		return Quaternion::Identity();
 	}
 
-	inline Quaternion QuaternionFromEuler(Core::float32 pitch, Core::float32 yaw, Core::float32 roll)
+	inline Quaternion QuaternionFromEuler(Core::float32 pitch, Core::float32 yaw, Core::float32 roll) noexcept
 	{
 		VectorSIMD q = DirectX::XMQuaternionRotationRollPitchYaw(pitch, yaw, roll);
 		return Quaternion::FromSIMD(q);
 	}
 
-	inline Quaternion QuaternionFromEuler(const Vector3& eulerAngles)
+	inline Quaternion QuaternionFromEuler(const Vector3& eulerAngles) noexcept
 	{
 		return QuaternionFromEuler(eulerAngles.x, eulerAngles.y, eulerAngles.z);
 	}
 
-	inline Quaternion QuaternionFromAxisAngle(const Vector3& axis, Core::float32 angle)
+	inline Quaternion QuaternionFromAxisAngle(const Vector3& axis, Core::float32 angle) noexcept
 	{
 		VectorSIMD q = DirectX::XMQuaternionRotationAxis(axis.ToSIMD(), angle);
 		return Quaternion::FromSIMD(q);
 	}
 
-	inline Quaternion QuaternionMultiply(const Quaternion& a, const Quaternion& b)
+	inline Quaternion QuaternionMultiply(const Quaternion& a, const Quaternion& b) noexcept
 	{
 		return a * b;
 	}
 
-	inline Quaternion QuaternionNormalize(const Quaternion& q)
+	inline Quaternion QuaternionNormalize(const Quaternion& q) noexcept
 	{
 		return q.Normalized();
 	}
 
-	inline Quaternion QuaternionConjugate(const Quaternion& q)
+	inline Quaternion QuaternionConjugate(const Quaternion& q) noexcept
 	{
 		return q.Conjugate();
 	}
 
-	inline Quaternion QuaternionInverse(const Quaternion& q)
+	inline Quaternion QuaternionInverse(const Quaternion& q) noexcept
 	{
 		return q.Inverse();
 	}
 
-	inline Quaternion QuaternionSlerp(const Quaternion& a, const Quaternion& b, Core::float32 t)
+	inline Quaternion QuaternionSlerp(const Quaternion& a, const Quaternion& b, Core::float32 t) noexcept
 	{
 		VectorSIMD result = DirectX::XMQuaternionSlerp(a.ToSIMD(), b.ToSIMD(), t);
 		return Quaternion::FromSIMD(result);
 	}
 
-	inline Matrix4x4 MatrixRotationQuaternion(const Quaternion& q)
+	inline Matrix4x4 MatrixRotationQuaternion(const Quaternion& q) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixRotationQuaternion(q.ToSIMD()));
 	}
 
-	inline Vector3 Vector3RotateByQuaternion(const Vector3& v, const Quaternion& q)
+	inline Vector3 Vector3RotateByQuaternion(const Vector3& v, const Quaternion& q) noexcept
 	{
 		VectorSIMD result = DirectX::XMVector3Rotate(v.ToSIMD(), q.ToSIMD());
 		return Vector3::FromSIMD(result);
@@ -354,57 +354,38 @@ namespace Math
 	 * @brief Quaternion에서 Euler 각도 추출
 	 * @return Vector3(pitch, yaw, roll) 라디안 단위
 	 */
-	inline Vector3 Vector3EulerFromQuaternion(const Quaternion& q)
+	inline Vector3 Vector3EulerFromQuaternion(const Quaternion& q) noexcept
 	{
-		Matrix4x4 mat = MatrixRotationQuaternion(q);
-
-		Core::float32 pitch, yaw, roll;
-		Core::float32 sinPitch = -mat.m[1][2];
-
-		// Gimbal Lock 체크
-		if (std::abs(sinPitch) >= 0.9999f)
-		{
-			pitch = std::copysign(HALF_PI, sinPitch);
-			yaw = std::atan2(-mat.m[0][1], mat.m[0][0]);
-			roll = 0.0f;
-		}
-		else
-		{
-			pitch = std::asin(sinPitch);
-			yaw = std::atan2(mat.m[0][2], mat.m[2][2]);
-			roll = std::atan2(mat.m[1][0], mat.m[1][1]);
-		}
-
-		return Vector3(pitch, yaw, roll);
+		return q.ToEuler();
 	}
 
 	/// @brief Quaternion에서 Forward 방향 벡터 추출
-	inline Vector3 Vector3ForwardFromQuaternion(const Quaternion& q)
+	inline Vector3 Vector3ForwardFromQuaternion(const Quaternion& q) noexcept
 	{
 		return Vector3RotateByQuaternion(Vector3::Forward(), q);
 	}
 
 	/// @brief Quaternion에서 Up 방향 벡터 추출
-	inline Vector3 Vector3UpFromQuaternion(const Quaternion& q)
+	inline Vector3 Vector3UpFromQuaternion(const Quaternion& q) noexcept
 	{
 		return Vector3RotateByQuaternion(Vector3::Up(), q);
 	}
 
 	/// @brief Quaternion에서 Right 방향 벡터 추출
-	inline Vector3 Vector3RightFromQuaternion(const Quaternion& q)
+	inline Vector3 Vector3RightFromQuaternion(const Quaternion& q) noexcept
 	{
 		return Vector3RotateByQuaternion(Vector3::Right(), q);
 	}
 
 	/// @brief 회전 행렬에서 Quaternion 생성
-	inline Quaternion QuaternionFromRotationMatrix(const Matrix4x4& m)
+	inline Quaternion QuaternionFromRotationMatrix(const Matrix4x4& m) noexcept
 	{
 		VectorSIMD q = DirectX::XMQuaternionRotationMatrix(m.ToSIMD());
 		return Quaternion::FromSIMD(q);
 	}
 
 	/// @brief 두 방향 벡터 사이의 회전을 나타내는 Quaternion 생성
-	inline Quaternion QuaternionFromToRotation(const Vector3& from, const Vector3& to)
+	inline Quaternion QuaternionFromToRotation(const Vector3& from, const Vector3& to) noexcept
 	{
 		Vector3 fromNorm = from.Normalized();
 		Vector3 toNorm = to.Normalized();
@@ -435,7 +416,7 @@ namespace Math
 	}
 
 	/// @brief LookAt 방향을 향하는 Quaternion 생성
-	inline Quaternion QuaternionLookAt(const Vector3& forward, const Vector3& up = Vector3::Up())
+	inline Quaternion QuaternionLookAt(const Vector3& forward, const Vector3& up = Vector3::Up()) noexcept
 	{
 		Vector3 fwd = forward.Normalized();
 		Vector3 right = up.Cross(fwd).Normalized();
@@ -453,14 +434,14 @@ namespace Math
 	// 카메라 & 투영
 	//=============================================================================
 
-	inline Matrix4x4 MatrixLookAtLH(const Vector3& eye, const Vector3& target, const Vector3& up)
+	inline Matrix4x4 MatrixLookAtLH(const Vector3& eye, const Vector3& target, const Vector3& up) noexcept
 	{
 		return Matrix4x4::FromSIMD(
 			DirectX::XMMatrixLookAtLH(eye.ToSIMD(), target.ToSIMD(), up.ToSIMD())
 		);
 	}
 
-	inline Matrix4x4 MatrixLookToLH(const Vector3& eye, const Vector3& direction, const Vector3& up)
+	inline Matrix4x4 MatrixLookToLH(const Vector3& eye, const Vector3& direction, const Vector3& up) noexcept
 	{
 		return Matrix4x4::FromSIMD(
 			DirectX::XMMatrixLookToLH(eye.ToSIMD(), direction.ToSIMD(), up.ToSIMD())
@@ -472,7 +453,7 @@ namespace Math
 		Core::float32 aspect,
 		Core::float32 nearZ,
 		Core::float32 farZ
-	)
+	) noexcept
 	{
 		return Matrix4x4::FromSIMD(
 			DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ)
@@ -484,7 +465,7 @@ namespace Math
 		Core::float32 height,
 		Core::float32 nearZ,
 		Core::float32 farZ
-	)
+	) noexcept
 	{
 		return Matrix4x4::FromSIMD(
 			DirectX::XMMatrixOrthographicLH(width, height, nearZ, farZ)
@@ -498,7 +479,7 @@ namespace Math
 		Core::float32 top,
 		Core::float32 nearZ,
 		Core::float32 farZ
-	)
+	) noexcept
 	{
 		return Matrix4x4::FromSIMD(
 			DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, nearZ, farZ)
@@ -510,27 +491,27 @@ namespace Math
 	//=============================================================================
 
 	/// @brief 축 기반 회전 행렬 생성
-	inline Matrix4x4 MatrixRotationAxis(const Vector3& axis, Core::float32 angle)
+	inline Matrix4x4 MatrixRotationAxis(const Vector3& axis, Core::float32 angle) noexcept
 	{
 		return Matrix4x4::FromSIMD(DirectX::XMMatrixRotationAxis(axis.ToSIMD(), angle));
 	}
 
 	/// @brief Normal 벡터 변환 (이동 무시, 회전/스케일만 적용)
-	inline Vector3 Vector3TransformNormal(const Vector3& v, const Matrix4x4& m)
+	inline Vector3 Vector3TransformNormal(const Vector3& v, const Matrix4x4& m) noexcept
 	{
 		VectorSIMD result = DirectX::XMVector3TransformNormal(v.ToSIMD(), m.ToSIMD());
 		return Vector3::FromSIMD(result);
 	}
 
 	/// @brief 점 변환 (이동 포함)
-	inline Vector3 Vector3TransformCoord(const Vector3& v, const Matrix4x4& m)
+	inline Vector3 Vector3TransformCoord(const Vector3& v, const Matrix4x4& m) noexcept
 	{
 		VectorSIMD result = DirectX::XMVector3TransformCoord(v.ToSIMD(), m.ToSIMD());
 		return Vector3::FromSIMD(result);
 	}
 
 	/// @brief Vector4 변환
-	inline Vector4 Vector4Transform(const Vector4& v, const Matrix4x4& m)
+	inline Vector4 Vector4Transform(const Vector4& v, const Matrix4x4& m) noexcept
 	{
 		return m * v;
 	}
@@ -544,7 +525,7 @@ namespace Math
 	 *
 	 * 적용 순서: Scale -> Rotation -> Translation
 	 */
-	inline Matrix4x4 MatrixSRT(const Vector3& scale, const Quaternion& rotation, const Vector3& translation)
+	inline Matrix4x4 MatrixSRT(const Vector3& scale, const Quaternion& rotation, const Vector3& translation) noexcept
 	{
 		Matrix4x4 s = MatrixScaling(scale);
 		Matrix4x4 r = MatrixRotationQuaternion(rotation);
@@ -561,7 +542,7 @@ namespace Math
 		Vector3& outScale,
 		Quaternion& outRotation,
 		Vector3& outTranslation
-	)
+	) noexcept
 	{
 		VectorSIMD scale, rotQuat, trans;
 		if (DirectX::XMMatrixDecompose(&scale, &rotQuat, &trans, m.ToSIMD()))
@@ -578,45 +559,45 @@ namespace Math
 	// 유틸리티 함수
 	//=============================================================================
 
-	inline Core::float32 InverseSqrt(Core::float32 value)
+	inline Core::float32 InverseSqrt(Core::float32 value) noexcept
 	{
 		return 1.0f / std::sqrt(value);
 	}
 
-	inline Core::float32 Lerp(Core::float32 a, Core::float32 b, Core::float32 t)
+	inline Core::float32 Lerp(Core::float32 a, Core::float32 b, Core::float32 t) noexcept
 	{
 		return a + (b - a) * t;
 	}
 
-	inline Core::float32 Clamp(Core::float32 value, Core::float32 min, Core::float32 max)
+	inline Core::float32 Clamp(Core::float32 value, Core::float32 min, Core::float32 max) noexcept
 	{
 		return (value < min) ? min : (value > max) ? max : value;
 	}
 
 	template<typename T>
-	inline T Clamp(T value, T min, T max)
+	inline T Clamp(T value, T min, T max) noexcept
 	{
 		return (value < min) ? min : (value > max) ? max : value;
 	}
 
-	inline Core::float32 DegToRad(Core::float32 degrees)
+	inline Core::float32 DegToRad(Core::float32 degrees) noexcept
 	{
 		return degrees * DEG_TO_RAD;
 	}
 
-	inline Core::float32 RadToDeg(Core::float32 radians)
+	inline Core::float32 RadToDeg(Core::float32 radians) noexcept
 	{
 		return radians * RAD_TO_DEG;
 	}
 
 	/// @brief 값을 0~1 범위로 제한
-	inline Core::float32 Saturate(Core::float32 value)
+	inline Core::float32 Saturate(Core::float32 value) noexcept
 	{
 		return Clamp(value, 0.0f, 1.0f);
 	}
 
 	/// @brief 두 값 사이에서 t의 위치 비율 반환 (Lerp의 역함수)
-	inline Core::float32 InverseLerp(Core::float32 a, Core::float32 b, Core::float32 value)
+	inline Core::float32 InverseLerp(Core::float32 a, Core::float32 b, Core::float32 value) noexcept
 	{
 		if (std::abs(b - a) < EPSILON)
 		{
@@ -632,21 +613,21 @@ namespace Math
 		Core::float32 fromMax,
 		Core::float32 toMin,
 		Core::float32 toMax
-	)
+	) noexcept
 	{
 		Core::float32 t = InverseLerp(fromMin, fromMax, value);
 		return Lerp(toMin, toMax, t);
 	}
 
 	/// @brief Smoothstep 보간 (부드러운 시작/끝)
-	inline Core::float32 SmoothStep(Core::float32 edge0, Core::float32 edge1, Core::float32 x)
+	inline Core::float32 SmoothStep(Core::float32 edge0, Core::float32 edge1, Core::float32 x) noexcept
 	{
 		Core::float32 t = Saturate(InverseLerp(edge0, edge1, x));
 		return t * t * (3.0f - 2.0f * t);
 	}
 
 	/// @brief 부호 반환 (-1, 0, 1)
-	inline Core::float32 Sign(Core::float32 value)
+	inline Core::float32 Sign(Core::float32 value) noexcept
 	{
 		if (value > EPSILON)
 		{
@@ -660,19 +641,19 @@ namespace Math
 	}
 
 	/// @brief 최소값
-	inline Core::float32 Min(Core::float32 a, Core::float32 b)
+	inline Core::float32 Min(Core::float32 a, Core::float32 b) noexcept
 	{
 		return (a < b) ? a : b;
 	}
 
 	/// @brief 최대값
-	inline Core::float32 Max(Core::float32 a, Core::float32 b)
+	inline Core::float32 Max(Core::float32 a, Core::float32 b) noexcept
 	{
 		return (a > b) ? a : b;
 	}
 
 	/// @brief 절대값
-	inline Core::float32 Abs(Core::float32 value)
+	inline Core::float32 Abs(Core::float32 value) noexcept
 	{
 		return std::abs(value);
 	}
