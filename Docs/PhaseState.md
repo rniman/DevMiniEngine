@@ -25,12 +25,17 @@
 - [x] Phong Shading
 - [x] Normal Mapping
 
-#### 3.4 Debug Tools (다음 단계)
-- [ ] ImGui 통합
-- [ ] ECS Inspector
-- [ ] 성능 모니터링
+#### 3.3.5 리팩토링 (완료)
+- [x] Shutdown 리소스 해제 순서 개선
+- [x] ISystem 인터페이스 통일
+- [x] MathTypes 클래스화 및 리펙토링
 
-#### 3.5 Advanced (선택적)
+#### 3.4 Debug Tools (완료)
+- [x] ImGui 통합
+- [x] ECS Inspector
+- [x] 성능 모니터링
+
+#### 3.5 Advanced (다음 단계)
 - [ ] Transform 계층 구조
 - [ ] Dirty Flag 최적화
 - [ ] Archetype Storage (Phase 4+)

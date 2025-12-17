@@ -24,6 +24,55 @@
 
 ---
 
+---
+
+## 2025-12-17 - Phase 3.4: Debug Tools (ImGui Integration)
+
+### Tasks
+- [x] ImGui 프로젝트 통합 및 ImGuiManager 구현
+- [x] Win32 입력 연동 (IsMouseAvailable, IsKeyboardAvailable)
+- [x] 렌더링 파이프라인 분리 (BeginFrame/RenderScene/EndFrame/Present)
+- [x] PerformancePanel (FPS, Frame Time, 그래프)
+- [x] ECSInspector (Entity/Component 조회, 편집, 추가/삭제)
+- [x] 키보드 토글 (F1: Performance, F2: Inspector, F3: 전체 UI)
+
+### Decisions
+
+**ImGui 전용 Descriptor Heap 분리**
+- Renderer Heap과 별도 관리
+- 향후 Bindless 전환 시 유연성 확보
+
+**렌더링 파이프라인 분리**
+- ImGui는 CommandList Close 전에 렌더링 필요
+- BeginFrame → RenderScene → [ImGui] → EndFrame → Present
+
+**ECSInspector Registry 전달**
+- Application이 아닌 Sample에서 OnRenderDebugUI()로 직접 전달
+- Framework 모듈의 ECS 의존성 최소화
+
+### Issues Resolved
+
+**DME_DEBUG_UI 매크로 불일치**
+- 모듈 간 클래스 크기 불일치로 메모리 손상 발생
+- 해결: 조건부 컴파일 제거, 항상 ImGui 포함
+
+**ImGui::NewFrame() 크래시**
+- 폰트 텍스처 미업로드 상태에서 호출
+- 해결: Initialize()에서 CommandList로 GPU 업로드
+
+### Lessons Learned
+
+- ImGui DX12: 전용 Heap + 폰트 업로드 필수
+- 클래스 멤버 #if 조건부 컴파일 → 모듈 간 크기 불일치 주의
+- Component 조회는 포인터 반환이 업계 표준 (nullptr로 부재 표현)
+
+### Next Steps
+- [ ] Phase 3.5: Transform 계층 구조
+- [ ] Phase 4: 모델 로딩 (Assimp 통합, FBX/OBJ 지원)
+- [ ] Phase 5: PBR Lighting (Metallic-Roughness Workflow)
+
+---
+
 ## 2025-12-08 - Phase 3.3 Lighting System 구현
 
 ### Tasks
