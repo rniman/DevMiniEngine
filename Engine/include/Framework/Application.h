@@ -6,6 +6,7 @@
 namespace Platform
 {
 	class Window;
+	class Input;
 }
 
 namespace Graphics
@@ -16,6 +17,10 @@ namespace Graphics
 
 namespace Framework
 {
+	class ImGuiManager;  // 전방 선언
+	class PerformancePanel;
+	class ECSInspector;
+
 	struct ApplicationDesc
 	{
 		const char* applicationName = "DevMiniEngine Application";
@@ -78,6 +83,14 @@ namespace Framework
 		 */
 		virtual void OnShutdown() {}
 
+		/**
+		 * @brief Debug UI 렌더링 콜백 (Debug 빌드에서만 호출)
+		 *
+		 * ImGui::Begin/End 등의 UI 코드를 작성합니다.
+		 * BeginFrame/EndFrame은 Application이 자동 호출합니다.
+		 */
+		virtual void OnRenderDebugUI() {}
+
 		// 하위 시스템 접근자
 		Platform::Window* GetWindow() const { return mWindow.get(); }
 		Graphics::DX12Device* GetDevice() const { return mDevice.get(); }
@@ -87,10 +100,22 @@ namespace Framework
 		Core::Timing::Timer* GetTimer() { return &mTimer; }
 		const Core::Timing::Timer* GetTimer() const { return &mTimer; }
 
+	protected:
+		// 파생 클래스에서 접근 가능한 Debug UI 접근자
+		PerformancePanel* GetPerformancePanel() const { return mPerformancePanel.get(); }
+		ECSInspector* GetECSInspector() const { return mECSInspector.get(); }
+
 	private:
 		bool Initialize();
+		bool InitializeDebugUI();
 		void Shutdown();
+		void ShutdownDebugUI();
 		void RunMainLoop();
+		void ProcessInput(Platform::Input& input);
+		void UpdateDebugUI(Core::float32 deltaTime);
+
+		// ImGui 렌더링 (내부 호출)
+		void RenderDebugUI();
 
 		ApplicationDesc mDesc;
 		bool mIsRunning = false;
@@ -102,6 +127,12 @@ namespace Framework
 		std::unique_ptr<Graphics::DX12Renderer> mRenderer;
 
 		Core::Timing::Timer mTimer;
+
+		std::unique_ptr<ImGuiManager> mImGuiManager;
+		std::unique_ptr<PerformancePanel> mPerformancePanel;
+		std::unique_ptr<ECSInspector> mECSInspector;
+
+		bool mShowDebugUI = true;
 	};
 
 } // namespace Framework

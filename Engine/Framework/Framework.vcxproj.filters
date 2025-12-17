@@ -19,6 +19,15 @@
     <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{ba01594e-1587-45a7-a7ca-8eba454d6f11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\DebugUI">
+      <UniqueIdentifier>{bb50d48d-f128-4734-aea5-6f1620ca77e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DebugUI">
+      <UniqueIdentifier>{446bb36e-1e2e-44e7-8db9-414245c36bdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{a794399d-783c-4672-8100-d622ebf9a55f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -39,6 +48,36 @@
     <ClCompile Include="..\src\Framework\Scene\Scene.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui_impl_dx12.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\DebugUI\ImGuiManager.cpp">
+      <Filter>Source Files\DebugUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\DebugUI\PerformancePanel.cpp">
+      <Filter>Source Files\DebugUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\DebugUI\ECSInspector.cpp">
+      <Filter>Source Files\DebugUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -58,6 +97,15 @@
     </ClInclude>
     <ClInclude Include="..\include\Framework\Resources\ResourceId.h">
       <Filter>Header Files\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\DebugUI\ImGuiManager.h">
+      <Filter>Header Files\DebugUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\DebugUI\PerformancePanel.h">
+      <Filter>Header Files\DebugUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\DebugUI\ECSInspector.h">
+      <Filter>Header Files\DebugUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

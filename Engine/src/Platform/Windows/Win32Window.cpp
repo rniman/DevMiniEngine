@@ -2,6 +2,11 @@
 #include "Platform/Windows/Win32Window.h"
 #include "Core/Logging/LogMacros.h"
 
+// ImGui Win32 입력 처리 (Debug 빌드에서만)
+#include <imgui.h>
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
+	HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace Platform
 {
 	Win32Window::Win32Window()
@@ -255,6 +260,12 @@ namespace Platform
 		LPARAM lParam
 	)
 	{
+		// ImGui 메시지 처리 (Debug 빌드에서만)
+		if (ImGui_ImplWin32_WndProcHandler(reinterpret_cast<HWND>(mHwnd), msg, wParam, lParam))
+		{
+			return true;
+		}
+
 		switch (msg)
 		{
 		case WM_CLOSE:

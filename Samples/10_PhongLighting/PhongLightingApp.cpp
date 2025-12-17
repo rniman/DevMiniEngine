@@ -3,6 +3,7 @@
 // Framework
 #include "Framework/Resources/ResourceId.h"
 #include "Framework/Resources/ResourceManager.h"
+#include "Framework/DebugUI/ECSInspector.h"
 
 // Core Engine
 #include "Core/Logging/LogMacros.h"
@@ -497,7 +498,10 @@ void PhongLightingApp::OnRender()
 	if (renderSystem)
 	{
 		const Graphics::FrameData& frameData = renderSystem->GetFrameData();
-		GetRenderer()->RenderFrame(frameData);
+
+		// RenderFrame() 대신 RenderScene()만 호출
+		// BeginFrame, EndFrame, Present는 Application이 관리
+		GetRenderer()->RenderScene(frameData);
 	}
 }
 
@@ -542,4 +546,13 @@ void PhongLightingApp::OnShutdown()
 	mResourceManager.reset();
 
 	LOG_INFO("[PhongLighting] Shutdown complete");
+}
+
+void PhongLightingApp::OnRenderDebugUI()
+{
+	Framework::ECSInspector* inspector = GetECSInspector();
+	if (inspector)
+	{
+		inspector->Render(mRegistry.get());
+	}
 }

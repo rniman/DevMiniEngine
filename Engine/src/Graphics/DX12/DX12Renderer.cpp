@@ -39,6 +39,11 @@ namespace Graphics
 		Core::uint32 height
 	)
 	{
+		if (mIsInitialized)
+		{
+			return true;
+		}
+
 		if (!device)
 		{
 			LOG_ERROR("DX12Renderer: Invalid device");
@@ -295,40 +300,17 @@ namespace Graphics
 			return;
 		}
 
-		// 필수 리소스 확인
-		bool cb = !mObjectConstantBuffer || !mMaterialConstantBuffer || !mLightingConstantBuffer;
-
-		if (!mRootSignature || !mPipelineStateCache || cb || !mSrvDescriptorHeap)
-		{
-			LOG_ERROR("DX12Renderer: Required resources not set");
-			return;
-		}
-
-		// 프레임 시작
+		// 분리된 메서드들을 순차 호출 (기존 동작 유지)
 		if (!BeginFrame())
 		{
 			return;
 		}
 
-		// 화면 클리어
-		Clear(mClearColor);
+		RenderScene(frameData);
 
-		// 파이프라인 설정
-		SetupPipeline();
-
-		// Phase 3.3: Lighting Constant Buffer 업데이트
-		UpdateLightingBuffer(frameData);
-
-		// 렌더 아이템 그리기
-		DrawRenderItems(frameData.opaqueItems);
-
-		// 향후: 투명 오브젝트, UI, 디버그 렌더링 등
-
-		// 프레임 종료
 		EndFrame();
 
-		// 화면 출력
-		Present(true);  // VSync 활성화
+		Present(true);
 	}
 
 	bool DX12Renderer::BeginFrame()
@@ -364,6 +346,74 @@ namespace Graphics
 		mCurrentObjectCBIndex = 0;
 
 		return true;
+	}
+
+	void DX12Renderer::RenderScene(const FrameData& frameData)
+	{
+		// 필수 리소스 확인
+		bool cb = !mObjectConstantBuffer || !mMaterialConstantBuffer || !mLightingConstantBuffer;
+		if (!mRootSignature || !mPipelineStateCache || cb || !mSrvDescriptorHeap)
+		{
+			LOG_ERROR("DX12Renderer: Required resources not set");
+			return;
+		}
+
+		// 화면 클리어
+		Clear(mClearColor);
+
+		// 파이프라인 설정
+		SetupPipeline();
+
+		// Lighting Constant Buffer 업데이트
+		UpdateLightingBuffer(frameData);
+
+		// 렌더 아이템 그리기
+		DrawRenderItems(frameData.opaqueItems);
+	}
+
+	void DX12Renderer::EndFrame()
+	{
+		auto* cmdContext = GetCurrentCommandContext();
+		auto* cmdList = cmdContext->GetCommandList();
+		auto* backBuffer = mDevice->GetSwapChain()->GetCurrentBackBuffer();
+
+		// 리소스 전이: RENDER_TARGET - PRESENT
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			backBuffer,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PRESENT
+		);
+		cmdList->ResourceBarrier(1, &barrier);
+
+		// Command List 닫기
+		if (!cmdContext->Close())
+		{
+			LOG_ERROR("Failed to close Command List");
+			return;
+		}
+
+		// Command List 실행
+		ID3D12CommandList* cmdLists[] = { cmdList };
+		Core::uint64 fenceValue = mDevice->GetCommandQueue()->ExecuteCommandLists(1, cmdLists);
+		SetCurrentFrameFenceValue(fenceValue);
+	}
+
+	void DX12Renderer::Present(bool vsync)
+	{
+		auto* swapChain = mDevice->GetSwapChain();
+
+		// 화면에 표시
+		swapChain->Present(vsync);
+
+		// 다음 프레임으로 이동
+		swapChain->MoveToNextFrame();
+		MoveFrameIndex();
+	}
+
+	ID3D12GraphicsCommandList* DX12Renderer::GetCurrentCommandList()
+	{
+		auto* cmdContext = GetCurrentCommandContext();
+		return cmdContext ? cmdContext->GetCommandList() : nullptr;
 	}
 
 	void DX12Renderer::Clear(const float* clearColor)
@@ -550,51 +600,6 @@ namespace Graphics
 		mLightingConstantBuffer->Update(mCurrentFrameIndex, &lightingData, sizeof(LightingConstants));
 	}
 
-	void DX12Renderer::EndFrame()
-	{
-		auto* cmdContext = GetCurrentCommandContext();
-		auto* cmdList = cmdContext->GetCommandList();
-		auto* backBuffer = mDevice->GetSwapChain()->GetCurrentBackBuffer();
-
-		// 리소스 전이: RENDER_TARGET - PRESENT
-		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			backBuffer,
-			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_PRESENT
-		);
-		cmdList->ResourceBarrier(1, &barrier);
-
-		// Command List 닫기
-		if (!cmdContext->Close())
-		{
-			LOG_ERROR("Failed to close Command List");
-			return;
-		}
-
-		// Command List 실행
-		ID3D12CommandList* cmdLists[] = { cmdList };
-		Core::uint64 fenceValue = mDevice->GetCommandQueue()->ExecuteCommandLists(1, cmdLists);
-		SetCurrentFrameFenceValue(fenceValue);
-	}
-
-	void DX12Renderer::Present(bool vsync)
-	{
-		auto* swapChain = mDevice->GetSwapChain();
-
-		// 화면에 표시
-		swapChain->Present(vsync);
-
-		// 다음 프레임으로 이동
-		swapChain->MoveToNextFrame();
-		MoveFrameIndex();
-	}
-
-	ID3D12GraphicsCommandList* DX12Renderer::GetCurrentCommandList()
-	{
-		auto* cmdContext = GetCurrentCommandContext();
-		return cmdContext ? cmdContext->GetCommandList() : nullptr;
-	}
-
 	DX12CommandContext* DX12Renderer::GetCurrentCommandContext()
 	{
 		return mDevice->GetCommandContext(mCurrentFrameIndex);
@@ -604,8 +609,8 @@ namespace Graphics
 	{
 		mViewport.TopLeftX = 0.0f;
 		mViewport.TopLeftY = 0.0f;
-		mViewport.Width = static_cast<float>(mWidth);
-		mViewport.Height = static_cast<float>(mHeight);
+		mViewport.Width = static_cast<FLOAT>(mWidth);
+		mViewport.Height = static_cast<FLOAT>(mHeight);
 		mViewport.MinDepth = 0.0f;
 		mViewport.MaxDepth = 1.0f;
 

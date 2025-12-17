@@ -194,8 +194,8 @@ namespace Math
 		}
 
 		// 동차 좌표 변환
-		inline Vector4 ToPoint() const;
-		inline Vector4 ToDirection() const;
+		inline Vector4 ToPoint() const noexcept;
+		inline Vector4 ToDirection() const noexcept;
 
 		// 인덱스 접근
 		// NOTE: 연속 메모리 레이아웃 가정 (XMFLOAT3 호환, 모든 주요 컴파일러에서 동작)

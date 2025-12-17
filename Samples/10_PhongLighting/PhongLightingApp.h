@@ -52,6 +52,8 @@ protected:
 	void OnRender() override;
 	void OnShutdown() override;
 
+	void OnRenderDebugUI() override;
+
 private:
 	static Framework::ApplicationDesc GetAppDesc()
 	{

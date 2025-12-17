@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "Platform/Input.h"
 
+#include <imgui.h>
+
 namespace Platform
 {
 	Input::Input()
@@ -169,6 +171,29 @@ namespace Platform
 	void Input::OnMouseWheel(Core::float32 delta)
 	{
 		mMouseWheelDelta = delta;
+	}
+
+
+	//=============================================================================
+	// ImGui 입력 소비 확인
+	//=============================================================================
+
+	bool Input::IsMouseAvailable() const
+	{
+		if (ImGui::GetCurrentContext())
+		{
+			return !ImGui::GetIO().WantCaptureMouse;
+		}
+		return true;
+	}
+
+	bool Input::IsKeyboardAvailable() const
+	{
+		if (ImGui::GetCurrentContext())
+		{
+			return !ImGui::GetIO().WantCaptureKeyboard;
+		}
+		return true;
 	}
 
 } // namespace Platform

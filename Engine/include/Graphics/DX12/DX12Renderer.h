@@ -119,6 +119,34 @@ namespace Graphics
 
 		void MoveFrameIndex() { mCurrentFrameIndex = (mCurrentFrameIndex + 1) % FRAME_BUFFER_COUNT; }
 
+		//=============================================================================
+		// 프레임 렌더링 (분리된 API)
+		//=============================================================================
+
+		/**
+		 * @brief 프레임 시작 (CommandList Reset, Barrier)
+		 * @return 성공 여부
+		 */
+		bool BeginFrame();
+
+		/**
+		 * @brief 씬 렌더링 (Clear, Setup, Draw)
+		 * @param frameData 렌더링 데이터
+		 */
+		void RenderScene(const FrameData& frameData);
+
+		/**
+		 * @brief 프레임 종료 (Barrier, Close, Execute)
+		 */
+		void EndFrame();
+
+		/**
+		 * @brief 화면 출력
+		 * @param vsync VSync 활성화 여부
+		 */
+		void Present(bool vsync = true);
+
+		// Setters
 		void SetCurrentFrameFenceValue(Core::uint64 value) { mFrameFenceValues[mCurrentFrameIndex] = value; }
 
 		// Getters
@@ -127,9 +155,13 @@ namespace Graphics
 
 		DX12DescriptorHeap* GetSrvDescriptorHeap() { return mSrvDescriptorHeap.get(); }
 		DX12ShaderCompiler* GetShaderCompiler() { return mShaderCompiler.get(); }
+
+		/**
+		 * @brief 현재 CommandList 반환 (ImGui 등 외부 렌더링용)
+		 */
+		ID3D12GraphicsCommandList* GetCurrentCommandList();
 	private:
 		// 렌더링 파이프라인 단계
-		bool BeginFrame();
 		void Clear(const float* clearColor);
 		void SetupPipeline();
 
@@ -148,11 +180,7 @@ namespace Graphics
 		 */
 		void UpdateLightingBuffer(const FrameData& frameData);
 
-		void EndFrame();
-		void Present(bool vsync);
-
 		// 헬퍼 함수
-		ID3D12GraphicsCommandList* GetCurrentCommandList();
 		DX12CommandContext* GetCurrentCommandContext();
 		void UpdateViewportAndScissor();
 

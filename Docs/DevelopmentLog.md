@@ -24,8 +24,6 @@
 
 ---
 
----
-
 ## 2025-12-17 - Phase 3.4: Debug Tools (ImGui Integration)
 
 ### Tasks
@@ -532,4 +530,4 @@ Component (ResourceId 8B)
 
 ---
 
-**최종 업데이트**: 2025-11-24
+**최종 업데이트**: 2025-12-17

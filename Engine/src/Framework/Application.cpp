@@ -1,12 +1,28 @@
 ﻿#include "pch.h"
 #include "Framework/Application.h"
-#include "Core/Timing/ScopedTimer.h"
+
+// Core
 #include "Core/Logging/LogMacros.h"
+#include "Core/Timing/ScopedTimer.h"
+
+// Graphics
+#include "Graphics/DX12/DX12CommandContext.h"
+#include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
+
+// Platform
 #include "Platform/Input.h"
 #include "Platform/PlatformTypes.h"
 #include "Platform/Window.h"
+
+// DebugUI
+#include "Framework/DebugUI/ImGuiManager.h"
+#include "Framework/DebugUI/PerformancePanel.h"
+#include "Framework/DebugUI/ECSInspector.h"
+
+// imgui
+#include <imgui.h>
 
 namespace Framework
 {
@@ -111,7 +127,34 @@ namespace Framework
 		}
 		LOG_INFO("Renderer initialized");
 
+		// 5. Debug UI
+		if (!InitializeDebugUI())
+		{
+			LOG_ERROR("Failed to initialize Debug UI");
+			return false;
+		}
+
 		mIsInitialized = true;
+
+		return true;
+	}
+
+	bool Application::InitializeDebugUI()
+	{
+		mImGuiManager = std::make_unique<ImGuiManager>();
+		if (!mImGuiManager->Initialize(mWindow.get(), mDevice.get()))
+		{
+			LOG_ERROR("Failed to initialize ImGuiManager");
+			return false;
+		}
+		LOG_INFO("ImGuiManager initialized");
+
+		mPerformancePanel = std::make_unique<PerformancePanel>();
+		LOG_INFO("PerformancePanel created");
+
+		mECSInspector = std::make_unique<ECSInspector>();
+		LOG_INFO("ECSInspector created");
+
 		return true;
 	}
 
@@ -122,7 +165,16 @@ namespace Framework
 			return;
 		}
 
-		LOG_INFO("Shutting down application...");
+		LOG_INFO("Application shutting down...");
+
+		// GPU 작업 완료 대기
+		if (mDevice && mDevice->GetCommandQueue())
+		{
+			mDevice->GetCommandQueue()->WaitForIdle();
+		}
+
+		// Debug UI 정리
+		ShutdownDebugUI();
 
 		// 역순으로 정리
 		mRenderer.reset();
@@ -132,22 +184,31 @@ namespace Framework
 		mIsInitialized = false;
 	}
 
+	void Application::ShutdownDebugUI()
+	{
+		mECSInspector.reset();
+		mPerformancePanel.reset();
+
+		if (mImGuiManager)
+		{
+			mImGuiManager->Shutdown();
+			mImGuiManager.reset();
+		}
+	}
+
 	void Application::RunMainLoop()
 	{
 		auto& input = mWindow->GetInput();
 		mIsRunning = true;
 
-		// 타이머 시작
 		mTimer.Reset();
 		mTimer.Start();
 
-		// FPS 로깅용 타이머
 		Core::float32 fpsLogTimer = 0.0f;
-		const Core::float32 FPS_LOG_INTERVAL = 1.0f;  // 1초마다
+		const Core::float32 FPS_LOG_INTERVAL = 1.0f;
 
 		while (mIsRunning && !mWindow->ShouldClose())
 		{
-			// 타이머 업데이트 (VSync 활성화 시 60 FPS 제한)
 			mTimer.Tick(mDesc.enableVSync ? 60.0f : 0.0f);
 			Core::float32 deltaTime = mTimer.GetDeltaTime();
 
@@ -170,28 +231,104 @@ namespace Framework
 			// 윈도우 이벤트 처리
 			mWindow->ProcessEvents();
 
-			// ESC 키 종료 처리
-			if (input.IsKeyPressed(Platform::KeyCode::Escape))
-			{
-				LOG_INFO("ESC pressed - Requesting exit");
-				RequestExit();
-			}
+			// 입력 처리
+			ProcessInput(input);
 
 			// 업데이트
-			{
-				//PROFILE_SCOPE("Update");
-				OnUpdate(deltaTime);
-			}
+			OnUpdate(deltaTime);
+			UpdateDebugUI(deltaTime);
 
 			// 렌더링
+			if (mRenderer->BeginFrame())
 			{
-				//PROFILE_SCOPE("Render");
+				// 사용자 렌더링 (씬)
 				OnRender();
+
+				// Debug UI 렌더링
+				RenderDebugUI();
+
+				// 프레임 종료 및 출력
+				mRenderer->EndFrame();
+				mRenderer->Present(mDesc.enableVSync);
 			}
 
 			// 입력 리셋
 			input.Reset();
 		}
+	}
+
+	void Application::ProcessInput(Platform::Input& input)
+	{
+		// ESC: 종료
+		if (input.IsKeyPressed(Platform::KeyCode::Escape))
+		{
+			LOG_INFO("ESC pressed - Requesting exit");
+			RequestExit();
+		}
+
+		// F1: Performance Panel 토글
+		if (input.IsKeyPressed(Platform::KeyCode::F1))
+		{
+			if (mPerformancePanel)
+			{
+				mPerformancePanel->SetVisible(!mPerformancePanel->IsVisible());
+			}
+		}
+
+		// F2: ECS Inspector 토글
+		if (input.IsKeyPressed(Platform::KeyCode::F2))
+		{
+			if (mECSInspector)
+			{
+				mECSInspector->SetVisible(!mECSInspector->IsVisible());
+			}
+		}
+
+		// F3: 전체 Debug UI 토글
+		if (input.IsKeyPressed(Platform::KeyCode::F3))
+		{
+			mShowDebugUI = !mShowDebugUI;
+		}
+	}
+
+	void Application::UpdateDebugUI(Core::float32 deltaTime)
+	{
+		if (mPerformancePanel)
+		{
+			mPerformancePanel->Update(deltaTime);
+		}
+	}
+
+	void Application::RenderDebugUI()
+	{
+
+		if (!mShowDebugUI)  // 추가
+		{
+			return;
+		}
+
+		if (!mImGuiManager || !mImGuiManager->IsInitialized())
+		{
+			return;
+		}
+
+		// ImGui 프레임 시작
+		mImGuiManager->BeginFrame();
+
+		// 테스트: Demo 창 표시
+		ImGui::ShowDemoWindow();
+
+		// PerformancePanel 렌더링
+		if (mPerformancePanel)
+		{
+			mPerformancePanel->Render(nullptr);  // Registry는 파생 클래스에서 전달
+		}
+
+		// 파생 클래스의 UI 코드 호출
+		OnRenderDebugUI();
+
+		// ImGui 렌더링 제출
+		mImGuiManager->EndFrame(mRenderer->GetCurrentCommandList());
 	}
 
 } // namespace Framework
