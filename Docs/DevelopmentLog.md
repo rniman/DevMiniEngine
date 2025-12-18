@@ -24,6 +24,72 @@
 
 ---
 
+## 2025-12-18 - Phase 3.5: Transform 계층 구조 및 Dirty Flag 최적화
+
+### Tasks
+- [x] HierarchyComponent (parent, children 저장)
+- [x] TransformComponent 확장 (localMatrix, worldMatrix 캐시, dirty 플래그)
+- [x] TransformSystem 계층 API (SetParent, GetParent, GetChildren, IsRoot)
+- [x] DFS 순회 기반 World Matrix 업데이트
+- [x] 지연 전파 방식 (Update에서 일괄 처리)
+- [x] ForceUpdateWorldMatrix() 즉시 계산 API
+- [x] 10_PhongLighting 샘플에 계층 테스트 통합
+
+### Decisions
+
+**HierarchyComponent 분리**
+- TransformComponent와 별도 Component로 설계
+- 이유: ECS Single Responsibility, 선택적 계층 참여
+
+**Dirty Flag 분리 (localDirty, worldDirty)**
+- Parent 이동 시 worldDirty만 true (local 재계산 불필요)
+- 이유: 불필요한 행렬 연산 방지
+
+**지연 전파 방식**
+- Transform 변경 시 dirty만 설정, Update에서 일괄 처리
+- 이유: 한 프레임 다중 수정 시 중복 전파 방지
+
+**DFS 순회 + dirty 서브트리 스킵**
+- dirty 아닌 서브트리는 즉시 return
+- 이유: 구현 단순, 계층 변경에 강건, 성능 최적화
+
+### Implementation
+
+**새로 추가된 파일**
+```
+Engine/include/ECS/Components/HierarchyComponent.h
+```
+
+**주요 변경**
+- TransformComponent: localMatrix, worldMatrix, localDirty, worldDirty 추가
+- TransformSystem: 계층 API, Update() 로직, Root Entity 관리
+- Archetype.h: HierarchyTransformArchetype 추가
+
+**World Matrix 계산**
+```cpp
+// World = Local * ParentWorld
+transform->worldMatrix = transform->localMatrix * parentWorldMatrix;
+```
+
+### Results
+
+- 부모 회전 시 자식들 자동 공전
+- 2단계 계층 정상 동작 (Parent → Child → GrandChild)
+- HierarchyComponent 없는 Entity는 기존처럼 동작 (호환성 유지)
+
+### Lessons Learned
+
+- position/rotation/scale은 로컬 좌표, 렌더링은 worldMatrix 사용
+- 지연 전파로 다중 수정 시에도 일정한 비용
+- Component 직접 수정 시 dirty 누락 위험 → System API 사용 권장
+
+### Next Steps
+- [ ] Phase 4: 모델 로딩 (Assimp/glTF 통합)
+- [ ] Phase 5: PBR Lighting
+- [ ] ECS Inspector 계층 트리 뷰 (선택적)
+
+---
+
 ## 2025-12-17 - Phase 3.4: Debug Tools (ImGui Integration)
 
 ### Tasks
