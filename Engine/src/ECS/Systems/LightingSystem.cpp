@@ -171,16 +171,16 @@ namespace ECS
 			++count;
 		}
 
-#ifdef _DEBUG
-		if (!outLights.empty())
-		{
-			LOG_DEBUG(
-				"[LightingSystem] Collected %zu Directional Lights (Max: %u)",
-				outLights.size(),
-				MAX_DIRECTIONAL_LIGHTS
-			);
-		}
-#endif
+//#ifdef _DEBUG
+//		if (!outLights.empty())
+//		{
+//			LOG_DEBUG(
+//				"[LightingSystem] Collected %zu Directional Lights (Max: %u)",
+//				outLights.size(),
+//				MAX_DIRECTIONAL_LIGHTS
+//			);
+//		}
+//#endif
 	}
 
 	void LightingSystem::CollectPointLights(
@@ -228,16 +228,16 @@ namespace ECS
 			++count;
 		}
 
-#ifdef _DEBUG
-		if (!outLights.empty())
-		{
-			LOG_DEBUG(
-				"[LightingSystem] Collected %zu Point Lights (Max: %u)",
-				outLights.size(),
-				MAX_POINT_LIGHTS
-			);
-		}
-#endif
+//#ifdef _DEBUG
+//		if (!outLights.empty())
+//		{
+//			LOG_DEBUG(
+//				"[LightingSystem] Collected %zu Point Lights (Max: %u)",
+//				outLights.size(),
+//				MAX_POINT_LIGHTS
+//			);
+//		}
+//#endif
 	}
 
 	//=============================================================================

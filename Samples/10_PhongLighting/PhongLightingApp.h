@@ -30,14 +30,15 @@ namespace Graphics
 }
 
 /**
- * @brief Phase 3.3: Phong Shading 데모 애플리케이션
+ * @brief Phase 3.3 + 3.5: Phong Shading + Hierarchy 데모 애플리케이션
  *
  * ECS 아키텍처 기반으로 Directional Light + Point Lights를 사용한
  * Phong Shading 조명 효과를 시연합니다.
  *
- * - 5x5 그리드로 배치된 회전하는 큐브들
- * - 1개의 Directional Light (태양광)
- * - 4개의 Point Light (색상별, 원형 애니메이션)
+ * Phase 3.5 추가: Transform 계층 구조 테스트
+ * - 부모 Entity 제자리 회전
+ * - 자식 Entity들 부모 주위 공전
+ * - 손자 Entity 2단계 계층 테스트
  */
 class PhongLightingApp : public Framework::Application
 {
@@ -75,6 +76,9 @@ private:
 	void SetupSharedMeshData();
 	void SetupSharedMaterial();
 
+	// Phase 3.5: 계층 구조 테스트
+	void CreateHierarchyTestEntities();
+
 	// ECS
 	std::unique_ptr<ECS::Registry> mRegistry;
 	std::unique_ptr<ECS::SystemManager> mSystemManager;
@@ -86,9 +90,15 @@ private:
 	std::vector<ECS::Entity> mPointLightEntities;
 	std::vector<ECS::Entity> mCubeEntities;
 
+	// Phase 3.5: 계층 구조 테스트용 Entity
+	ECS::Entity mHierarchyParent;
+	std::vector<ECS::Entity> mHierarchyChildren;
+	ECS::Entity mHierarchyGrandChild;
+
 	// 애니메이션
 	Core::float32 mRotationAngle = 0.0f;
 	Core::float32 mPointLightTime = 0.0f;
+	Core::float32 mHierarchyRotationSpeed = 1.0f;
 
 	// 공유 리소스 ID (모든 큐브가 같은 메시/머티리얼 사용)
 	Framework::ResourceId mSharedMeshId;

@@ -29,6 +29,7 @@
 
 // ECS
 #include "ECS/Components/CameraComponent.h"
+#include "ECS/Components/HierarchyComponent.h"
 #include "ECS/Components/LightComponents.h"
 #include "ECS/Components/MaterialComponent.h"
 #include "ECS/Components/MeshComponent.h"
@@ -55,7 +56,7 @@ PhongLightingApp::~PhongLightingApp()
 
 bool PhongLightingApp::OnInitialize()
 {
-	LOG_INFO("=== Phase 3.3: Phong Lighting Demo ===");
+	LOG_INFO("=== Phase 3.3 + 3.5: Phong Lighting + Hierarchy Demo ===");
 
 	// 리소스 매니저 생성
 	mResourceManager = std::make_unique<Framework::ResourceManager>(
@@ -104,6 +105,9 @@ void PhongLightingApp::InitializeECS()
 	CreateCameraEntity();
 	CreateLightEntities();
 	CreateCubeEntities();
+
+	// Phase 3.5: 계층 구조 테스트 Entity 생성
+	CreateHierarchyTestEntities();
 
 	LOG_INFO("[ECS] Registry initialized");
 }
@@ -422,6 +426,117 @@ void PhongLightingApp::SetupSharedMaterial()
 	LOG_INFO("[Material] Material setup complete");
 }
 
+void PhongLightingApp::CreateHierarchyTestEntities()
+{
+	LOG_INFO("[Scene] Creating Hierarchy Test Entities (Phase 3.5)...");
+
+	auto* transformSystem = mSystemManager->GetSystem<ECS::TransformSystem>();
+
+	//=========================================================================
+	// 부모 큐브 생성 (그리드 옆에 배치, 제자리 회전)
+	//=========================================================================
+	mHierarchyParent = mRegistry->CreateEntity();
+	{
+		ECS::TransformComponent transform;
+		transform.position = Math::Vector3(30.0f, 0.0f, 0.0f);  // 그리드 오른쪽
+		transform.scale = Math::Vector3(1.5f);
+		mRegistry->AddComponent<ECS::TransformComponent>(mHierarchyParent, transform);
+
+		// 계층 구조 참여
+		ECS::HierarchyComponent hierarchy;
+		mRegistry->AddComponent<ECS::HierarchyComponent>(mHierarchyParent, hierarchy);
+
+		ECS::MeshComponent mesh;
+		mesh.meshId = mSharedMeshId;
+		mRegistry->AddComponent<ECS::MeshComponent>(mHierarchyParent, mesh);
+
+		ECS::MaterialComponent material;
+		material.materialId = mSharedMaterialId;
+		mRegistry->AddComponent<ECS::MaterialComponent>(mHierarchyParent, material);
+
+		// Root Entity로 등록
+		transformSystem->SetParent(mHierarchyParent, ECS::Entity::Invalid());
+	}
+
+	//=========================================================================
+	// 자식 큐브들 생성 (부모 주위 3개, 120도 간격)
+	//=========================================================================
+	constexpr Core::int32 childCount = 3;
+	constexpr Core::float32 childRadius = 4.0f;
+
+	for (Core::int32 i = 0; i < childCount; ++i)
+	{
+		ECS::Entity child = mRegistry->CreateEntity();
+
+		// 부모 기준 로컬 위치 (120도 간격 원형 배치)
+		Core::float32 angle = (2.0f * Math::PI / childCount) * i;
+		Math::Vector3 localPos(
+			std::cos(angle) * childRadius,
+			0.0f,
+			std::sin(angle) * childRadius
+		);
+
+		ECS::TransformComponent transform;
+		transform.position = localPos;
+		transform.scale = Math::Vector3(0.7f);
+		mRegistry->AddComponent<ECS::TransformComponent>(child, transform);
+
+		ECS::HierarchyComponent hierarchy;
+		mRegistry->AddComponent<ECS::HierarchyComponent>(child, hierarchy);
+
+		ECS::MeshComponent mesh;
+		mesh.meshId = mSharedMeshId;
+		mRegistry->AddComponent<ECS::MeshComponent>(child, mesh);
+
+		ECS::MaterialComponent material;
+		material.materialId = mSharedMaterialId;
+		mRegistry->AddComponent<ECS::MaterialComponent>(child, material);
+
+		// 부모 설정
+		transformSystem->SetParent(child, mHierarchyParent);
+
+		mHierarchyChildren.push_back(child);
+	}
+
+	//=========================================================================
+	// 손자 큐브 생성 (첫 번째 자식의 자식, 2단계 계층 테스트)
+	//=========================================================================
+	if (!mHierarchyChildren.empty())
+	{
+		mHierarchyGrandChild = mRegistry->CreateEntity();
+
+		ECS::TransformComponent transform;
+		transform.position = Math::Vector3(2.5f, 0.0f, 0.0f);  // 자식 기준 로컬 위치
+		transform.scale = Math::Vector3(0.4f);
+		mRegistry->AddComponent<ECS::TransformComponent>(mHierarchyGrandChild, transform);
+
+		ECS::HierarchyComponent hierarchy;
+		mRegistry->AddComponent<ECS::HierarchyComponent>(mHierarchyGrandChild, hierarchy);
+
+		ECS::MeshComponent mesh;
+		mesh.meshId = mSharedMeshId;
+		mRegistry->AddComponent<ECS::MeshComponent>(mHierarchyGrandChild, mesh);
+
+		ECS::MaterialComponent material;
+		material.materialId = mSharedMaterialId;
+		mRegistry->AddComponent<ECS::MaterialComponent>(mHierarchyGrandChild, material);
+
+		// 첫 번째 자식의 자식으로 설정 (2단계 계층)
+		transformSystem->SetParent(mHierarchyGrandChild, mHierarchyChildren[0]);
+	}
+
+	LOG_INFO("[Scene] Hierarchy structure created:");
+	LOG_INFO("  Parent (id=%u) at (30, 0, 0)", mHierarchyParent.id);
+	for (size_t i = 0; i < mHierarchyChildren.size(); ++i)
+	{
+		LOG_INFO("    +-- Child%zu (id=%u)", i, mHierarchyChildren[i].id);
+	}
+	if (mHierarchyGrandChild.IsValid())
+	{
+		LOG_INFO("    |     +-- GrandChild (id=%u)", mHierarchyGrandChild.id);
+	}
+}
+
 void PhongLightingApp::OnUpdate(Core::float32 deltaTime)
 {
 	// System 인스턴스 가져오기 (고수준 API 사용을 위해)
@@ -469,24 +584,42 @@ void PhongLightingApp::OnUpdate(Core::float32 deltaTime)
 				)
 			);
 		}
+
+		//=====================================================================
+		// Phase 3.5: 계층 구조 애니메이션
+		// 부모만 회전하면 자식들이 자동으로 공전
+		//=====================================================================
+		if (mHierarchyParent.IsValid())
+		{
+			// 부모 Y축 회전 (자식들이 자동으로 부모 주위 공전)
+			transformSystem->Rotate(
+				mHierarchyParent,
+				Math::Vector3(0.0f, mHierarchyRotationSpeed * deltaTime, 0.0f)
+			);
+		}
+
+		// 자식들 자체 회전 (선택적)
+		for (size_t i = 0; i < mHierarchyChildren.size(); ++i)
+		{
+			Core::float32 speed = 2.0f + static_cast<Core::float32>(i) * 0.5f;
+			transformSystem->Rotate(
+				mHierarchyChildren[i],
+				Math::Vector3(0.0f, 0.0f, speed * deltaTime)
+			);
+		}
+
+		// 손자 자체 회전
+		if (mHierarchyGrandChild.IsValid())
+		{
+			transformSystem->Rotate(
+				mHierarchyGrandChild,
+				Math::Vector3(0.0f, 3.0f * deltaTime, 0.0f)
+			);
+		}
 	}
 
-	// Point Light 애니메이션 (원형 회전) - 필요 시 주석 해제
-	// auto* lightingSystem = mSystemManager->GetSystem<ECS::LightingSystem>();
-	// mPointLightTime += deltaTime * 0.5f;
-	// for (size_t i = 0; i < mPointLightEntities.size(); ++i)
-	// {
-	//     Core::float32 angle = mPointLightTime + (Math::PI * 2.0f * i / mPointLightEntities.size());
-	//     Core::float32 radius = 10.0f;
-	//     Math::Vector3 newPos(
-	//         std::cos(angle) * radius,
-	//         3.0f + std::sin(angle * 2.0f) * 1.5f,
-	//         std::sin(angle) * radius
-	//     );
-	//     transformSystem->SetPosition(mPointLightEntities[i], newPos);
-	// }
-
 	// SystemManager 업데이트 (모든 System의 Update 호출)
+	// - TransformSystem::Update() → 계층 구조 World Matrix 계산 (Phase 3.5)
 	// - CameraSystem::Update() → UpdateAllCameras() 자동 호출
 	// - RenderSystem::Update() → FrameData 수집
 	mSystemManager->UpdateSystems(deltaTime);
@@ -510,6 +643,21 @@ void PhongLightingApp::OnShutdown()
 	LOG_INFO("[PhongLighting] Shutting down...");
 
 	GetDevice()->GetCommandQueue()->WaitForIdle();
+
+	// Phase 3.5: 계층 구조 Entity 정리
+	if (mHierarchyGrandChild.IsValid() && mRegistry)
+	{
+		mRegistry->DestroyEntity(mHierarchyGrandChild);
+	}
+
+	for (auto childEntity : mHierarchyChildren)
+	{
+		if (childEntity.IsValid() && mRegistry)
+		{
+			mRegistry->DestroyEntity(childEntity);
+		}
+	}
+	mHierarchyChildren.clear();
 
 	// Entities 정리
 	for (auto cubeEntity : mCubeEntities)

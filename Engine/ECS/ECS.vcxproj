@@ -175,6 +175,7 @@
     <ClInclude Include="..\include\ECS\Archetype.h" />
     <ClInclude Include="..\include\ECS\Component.h" />
     <ClInclude Include="..\include\ECS\Components\CameraComponent.h" />
+    <ClInclude Include="..\include\ECS\Components\HierarchyComponent.h" />
     <ClInclude Include="..\include\ECS\Components\LightComponents.h" />
     <ClInclude Include="..\include\ECS\Components\MaterialComponent.h" />
     <ClInclude Include="..\include\ECS\Components\MeshComponent.h" />

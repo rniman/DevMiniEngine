@@ -11,8 +11,9 @@ namespace ECS
 	struct MeshComponent;
 	struct MaterialComponent;
 	struct CameraComponent;
-		struct DirectionalLightComponent;
+	struct DirectionalLightComponent;
 	struct PointLightComponent;
+	struct HierarchyComponent;
 }
 
 namespace ECS
@@ -75,7 +76,7 @@ namespace ECS
 		}
 	};
 
-	// ========== 공통 Archetype 정의 ==========
+	// ========== Renderable Archetype 정의 ==========
 
 	/**
 	 * @brief 렌더링 가능한 Entity
@@ -88,6 +89,8 @@ namespace ECS
 		MeshComponent,
 		MaterialComponent
 	>;
+
+	// ========== Camera Archetype 정의 ==========
 
 	/**
 	 * @brief 카메라 Entity
@@ -107,6 +110,8 @@ namespace ECS
 	 */
 	using CameraOnlyArchetype = Archetype<CameraComponent>;
 
+	// ========== Transform Archetype 정의 ==========
+
 	/**
 	 * @brief Transform만 있는 Entity
 	 *
@@ -114,6 +119,17 @@ namespace ECS
 	 * 빈 GameObject나 트랜스폼 노드로 사용됩니다.
 	 */
 	using TransformOnlyArchetype = Archetype<TransformComponent>;
+
+	/**
+	 * @brief Transform + Hierarchy를 가진 Entity
+	 *
+	 * 계층 구조에 참여하는 Entity입니다.
+	 * 부모-자식 관계와 World Matrix 계산에 사용됩니다.
+	 */
+	using HierarchyTransformArchetype = Archetype<
+		TransformComponent,
+		HierarchyComponent
+	>;
 
 	// ========== Light Archetype 정의 ==========
 
