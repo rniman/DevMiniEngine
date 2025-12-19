@@ -2,18 +2,18 @@
 
 **[한국어](./README.md)** | **English**
 
-**DirectX 12-based Mini Game Engine for Learning**
+**A DirectX 12-based Mini Game Engine for Learning**
 
 ## Project Overview
 
-DevMiniEngine is a personal learning and portfolio project based on DirectX 12. It is designed to learn and experiment with ECS (Entity Component System) architecture and modern C++ design patterns.
+DevMiniEngine is a personal learning and portfolio game engine project based on DirectX 12. It was created to learn and experiment with ECS (Entity Component System) architecture and modern C++ design patterns.
 
-### Key Objectives
+### Main Goals
 
-- **ECS Architecture Learning**: Implementation of data-oriented design and entity-component systems
-- **Modern Graphics Technology**: Building modern rendering pipeline using DirectX 12
-- **Game Engine Fundamentals**: Implementation of core engine systems including physics, AI, and terrain generation
-- **Portfolio Development**: Professional-level code quality and documentation
+- **ECS Architecture Learning**: Implementing data-oriented design and entity-component systems
+- **Modern Graphics Technology**: Building a modern rendering pipeline using DirectX 12
+- **Game Engine Fundamentals**: Implementing core engine systems such as physics, AI, and terrain generation
+- **Portfolio Creation**: Production-quality code and documentation
 
 ## Implementation Status
 
@@ -25,7 +25,7 @@ DevMiniEngine is a personal learning and portfolio project based on DirectX 12. 
 - Memory Management System
   - LinearAllocator: O(1) bump pointer allocation
   - PoolAllocator: O(1) fixed-size object pooling
-  - StackAllocator: LIFO allocation using markers
+  - StackAllocator: LIFO allocation with markers
 - Timing System
   - High-precision timer (QueryPerformanceCounter)
   - Frame time averaging (50 samples)
@@ -37,7 +37,7 @@ DevMiniEngine is a personal learning and portfolio project based on DirectX 12. 
 
 **Math Library**
 - SIMD-optimized vector/matrix operations (DirectXMath wrapper)
-- Vector2, Vector3, Vector4
+- Vector2, Vector3, Vector4 (classes with operator overloading)
 - Matrix4x4 (row-major)
 - Quaternion operations
 - Transform utilities
@@ -65,24 +65,58 @@ DevMiniEngine is a personal learning and portfolio project based on DirectX 12. 
   - Diffuse, Normal, Specular, Roughness, Metallic, AO, Emissive
 - 3D transformation and camera
   - MVP matrix transformation
-  - PerspectiveCamera implementation
 
 **Framework Architecture**
 - Application lifecycle management
   - Template method pattern
-  - Separation of engine/user initialization
+  - Engine/user initialization separation
 - ResourceManager
-  - Centralized management of Mesh, Material, Texture
+  - Centralized Mesh, Material, Texture management
   - Caching and duplicate loading prevention
-- Scene/GameObject system
-  - Transform hierarchy
-  - Rendering data collection (What/How separation)
+
+**Phase 3: ECS Architecture & Debug Tools (100% Complete)**
+
+**ECS Core**
+- Entity Manager (ID + Version based recycling)
+- Component Storage (type-specific unordered_map)
+- System Framework (ISystem, SystemManager)
+- RegistryView Query pattern
+
+**Implemented Components**
+- TransformComponent (position/rotation/scale + matrix cache)
+- HierarchyComponent (parent-child relationships)
+- MeshComponent, MaterialComponent (ResourceId reference)
+- CameraComponent (View/Projection matrix cache)
+- DirectionalLightComponent, PointLightComponent
+
+**Implemented Systems**
+- TransformSystem (hierarchy, Dirty Flag, World Matrix)
+- CameraSystem (View/Projection update)
+- LightingSystem (lighting data collection)
+- RenderSystem (automatic FrameData collection)
+
+**Lighting System**
+- Phong Shading (Ambient + Diffuse + Specular)
+- Normal Mapping (TBN matrix)
+- Directional Light + Point Lights (up to 8)
+
+**Transform Hierarchy**
+- Parent-child relationship setup (SetParent API)
+- DFS traversal-based automatic World Matrix update
+- Dirty Flag optimization (localDirty, worldDirty)
+- Backward compatibility maintained
+
+**Debug Tools**
+- ImGui integration (DX12)
+- ECS Inspector (real-time Entity/Component editing)
+- Performance Panel (FPS, frame time graph)
+- Keyboard toggle (F1: Performance, F2: Inspector)
 
 ### Project Statistics
 
-- Total lines of code: ~5,000+
-- Implemented modules: 5 (Core, Math, Platform, Graphics, Framework)
-- Test coverage: 8 sample projects
+- Total lines of code: ~15,000+
+- Implemented modules: 6 (Core, Math, Platform, Graphics, ECS, Framework)
+- Test coverage: 10 sample projects
 - Compiler warnings: 0 (Level 4)
 
 ## Project Structure
@@ -98,12 +132,14 @@ DevMiniEngine/
 │   │   ├── Platform/                # Platform layer
 │   │   ├── Graphics/                # Graphics
 │   │   │   ├── DX12/                # DirectX 12
-│   │   │   ├── Camera/              # Camera system
 │   │   │   └── RenderTypes.h        # Rendering types
+│   │   ├── ECS/                     # ECS layer
+│   │   │   ├── Components/          # Component definitions
+│   │   │   └── Systems/             # System implementations
 │   │   └── Framework/               # Framework layer
 │   │       ├── Application.h        # Application base
 │   │       ├── Resources/           # Resource management
-│   │       └── Scene/               # Scene management
+│   │       └── DebugUI/             # ImGui integration
 │   │
 │   ├── src/                         # Implementation for all modules
 │   │   └── (same structure)
@@ -112,16 +148,18 @@ DevMiniEngine/
 │   ├── Math/                        # Math module project
 │   ├── Platform/                    # Platform module project
 │   ├── Graphics/                    # Graphics module project
+│   ├── ECS/                         # ECS module project
 │   └── Framework/                   # Framework module project
 │
 ├── Samples/                         # Sample projects
 │   ├── 01_MemoryTest/
 │   ├── ...
-│   └── 08_TexturedCube/             # Textured cube rendering
+│   ├── 08_TexturedCube/             # Textured cube rendering
+│   ├── 09_ECSRotatingCube/          # ECS-based rotating cube
+│   └── 10_PhongLighting/            # Phong Shading + hierarchy demo
 │
 ├── Assets/                          # Assets
 │   └── Textures/                    # Texture files
-│       └── BrickWall/               # PBR texture set
 │
 └── Docs/                            # Documentation
     ├── Architecture.md
@@ -136,33 +174,36 @@ DevMiniEngine/
 - **OS**: Windows 10/11 (64-bit)
 - **IDE**: Visual Studio 2022 or later
 - **SDK**: Windows 10 SDK (10.0.19041.0 or later)
-- **DirectX**: DirectX 12-capable GPU
+- **DirectX**: DirectX 12 compatible GPU
 - **C++ Standard**: C++20
 
 ### Build Instructions
 
-1. **Clone Repository**
+1. **Clone the repository**
 ```bash
 git clone https://github.com/rniman/DevMiniEngine.git
 cd DevMiniEngine
 ```
 
-2. **Open Solution**
+2. **Open the solution**
 ```bash
 DevMiniEngine.sln
 ```
 
-3. **Build Configuration**
+3. **Build configuration**
    - `Debug` - For debugging
    - `Release` - Optimized build
 
 4. **Build**
    - `Ctrl + Shift + B`
 
-### Running Examples
+### Run Example
 ```bash
-# Run textured cube sample
-bin/Debug/08_TexturedCube.exe
+# Run Phong Lighting + Hierarchy demo
+bin/Debug/10_PhongLighting.exe
+
+# F1: Toggle Performance Panel
+# F2: Toggle ECS Inspector
 ```
 
 ## Roadmap
@@ -177,53 +218,34 @@ bin/Debug/08_TexturedCube.exe
 - [x] Camera system
 - [x] Framework architecture (Application, ResourceManager, Scene)
 
-**Current State:** Complete PBR texture set loading and shader binding pipeline (Diffuse, Normal, Metallic, Roughness, etc. 7 types). Current rendering uses Diffuse map as baseline; shader implementation utilizing loaded PBR maps is next step.
+### Phase 3: ECS Architecture & Debug Tools (100% Complete)
+- [x] **ECS Core**
+  - [x] Entity Manager (create/destroy/recycle)
+  - [x] Component Storage (type-specific storage)
+  - [x] System Framework (execution order management)
+  - [x] RegistryView Query pattern
 
----
+- [x] **Core Components & Systems**
+  - [x] TransformComponent (hierarchy, World Matrix caching)
+  - [x] HierarchyComponent (parent-child relationships)
+  - [x] TransformSystem (Dirty Flag propagation)
+  - [x] MeshComponent & MaterialComponent
+  - [x] CameraComponent & CameraSystem
+  - [x] RenderSystem (ECS-based rendering)
 
-### Phase 3: ECS Architecture & Debug Tools
-**Goal:** Core implementation of data-oriented design
+- [x] **Basic Lighting System (Phong)**
+  - [x] DirectionalLightComponent
+  - [x] PointLightComponent  
+  - [x] LightingSystem (Phong Shading)
+  - [x] Normal Map support (TBN matrix)
 
-- [ ] **ECS Core**
-  - [ ] Entity Manager (create/delete/recycle)
-  - [ ] Component Storage (Archetype-based)
-  - [ ] System Framework (execution order management)
+- [x] **Debug Tools**
+  - [x] ImGui integration
+  - [x] ECS Inspector (Entity/Component editing)
+  - [x] Performance Panel (FPS, graph)
+  - [x] Real-time lighting/Transform parameter adjustment
 
-- [ ] **Core Components & Systems**
-  - [ ] TransformComponent (hierarchy, World Matrix caching)
-  - [ ] TransformSystem (Dirty Flag propagation)
-  - [ ] MeshComponent & MaterialComponent
-  - [ ] RenderSystem (ECS-based rendering)
-
-- [ ] **Basic Lighting System (Phong)**
-  - [ ] DirectionalLightComponent
-  - [ ] PointLightComponent  
-  - [ ] LightingSystem (Phong Shading)
-  - [ ] Normal Map support (TBN matrix)
-
-- [ ] **Query System**
-  - [ ] Component combination queries
-  - [ ] Query caching and optimization
-
-- [ ] **Debug Tools (Early Introduction)**
-  - [ ] ImGui integration
-  - [ ] ECS Inspector (Entity/Component editing)
-  - [ ] Real-time lighting parameter adjustment
-  - [ ] Performance monitoring (FPS, Draw Calls)
-
-**Upon Completion:** 1000 Entity management, Phong lighting, real-time editing with ImGui
-
----
-
-### Phase 3.5: Job System (Optional)
-**Goal:** Basic multithreading infrastructure
-
-- [ ] Worker thread pool
-- [ ] Job dispatcher
-- [ ] TransformSystem parallelization
-- [ ] Performance benchmark (Single vs Multi-thread)
-
-**Note:** Can be postponed to Phase 9 (after sufficient parallelizable work)
+**Current Status:** ECS-based Phong Shading + Transform hierarchy complete. Real-time editing via ImGui available.
 
 ---
 
@@ -284,12 +306,12 @@ bin/Debug/08_TexturedCube.exe
   - [ ] Bloom
   - [ ] TAA (Temporal Anti-Aliasing)
 
-**Upon Completion:** Various objects with PBR materials, IBL lighting
+**On Completion:** Various objects with PBR materials, IBL lighting
 
 ---
 
-### 🎯 Phase 5.5: Physics Integration (Portfolio Milestone)
-**Goal:** Create playable prototype
+### Phase 5.5: Physics Integration (Portfolio Milestone)
+**Goal:** Playable prototype creation
 
 > **Important:** Portfolio video production possible from this point!
 
@@ -312,7 +334,7 @@ bin/Debug/08_TexturedCube.exe
   - [ ] Collider wireframe
   - [ ] Contact Point display
 
-**Upon Completion:** PBR materials + Physics interaction demo (portfolio material secured)
+**On Completion:** PBR materials + Physics interaction demo
 
 ---
 
@@ -371,10 +393,13 @@ bin/Debug/08_TexturedCube.exe
 
 ---
 
-### Phase 9: Job System Expansion (if Phase 3.5 was skipped)
-**Goal:** CPU parallelization
+### Phase 9: Job System
+**Goal:** Basic multithreading infrastructure, CPU parallelization
 
-- [ ] Job System implementation (see Phase 3.5)
+- [ ] Worker thread pool
+- [ ] Job dispatcher
+- [ ] TransformSystem parallelization
+- [ ] Performance benchmark (Single vs Multi-thread)
 - [ ] ECS System parallelization
 - [ ] PhysicsSystem parallelization
 - [ ] Render thread separation
@@ -438,15 +463,15 @@ bin/Debug/08_TexturedCube.exe
 
 ## Backlog (On-Demand)
 
-Features to be added selectively as needed:
+Features to be optionally added as needed:
 
 - [ ] **Deferred Rendering** - Compare/switch with Forward+
 - [ ] **Tessellation & Geometry Shaders** - Adaptive terrain
 - [ ] **Standalone Editor** - Independent editor beyond ImGui tools
 - [ ] **Scripting** - Lua/Python bindings
-- [ ] **Procedural Terrain** - Heightmap/Voxel-based
-- [ ] **Raytracing (DXR)** - DX12 Ultimate-based (requires RTX GPU)
-- [ ] **Advanced Animation** - Blend trees, IK
+- [ ] **Procedural Terrain** - Heightmap/Voxel based
+- [ ] **Raytracing (DXR)** - DX12 Ultimate based (RTX GPU required)
+- [ ] **Advanced Animation** - Blending tree, IK
 - [ ] **Volumetric Effects** - Fog, Clouds
 - [ ] **Network Replication** - ECS component replication, multiplayer
 
@@ -455,18 +480,32 @@ Features to be added selectively as needed:
 ## Key Features
 
 ### Architecture
-- **Modular Design**: Clear separation of concerns and dependency management
-- **ECS Architecture**: Data-oriented design (planned)
-- **Framework Pattern**: Automatic Application lifecycle management
-- **What/How Separation**: Scene (logic) and Renderer (implementation) separation
+- **Modular Design**: Clear separation of responsibilities and dependency management
+- **ECS Architecture**: Data-oriented design (implemented)
+- **Framework Pattern**: Automatic application lifecycle management
+- **What/How Separation**: System (logic) and Renderer (implementation) separation
+
+### ECS System
+- **Entity**: ID + Version based recycling
+- **Component**: Pure data (TransformComponent, HierarchyComponent, etc.)
+- **System**: Logic processing (TransformSystem, RenderSystem, etc.)
+- **Registry**: Central manager (create/destroy/query)
+- **Hierarchy**: Parent-child relationships, Dirty Flag optimization
 
 ### Rendering
 - **Multi-texture**: PBR workflow ready
-- **Efficient Resource Management**: Centralized ResourceManager
+- **Phong Shading**: Directional + Point Lights
+- **Normal Mapping**: TBN matrix based
+- **Efficient Resource Management**: Centralized ResourceManager, 64-bit ResourceId
 - **Frame Buffering**: Triple buffering for CPU-GPU parallelism
 
+### Debug Tools
+- **ImGui Integration**: DX12 native
+- **ECS Inspector**: Real-time Entity/Component editing
+- **Performance Panel**: FPS, frame time graph
+
 ### Code Quality
-- **Modern C++20**: Smart pointers, lambdas, constexpr utilization
+- **Modern C++20**: Smart pointers, lambdas, constexpr usage
 - **Consistent Coding Convention**: Documented style guide
 - **Comprehensive Logging**: Category-based debugging support
 
@@ -492,10 +531,11 @@ This project is released under the [MIT License](./LICENSE).
 - [Learn OpenGL](https://learnopengl.com/) - Graphics concept learning
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
 - [3D Game Programming with DirectX 12 by Frank Luna](http://www.d3dcoder.net/)
+- [EnTT](https://github.com/skypjack/entt) - ECS design reference
 
 ---
 
-**Last Updated:** 2025-11-06  
-**Roadmap Version:** v3.2 (Portfolio-focused)
+**Last Updated:** 2025-12-18  
+**Roadmap Version:** v4.0 (Phase 3 Complete)
 
-⭐ If this project helped you, please give it a star!
+⭐ If this project helped you, please give it a Star!

@@ -37,7 +37,7 @@ DevMiniEngine은 DirectX 12를 기반으로 하는 개인 학습 및 포트폴�
 
 **Math 라이브러리**
 - SIMD 최적화 벡터/행렬 연산 (DirectXMath 래퍼)
-- Vector2, Vector3, Vector4
+- Vector2, Vector3, Vector4 (클래스, 연산자 오버로딩)
 - Matrix4x4 (행 우선)
 - Quaternion 연산
 - Transform 유틸리티
@@ -65,7 +65,6 @@ DevMiniEngine은 DirectX 12를 기반으로 하는 개인 학습 및 포트폴�
   - Diffuse, Normal, Specular, Roughness, Metallic, AO, Emissive
 - 3D 변환 및 카메라
   - MVP 행렬 변환
-  - PerspectiveCamera 구현
 
 **Framework 아키텍처**
 - Application 라이프사이클 관리
@@ -74,15 +73,50 @@ DevMiniEngine은 DirectX 12를 기반으로 하는 개인 학습 및 포트폴�
 - ResourceManager
   - Mesh, Material, Texture 중앙 관리
   - 캐싱 및 중복 로딩 방지
-- Scene/GameObject 시스템
-  - Transform 계층 구조
-  - 렌더링 데이터 수집 (What/How 분리)
+
+**Phase 3: ECS 아키텍처 & 디버그 툴 (100% 완료)**
+
+**ECS Core**
+- Entity Manager (ID + Version 기반 재활용)
+- Component Storage (타입별 unordered_map)
+- System Framework (ISystem, SystemManager)
+- RegistryView Query 패턴
+
+**구현된 Component**
+- TransformComponent (위치/회전/스케일 + 행렬 캐시)
+- HierarchyComponent (부모-자식 관계)
+- MeshComponent, MaterialComponent (ResourceId 참조)
+- CameraComponent (View/Projection 행렬 캐시)
+- DirectionalLightComponent, PointLightComponent
+
+**구현된 System**
+- TransformSystem (계층 구조, Dirty Flag, World Matrix)
+- CameraSystem (View/Projection 업데이트)
+- LightingSystem (조명 데이터 수집)
+- RenderSystem (FrameData 자동 수집)
+
+**조명 시스템**
+- Phong Shading (Ambient + Diffuse + Specular)
+- Normal Mapping (TBN 행렬)
+- Directional Light + Point Lights (최대 8개)
+
+**Transform 계층 구조**
+- 부모-자식 관계 설정 (SetParent API)
+- DFS 순회 기반 World Matrix 자동 업데이트
+- Dirty Flag 최적화 (localDirty, worldDirty)
+- 기존 코드 호환성 유지
+
+**디버그 툴**
+- ImGui 통합 (DX12)
+- ECS Inspector (Entity/Component 실시간 편집)
+- Performance Panel (FPS, 프레임 타임 그래프)
+- 키보드 토글 (F1: Performance, F2: Inspector)
 
 ### 프로젝트 통계
 
-- 총 코드 라인 수: ~5,000+
-- 구현된 모듈: 5개 (Core, Math, Platform, Graphics, Framework)
-- 테스트 커버리지: 8개 샘플 프로젝트
+- 총 코드 라인 수: ~15,000+
+- 구현된 모듈: 6개 (Core, Math, Platform, Graphics, ECS, Framework)
+- 테스트 커버리지: 10개 샘플 프로젝트
 - 컴파일러 경고: 0개 (Level 4)
 
 ## 프로젝트 구조
@@ -98,12 +132,14 @@ DevMiniEngine/
 │   │   ├── Platform/                # Platform 레이어
 │   │   ├── Graphics/                # 그래픽스
 │   │   │   ├── DX12/                # DirectX 12
-│   │   │   ├── Camera/              # 카메라 시스템
 │   │   │   └── RenderTypes.h        # 렌더링 타입
+│   │   ├── ECS/                     # ECS 레이어
+│   │   │   ├── Components/          # Component 정의
+│   │   │   └── Systems/             # System 구현
 │   │   └── Framework/               # Framework 레이어
 │   │       ├── Application.h        # 애플리케이션 베이스
 │   │       ├── Resources/           # 리소스 관리
-│   │       └── Scene/               # 씬 관리
+│   │       └── DebugUI/             # ImGui 통합
 │   │
 │   ├── src/                         # 모든 모듈의 구현
 │   │   └── (동일한 구조)
@@ -112,16 +148,18 @@ DevMiniEngine/
 │   ├── Math/                        # Math 모듈 프로젝트
 │   ├── Platform/                    # Platform 모듈 프로젝트
 │   ├── Graphics/                    # Graphics 모듈 프로젝트
+│   ├── ECS/                         # ECS 모듈 프로젝트
 │   └── Framework/                   # Framework 모듈 프로젝트
 │
 ├── Samples/                         # 샘플 프로젝트
 │   ├── 01_MemoryTest/
 │   ├── ...
-│   └── 08_TexturedCube/             # 텍스처 큐브 렌더링
+│   ├── 08_TexturedCube/             # 텍스처 큐브 렌더링
+│   ├── 09_ECSRotatingCube/          # ECS 기반 회전 큐브
+│   └── 10_PhongLighting/            # Phong Shading + 계층 구조 데모
 │
 ├── Assets/                          # 에셋
 │   └── Textures/                    # 텍스처 파일
-│       └── BrickWall/               # PBR 텍스처 세트
 │
 └── Docs/                            # 문서
     ├── Architecture.md
@@ -161,8 +199,11 @@ DevMiniEngine.sln
 
 ### 실행 예시
 ```bash
-# 텍스처 큐브 샘플 실행
-bin/Debug/08_TexturedCube.exe
+# Phong Lighting + 계층 구조 데모 실행
+bin/Debug/10_PhongLighting.exe
+
+# F1: Performance Panel 토글
+# F2: ECS Inspector 토글
 ```
 
 ## 로드맵
@@ -177,53 +218,34 @@ bin/Debug/08_TexturedCube.exe
 - [x] 카메라 시스템
 - [x] Framework 아키텍처 (Application, ResourceManager, Scene)
 
-**현재 상태:** PBR 텍스처 셋(Diffuse, Normal, Metallic, Roughness 등 7종)의 완벽한 로딩 및 셰이더 바인딩 파이프라인 구축 완료. (현재 렌더링은 Diffuse 맵을 기준으로 하며, 로드된 PBR 맵들을 활용하는 셰이더 구현은 다음 단계임)
+### Phase 3: ECS 아키텍처 & 디버그 툴 (100% 완료)
+- [x] **ECS Core**
+  - [x] Entity Manager (생성/삭제/재활용)
+  - [x] Component Storage (타입별 저장)
+  - [x] System Framework (실행 순서 관리)
+  - [x] RegistryView Query 패턴
 
----
+- [x] **Core Components & Systems**
+  - [x] TransformComponent (계층 구조, World Matrix 캐싱)
+  - [x] HierarchyComponent (부모-자식 관계)
+  - [x] TransformSystem (Dirty Flag 전파)
+  - [x] MeshComponent & MaterialComponent
+  - [x] CameraComponent & CameraSystem
+  - [x] RenderSystem (ECS 기반 렌더링)
 
-### Phase 3: ECS 아키텍처 & 디버그 툴
-**목표:** 데이터 지향 설계의 핵심 구현
+- [x] **기초 조명 시스템 (Phong)**
+  - [x] DirectionalLightComponent
+  - [x] PointLightComponent  
+  - [x] LightingSystem (Phong Shading)
+  - [x] Normal Map 지원 (TBN 행렬)
 
-- [ ] **ECS Core**
-  - [ ] Entity Manager (생성/삭제/재활용)
-  - [ ] Component Storage (Archetype 기반)
-  - [ ] System Framework (실행 순서 관리)
+- [x] **디버그 툴**
+  - [x] ImGui 통합
+  - [x] ECS Inspector (Entity/Component 편집)
+  - [x] Performance Panel (FPS, 그래프)
+  - [x] 조명/Transform 파라미터 실시간 조정
 
-- [ ] **Core Components & Systems**
-  - [ ] TransformComponent (계층 구조, World Matrix 캐싱)
-  - [ ] TransformSystem (Dirty Flag 전파)
-  - [ ] MeshComponent & MaterialComponent
-  - [ ] RenderSystem (ECS 기반 렌더링)
-
-- [ ] **기초 조명 시스템 (Phong)**
-  - [ ] DirectionalLightComponent
-  - [ ] PointLightComponent  
-  - [ ] LightingSystem (Phong Shading)
-  - [ ] Normal Map 지원 (TBN 행렬)
-
-- [ ] **Query System**
-  - [ ] 컴포넌트 조합 쿼리
-  - [ ] Query 캐싱 및 최적화
-
-- [ ] **디버그 툴 (조기 도입)**
-  - [ ] ImGui 통합
-  - [ ] ECS Inspector (Entity/Component 편집)
-  - [ ] 조명 파라미터 실시간 조정
-  - [ ] 성능 모니터링 (FPS, Draw Call)
-
-**완료 시:** 1000개 Entity 관리, Phong 조명, ImGui로 실시간 편집
-
----
-
-### Phase 3.5: Job System (선택적)
-**목표:** 기본 멀티스레딩 인프라
-
-- [ ] 워커 스레드 풀
-- [ ] Job 디스패처
-- [ ] TransformSystem 병렬화
-- [ ] 성능 벤치마크 (Single vs Multi-thread)
-
-**참고:** Phase 9로 연기 가능 (병렬화할 작업이 충분해진 후)
+**현재 상태:** ECS 기반 Phong Shading + Transform 계층 구조 완성. ImGui로 실시간 편집 가능.
 
 ---
 
@@ -312,7 +334,7 @@ bin/Debug/08_TexturedCube.exe
   - [ ] Collider 와이어프레임
   - [ ] Contact Point 표시
 
-**완료 시:** PBR 재질 + Physics 상호작용 데모 (포트폴리오 소재 확보)
+**완료 시:** PBR 재질 + Physics 상호작용 데모
 
 ---
 
@@ -371,13 +393,18 @@ bin/Debug/08_TexturedCube.exe
 
 ---
 
-### Phase 9: Job System 확장 (Phase 3.5를 건너뛴 경우)
-**목표:** CPU 병렬화
+### Phase 9: Job System (Phase 3.5에서 구현 X)
+**목표:** 기본 멀티스레딩 인프라, CPU 병렬화
 
+- [ ] 워커 스레드 풀
+- [ ] Job 디스패처
+- [ ] TransformSystem 병렬화
+- [ ] 성능 벤치마크 (Single vs Multi-thread)
 - [ ] Job System 구현 (Phase 3.5 참고)
 - [ ] ECS System 병렬화
 - [ ] PhysicsSystem 병렬화
 - [ ] 렌더 스레드 분리
+
 
 ---
 
@@ -456,14 +483,28 @@ bin/Debug/08_TexturedCube.exe
 
 ### 아키텍처
 - **모듈식 설계**: 명확한 책임 분리와 의존성 관리
-- **ECS 아키텍처**: 데이터 지향 설계 (예정)
+- **ECS 아키텍처**: 데이터 지향 설계 (구현 완료)
 - **Framework 패턴**: Application 라이프사이클 자동 관리
-- **What/How 분리**: Scene(논리)와 Renderer(구현) 분리
+- **What/How 분리**: System(논리)와 Renderer(구현) 분리
+
+### ECS 시스템
+- **Entity**: ID + Version 기반 재활용
+- **Component**: 순수 데이터 (TransformComponent, HierarchyComponent 등)
+- **System**: 로직 처리 (TransformSystem, RenderSystem 등)
+- **Registry**: 중앙 관리자 (생성/삭제/쿼리)
+- **계층 구조**: 부모-자식 관계, Dirty Flag 최적화
 
 ### 렌더링
 - **멀티 텍스처**: PBR 워크플로우 준비
-- **효율적인 리소스 관리**: 중앙집중식 ResourceManager
+- **Phong Shading**: Directional + Point Lights
+- **Normal Mapping**: TBN 행렬 기반
+- **효율적인 리소스 관리**: 중앙집중식 ResourceManager, 64비트 ResourceId
 - **프레임 버퍼링**: 트리플 버퍼링으로 CPU-GPU 병렬성
+
+### 디버그 도구
+- **ImGui 통합**: DX12 네이티브
+- **ECS Inspector**: Entity/Component 실시간 편집
+- **Performance Panel**: FPS, 프레임 타임 그래프
 
 ### 코드 품질
 - **현대적 C++20**: 스마트 포인터, 람다, constexpr 활용
@@ -492,10 +533,11 @@ bin/Debug/08_TexturedCube.exe
 - [Learn OpenGL](https://learnopengl.com/) - 그래픽스 개념 학습
 - [Game Engine Architecture by Jason Gregory](https://www.gameenginebook.com/)
 - [3D Game Programming with DirectX 12 by Frank Luna](http://www.d3dcoder.net/)
+- [EnTT](https://github.com/skypjack/entt) - ECS 설계 참고
 
 ---
 
-**최종 업데이트:** 2025-11-06  
-**로드맵 버전:** v3.2 (포트폴리오 중심)
+**최종 업데이트:** 2025-12-18  
+**로드맵 버전:** v4.0 (Phase 3 완료)
 
 ⭐ 이 프로젝트가 도움이 되었다면 Star를 눌러주세요!

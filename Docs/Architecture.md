@@ -4,12 +4,13 @@
 1. [개요](#개요)
 2. [설계 원칙](#설계-원칙)
 3. [모듈 아키텍처](#모듈-아키텍처)
-4. [프레임 플로우](#프레임-플로우)
-5. [메모리 관리](#메모리-관리)
-6. [렌더링 아키텍처](#렌더링-아키텍처)
-7. [로드맵](#로드맵)
-8. [구현 진행 상황](#구현-진행-상황)
-9. [참고 자료](#참고-자료)
+4. [ECS 아키텍처](#ecs-아키텍처)
+5. [프레임 플로우](#프레임-플로우)
+6. [메모리 관리](#메모리-관리)
+7. [렌더링 아키텍처](#렌더링-아키텍처)
+8. [로드맵](#로드맵)
+9. [구현 진행 상황](#구현-진행-상황)
+10. [참고 자료](#참고-자료)
 
 ---
 
@@ -21,7 +22,7 @@ DevMiniEngine은 DirectX 12 기반의 학습용 게임 엔진 프로젝트입니
 - **Graphics API**: DirectX 12
 - **언어**: C++20
 - **빌드 시스템**: Visual Studio 2022
-- **아키텍처**: 모듈식 설계, ECS (계획 중)
+- **아키텍처**: 모듈식 설계, ECS (구현 완료)
 
 ### 프로젝트 목표
 1. DirectX 12 저수준 API 완전 이해
@@ -38,17 +39,17 @@ DevMiniEngine은 DirectX 12 기반의 학습용 게임 엔진 프로젝트입니
 
 **모듈 간 의존성 규칙:**
 ```
-Framework → Graphics → Platform → Core
-          ↘ Math   ↗
+Framework → ECS → Graphics → Platform → Core
+              ↘ Math   ↗
 ```
 
 ### 2. 추상화 레벨 분리
-- **High-Level**: Framework (Application, Scene, GameObject)
-- **Mid-Level**: Graphics (Mesh, Material, Texture, Camera)
+- **High-Level**: Framework (Application, ResourceManager)
+- **Mid-Level**: ECS (Entity, Component, System), Graphics (Mesh, Material, Texture)
 - **Low-Level**: DX12 (Device, CommandQueue, DescriptorHeap)
 
 ### 3. What/How 분리
-- **What**: Scene이 무엇을 렌더링할지 결정 (논리)
+- **What**: ECS System이 무엇을 처리할지 결정 (논리)
 - **How**: Renderer가 어떻게 렌더링할지 구현 (DirectX 12)
 
 ### 4. 메모리 효율성
@@ -76,10 +77,13 @@ DevMiniEngine/
 │   │   ├── Graphics/                    # Graphics 레이어
 │   │   │   ├── DX12/                    # DirectX 12 구현
 │   │   │   └── Camera/                  # 카메라 시스템
+│   │   ├── ECS/                         # ECS 레이어
+│   │   │   ├── Components/              # Component 정의
+│   │   │   └── Systems/                 # System 구현
 │   │   └── Framework/                   # Framework 레이어
 │   │       ├── Application.h            # 애플리케이션 베이스
 │   │       ├── Resources/               # 리소스 관리
-│   │       └── Scene/                   # 씬 관리
+│   │       └── DebugUI/                 # ImGui 통합
 │   │
 │   ├── src/                             # 모든 모듈의 구현
 │   │
@@ -87,16 +91,17 @@ DevMiniEngine/
 │   ├── Math/                            # Math 모듈 프로젝트
 │   ├── Platform/                        # Platform 모듈 프로젝트
 │   ├── Graphics/                        # Graphics 모듈 프로젝트
+│   ├── ECS/                             # ECS 모듈 프로젝트
 │   └── Framework/                       # Framework 모듈 프로젝트
 │
 ├── Samples/                             # 샘플 프로젝트
 │   ├── 01_MemoryTest/
 │   ├── ...
-│   └── 08_TexturedCube/                 # 텍스처 큐브 렌더링
+│   ├── 09_ECSRotatingCube/              # ECS 기반 회전 큐브
+│   └── 10_PhongLighting/                # Phong + 계층 구조 데모
 │
 ├── Assets/                              # 에셋
-│   └── Textures/                        # 텍스처 파일
-│       └── BrickWall/                   # PBR 텍스처 세트
+│   ├── Textures/                        # 텍스처 파일
 │
 └── Docs/                                # 문서
     ├── Architecture.md
@@ -140,10 +145,6 @@ private:
 - 프레임 시작/종료 시 입력 상태 업데이트
 - 델타 타임 측정
 
-**성능:**
-- 입력 폴링: ~1 마이크로초 오버헤드
-- 윈도우 메시지 처리: 이벤트 기반 (프레임당 가변)
-
 #### 2. Math 레이어 (구현 완료)
 **책임**: 수학적 기본 요소 및 연산
 
@@ -151,8 +152,8 @@ private:
 
 **기능:**
 - SIMD 최적화 벡터/행렬 연산 (DirectXMath 래퍼)
-- Vector2, Vector3, Vector4
-- Matrix3x3, Matrix4x4 (행 우선)
+- Vector2, Vector3, Vector4 (클래스, 연산자 오버로딩)
+- Matrix4x4 (행 우선)
 - 회전을 위한 Quaternion
 - Transform 유틸리티 (Translation, Rotation, Scaling)
 - 카메라 행렬 (LookAt, Perspective, Orthographic)
@@ -162,28 +163,43 @@ private:
 
 ```cpp
 // Math/include/Math/MathTypes.h
-using Vector3 = DirectX::XMFLOAT3;
-using Matrix4x4 = DirectX::XMFLOAT4X4;
-using Quaternion = DirectX::XMFLOAT4;
+struct Vector3
+{
+    float32 x, y, z;
+    
+    Vector3 operator+(const Vector3& other) const;
+    Vector3 operator-(const Vector3& other) const;
+    Vector3 operator*(float32 scalar) const;
+    float32 Dot(const Vector3& other) const;
+    Vector3 Cross(const Vector3& other) const;
+    Vector3 Normalized() const;
+    
+    static Vector3 Zero();
+    static Vector3 One();
+    static Vector3 Up();
+    static Vector3 Forward();
+    static Vector3 Right();
+};
 
-// 계산용 SIMD 타입
-using VectorSIMD = DirectX::XMVECTOR;
-using MatrixSIMD = DirectX::XMMATRIX;
-
-// Math/include/Math/MathUtils.h
-Vector3 Add(const Vector3& a, const Vector3& b);
-float Dot(const Vector3& a, const Vector3& b);
-Matrix4x4 MatrixMultiply(const Matrix4x4& a, const Matrix4x4& b);
-Quaternion QuaternionFromEuler(float pitch, float yaw, float roll);
+struct Matrix4x4
+{
+    float32 m[4][4];
+    
+    Matrix4x4 operator*(const Matrix4x4& other) const;
+    static Matrix4x4 Identity();
+    static Matrix4x4 Translation(const Vector3& t);
+    static Matrix4x4 RotationQuaternion(const Quaternion& q);
+    static Matrix4x4 Scaling(const Vector3& s);
+};
 ```
 
 **설계 결정사항:**
 - DirectXMath를 기반으로 사용 (프로덕션 품질 SIMD)
-- 저장 타입(XMFLOAT*)과 SIMD 타입(XMVECTOR) 분리
-- 편의를 위한 래퍼 함수
+- 저장 타입(클래스)과 SIMD 타입(XMVECTOR) 분리
+- 연산자 오버로딩으로 직관적인 수학 표현
 - 모든 함수 인라인 (헤더 온리, 오버헤드 없음)
 
-#### 3. Core 레이어 (부분 구현)
+#### 3. Core 레이어 (구현 완료)
 **책임**: 엔진 기반 시스템
 
 **서브시스템:**
@@ -279,10 +295,6 @@ private:
 - Printf 스타일 포매팅
 - Release 빌드에서 Trace/Debug 컴파일 타임 제거
 
-**성능:**
-- Debug 빌드: 로그당 ~50 마이크로초 오버헤드
-- Release 빌드: Trace/Debug는 컴파일 제거됨, 0 오버헤드
-
 ##### 타이밍 시스템 (구현 완료)
 **상태**: 고정밀 타이머 완전히 구현됨
 
@@ -310,9 +322,10 @@ private:
 ```
 
 **기능:**
-- QueryPerformanceCounter 사용 (Windows 고정밀 타이머)
-- 50개 샘플 평균화로 안정적인 delta time
-- 총 경과 시간 추적
+- QueryPerformanceCounter 기반 고정밀 타이밍
+- 50 샘플 이동 평균으로 부드러운 델타 타임
+- 프레임 레이트 독립적 업데이트 지원
+
 
 #### 4. Graphics 레이어 (구현 완료)
 **책임**: 렌더링 시스템 및 DirectX 12 추상화
@@ -481,40 +494,6 @@ private:
 - 빈 슬롯은 Null Descriptor 자동 생성
 - 한 번의 `SetGraphicsRootDescriptorTable` 호출로 바인딩
 
-##### 카메라 시스템 (구현 완료)
-**클래스:**
-- **PerspectiveCamera**: 원근 투영 카메라
-- **OrthographicCamera** (계획 중): 직교 투영 카메라
-
-```cpp
-// Graphics/include/Graphics/Camera/PerspectiveCamera.h
-class PerspectiveCamera
-{
-public:
-    void SetLookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
-    void SetPerspective(float32 fovY, float32 aspectRatio, float32 nearZ, float32 farZ);
-    
-    void UpdateViewMatrix();
-    void UpdateProjectionMatrix();
-    
-    Matrix4x4 GetViewMatrix() const { return mView; }
-    Matrix4x4 GetProjectionMatrix() const { return mProjection; }
-    Vector3 GetPosition() const { return mPosition; }
-    
-private:
-    Vector3 mPosition;
-    Vector3 mTarget;
-    Vector3 mUp;
-    
-    float32 mFovY;
-    float32 mAspectRatio;
-    float32 mNearZ;
-    float32 mFarZ;
-    
-    Matrix4x4 mView;
-    Matrix4x4 mProjection;
-};
-```
 
 ##### 렌더링 파이프라인 (구현 완료)
 **DX12Renderer 클래스:**
@@ -664,84 +643,214 @@ private:
 - 생명주기 자동 관리
 
 ##### Scene/GameObject 시스템 (구현 완료)
-**임시 구현 (향후 ECS로 전환 예정)**
+**레거시 지원 (ECS와 병행 사용 가능)**
+
+---
+
+## ECS 아키텍처
+
+### 개요
+DevMiniEngine은 데이터 지향 설계(DOD) 원칙에 따른 ECS 아키텍처를 채택합니다.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Registry                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
+│  │   Entity    │  │  Component  │  │   System    │      │
+│  │   Manager   │  │   Storage   │  │   Manager   │      │
+│  └─────────────┘  └─────────────┘  └─────────────┘      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 핵심 개념
+
+#### Entity
+- **정의**: 고유 식별자 (ID + Version)
+- **역할**: Component를 그룹화하는 핸들
+- **특징**: 데이터 없음, 로직 없음
 
 ```cpp
-// Framework/include/Framework/Scene/GameObject.h
-class GameObject
+struct Entity
 {
-public:
-    explicit GameObject(const std::string& name);
+    uint32 id;       // 고유 식별자
+    uint32 version;  // 재활용 세대
     
-    // Transform
-    void SetPosition(const Vector3& position);
-    void SetRotation(const Quaternion& rotation);
-    void SetScale(const Vector3& scale);
-    Matrix4x4 GetWorldMatrix() const;
-    
-    // 렌더링 컴포넌트
-    void SetMesh(std::shared_ptr<Mesh> mesh);
-    void SetMaterial(std::shared_ptr<Material> material);
-    
-    std::shared_ptr<Mesh> GetMesh() const { return mMesh; }
-    std::shared_ptr<Material> GetMaterial() const { return mMaterial; }
-    
-    // 활성화 상태
-    void SetActive(bool active);
-    bool IsActive() const { return mIsActive; }
-    
-    virtual void Update(float32 deltaTime);
-    
-private:
-    std::string mName;
-    bool mIsActive = true;
-    
-    Vector3 mPosition = {0, 0, 0};
-    Quaternion mRotation = {0, 0, 0, 1};
-    Vector3 mScale = {1, 1, 1};
-    
-    std::shared_ptr<Mesh> mMesh;
-    std::shared_ptr<Material> mMaterial;
+    bool IsValid() const;
+    static Entity Invalid();
 };
 ```
 
+#### Component
+- **정의**: 순수 데이터 구조 (POD)
+- **역할**: Entity의 속성/상태 저장
+- **원칙**: 로직 금지, 데이터만
+
 ```cpp
-// Framework/include/Framework/Scene/Scene.h
-class Scene
+// 위치/회전/스케일 데이터
+struct TransformComponent
 {
-public:
-    Scene();
-    ~Scene();
+    Vector3 position;
+    Quaternion rotation;
+    Vector3 scale;
     
-    // GameObject 관리
-    GameObject* CreateGameObject(const std::string& name);
-    GameObject* FindGameObject(const std::string& name);
-    bool RemoveGameObject(const std::string& name);
-    void ClearGameObjects();
+    // 캐시된 행렬 (Phase 3.5)
+    Matrix4x4 localMatrix;
+    Matrix4x4 worldMatrix;
     
-    // 카메라
-    PerspectiveCamera* GetMainCamera();
-    
-    // 업데이트
-    void Update(float32 deltaTime);
-    
-    // 렌더링 데이터 수집 (렌더링하지 않음!)
-    void CollectRenderData(FrameData& outFrameData) const;
-    
-private:
-    std::vector<std::unique_ptr<GameObject>> mGameObjects;
-    std::unordered_map<std::string, GameObject*> mGameObjectMap;
-    PerspectiveCamera mMainCamera;
+    // Dirty Flags
+    bool localDirty = true;
+    bool worldDirty = true;
+};
+
+// 계층 구조 데이터 (Phase 3.5)
+struct HierarchyComponent
+{
+    Entity parent = Entity::Invalid();
+    std::vector<Entity> children;
+};
+
+// 조명 데이터
+struct DirectionalLightComponent
+{
+    Vector3 direction;
+    Vector3 color;
+    float32 intensity;
 };
 ```
 
-**What/How 분리:**
-- `Scene::CollectRenderData()`: 무엇을 렌더링할지 수집
-- `DX12Renderer::RenderFrame()`: 어떻게 렌더링할지 구현
+#### System
+- **정의**: Component 데이터를 처리하는 로직
+- **역할**: 특정 Component 조합을 가진 Entity 처리
+- **원칙**: 상태 최소화, 데이터는 Component에
+
+```cpp
+class TransformSystem : public ISystem
+{
+public:
+    void Initialize() override;
+    void Update(float32 deltaTime) override;
+    void Shutdown() override;
+    
+    // 계층 구조 API
+    bool SetParent(Entity child, Entity parent);
+    Entity GetParent(Entity entity) const;
+    const std::vector<Entity>& GetChildren(Entity entity) const;
+    
+    // Transform API
+    bool SetPosition(Entity entity, const Vector3& position);
+    bool SetRotation(Entity entity, const Quaternion& rotation);
+    bool GetWorldMatrix(Entity entity, Matrix4x4& outMatrix) const;
+    
+    // 저수준 API (정적)
+    static Matrix4x4 CalculateLocalMatrix(const TransformComponent& transform);
+    static void SetRotationEuler(TransformComponent& transform, float x, float y, float z);
+};
+```
+
+### Registry
+ECS의 중앙 관리자로서 Entity 생명주기와 Component 저장을 담당합니다.
+
+```cpp
+class Registry
+{
+public:
+    // Entity 관리
+    Entity CreateEntity();
+    void DestroyEntity(Entity entity);
+    bool IsEntityValid(Entity entity) const;
+    
+    // Component 관리
+    template<typename T>
+    T* AddComponent(Entity entity, const T& component);
+    
+    template<typename T>
+    T* GetComponent(Entity entity);
+    
+    template<typename T>
+    bool HasComponent(Entity entity) const;
+    
+    // Query
+    template<typename... Components>
+    RegistryView<Components...> CreateView();
+};
+```
+
+### SystemManager
+System의 등록, 실행 순서, 생명주기를 관리합니다.
+
+```cpp
+class SystemManager
+{
+public:
+    explicit SystemManager(Registry& registry);
+    
+    template<typename T, typename... Args>
+    T* RegisterSystem(Args&&... args);
+    
+    template<typename T>
+    T* GetSystem();
+    
+    void UpdateSystems(float32 deltaTime);
+    void ShutdownSystems();
+};
+```
+
+### 구현된 Component 목록
+
+| Component | 용도 | 크기 |
+|-----------|------|------|
+| TransformComponent | 위치/회전/스케일 + 행렬 캐시 | ~160B |
+| HierarchyComponent | 부모-자식 관계 | ~32B |
+| MeshComponent | 메시 리소스 참조 | 8B |
+| MaterialComponent | 머티리얼 리소스 참조 | 8B |
+| CameraComponent | 카메라 파라미터 + 행렬 | ~200B |
+| DirectionalLightComponent | 방향광 속성 | ~32B |
+| PointLightComponent | 점광원 속성 | ~48B |
+
+### 구현된 System 목록
+
+| System | 역할 | 실행 순서 |
+|--------|------|-----------|
+| TransformSystem | 계층 구조 업데이트, World Matrix 계산 | 1 |
+| CameraSystem | 카메라 행렬 업데이트 | 2 |
+| LightingSystem | 조명 데이터 수집 | 3 |
+| RenderSystem | 렌더링 데이터 수집, FrameData 생성 | 4 |
+
+### Transform 계층 구조 (Phase 3.5)
+
+**설계 결정:**
+- HierarchyComponent를 TransformComponent와 분리 (ECS 원칙)
+- children은 std::vector 사용 (캐시 친화적 순회)
+- Root Entity 목록을 TransformSystem에서 관리
+
+**Dirty Flag 최적화:**
+```cpp
+// localDirty: position/rotation/scale 변경 시
+// worldDirty: local 변경 또는 parent 변경 시
+
+void TransformSystem::Update(float32 deltaTime)
+{
+    // 1. Root Entity부터 DFS 순회
+    for (Entity root : mRootEntities)
+    {
+        UpdateHierarchy(root, Matrix4x4::Identity());
+    }
+    
+    // 2. Hierarchy 없는 Entity 단독 처리
+    UpdateStandaloneEntities();
+}
+```
+
+**World Matrix 계산:**
+```cpp
+// World = Local * ParentWorld
+transform->worldMatrix = transform->localMatrix * parentWorldMatrix;
+```
 
 ---
 
 ## 프레임 플로우
+
 
 ### 메인 루프 시퀀스
 ```
@@ -826,6 +935,62 @@ private:
 │  - Signal Fence                          │
 │  - MoveToNextFrame()                     │
 └──────────────────────────────────────────┘
+```
+
+### 메인 루프
+
+```cpp
+void Application::Run()
+{
+    while (!mShouldQuit)
+    {
+        // 1. 윈도우 메시지 처리
+        mWindow->ProcessMessages();
+        
+        // 2. 입력 업데이트
+        Input::BeginFrame();
+        
+        // 3. 타이머 업데이트
+        mTimer.Tick();
+        float deltaTime = mTimer.GetDeltaTime();
+        
+        // 4. 게임 로직 업데이트
+        OnUpdate(deltaTime);
+        
+        // 5. ECS System 업데이트
+        mSystemManager->UpdateSystems(deltaTime);
+        
+        // 6. 렌더링
+        BeginFrame();
+        OnRender();
+        RenderDebugUI();
+        EndFrame();
+        Present();
+        
+        // 7. 입력 상태 정리
+        Input::EndFrame();
+    }
+}
+```
+
+### 렌더링 파이프라인 (Phase 3.4 이후)
+
+```cpp
+// BeginFrame
+mRenderer->BeginFrame();
+
+// Scene 렌더링
+const FrameData& frameData = mRenderSystem->GetFrameData();
+mRenderer->RenderScene(frameData);
+
+// ImGui 렌더링
+mImGuiManager->BeginFrame();
+OnRenderDebugUI();
+mImGuiManager->EndFrame(commandList);
+
+// EndFrame + Present
+mRenderer->EndFrame();
+mRenderer->Present();
 ```
 
 ---
@@ -951,72 +1116,149 @@ private:
 - Material당 7개 연속 SRV (PBR 텍스처)
 - 한 번의 `SetGraphicsRootDescriptorTable` 호출로 바인딩
 
+
+### DX12 래퍼 클래스
+
+```cpp
+class DX12Device
+{
+    ID3D12Device* mDevice;
+    IDXGIFactory4* mFactory;
+    // ...
+};
+
+class DX12CommandQueue
+{
+    ID3D12CommandQueue* mCommandQueue;
+    ID3D12Fence* mFence;
+    // ...
+};
+
+class DX12Renderer
+{
+    void BeginFrame();
+    void RenderScene(const FrameData& frameData);
+    void EndFrame();
+    void Present();
+};
+```
+
+### 리소스 관리
+
+**ResourceId 시스템:**
+```cpp
+struct ResourceId
+{
+    uint64 id;  // 64비트 해시
+    bool IsValid() const { return id != 0; }
+};
+
+// Component에서 리소스 참조
+struct MeshComponent { ResourceId meshId; };      // 8 bytes
+struct MaterialComponent { ResourceId materialId; }; // 8 bytes
+```
+
+**ResourceManager:**
+```cpp
+class ResourceManager
+{
+    ResourceId CreateMesh(const std::string& name);
+    ResourceId CreateMaterial(const std::string& name, ...);
+    ResourceId LoadTexture(const std::string& path);
+    
+    Mesh* GetMesh(ResourceId id);
+    Material* GetMaterial(ResourceId id);
+    Texture* GetTexture(ResourceId id);
+};
+```
+
+### Phong Shading (Phase 3.3)
+
+**Constant Buffer 구조:**
+```hlsl
+// b0: Transform
+cbuffer TransformCB : register(b0)
+{
+    float4x4 worldMatrix;
+    float4x4 viewMatrix;
+    float4x4 projectionMatrix;
+    float4x4 worldInvTranspose;
+};
+
+// b1: Material
+cbuffer MaterialCB : register(b1)
+{
+    float3 albedo;
+    float metallic;
+    float roughness;
+    float ao;
+    uint materialFlags;
+};
+
+// b2: Lighting
+cbuffer LightingCB : register(b2)
+{
+    DirectionalLight dirLight;
+    PointLight pointLights[MAX_POINT_LIGHTS];
+    uint numPointLights;
+    float3 cameraPosition;
+};
+```
+
 ---
 
 ## 로드맵
 
-### Phase 1-2: 기반 시스템 (100% 완료)
-- [x] 프로젝트 구조
+### Phase 1: 기초 시스템 (완료)
+- [x] 프로젝트 구조 설정
 - [x] Core 시스템 (메모리, 로깅, 타이머)
 - [x] Math 라이브러리 (SIMD)
-- [x] Platform 레이어 (Window, Input)
-- [x] DirectX 12 초기화 및 렌더링 파이프라인
+
+### Phase 2: DirectX 12 기초 (완료)
+- [x] 윈도우 생성 및 입력 처리
+- [x] DX12 초기화
+- [x] 기본 렌더링 파이프라인
 - [x] 메시 및 텍스처 시스템
 - [x] 카메라 시스템
-- [x] Framework 아키텍처 (Application, ResourceManager, Scene)
-- [x] PBR 텍스처 시스템 (7종 텍스처 타입 지원)
-- [x] Scene/Renderer 분리 (What/How 분리)
+- [x] Framework 아키텍처
 
-**현재 상태:** PBR 텍스처 셋(Diffuse, Normal, Specular, Roughness, Metallic, AO, Emissive)의 완벽한 로딩 및 셰이더 바인딩 파이프라인 구축 완료.
-
----
-
-### Phase 3: ECS 아키텍처 & 디버그 툴
-**목표:** 데이터 지향 설계의 핵심 구현
-
-- [ ] **ECS Core**
-  - [ ] Entity Manager (생성/삭제/재활용)
-  - [ ] Component Storage (Archetype 기반)
-  - [ ] System Framework (실행 순서 관리)
-
-- [ ] **Core Components & Systems**
-  - [ ] TransformComponent (계층 구조, World Matrix 캐싱)
-  - [ ] TransformSystem (Dirty Flag 전파)
-  - [ ] MeshComponent & MaterialComponent
-  - [ ] RenderSystem (ECS 기반 렌더링)
-
-- [ ] **기초 조명 시스템 (Phong)**
-  - [ ] DirectionalLightComponent
-  - [ ] PointLightComponent  
-  - [ ] LightingSystem (Phong Shading)
-  - [ ] Normal Map 지원 (TBN 행렬)
-
-- [ ] **Query System**
-  - [ ] 컴포넌트 조합 쿼리
-  - [ ] Query 캐싱 및 최적화
-
-- [ ] **디버그 툴 (조기 도입)**
-  - [ ] ImGui 통합
-  - [ ] ECS Inspector (Entity/Component 편집)
-  - [ ] 조명 파라미터 실시간 조정
-  - [ ] 성능 모니터링 (FPS, Draw Call)
-
-**완료 시:** 1000개 Entity 관리, Phong 조명, ImGui로 실시간 편집
+### Phase 3: ECS 아키텍처 (완료)
+- [x] **3.1 ECS Foundation**
+  - Entity (ID + Version)
+  - Registry, Component Storage
+  - TransformComponent/System
+  - ResourceId 시스템 (64비트 해시)
+  - 09_ECSRotatingCube 샘플
+  
+- [x] **3.2 System Framework**
+  - ISystem 인터페이스
+  - SystemManager
+  - RegistryView Query 패턴
+  - CameraComponent/System
+  - RenderSystem (자동 수집)
+  
+- [x] **3.3 Lighting**
+  - DirectionalLightComponent
+  - PointLightComponent
+  - LightingSystem
+  - Phong Shading
+  - Normal Mapping
+  - 10_PhongLighting 샘플
+  
+- [x] **3.4 Debug Tools**
+  - ImGui 통합
+  - ImGuiManager
+  - PerformancePanel (FPS, 그래프)
+  - ECSInspector (Entity/Component 편집)
+  
+- [x] **3.5 Advanced**
+  - HierarchyComponent
+  - Transform 계층 구조 (parent-child)
+  - Dirty Flag 최적화
+  - DFS 순회 World Matrix 업데이트
+  - 10_PhongLighting에 계층 테스트 통합
 
 ---
-
-### Phase 3.5: Job System (선택적)
-**목표:** 기본 멀티스레딩 인프라
-
-- [ ] 워커 스레드 풀
-- [ ] Job 디스패처
-- [ ] TransformSystem 병렬화
-- [ ] 성능 벤치마크 (Single vs Multi-thread)
-
-**참고:** Phase 9로 연기 가능 (병렬화할 작업이 충분해진 후)
-
----
-
 ### Phase 4: DX12 인프라 확장 & Asset Pipeline
 **목표:** 생산성 향상을 위한 에셋 파이프라인
 
@@ -1161,9 +1403,13 @@ private:
 
 ---
 
-### Phase 9: Job System 확장 (Phase 3.5를 건너뛴 경우)
-**목표:** CPU 병렬화
+### Phase 9: Job System (Phase 3.5에서 구현 X)
+**목표:** 기본 멀티스레딩 인프라, CPU 병렬화
 
+- [ ] 워커 스레드 풀
+- [ ] Job 디스패처
+- [ ] TransformSystem 병렬화
+- [ ] 성능 벤치마크 (Single vs Multi-thread)
 - [ ] Job System 구현 (Phase 3.5 참고)
 - [ ] ECS System 병렬화
 - [ ] PhysicsSystem 병렬화
@@ -1250,22 +1496,31 @@ private:
 | Logging | 완료 | 1개 테스트 | 멀티 Sink, 카테고리별 필터링 |
 | Timing | 완료 | - | 고정밀 타이머, 50 샘플 평균화 |
 | **Math** |
-| Math Library | 완료 | 1개 테스트 | SIMD 최적화, DirectXMath 래퍼 |
+| Math Library | 완료 | 1개 테스트 | SIMD 최적화, 연산자 오버로딩 |
 | **Platform** |
 | Window | 완료 | 2개 테스트 | Win32 윈도우, 메시지 처리 |
 | Input | 완료 | 1개 테스트 | 키보드/마우스 |
 | **Graphics** |
 | DX12 Init | 완료 | 1개 테스트 | Device, Queue, SwapChain |
-| Mesh System | 완료 | - | Vertex/Index Buffer |
+| Mesh System | 완료 | - | Vertex/Index Buffer, Tangent |
 | Texture System | 완료 | - | WIC/DDS 로더, PBR 7종 텍스처 |
-| Material System | 완료 | - | Descriptor Table, PSO 생성 정보 |
-| Camera | 완료 | - | Perspective Camera |
-| Renderer | 완료 | - | Scene/Renderer 분리, PSO 캐싱 |
+| Material System | 완료 | - | Descriptor Table, PSO 캐싱 |
+| Renderer | 완료 | - | Scene/Renderer 분리 |
+| **ECS** |
+| Entity/Registry | 완료 | - | ID+Version, 재활용 |
+| Component Storage | 완료 | - | 타입별 unordered_map |
+| SystemManager | 완료 | - | 등록/실행/종료 관리 |
+| TransformSystem | 완료 | - | 계층 구조, Dirty Flag |
+| CameraSystem | 완료 | - | View/Projection 행렬 |
+| LightingSystem | 완료 | - | 조명 데이터 수집 |
+| RenderSystem | 완료 | - | FrameData 자동 수집 |
 | **Framework** |
 | Application | 완료 | - | 템플릿 메서드 패턴 |
 | ResourceManager | 완료 | - | 중앙 집중식 리소스 관리 |
-| Scene/GameObject | 완료 | - | 임시 구현 (ECS 전 단계) |
-| **합계** | **15개 주요 서브시스템** | **8개 테스트** | **~10,000 라인** |
+| ImGuiManager | 완료 | - | DX12 ImGui 통합 |
+| ECSInspector | 완료 | - | Entity/Component 편집 |
+| PerformancePanel | 완료 | - | FPS, 프레임 타임 그래프 |
+| **합계** | **20+** | **8개 테스트** | **~15,000 라인** |
 
 ### 샘플 프로그램
 1. `01_MemoryTest` - LinearAllocator
@@ -1275,12 +1530,9 @@ private:
 5. `05_LoggingTest` - 로깅 시스템
 6. `06_WindowTest` - Window 생성
 7. `07_InputTest` - 입력 처리
-8. `08_DXInit` - DirectX 12 초기화
-9. `09_HelloTriangle` - 삼각형 렌더링
-10. `10_IndexedCube` - 인덱스 버퍼 사용
-11. `11_RotatingCube` - MVP 변환
-12. `12_TexturedCube` - 단일 텍스처 렌더링
-13. `13_MultiTextureCube` - PBR 다중 텍스처 렌더링
+8. `08_TexturedCube` - 텍스처 큐브 렌더링
+9. `09_ECSRotatingCube` - ECS 기반 회전 큐브
+10. `10_PhongLighting` - Phong Shading + 계층 구조 데모
 
 ---
 
@@ -1309,6 +1561,7 @@ private:
 
 ## 문서 히스토리
 
+- **2025-12-18**: Phase 3 완료, ECS 아키텍처 섹션 추가, 계층 구조 문서화
 - **2025-11-07**: Framework 모듈 추가, PBR 텍스처 시스템 완성, Phase 1-2 완료 상태 반영
 - **2025-11-05**: Scene/Renderer 분리 완성, Timer 시스템 추가
 - **2025-10-15**: DirectX 12 초기화 완료
@@ -1318,6 +1571,6 @@ private:
 
 ---
 
-**참고**: 이 아키텍처는 프로젝트가 발전하고 새로운 요구사항이 등장함에 따라 변경될 수 있습니다. 실제 경험이 설계 개선으로 이어질 것입니다.
+**참고**: 이 아키텍처는 프로젝트가 발전하고 새로운 요구사항이 등장함에 따라 변경될 수 있습니다.
 
-**최종 업데이트**: 2025-11-07
+**최종 업데이트**: 2025-12-18
