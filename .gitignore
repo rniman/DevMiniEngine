@@ -451,8 +451,12 @@ intermediate/
 external/*
 !external/.gitkeep
 
-# Add 25.10.26
+# Custom ignore rules
+# Add 2025-12-19
 Memo.md
 Docs/Todo/
-Assets/
 Docs/Archive/
+
+# Ignore all files in Assets folder except Shaders folder
+Assets/*
+!Assets/[Ss]haders/

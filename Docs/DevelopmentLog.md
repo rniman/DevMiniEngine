@@ -24,6 +24,38 @@
 
 ---
 
+## 2025-12-22 - Phase 3.6 Debug Visualization 구현
+
+### Tasks
+- [x] DebugVertex, DebugConstants 타입 정의
+- [x] Debug 전용 셰이더 (DebugVS.hlsl, DebugPS.hlsl)
+- [x] PrimitiveGenerator, DebugShapes (Header-Only 유틸리티)
+- [x] DebugRenderer 클래스 (별도 Root Signature, PSO)
+- [x] DX12Renderer 통합, FrameData 확장
+- [x] ImGui DebugVisualizationPanel, ECSInspector 선택 콜백 연동
+- [x] Display Mode (All / SelectedOnly / None), 선택 색상 강조
+
+### Decisions
+
+- **분리된 파이프라인**: Debug 렌더링은 메인과 독립, Depth On/Off PSO로 X-Ray 모드 지원
+- **정적 단위 도형**: Arrow, Sphere를 DX12VertexBuffer로 한 번만 업로드, Transform은 CB로 전달
+- **Dynamic Offset CB**: 프레임당 4096개 도형, 256바이트 정렬 슬롯 인덱싱
+- **QuaternionFromToRotation**: 직접 행렬 구성 대신 쿼터니언으로 안정적인 방향 회전
+- **콜백 패턴**: SelectionChangedCallback으로 Framework-Graphics 모듈 간 느슨한 결합
+
+### Issues Resolved
+
+- **CB 덮어쓰기**: GPU 지연 실행으로 마지막 도형만 렌더링 → Dynamic Offset 패턴으로 해결
+- **VB 덮어쓰기**: 동적 버퍼 공유로 Arrow가 Sphere로 덮어씀 → 도형별 정적 버퍼 분리
+- **회전 행렬 오류**: 행/열 기준 혼동 → QuaternionFromToRotation + MatrixSRT 사용
+
+### Next Steps
+- [ ] TODO: 선택된 Mesh 외곽선 하이라이트 (Stencil Buffer 방식 권장)
+- [ ] Phase 4: 모델 로딩 (Assimp/glTF 통합)
+- [ ] Phase 5: PBR Lighting
+
+---
+
 ## 2025-12-18 - Phase 3.5: Transform 계층 구조 및 Dirty Flag 최적화
 
 ### Tasks
