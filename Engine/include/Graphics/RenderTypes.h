@@ -2,6 +2,7 @@
 #include "Graphics/GraphicsTypes.h"
 #include "Math/MathTypes.h"
 #include "Math/MathUtils.h"
+#include "ECS/Entity.h" 
 #include <vector>
 
 namespace Graphics
@@ -19,13 +20,6 @@ namespace Graphics
 		const Material* material = nullptr;
 		Math::Matrix4x4 worldMatrix = Math::Matrix4x4::Identity();
 		Math::Matrix4x4 mvpMatrix = Math::Matrix4x4::Identity();
-
-		// TODO: Phase 3.5 - 비균등 스케일 지원
-		// Math::Matrix4x4 worldInvTranspose = Math::Matrix4x4::Identity();
-
-		// 향후 확장
-		// Core::uint32 stencilRef = 0;
-		// RenderLayer layer = RenderLayer::Opaque;
 	};
 
 	/**
@@ -53,10 +47,27 @@ namespace Graphics
 	};
 
 	/**
+	 * @brief Debug 시각화용 Entity 정보
+	 *
+	 * Phase 3.6: Light Gizmo 렌더링을 위한 Entity 목록
+	 * 인덱스가 directionalLights, pointLights 배열과 1:1 매칭됨
+	 */
+	struct DebugInfo
+	{
+		std::vector<ECS::Entity> directionalLightEntities;
+		std::vector<ECS::Entity> pointLightEntities;
+
+		void Clear()
+		{
+			directionalLightEntities.clear();
+			pointLightEntities.clear();
+		}
+	};
+
+	/**
 	 * @brief 프레임별 렌더링 데이터
 	 *
 	 * Scene에서 수집한 렌더링 정보를 Renderer에 전달하는 구조체
-	 * Phase 3.3: 조명 데이터 통합
 	 */
 	struct FrameData
 	{
@@ -66,22 +77,23 @@ namespace Graphics
 		Math::Vector3 cameraPosition = { 0.0f, 0.0f, 0.0f };
 
 		// 렌더 아이템 (렌더링 순서별로 분류)
-		std::vector<RenderItem> opaqueItems;      // 불투명 오브젝트
-		std::vector<RenderItem> transparentItems;  // 투명 오브젝트 (향후)
+		std::vector<RenderItem> opaqueItems;
+		std::vector<RenderItem> transparentItems;
 
-		// Phase 3.3: 조명 데이터
+		// 조명 데이터
 		std::vector<DirectionalLightData> directionalLights;
 		std::vector<PointLightData> pointLights;
 
-		// 향후 확장
-		// std::vector<ShadowCaster> shadowCasters;
-		// EnvironmentMap* environmentMap = nullptr;
+		// Debug 시각화 데이터
+		DebugInfo debug;
+
 		void Clear()
 		{
 			opaqueItems.clear();
 			transparentItems.clear();
 			directionalLights.clear();
 			pointLights.clear();
+			debug.Clear();
 		}
 	};
 

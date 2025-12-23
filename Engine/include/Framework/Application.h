@@ -20,6 +20,7 @@ namespace Framework
 	class ImGuiManager;  // 전방 선언
 	class PerformancePanel;
 	class ECSInspector;
+	class DebugVisualizationPanel;
 
 	struct ApplicationDesc
 	{
@@ -131,6 +132,7 @@ namespace Framework
 		std::unique_ptr<ImGuiManager> mImGuiManager;
 		std::unique_ptr<PerformancePanel> mPerformancePanel;
 		std::unique_ptr<ECSInspector> mECSInspector;
+		std::unique_ptr<DebugVisualizationPanel> mDebugVisualizationPanel;
 
 		bool mShowDebugUI = true;
 	};

@@ -86,7 +86,7 @@ namespace Framework
 		if (ImGui::Button("+ Create Entity"))
 		{
 			ECS::Entity newEntity = registry->CreateEntity();
-			mSelectedEntity = newEntity;
+			SelectEntity(newEntity);
 		}
 
 		ImGui::SameLine();
@@ -101,7 +101,7 @@ namespace Framework
 		if (ImGui::Button("- Delete"))
 		{
 			registry->DestroyEntity(mSelectedEntity);
-			mSelectedEntity = ECS::Entity{};
+			SelectEntity(ECS::Entity{});
 		}
 
 		if (!canDelete)
@@ -139,7 +139,15 @@ namespace Framework
 			bool isSelected = (mSelectedEntity == entity);
 			if (ImGui::Selectable(entityName, isSelected))
 			{
-				mSelectedEntity = entity;
+				// 토글: 이미 선택된 Entity를 다시 클릭하면 선택 해제
+				if (isSelected)
+				{
+					SelectEntity(ECS::Entity{});
+				}
+				else
+				{
+					SelectEntity(entity);
+				}
 			}
 		}
 	}
@@ -155,7 +163,7 @@ namespace Framework
 		if (!registry->IsEntityValid(mSelectedEntity))
 		{
 			ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Invalid Entity");
-			mSelectedEntity = ECS::Entity{};
+			SelectEntity(ECS::Entity{});  // 변경
 			return;
 		}
 
@@ -193,6 +201,23 @@ namespace Framework
 		if (registry->HasComponent<ECS::MaterialComponent>(mSelectedEntity))
 		{
 			RenderMaterialComponent(registry, mSelectedEntity);
+		}
+	}
+
+	void ECSInspector::SelectEntity(ECS::Entity entity)
+	{
+		// 동일한 Entity면 무시
+		if (mSelectedEntity == entity)
+		{
+			return;
+		}
+
+		mSelectedEntity = entity;
+
+		// 콜백 호출
+		if (mSelectionChangedCallback)
+		{
+			mSelectionChangedCallback(entity);
 		}
 	}
 

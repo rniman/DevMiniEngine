@@ -10,6 +10,7 @@
 #include "Graphics/DX12/DX12RootSignature.h"
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Graphics/DX12/DX12SwapChain.h"
+#include "Graphics/DebugDraw/DebugRenderer.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
@@ -158,6 +159,15 @@ namespace Graphics
 			return false;
 		}
 
+		// 7. Phase 3.6: Debug Renderer 초기화
+		mDebugRenderer = std::make_unique<DebugRenderer>();
+		if (!mDebugRenderer->Initialize(device, mShaderCompiler.get()))
+		{
+			LOG_WARN("[DX12Renderer] Failed to initialize DebugRenderer (non-fatal)");
+			mDebugRenderer.reset();
+			// Debug Renderer 실패는 치명적이지 않음 - 계속 진행
+		}
+
 		// 뷰포트와 시저 설정
 		UpdateViewportAndScissor();
 
@@ -244,6 +254,8 @@ namespace Graphics
 		}
 
 		// 리소스 정리
+		mDebugRenderer.reset();  // Phase 3.6: Debug Renderer 먼저 정리
+
 		mSrvDescriptorHeap.reset();
 		mDepthStencilBuffer.reset();
 
@@ -290,27 +302,6 @@ namespace Graphics
 		UpdateViewportAndScissor();
 
 		LOG_INFO("DX12Renderer resized to %dx%d", mWidth, mHeight);
-	}
-
-	void DX12Renderer::RenderFrame(const FrameData& frameData)
-	{
-		if (!mIsInitialized)
-		{
-			LOG_WARN("DX12Renderer not initialized");
-			return;
-		}
-
-		// 분리된 메서드들을 순차 호출 (기존 동작 유지)
-		if (!BeginFrame())
-		{
-			return;
-		}
-
-		RenderScene(frameData);
-
-		EndFrame();
-
-		Present(true);
 	}
 
 	bool DX12Renderer::BeginFrame()
@@ -408,6 +399,28 @@ namespace Graphics
 		// 다음 프레임으로 이동
 		swapChain->MoveToNextFrame();
 		MoveFrameIndex();
+	}
+
+	void DX12Renderer::RenderDebug(const FrameData& frameData)
+	{
+		if (!mIsInitialized || !mDebugRenderer)
+		{
+			return;
+		}
+
+		DX12CommandContext* cmdContext = GetCurrentCommandContext();
+		if (!cmdContext)
+		{
+			return;
+		}
+
+		ID3D12GraphicsCommandList* cmdList = cmdContext->GetCommandList();
+
+		// View * Projection 행렬
+		Math::Matrix4x4 viewMatrix = frameData.viewMatrix;
+		Math::Matrix4x4 projMatrix = frameData.projectionMatrix;
+
+		mDebugRenderer->Render(cmdList, frameData, viewMatrix, projMatrix);
 	}
 
 	ID3D12GraphicsCommandList* DX12Renderer::GetCurrentCommandList()

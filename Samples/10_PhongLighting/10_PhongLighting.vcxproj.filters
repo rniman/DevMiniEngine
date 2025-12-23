@@ -3,6 +3,7 @@
   <ItemGroup>
     <FxCompile Include="PhongVs.hlsl" />
     <FxCompile Include="PhongPS.hlsl" />
+    <FxCompile Include="DebugShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

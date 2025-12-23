@@ -1,6 +1,12 @@
 ﻿#include "pch.h"
 #include "Framework/Application.h"
 
+// Framework/DebugUI
+#include "Framework/DebugUI/ImGuiManager.h"
+#include "Framework/DebugUI/PerformancePanel.h"
+#include "Framework/DebugUI/ECSInspector.h"
+#include "Framework/DebugUI/DebugVisualizationPanel.h"
+
 // Core
 #include "Core/Logging/LogMacros.h"
 #include "Core/Timing/ScopedTimer.h"
@@ -10,16 +16,12 @@
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
+#include "Graphics/DebugDraw/DebugRenderer.h"
 
 // Platform
 #include "Platform/Input.h"
 #include "Platform/PlatformTypes.h"
 #include "Platform/Window.h"
-
-// DebugUI
-#include "Framework/DebugUI/ImGuiManager.h"
-#include "Framework/DebugUI/PerformancePanel.h"
-#include "Framework/DebugUI/ECSInspector.h"
 
 // imgui
 #include <imgui.h>
@@ -155,6 +157,22 @@ namespace Framework
 		mECSInspector = std::make_unique<ECSInspector>();
 		LOG_INFO("ECSInspector created");
 
+		mDebugVisualizationPanel = std::make_unique<DebugVisualizationPanel>();
+		LOG_INFO("DebugVisualizationPanel created");
+
+		if (mECSInspector && mRenderer && mRenderer->GetDebugRenderer())
+		{
+			mECSInspector->SetSelectionChangedCallback(
+				[this](ECS::Entity entity)
+				{
+					if (auto* debugRenderer = mRenderer->GetDebugRenderer())
+					{
+						debugRenderer->SetSelectedEntity(entity);
+					}
+				}
+			);
+		}
+
 		return true;
 	}
 
@@ -186,14 +204,10 @@ namespace Framework
 
 	void Application::ShutdownDebugUI()
 	{
+		mDebugVisualizationPanel.reset();
 		mECSInspector.reset();
 		mPerformancePanel.reset();
-
-		if (mImGuiManager)
-		{
-			mImGuiManager->Shutdown();
-			mImGuiManager.reset();
-		}
+		mImGuiManager.reset();
 	}
 
 	void Application::RunMainLoop()
@@ -322,6 +336,12 @@ namespace Framework
 		if (mPerformancePanel)
 		{
 			mPerformancePanel->Render(nullptr);  // Registry는 파생 클래스에서 전달
+		}
+
+		// DebugVisualizationPanel 렌더링
+		if (mDebugVisualizationPanel && mRenderer)
+		{
+			mDebugVisualizationPanel->Render(mRenderer->GetDebugRenderer());
 		}
 
 		// 파생 클래스의 UI 코드 호출

@@ -2,25 +2,21 @@
 #include "ECS/Systems/LightingSystem.h"
 #include "ECS/Archetype.h"
 #include "ECS/Registry.h"
+#include "ECS/RegistryView.h"
 #include "ECS/Components/LightComponents.h"
 #include "ECS/Components/TransformComponent.h"
-#include "ECS/RegistryView.h"
 #include "Core/Logging/LogMacros.h"
 
 namespace ECS
 {
-	//=============================================================================
-	// 생성자
-	//=============================================================================
-
 	LightingSystem::LightingSystem(Registry& registry)
 		: ISystem(registry)
 	{
 	}
 
-	//=============================================================================
-	// ISystem 인터페이스 구현
-	//=============================================================================
+	//=========================================================================
+	// ISystem 인터페이스
+	//=========================================================================
 
 	void LightingSystem::Initialize()
 	{
@@ -29,8 +25,7 @@ namespace ECS
 
 	void LightingSystem::Update(Core::float32 deltaTime)
 	{
-		// 현재는 조명 데이터 수집을 RenderSystem에서 직접 호출
-		// Phase 3.4+에서 조명 애니메이션, 그림자 업데이트 등 추가 예정
+		// 조명 애니메이션, 그림자 업데이트 등 향후 확장 예정
 	}
 
 	void LightingSystem::Shutdown()
@@ -38,17 +33,14 @@ namespace ECS
 		LOG_INFO("[LightingSystem] Shutdown");
 	}
 
-	//=============================================================================
+	//=========================================================================
 	// 고수준 API (Entity 기반)
-	//=============================================================================
+	//=========================================================================
 
 	bool LightingSystem::SetDirection(Entity entity, const Math::Vector3& direction)
 	{
 		auto* light = GetRegistry()->GetComponent<DirectionalLightComponent>(entity);
-		if (!light)
-		{
-			return false;
-		}
+		if (!light) return false;
 
 		light->direction = direction.Normalized();
 		light->isDirty = true;
@@ -57,18 +49,14 @@ namespace ECS
 
 	bool LightingSystem::SetColor(Entity entity, const Math::Vector3& color)
 	{
-		// Directional Light 먼저 시도
-		auto* dirLight = GetRegistry()->GetComponent<DirectionalLightComponent>(entity);
-		if (dirLight)
+		if (auto* dirLight = GetRegistry()->GetComponent<DirectionalLightComponent>(entity))
 		{
 			dirLight->color = color;
 			dirLight->isDirty = true;
 			return true;
 		}
 
-		// Point Light 시도
-		auto* pointLight = GetRegistry()->GetComponent<PointLightComponent>(entity);
-		if (pointLight)
+		if (auto* pointLight = GetRegistry()->GetComponent<PointLightComponent>(entity))
 		{
 			pointLight->color = color;
 			return true;
@@ -79,18 +67,14 @@ namespace ECS
 
 	bool LightingSystem::SetIntensity(Entity entity, Core::float32 intensity)
 	{
-		// Directional Light 먼저 시도
-		auto* dirLight = GetRegistry()->GetComponent<DirectionalLightComponent>(entity);
-		if (dirLight)
+		if (auto* dirLight = GetRegistry()->GetComponent<DirectionalLightComponent>(entity))
 		{
 			dirLight->intensity = intensity;
 			dirLight->isDirty = true;
 			return true;
 		}
 
-		// Point Light 시도
-		auto* pointLight = GetRegistry()->GetComponent<PointLightComponent>(entity);
-		if (pointLight)
+		if (auto* pointLight = GetRegistry()->GetComponent<PointLightComponent>(entity))
 		{
 			pointLight->intensity = intensity;
 			return true;
@@ -102,10 +86,7 @@ namespace ECS
 	bool LightingSystem::SetRange(Entity entity, Core::float32 range)
 	{
 		auto* light = GetRegistry()->GetComponent<PointLightComponent>(entity);
-		if (!light)
-		{
-			return false;
-		}
+		if (!light) return false;
 
 		light->range = range;
 		return true;
@@ -115,14 +96,10 @@ namespace ECS
 		Entity entity,
 		Core::float32 constant,
 		Core::float32 linear,
-		Core::float32 quadratic
-	)
+		Core::float32 quadratic)
 	{
 		auto* light = GetRegistry()->GetComponent<PointLightComponent>(entity);
-		if (!light)
-		{
-			return false;
-		}
+		if (!light) return false;
 
 		light->constant = constant;
 		light->linear = linear;
@@ -130,14 +107,13 @@ namespace ECS
 		return true;
 	}
 
-	//=============================================================================
-	// 조명 데이터 수집
-	//=============================================================================
+	//=========================================================================
+	// GPU 데이터 수집
+	//=========================================================================
 
 	void LightingSystem::CollectDirectionalLights(
 		Registry& registry,
-		std::vector<Graphics::DirectionalLightData>& outLights
-	)
+		std::vector<Graphics::DirectionalLightData>& outLights)
 	{
 		outLights.clear();
 
@@ -148,19 +124,12 @@ namespace ECS
 		{
 			if (count >= MAX_DIRECTIONAL_LIGHTS)
 			{
-				LOG_WARN(
-					"[LightingSystem] Exceeded maximum Directional Light count (%u). "
-					"Excess lights will be ignored.",
-					MAX_DIRECTIONAL_LIGHTS
-				);
+				LOG_WARN("[LightingSystem] Max Directional Lights exceeded (%u)", MAX_DIRECTIONAL_LIGHTS);
 				break;
 			}
 
 			auto* light = registry.GetComponent<DirectionalLightComponent>(entity);
-			if (!light)
-			{
-				continue;
-			}
+			if (!light) continue;
 
 			Graphics::DirectionalLightData data;
 			data.direction = light->direction.ToDirection();
@@ -170,23 +139,11 @@ namespace ECS
 			outLights.push_back(data);
 			++count;
 		}
-
-//#ifdef _DEBUG
-//		if (!outLights.empty())
-//		{
-//			LOG_DEBUG(
-//				"[LightingSystem] Collected %zu Directional Lights (Max: %u)",
-//				outLights.size(),
-//				MAX_DIRECTIONAL_LIGHTS
-//			);
-//		}
-//#endif
 	}
 
 	void LightingSystem::CollectPointLights(
 		Registry& registry,
-		std::vector<Graphics::PointLightData>& outLights
-	)
+		std::vector<Graphics::PointLightData>& outLights)
 	{
 		outLights.clear();
 
@@ -197,21 +154,13 @@ namespace ECS
 		{
 			if (count >= MAX_POINT_LIGHTS)
 			{
-				LOG_WARN(
-					"[LightingSystem] Exceeded maximum Point Light count (%u). "
-					"Excess lights will be ignored.",
-					MAX_POINT_LIGHTS
-				);
+				LOG_WARN("[LightingSystem] Max Point Lights exceeded (%u)", MAX_POINT_LIGHTS);
 				break;
 			}
 
 			auto* transform = registry.GetComponent<TransformComponent>(entity);
 			auto* light = registry.GetComponent<PointLightComponent>(entity);
-
-			if (!transform || !light)
-			{
-				continue;
-			}
+			if (!transform || !light) continue;
 
 			Graphics::PointLightData data;
 			data.position = transform->position.ToPoint();
@@ -227,29 +176,58 @@ namespace ECS
 			outLights.push_back(data);
 			++count;
 		}
-
-//#ifdef _DEBUG
-//		if (!outLights.empty())
-//		{
-//			LOG_DEBUG(
-//				"[LightingSystem] Collected %zu Point Lights (Max: %u)",
-//				outLights.size(),
-//				MAX_POINT_LIGHTS
-//			);
-//		}
-//#endif
 	}
 
-	//=============================================================================
-	// 저수준 API (Component 직접) - 정적
-	//=============================================================================
+	//=========================================================================
+	// Debug Entity 수집
+	//=========================================================================
+
+	void LightingSystem::CollectDirectionalLightEntities(
+		Registry& registry,
+		std::vector<Entity>& outEntities)
+	{
+		outEntities.clear();
+
+		auto view = DirectionalLightArchetype::CreateView(registry);
+
+		Core::uint32 count = 0;
+		for (Entity entity : view)
+		{
+			if (count >= MAX_DIRECTIONAL_LIGHTS) break;
+
+			auto* light = registry.GetComponent<DirectionalLightComponent>(entity);
+			if (!light) continue;
+
+			outEntities.push_back(entity);
+			++count;
+		}
+	}
+
+	void LightingSystem::CollectPointLightEntities(
+		Registry& registry,
+		std::vector<Entity>& outEntities)
+	{
+		outEntities.clear();
+
+		auto view = PointLightArchetype::CreateView(registry);
+
+		Core::uint32 count = 0;
+		for (Entity entity : view)
+		{
+			if (count >= MAX_POINT_LIGHTS) break;
+
+			outEntities.push_back(entity);
+			++count;
+		}
+	}
+
+	//=========================================================================
+	// 저수준 API
+	//=========================================================================
 
 	Core::float32 LightingSystem::CalculateAttenuation(const PointLightComponent& light, Core::float32 distance)
 	{
-		if (distance > light.range)
-		{
-			return 0.0f;
-		}
+		if (distance > light.range) return 0.0f;
 
 		Core::float32 attenuation = 1.0f / (
 			light.constant +

@@ -34,6 +34,7 @@
     <ClCompile Include="..\src\Graphics\Camera\Camera.cpp" />
     <ClCompile Include="..\src\Graphics\Camera\OrthographicCamera.cpp" />
     <ClCompile Include="..\src\Graphics\Camera\PerspectiveCamera.cpp" />
+    <ClCompile Include="..\src\Graphics\DebugDraw\DebugRenderer.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12ConstantBuffer.cpp" />
@@ -70,6 +71,9 @@
     <ClInclude Include="..\include\Graphics\Camera\Camera.h" />
     <ClInclude Include="..\include\Graphics\Camera\OrthographicCamera.h" />
     <ClInclude Include="..\include\Graphics\Camera\PerspectiveCamera.h" />
+    <ClInclude Include="..\include\Graphics\DebugDraw\DebugRenderer.h" />
+    <ClInclude Include="..\include\Graphics\DebugDraw\DebugTypes.h" />
+    <ClInclude Include="..\include\Graphics\DebugDraw\DebugShapes.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandContext.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12CommandQueue.h" />
     <ClInclude Include="..\include\Graphics\DX12\DX12ConstantBuffer.h" />
@@ -91,6 +95,7 @@
     <ClInclude Include="..\include\Graphics\GraphicsTypes.h" />
     <ClInclude Include="..\include\Graphics\Material.h" />
     <ClInclude Include="..\include\Graphics\Mesh.h" />
+    <ClInclude Include="..\include\Graphics\Primitives\PrimitiveGenerator.h" />
     <ClInclude Include="..\include\Graphics\RenderTypes.h" />
     <ClInclude Include="..\include\Graphics\Texture.h" />
     <ClInclude Include="..\include\Graphics\TextureType.h" />
@@ -107,6 +112,20 @@
     <ProjectReference Include="..\Platform\Platform.vcxproj">
       <Project>{0c51d24b-1769-489b-9c9c-14edba1f7ec8}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Assets\Shaders\DebugPS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\Assets\Shaders\DebugVS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

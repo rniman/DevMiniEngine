@@ -4,10 +4,10 @@
 namespace Graphics
 {
 	/**
- * @brief 기본 버텍스 구조체 (위치 + 색상)
- *
- * 첫 삼각형 렌더링을 위한 단순한 버텍스 포맷
- */
+	 * @brief 기본 버텍스 구조체 (위치 + 색상)
+	 *
+	 * 첫 삼각형 렌더링을 위한 단순한 버텍스 포맷
+	 */
 	struct BasicVertex
 	{
 		Math::Vector3 position;  // 로컬 좌표계 위치
@@ -123,4 +123,26 @@ namespace Graphics
 			return layout;
 		}
 	};
+
+	/**
+	 * @brief Debug 렌더링용 정점 구조체
+	 *
+	 * 와이어프레임, 기즈모 등 디버그 시각화에 사용됩니다.
+	 * 조명 계산이 필요 없으므로 Position만 포함합니다. (Color는 CBV로 전달)
+	 */
+	struct DebugVertex
+	{
+		Math::Vector3 position;
+
+		static D3D12_INPUT_LAYOUT_DESC GetInputLayout()
+		{
+			static D3D12_INPUT_ELEMENT_DESC elements[] =
+			{
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+			};
+
+			return { elements, _countof(elements) };
+		}
+	};
+
 } // namespace Graphics

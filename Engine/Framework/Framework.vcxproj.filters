@@ -78,6 +78,9 @@
     <ClCompile Include="..\src\Framework\DebugUI\ECSInspector.cpp">
       <Filter>Source Files\DebugUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Framework\DebugUI\DebugVisualizationPanel.cpp">
+      <Filter>Source Files\DebugUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -105,6 +108,9 @@
       <Filter>Header Files\DebugUI</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Framework\DebugUI\ECSInspector.h">
+      <Filter>Header Files\DebugUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\DebugUI\DebugVisualizationPanel.h">
       <Filter>Header Files\DebugUI</Filter>
     </ClInclude>
   </ItemGroup>

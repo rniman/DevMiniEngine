@@ -1,7 +1,9 @@
-﻿#pragma once
+﻿// Engine/include/Framework/DebugUI/ECSInspector.h
+#pragma once
 
 #include "Core/Types.h"
 #include "ECS/Entity.h"
+#include <functional>
 
 namespace ECS
 {
@@ -35,9 +37,36 @@ namespace Framework
 
 		ECS::Entity GetSelectedEntity() const { return mSelectedEntity; }
 
+		//=====================================================================
+		// Phase 3.6: 선택 변경 콜백
+		//=====================================================================
+
+		/**
+		 * @brief 선택 변경 콜백 타입
+		 */
+		using SelectionChangedCallback = std::function<void(ECS::Entity)>;
+
+		/**
+		 * @brief 선택 변경 콜백 설정
+		 *
+		 * Entity 선택이 변경될 때마다 호출됩니다.
+		 * DebugRenderer 연동에 사용됩니다.
+		 */
+		void SetSelectionChangedCallback(SelectionChangedCallback callback)
+		{
+			mSelectionChangedCallback = std::move(callback);
+		}
+
 	private:
 		void RenderEntityList(ECS::Registry* registry);
 		void RenderComponentInspector(ECS::Registry* registry);
+
+		/**
+		 * @brief Entity 선택 (내부용)
+		 *
+		 * 선택 변경 시 콜백을 호출합니다.
+		 */
+		void SelectEntity(ECS::Entity entity);
 
 		// Component별 편집 UI
 		void RenderTransformComponent(ECS::Registry* registry, ECS::Entity entity);
@@ -54,6 +83,9 @@ namespace Framework
 		ECS::Entity mSelectedEntity;
 		bool mIsVisible = true;
 		char mEntityFilter[64] = "";
+
+		// Phase 3.6: 선택 변경 콜백
+		SelectionChangedCallback mSelectionChangedCallback;
 
 		// Component 삭제 예약 (렌더링 중 삭제 방지)
 		bool mPendingDeleteTransform = false;

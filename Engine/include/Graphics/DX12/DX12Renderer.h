@@ -74,6 +74,7 @@ namespace Graphics
 	class DX12ConstantBuffer;
 	class DX12DepthStencilBuffer;
 	class DX12DescriptorHeap;
+	class DebugRenderer;
 
 	/**
 	 * @brief DirectX 12 기반 렌더러 클래스
@@ -109,14 +110,6 @@ namespace Graphics
 		 */
 		void OnResize(Core::uint32 width, Core::uint32 height);
 
-		/**
-		 * @brief 프레임 렌더링 (메인 진입점)
-		 *
-		 * @param frameData Scene에서 수집한 렌더링 데이터
-		 * @param resourceMgr ResourceManager (텍스처 조회용)
-		 */
-		void RenderFrame(const FrameData& frameData);
-
 		void MoveFrameIndex() { mCurrentFrameIndex = (mCurrentFrameIndex + 1) % FRAME_BUFFER_COUNT; }
 
 		//=============================================================================
@@ -146,6 +139,19 @@ namespace Graphics
 		 */
 		void Present(bool vsync = true);
 
+		/**
+		 * @brief Debug 시각화 렌더링
+		 *
+		 * RenderScene() 후, ImGui 전에 호출합니다.
+		 * Light Gizmo 등 디버그 요소를 렌더링합니다.
+		 *
+		 * @param frameData 프레임 데이터 (라이트 정보 포함)
+		 *
+		 * Phase 3.6: Debug Visualization
+		 */
+		void RenderDebug(const FrameData& frameData);
+
+
 		// Setters
 		void SetCurrentFrameFenceValue(Core::uint64 value) { mFrameFenceValues[mCurrentFrameIndex] = value; }
 
@@ -160,6 +166,15 @@ namespace Graphics
 		 * @brief 현재 CommandList 반환 (ImGui 등 외부 렌더링용)
 		 */
 		ID3D12GraphicsCommandList* GetCurrentCommandList();
+
+		/**
+		 * @brief DebugRenderer 접근자
+		 *
+		 * ImGui 연동 등 외부에서 설정 변경 시 사용
+		 */		
+		DebugRenderer* GetDebugRenderer() { return mDebugRenderer.get(); }
+		const DebugRenderer* GetDebugRenderer() const { return mDebugRenderer.get(); }
+
 	private:
 		// 렌더링 파이프라인 단계
 		void Clear(const float* clearColor);
@@ -183,6 +198,10 @@ namespace Graphics
 		// 헬퍼 함수
 		DX12CommandContext* GetCurrentCommandContext();
 		void UpdateViewportAndScissor();
+
+	private:
+		// 상태
+		bool mIsInitialized = false;
 
 		// 디바이스 참조 (소유하지 않음)
 		DX12Device* mDevice = nullptr;
@@ -217,8 +236,8 @@ namespace Graphics
 		std::array<Core::uint64, FRAME_BUFFER_COUNT> mFrameFenceValues = { 0 };
 		Core::uint32 mCurrentFrameIndex = 0;
 
-		// 상태
-		bool mIsInitialized = false;
+		// Phase 3.6: Debug Renderer
+		std::unique_ptr<DebugRenderer> mDebugRenderer;
 	};
 
 } // namespace Graphics

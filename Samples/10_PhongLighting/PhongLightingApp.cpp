@@ -627,7 +627,7 @@ void PhongLightingApp::OnUpdate(Core::float32 deltaTime)
 
 void PhongLightingApp::OnRender()
 {
-	auto* renderSystem = mSystemManager->GetSystem<ECS::RenderSystem>();
+	ECS::RenderSystem* renderSystem = mSystemManager->GetSystem<ECS::RenderSystem>();
 	if (renderSystem)
 	{
 		const Graphics::FrameData& frameData = renderSystem->GetFrameData();
@@ -635,6 +635,8 @@ void PhongLightingApp::OnRender()
 		// RenderFrame() 대신 RenderScene()만 호출
 		// BeginFrame, EndFrame, Present는 Application이 관리
 		GetRenderer()->RenderScene(frameData);
+
+		GetRenderer()->RenderDebug(frameData);
 	}
 }
 
