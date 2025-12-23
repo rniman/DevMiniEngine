@@ -227,13 +227,13 @@ namespace Graphics
 
 	void DX12PipelineStateCache::Shutdown()
 	{
-		LOG_GRAPHICS_INFO("[DX12PipelineStateCache] Shutting down Pipeline State Cache...");
+		LOG_GFX_INFO("[DX12PipelineStateCache] Shutting down Pipeline State Cache...");
 
 		Clear();
 		mDevice = nullptr;
 		mShaderCompiler = nullptr;
 
-		LOG_GRAPHICS_INFO("[DX12PipelineStateCache] Pipeline State Cache shut down successfully");
+		LOG_GFX_INFO("[DX12PipelineStateCache] Pipeline State Cache shut down successfully");
 	}
 
 } // namespace Graphics

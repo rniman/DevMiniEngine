@@ -48,7 +48,7 @@ namespace Graphics
 			return false;
 		}
 
-		LOG_GRAPHICS_INFO("Mesh - Vertex buffer initialized (%u vertices)", vertexCount);
+		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u vertices)", vertexCount);
 
 		// Index Buffer 초기화 (선택적)
 		if (indices && indexCount > 0)
@@ -67,13 +67,13 @@ namespace Graphics
 				return false;
 			}
 
-			LOG_GRAPHICS_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
+			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
 		}
 
 		mInputLayout = BasicVertex::GetInputLayout();
 
 		mInitialized = true;
-		LOG_GRAPHICS_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
+		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -114,7 +114,7 @@ namespace Graphics
 			LOG_ERROR("Mesh::InitializeTextured - Failed to initialize vertex buffer");
 			return false;
 		}
-		LOG_GRAPHICS_INFO("Mesh - Vertex buffer initialized (%u textured vertices)", vertexCount);
+		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u textured vertices)", vertexCount);
 
 		// Index Buffer 초기화 (선택적)
 		if (indices && indexCount > 0)
@@ -132,13 +132,13 @@ namespace Graphics
 				mVertexBuffer.Shutdown();
 				return false;
 			}
-			LOG_GRAPHICS_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
+			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
 		}
 
 		mInputLayout = TexturedVertex::GetInputLayout();  // 변경됨
 
 		mInitialized = true;
-		LOG_GRAPHICS_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
+		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -181,7 +181,7 @@ namespace Graphics
 			return false;
 		}
 
-		LOG_GRAPHICS_INFO("Mesh - Vertex buffer initialized (%u standard vertices)", vertexCount);
+		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u standard vertices)", vertexCount);
 
 		// Index Buffer 초기화 (선택적)
 		if (indices && indexCount > 0)
@@ -200,14 +200,14 @@ namespace Graphics
 				return false;
 			}
 
-			LOG_GRAPHICS_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
+			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
 		}
 
 		// 핵심 변경점: StandardVertex의 Input Layout 사용
 		mInputLayout = StandardVertex::GetInputLayout();
 
 		mInitialized = true;
-		LOG_GRAPHICS_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
+		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -222,7 +222,7 @@ namespace Graphics
 		mIndexBuffer.Shutdown();
 		mInitialized = false;
 
-		LOG_GRAPHICS_INFO("[Mesh] Mesh shut down successfully");
+		LOG_GFX_INFO("[Mesh] Mesh shut down successfully");
 	}
 
 	void Mesh::Draw(ID3D12GraphicsCommandList* commandList) const

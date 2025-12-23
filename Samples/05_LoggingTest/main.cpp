@@ -1,4 +1,4 @@
-#include "Core/Logging/Logger.h"
+﻿#include "Core/Logging/Logger.h"
 #include "Core/Logging/ConsoleSink.h"
 #include "Core/Logging/FileSink.h"
 #include "Core/Logging/LogMacros.h"
@@ -46,9 +46,8 @@ int main()
 
     // Test 3: Category logging
     std::cout << "Test 3: Category-specific logging" << std::endl;
-    LOG_GRAPHICS_INFO("Rendering %d triangles", 1000);
-    LOG_PHYSICS_WARN("Collision detected at position (%.1f, %.1f, %.1f)",
-        10.5f, 20.3f, 5.8f);
+    LOG_GFX_INFO("Rendering %d triangles", 1000);
+    LOG(Warn, Physics, "Collision detected at position (%.1f, %.1f, %.1f)", 10.5f, 20.3f, 5.8f);
     std::cout << std::endl;
 
     // Test 4: Level filtering

@@ -29,6 +29,9 @@ namespace Core
             Core,
             Graphics,
             Physics,
+            Platform,
+            Framework,
+			ECS,
             AI,
             Audio,
             Input,
@@ -85,6 +88,9 @@ namespace Core
             case LogCategory::Core:     return "Core";
             case LogCategory::Graphics: return "Graphics";
             case LogCategory::Physics:  return "Physics";
+            case LogCategory::Platform:  return "Platform";
+            case LogCategory::Framework:  return "Framework";
+            case LogCategory::ECS:  return "ECS";
             case LogCategory::AI:       return "AI";
             case LogCategory::Audio:    return "Audio";
             case LogCategory::Input:    return "Input";

@@ -76,7 +76,7 @@ namespace Graphics
 			return;
 		}
 
-		LOG_GRAPHICS_INFO("[DX12Device] Shutting down Device...");
+		LOG_GFX_INFO("[DX12Device] Shutting down Device...");
 
 		// GPU 작업 완료 대기
 		if (mCommandQueue)
@@ -115,7 +115,7 @@ namespace Graphics
 		mAdapter.Reset();
 		mFactory.Reset();
 
-		LOG_GRAPHICS_INFO("[DX12Device] Device shut down successfully");
+		LOG_GFX_INFO("[DX12Device] Device shut down successfully");
 	}
 
 	DX12CommandContext* DX12Device::GetCommandContext(Core::uint32 index) const

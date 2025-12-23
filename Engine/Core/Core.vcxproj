@@ -32,6 +32,7 @@
     <ClInclude Include="..\include\Core\Memory\MemoryConfig.h" />
     <ClInclude Include="..\include\Core\Memory\PoolAllocator.h" />
     <ClInclude Include="..\include\Core\Memory\StackAllocator.h" />
+    <ClInclude Include="..\include\Core\Singleton.h" />
     <ClInclude Include="..\include\Core\Timing\ScopedTimer.h" />
     <ClInclude Include="..\include\Core\Timing\Timer.h" />
     <ClInclude Include="..\include\Core\Types.h" />
