@@ -13,63 +13,66 @@
 - [x] 카메라 시스템
 - [x] Framework 아키텍처 (Application, ResourceManager, Scene)
 
----
-
-### Phase 3: ECS 아키텍처 (진행 중)
-
-#### 3.1 ECS Foundation (완료)
-- [x] Entity (ID + Version)
-- [x] Registry (생성/삭제/재활용)
-- [x] Component Storage (unordered_map)
-- [x] TransformComponent (순수 데이터)
-- [x] MeshComponent, MaterialComponent
-- [x] TransformSystem (정적 함수)
-- [x] ResourceId 시스템 (64비트 해시)
-- [x] UTF-8 경로 통일
-- [x] 09_ECSRotatingCube 샘플
-
-#### 3.2 System Framework (완료)
-- [x] ISystem 인터페이스
-- [x] SystemManager
-- [x] RenderSystem (자동 수집)
-- [x] Query/View 패턴
-- [x] Registry::View<T...>() 구현
-
-#### 3.3 Lighting (완료)
-- [x] DirectionalLightComponent
-- [x] PointLightComponent
-- [x] LightingSystem
-- [x] Phong Shading
-- [x] Normal Mapping
-
-#### 3.3.5 리팩토링 (완료)
-- [x] Shutdown 리소스 해제 순서 개선
-- [x] ISystem 인터페이스 통일
-- [x] MathTypes 클래스화 및 리펙토링
-
-#### 3.4 Debug Tools (완료)
-- [x] ImGui 통합
-- [x] ECS Inspector
-- [x] 성능 모니터링
-
-#### 3.5 Advanced (완료)
-- [x] HierarchyComponent 설계 및 구현
-- [x] Transform 계층 구조 (parent-child)
-- [x] Dirty Flag 최적화 (localDirty, worldDirty)
-- [x] Root Entity 관리
-- [x] DFS 순회 기반 World Matrix 업데이트
-- [x] 지연 전파 방식 (Update 일괄 처리)
-- [x] Hierarchy 없는 Entity 호환성 유지
-- [x] ForceUpdateWorldMatrix() 즉시 계산 API
-- [x] 10_PhongLighting 샘플에 계층 테스트 통합
+### Phase 3: ECS 아키텍처 (완료)
+- [x] Entity, Registry, Component Storage
+- [x] ISystem 인터페이스, SystemManager, Query/View 패턴
+- [x] Lighting (Directional, Point, Phong Shading, Normal Mapping)
+- [x] Transform 계층 구조 (Parent-Child, Dirty Flag 최적화)
+- [x] Debug Tools (ImGui, ECS Inspector, Performance Panel)
+- [x] Debug Visualization (Light Gizmo, DebugRenderer)
 
 ---
 
-### Phase 4: Asset Pipeline (다음 단계)
-- [ ] glTF 2.0 / Assimp 로더
-- [ ] DDS/BCn 텍스처 파이프라인
+## Phase 4: DX12 인프라 확장 & Asset Pipeline (수정)
+
+### 4.1 Asset Loading Foundation
+- [ ] AssetManager 클래스 설계
+- [ ] Asset 타입 열거 (Mesh, Texture, Material)
+- [ ] Asset 캐싱 및 참조 카운팅
+- [ ] 파일 경로 → ResourceId 매핑 확장
+- [ ] **11_ModelViewer 샘플 생성** (기본 구조)
+
+### 4.2 Model Loading
+- [ ] Assimp 또는 cgltf 라이브러리 통합
+- [ ] glTF 2.0 메쉬 로딩
+- [ ] 버텍스 포맷 변환 (Position, Normal, UV, Tangent)
+- [ ] 인덱스 버퍼 처리
+- [ ] 멀티 서브메쉬 지원
+- [ ] 모델 계층구조 → HierarchyComponent 변환
+- [ ] 11_ModelViewer에 glTF 로딩 통합
+
+### 4.3 Texture Pipeline
+- [ ] DDS 로더 구현 (DirectXTex)
+- [ ] BCn 압축 텍스처 지원
 - [ ] Mipmap 자동 생성
-- [ ] Descriptor 관리 고도화
+- [ ] sRGB / Linear 색공간 처리
+- [ ] glTF 임베디드/외부 텍스처 로딩
+- [ ] 11_ModelViewer에 PBR 텍스처 적용
+
+### 4.4 Descriptor 관리 고도화
+- [ ] DescriptorHeap 래퍼 클래스
+- [ ] SRV Descriptor 풀 및 슬롯 재활용
+- [ ] Frame-based 할당
+- [ ] 기존 렌더러에 통합
+- [ ] 11_ModelViewer에서 다수 텍스처 바인딩 검증
+
+### 4.5 리소스 업로드 최적화 (선택적)
+- [ ] Upload Ring Buffer 구현
+- [ ] 프레임 펜스 기반 버퍼 재사용
+- [ ] Async Copy Queue (선택적)
+
+### 4.6 Shader 시스템 확장 (선택적)
+- [ ] DXC 컴파일러 통합 (SM 6.0+)
+- [ ] Shader Reflection
+- [ ] Hot Reload (개발 편의)
+
+### 4.7 ECS 렌더링 통합
+- [ ] MeshRendererComponent / ModelComponent
+- [ ] RenderSystem 리팩토링
+- [ ] 머티리얼 인스턴싱
+- [ ] 11_ModelViewer에서 다수 모델 인스턴스 배치
+
+---
 
 ### Phase 5: PBR Lighting
 - [ ] Metallic-Roughness Workflow
