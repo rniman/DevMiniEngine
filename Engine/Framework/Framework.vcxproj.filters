@@ -28,6 +28,12 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{a794399d-783c-4672-8100-d622ebf9a55f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Assets">
+      <UniqueIdentifier>{de357bf0-e775-41d9-a06b-be0d23f7fdfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Assets">
+      <UniqueIdentifier>{dc61b234-6edf-452b-87bf-cc1d28390599}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -38,9 +44,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Framework\Resources\ResourceManager.cpp">
       <Filter>Source Files\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="Framework.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Framework\Scene\GameObject.cpp">
       <Filter>Source Files\Scene</Filter>
@@ -81,6 +84,27 @@
     <ClCompile Include="..\src\Framework\DebugUI\DebugVisualizationPanel.cpp">
       <Filter>Source Files\DebugUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\AnimationAsset.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\MaterialAsset.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\MeshAsset.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\ModelAsset.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\TextureAsset.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\AssetManager.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Framework.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -112,6 +136,33 @@
     </ClInclude>
     <ClInclude Include="..\include\Framework\DebugUI\DebugVisualizationPanel.h">
       <Filter>Header Files\DebugUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\AssetTypes.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\IAsset.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\AnimationAsset.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\MaterialAsset.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\MeshAsset.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\ModelAsset.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\TextureAsset.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\AssetHandle.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\AssetManager.h">
+      <Filter>Header Files\Assets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

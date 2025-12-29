@@ -90,7 +90,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>DME_DEBUG_UI;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -124,7 +124,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>DME_DEBUG_UI;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -207,6 +207,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\Framework\Application.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\AnimationAsset.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\AssetManager.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\MaterialAsset.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\MeshAsset.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\ModelAsset.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\TextureAsset.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\DebugVisualizationPanel.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\ECSInspector.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\ImGuiManager.cpp" />
@@ -224,6 +230,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Framework\Application.h" />
+    <ClInclude Include="..\include\Framework\Assets\AnimationAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\AssetHandle.h" />
+    <ClInclude Include="..\include\Framework\Assets\AssetManager.h" />
+    <ClInclude Include="..\include\Framework\Assets\AssetTypes.h" />
+    <ClInclude Include="..\include\Framework\Assets\IAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\MaterialAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\MeshAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\ModelAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\TextureAsset.h" />
     <ClInclude Include="..\include\Framework\DebugUI\DebugVisualizationPanel.h" />
     <ClInclude Include="..\include\Framework\DebugUI\ECSInspector.h" />
     <ClInclude Include="..\include\Framework\DebugUI\ImGuiManager.h" />

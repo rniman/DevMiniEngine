@@ -330,7 +330,7 @@ namespace Framework
 		mImGuiManager->BeginFrame();
 
 		// 테스트: Demo 창 표시
-		ImGui::ShowDemoWindow();
+		// ImGui::ShowDemoWindow();
 
 		// PerformancePanel 렌더링
 		if (mPerformancePanel)
