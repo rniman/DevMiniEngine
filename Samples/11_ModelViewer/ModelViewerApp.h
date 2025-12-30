@@ -1,11 +1,11 @@
 ﻿/**
  * @file ModelViewerApp.h
- * @brief Phase 4.1: Asset Pipeline 데모 애플리케이션
+ * @brief Phase 4.2: Model Loading 데모 애플리케이션
  *
- * AssetManager 기본 기능 테스트:
- * - Asset 로딩/언로딩
- * - 기본 Asset 폴백
- * - 프로시저럴 Sphere 렌더링
+ * Procedural Mesh vs Loaded Mesh 비교 + glTF 모델 텍스처 정보 테스트:
+ * - 왼쪽: Procedural Sphere (PrimitiveGenerator + MikkTSpace)
+ * - 중앙: Loaded Sphere (ModelLoader + glTF)
+ * - 오른쪽: DamagedHelmet (LoadModel + 머티리얼/텍스처 정보)
  */
 #pragma once
 #ifndef NOMINMAX
@@ -13,6 +13,8 @@
 #endif
 
 #include "Framework/Application.h"
+#include "Framework/Assets/MeshAsset.h"
+#include "Framework/Assets/ModelLoader.h"
 
 #include "Core/Types.h"
 #include "ECS/Entity.h"
@@ -39,17 +41,7 @@ namespace Graphics
 }
 
 /**
- * @brief Phase 4.1: Asset Pipeline 데모 애플리케이션
- *
- * AssetManager의 기본 기능을 테스트합니다:
- * - Asset 로딩 API
- * - 기본 Asset (Default Assets)
- * - Asset 상태 확인
- * - ImGui를 통한 Asset 정보 표시
- *
- * 렌더링:
- * - 프로시저럴 UV Sphere
- * - Phong Shading (기존 셰이더 재사용)
+ * @brief Phase 4.2: Model Loading 데모 애플리케이션
  */
 class ModelViewerApp : public Framework::Application
 {
@@ -70,7 +62,7 @@ private:
 	{
 		Framework::ApplicationDesc desc;
 		desc.applicationName = "ModelViewer";
-		desc.windowTitle = "11_ModelViewer - Phase 4.1 Asset Pipeline";
+		desc.windowTitle = "11_ModelViewer - Phase 4.2 Model Loading";
 		desc.windowWidth = 1280;
 		desc.windowHeight = 720;
 		desc.enableVSync = true;
@@ -85,19 +77,24 @@ private:
 	void InitializeECS();
 	void CreateCameraEntity();
 	void CreateLightEntities();
-	void CreateSphereEntity();
+
+	/** @brief Procedural Sphere Entity 생성 (왼쪽) */
+	void CreateProceduralSphereEntity();
+
+	/** @brief Loaded Sphere Entity 생성 (중앙) */
+	void CreateLoadedSphereEntity();
+
+	/** @brief DamagedHelmet Entity 생성 (오른쪽) */
+	void CreateHelmetEntity();
 
 	//=========================================================================
-	// 프로시저럴 메시 생성
+	// 메시 설정
 	//=========================================================================
 
-	/**
-	 * @brief UV Sphere 메시 데이터 생성
-	 * @param segments 수평 분할 수 (경도)
-	 * @param rings 수직 분할 수 (위도)
-	 */
-	void SetupSphereMesh(Core::uint32 segments, Core::uint32 rings);
-	void SetupSphereMaterial();
+	void SetupProceduralSphereMesh(Core::uint32 segments, Core::uint32 rings);
+	void SetupLoadedSphereMesh();
+	void SetupHelmetMesh();
+	void SetupSharedMaterial();
 
 	//=========================================================================
 	// Debug UI
@@ -105,10 +102,9 @@ private:
 
 	void RenderAssetManagerPanel();
 	void RenderSphereControlPanel();
+	void RenderModelInfoPanel();
 
-	//=========================================================================
-	// 멤버 변수
-	//=========================================================================
+private:
 
 	// 리소스 관리
 	std::unique_ptr<Framework::ResourceManager> mResourceManager;
@@ -121,22 +117,40 @@ private:
 	// Entities
 	ECS::Entity mCameraEntity;
 	ECS::Entity mDirectionalLightEntity;
-	ECS::Entity mSphereEntity;
 
-	// 공유 리소스 ID
-	Framework::ResourceId mSphereMeshId;
-	Framework::ResourceId mSphereMaterialId;
+	// Procedural Sphere (왼쪽)
+	ECS::Entity mProceduralSphereEntity;
+	Framework::ResourceId mProceduralMeshId;
+
+	// Loaded Sphere (중앙)
+	ECS::Entity mLoadedSphereEntity;
+	Framework::ResourceId mLoadedMeshId;
+	std::unique_ptr<Framework::MeshAsset> mLoadedSphereMeshAsset;
+
+	// DamagedHelmet (오른쪽)
+	ECS::Entity mHelmetEntity;
+	Framework::ResourceId mHelmetMeshId;
+	std::unique_ptr<Framework::MeshAsset> mHelmetMeshAsset;
+	Framework::LoadedModelData mHelmetModelData;  // 머티리얼/텍스처 정보 저장
+
+	// 공유 머티리얼
+	Framework::ResourceId mSharedMaterialId;
 
 	// 애니메이션
 	Core::float32 mRotationAngle = 0.0f;
 	Core::float32 mRotationSpeed = 0.5f;
 
-	// Sphere 파라미터
+	// Procedural Sphere 파라미터
 	Core::uint32 mSphereSegments = 32;
 	Core::uint32 mSphereRings = 16;
 
 	// UI 상태
 	bool mShowAssetManagerPanel = true;
 	bool mShowSphereControlPanel = true;
+	bool mShowModelInfoPanel = true;
 	bool mNeedsMeshRebuild = false;
+
+	// Loaded Mesh 상태
+	bool mLoadedMeshValid = false;
+	bool mHelmetMeshValid = false;
 };

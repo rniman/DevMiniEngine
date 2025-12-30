@@ -1,5 +1,10 @@
-﻿#include "pch.h"
+﻿/**
+ * @file ResourceManager.cpp
+ * @brief ResourceManager 구현
+ */
+#include "pch.h"
 #include "Framework/Resources/ResourceManager.h"
+#include "Framework/Assets/MeshAsset.h"
 #include "Core/Logging/LogMacros.h"
 #include "Core/Hash.h"
 #include "Core/Types.h"
@@ -8,7 +13,6 @@
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
-
 
 namespace Framework
 {
@@ -46,9 +50,119 @@ namespace Framework
 		// 새 메시 생성
 		auto mesh = std::make_shared<Graphics::Mesh>();
 		mMeshes[id] = mesh;
-		mMeshNames[id] = name;  // 디버깅용 역참조
+		mMeshNames[id] = name;
 
 		LOG_DEBUG("Created mesh: %s (ID: 0x%llX)", name.c_str(), id.id);
+		return id;
+	}
+
+	ResourceId ResourceManager::CreateMeshFromAsset(const std::string& name, MeshAsset* meshAsset)
+	{
+		if (!meshAsset)
+		{
+			LOG_ERROR("[ResourceManager] CreateMeshFromAsset: meshAsset is null");
+			return ResourceId::Invalid();
+		}
+
+		if (!meshAsset->HasSourceData())
+		{
+			LOG_ERROR("[ResourceManager] CreateMeshFromAsset: meshAsset has no source data");
+			return ResourceId::Invalid();
+		}
+
+		if (meshAsset->GetVertexCount() == 0)
+		{
+			LOG_ERROR("[ResourceManager] CreateMeshFromAsset: meshAsset has no vertices");
+			return ResourceId::Invalid();
+		}
+
+		// 이름을 64비트 해시로 변환
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
+		// 이미 존재하는지 확인
+		auto it = mMeshes.find(id);
+		if (it != mMeshes.end())
+		{
+			LOG_WARN("[ResourceManager] Mesh '%s' already exists (ID: 0x%llX)", name.c_str(), id.id);
+			return id;
+		}
+
+		// 새 메시 생성
+		auto mesh = std::make_shared<Graphics::Mesh>();
+
+		// 정점 데이터
+		const auto& vertices = meshAsset->GetVertices();
+		const auto& indices = meshAsset->GetIndices();
+
+		// 인덱스 포맷 선택 (16비트 vs 32비트)
+		bool use16BitIndices = meshAsset->CanUse16BitIndices();
+
+		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
+		bool success = false;
+
+		if (use16BitIndices)
+		{
+			// 16비트 인덱스 사용
+			std::vector<Core::uint16> indices16 = meshAsset->GetIndices16();
+
+			success = mesh->InitializeStandard(
+				mDevice->GetDevice(),
+				mDevice->GetCommandQueue(),
+				mDevice->GetCommandContext(frameIndex),
+				vertices.data(),
+				static_cast<Core::uint32>(vertices.size()),
+				indices16.data(),
+				static_cast<Core::uint32>(indices16.size())
+			);
+
+			LOG_DEBUG("[ResourceManager] Using 16-bit indices for mesh '%s'", name.c_str());
+		}
+		else
+		{
+			// 32비트 인덱스 사용
+			success = mesh->InitializeStandard32(
+				mDevice->GetDevice(),
+				mDevice->GetCommandQueue(),
+				mDevice->GetCommandContext(frameIndex),
+				vertices.data(),
+				static_cast<Core::uint32>(vertices.size()),
+				indices.data(),
+				static_cast<Core::uint32>(indices.size())
+			);
+
+			LOG_DEBUG(
+				"[ResourceManager] Using 32-bit indices for mesh '%s' (%u vertices)",
+				name.c_str(),
+				meshAsset->GetVertexCount()
+			);
+		}
+
+		if (!success)
+		{
+			LOG_ERROR("[ResourceManager] Failed to initialize mesh '%s'", name.c_str());
+			return ResourceId::Invalid();
+		}
+
+		// 저장
+		mMeshes[id] = mesh;
+		mMeshNames[id] = name;
+
+		// 데이터 정책에 따라 CPU 데이터 해제
+		if (meshAsset->GetDataPolicy() == MeshDataPolicy::ReleaseAfterUpload)
+		{
+			meshAsset->ReleaseSourceData();
+		}
+
+		LOG_INFO(
+			"[ResourceManager] Created mesh from asset: %s (V:%u, I:%u, %s indices, ID: 0x%llX)",
+			name.c_str(),
+			meshAsset->GetVertexCount(),
+			meshAsset->GetIndexCount(),
+			use16BitIndices ? "16-bit" : "32-bit",
+			id.id
+		);
+
 		return id;
 	}
 
@@ -99,11 +213,9 @@ namespace Framework
 		const std::wstring& pixelShader
 	)
 	{
-		// 이름을 64비트 해시로 변환
 		ResourceId id;
 		id.id = Core::Hash64(name);
 
-		// 이미 존재하는지 확인
 		auto it = mMaterials.find(id);
 		if (it != mMaterials.end())
 		{
@@ -111,7 +223,6 @@ namespace Framework
 			return id;
 		}
 
-		// 새 머티리얼 생성
 		Graphics::MaterialDesc desc;
 		desc.vertexShaderPath = vertexShader.c_str();
 		desc.pixelShaderPath = pixelShader.c_str();
@@ -166,11 +277,9 @@ namespace Framework
 
 	ResourceId ResourceManager::LoadTexture(const std::string& path)
 	{
-		// UTF-8 경로를 해시 (일관성 보장!)
 		ResourceId id;
 		id.id = Core::Hash64(path);
 
-		// 이미 로드됨?
 		auto it = mTextures.find(id);
 		if (it != mTextures.end())
 		{
@@ -178,7 +287,6 @@ namespace Framework
 			return id;
 		}
 
-		// DirectX는 wstring 필요 → 변환
 		std::wstring wpath = Core::UTF8ToWString(path);
 
 		auto texture = std::make_shared<Graphics::Texture>();
@@ -189,14 +297,14 @@ namespace Framework
 			mDevice->GetCommandQueue(),
 			mDevice->GetCommandContext(frameIndex),
 			wpath.c_str()
-		))  // Win32 API에 wstring 전달
+		))
 		{
 			LOG_ERROR("Failed to load texture: %s", path.c_str());
 			return ResourceId::Invalid();
 		}
 
 		mTextures[id] = texture;
-		mTexturePaths[id] = path;  // UTF-8로 저장!
+		mTexturePaths[id] = path;
 
 		LOG_DEBUG("Loaded texture: %s (ID: 0x%llX)", path.c_str(), id.id);
 		return id;
@@ -244,7 +352,7 @@ namespace Framework
 	}
 
 	//=========================================================================
-	// 디버깅 & 편의 함수
+	// 검색 & 유틸리티
 	//=========================================================================
 
 	ResourceId ResourceManager::FindMeshByName(const std::string& name) const
@@ -287,7 +395,6 @@ namespace Framework
 	{
 		LOG_INFO("Clearing all resources...");
 
-		// 메시 정리
 		for (auto& [id, mesh] : mMeshes)
 		{
 			if (mesh)
@@ -298,7 +405,6 @@ namespace Framework
 		mMeshes.clear();
 		mMeshNames.clear();
 
-		// 머티리얼과 텍스처는 자동으로 정리됨 (shared_ptr)
 		mMaterials.clear();
 		mMaterialNames.clear();
 

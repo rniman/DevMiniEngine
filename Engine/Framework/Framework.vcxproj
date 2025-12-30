@@ -95,12 +95,16 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui;$(SolutionDir)ThirdParty\assimp\include;$(SolutionDir)ThirdParty\mikktspace</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>;$(SolutionDir)ThirdParty\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -113,12 +117,16 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui;$(SolutionDir)ThirdParty\assimp\include;$(SolutionDir)ThirdParty\mikktspace</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>;$(SolutionDir)ThirdParty\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -129,12 +137,16 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui;$(SolutionDir)ThirdParty\assimp\include;$(SolutionDir)ThirdParty\mikktspace</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(SolutionDir)ThirdParty\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -147,12 +159,16 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Engine\include;$(SolutionDir)ThirdParty\Microsoft\D3DX12;$(SolutionDir)ThirdParty\Microsoft\DirectXTex;$(SolutionDir)ThirdParty\imgui;$(SolutionDir)ThirdParty\assimp\include;$(SolutionDir)ThirdParty\mikktspace</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(SolutionDir)ThirdParty\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.vcxproj">
@@ -206,12 +222,24 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\mikktspace\mikktspace.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="..\src\Framework\Application.cpp" />
     <ClCompile Include="..\src\Framework\Assets\AnimationAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\AssetManager.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MaterialAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MeshAsset.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\MikkTSpaceCalculator.cpp" />
     <ClCompile Include="..\src\Framework\Assets\ModelAsset.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\ModelLoader.cpp" />
     <ClCompile Include="..\src\Framework\Assets\TextureAsset.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\DebugVisualizationPanel.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\ECSInspector.cpp" />
@@ -237,7 +265,9 @@
     <ClInclude Include="..\include\Framework\Assets\IAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\MaterialAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\MeshAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\MikkTSpaceCalculator.h" />
     <ClInclude Include="..\include\Framework\Assets\ModelAsset.h" />
+    <ClInclude Include="..\include\Framework\Assets\ModelLoader.h" />
     <ClInclude Include="..\include\Framework\Assets\TextureAsset.h" />
     <ClInclude Include="..\include\Framework\DebugUI\DebugVisualizationPanel.h" />
     <ClInclude Include="..\include\Framework\DebugUI\ECSInspector.h" />

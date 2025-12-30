@@ -14,7 +14,7 @@ struct VS_INPUT
 	float3 Position : POSITION;
 	float3 Normal : NORMAL;
 	float2 TexCoord : TEXCOORD;
-	float3 Tangent : TANGENT;
+	float4 Tangent : TANGENT;
 };
 
 // Output to Pixel Shader
@@ -43,14 +43,14 @@ VS_OUTPUT VSMain(VS_INPUT input)
 	output.Normal = mul(input.Normal, (float3x3) worldMatrix);
 	output.Normal = normalize(output.Normal);
     
-    // 4. 월드 Tangent 변환 (Phase 3.3.4)
-	output.Tangent = mul(input.Tangent, (float3x3) worldMatrix);
+    // 4. 월드 Tangent 변환
+	output.Tangent = mul(input.Tangent.xyz, (float3x3) worldMatrix);
 	output.Tangent = normalize(output.Tangent);
     
-    // 5. Bitangent 계산 (Normal과 Tangent의 외적)
-	output.Bitangent = cross(output.Normal, output.Tangent);
+    // 5. Bitangent 계산 (부호 적용)
+	output.Bitangent = cross(output.Normal, output.Tangent) * input.Tangent.w; 
 	output.Bitangent = normalize(output.Bitangent);
-    
+	
     // 6. 텍스처 좌표
 	output.TexCoord = input.TexCoord;
     

@@ -4,6 +4,7 @@
 #include "Framework/Resources/ResourceId.h"
 #include "Framework/Resources/ResourceManager.h"
 #include "Framework/DebugUI/ECSInspector.h"
+#include "Framework/Assets/MikkTSpaceCalculator.h"
 
 // Core Engine
 #include "Core/Logging/LogMacros.h"
@@ -219,8 +220,8 @@ void PhongLightingApp::CreateCubeEntities()
 	mSharedMeshId = mResourceManager->CreateMesh("CubeMesh");
 	mSharedMaterialId = mResourceManager->CreateMaterial(
 		"PhongMaterial",
-		L"PhongVS.hlsl",
-		L"PhongPS.hlsl"
+		L"../../Assets/Shaders/PhongVS.hlsl",
+		L"../../Assets/Shaders/PhongPS.hlsl"
 	);
 
 	// 그리드 형태로 큐브 배치
@@ -339,8 +340,8 @@ void PhongLightingApp::SetupSharedMeshData()
 	};
 
 	// 2. Tangent 자동 계산
-	std::vector<Math::Vector3> tangents;
-	Math::CalculateTangents(
+	std::vector<Math::Vector4> tangents;
+	Framework::MikkTSpaceCalculator::Calculate(
 		positions,
 		normals,
 		texCoords,

@@ -222,5 +222,11 @@
     <FxCompile Include="..\..\Assets\Shaders\DebugVS.hlsl">
       <Filter>Shaders\DebugDraw</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\Assets\Shaders\PhongPS.hlsl">
+      <Filter>Shaders\DebugDraw</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\Assets\Shaders\PhongVs.hlsl">
+      <Filter>Shaders\DebugDraw</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

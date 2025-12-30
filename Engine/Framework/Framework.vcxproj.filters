@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Assets">
       <UniqueIdentifier>{dc61b234-6edf-452b-87bf-cc1d28390599}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mikktspace">
+      <UniqueIdentifier>{874c49fa-6a3f-4448-a7be-a3cf405f309a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -105,6 +108,15 @@
     <ClCompile Include="Framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\mikktspace\mikktspace.c">
+      <Filter>mikktspace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\MikkTSpaceCalculator.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\ModelLoader.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -162,6 +174,12 @@
       <Filter>Header Files\Assets</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Framework\Assets\AssetManager.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\MikkTSpaceCalculator.h">
+      <Filter>Header Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\ModelLoader.h">
       <Filter>Header Files\Assets</Filter>
     </ClInclude>
   </ItemGroup>
