@@ -200,6 +200,9 @@ namespace Graphics
 		void UpdateViewportAndScissor();
 
 	private:
+		static constexpr size_t ALIGNED_OBJECT_SIZE = 256;  // 256바이트 정렬
+		static constexpr size_t ALIGNED_MATERIAL_SIZE = 256;
+
 		// 상태
 		bool mIsInitialized = false;
 
@@ -216,7 +219,10 @@ namespace Graphics
 		std::unique_ptr<DX12ConstantBuffer> mLightingConstantBuffer;    // b2: Lighting (Phase 3.3)
 
 		Core::uint32 mCurrentObjectCBIndex = 0;
-		static constexpr Core::uint32 MAX_OBJECTS_PER_FRAME = 100;
+		static constexpr Core::uint32 MAX_OBJECTS_PER_FRAME = 500;
+
+		Core::uint32 mCurrentMaterialCBIndex = 0;
+		static constexpr Core::uint32 MAX_MATERIALS_PER_FRAME = 500;
 
 		std::unique_ptr<DX12DepthStencilBuffer> mDepthStencilBuffer;
 		std::unique_ptr<DX12DescriptorHeap> mSrvDescriptorHeap;

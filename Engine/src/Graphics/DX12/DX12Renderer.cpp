@@ -19,12 +19,6 @@
 
 namespace Graphics
 {
-	//// MVP 상수 버퍼 구조체
-	//struct MVPConstants
-	//{
-	//	Math::Matrix4x4 MVP;
-	//};
-
 	DX12Renderer::DX12Renderer()
 	{
 	}
@@ -99,7 +93,7 @@ namespace Graphics
 		mMaterialConstantBuffer = std::make_unique<DX12ConstantBuffer>();
 		if (!mMaterialConstantBuffer->Initialize(
 			device->GetDevice(),
-			sizeof(MaterialConstants),
+			sizeof(MaterialConstants) * MAX_MATERIALS_PER_FRAME,
 			FRAME_BUFFER_COUNT
 		))
 		{
@@ -140,7 +134,7 @@ namespace Graphics
 		if (!mSrvDescriptorHeap->Initialize(
 			device->GetDevice(),
 			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-			256,
+			2048,
 			true
 		))
 		{
@@ -296,7 +290,8 @@ namespace Graphics
 			mDevice->GetDevice(),
 			mWidth,
 			mHeight,
-			DXGI_FORMAT_D24_UNORM_S8_UINT);
+			DXGI_FORMAT_D24_UNORM_S8_UINT
+		);
 
 		// 뷰포트와 시저 업데이트
 		UpdateViewportAndScissor();
@@ -335,12 +330,16 @@ namespace Graphics
 		cmdList->ResourceBarrier(1, &barrier);
 
 		mCurrentObjectCBIndex = 0;
+		mCurrentMaterialCBIndex = 0;
 
 		return true;
 	}
 
 	void DX12Renderer::RenderScene(const FrameData& frameData)
 	{
+		// BeginFrame 호출 여부 검증 (디버그 빌드)
+		CORE_ASSERT(mCurrentObjectCBIndex == 0, "BeginFrame not called before RenderScene");
+
 		// 필수 리소스 확인
 		bool cb = !mObjectConstantBuffer || !mMaterialConstantBuffer || !mLightingConstantBuffer;
 		if (!mRootSignature || !mPipelineStateCache || cb || !mSrvDescriptorHeap)
@@ -486,21 +485,23 @@ namespace Graphics
 			return;
 		}
 
-		// LOG_DEBUG("[DX12Renderer] Drawing %zu items", items.size());
-
-		// Root Signature 설정
-		cmdList->SetGraphicsRootSignature(mRootSignature->GetRootSignature());
-
-		// Descriptor Heap 설정
-		ID3D12DescriptorHeap* heaps[] = { mSrvDescriptorHeap->GetHeap() };
-		cmdList->SetDescriptorHeaps(1, heaps);
-
 		// 각 렌더 아이템 그리기
 		for (const auto& item : items)
 		{
 			if (!item.mesh || !item.material)
 			{
 				continue;
+			}
+
+			if (mCurrentObjectCBIndex >= MAX_OBJECTS_PER_FRAME || mCurrentMaterialCBIndex >= MAX_MATERIALS_PER_FRAME)
+			{
+				LOG_ERROR(
+					"[DX12Renderer] Constant buffer overflow! Objects: %u/%u, Materials: %u/%u",
+					mCurrentObjectCBIndex, MAX_OBJECTS_PER_FRAME,
+					mCurrentMaterialCBIndex, MAX_MATERIALS_PER_FRAME
+				);
+
+				break;
 			}
 
 			// 1. Pipeline State Object 설정
@@ -522,8 +523,6 @@ namespace Graphics
 			objectData.worldMatrix = Math::MatrixTranspose(item.worldMatrix);
 			objectData.mvpMatrix = item.mvpMatrix;
 
-			constexpr size_t ALIGNED_OBJECT_SIZE = 256;  // 256바이트 정렬
-
 			mObjectConstantBuffer->UpdateAtOffset(
 				mCurrentFrameIndex,      // 프레임 인덱스
 				mCurrentObjectCBIndex,   // 오브젝트 슬롯 인덱스
@@ -533,8 +532,8 @@ namespace Graphics
 			);
 
 			// GPU 주소 계산
-			D3D12_GPU_VIRTUAL_ADDRESS baseAddress = mObjectConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
-			D3D12_GPU_VIRTUAL_ADDRESS objectCbvAddress = baseAddress + (ALIGNED_OBJECT_SIZE * mCurrentObjectCBIndex);
+			D3D12_GPU_VIRTUAL_ADDRESS baseObjectsAddress = mObjectConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
+			D3D12_GPU_VIRTUAL_ADDRESS objectCbvAddress = baseObjectsAddress + (ALIGNED_OBJECT_SIZE * mCurrentObjectCBIndex);
 
 			cmdList->SetGraphicsRootConstantBufferView(0, objectCbvAddress);
 
@@ -545,9 +544,16 @@ namespace Graphics
 			materialData.textureFlags = item.material->GetTextureFlags();
 			materialData.padding = 0.0f;
 
-			mMaterialConstantBuffer->Update(mCurrentFrameIndex, &materialData, sizeof(MaterialConstants));
+			mMaterialConstantBuffer->UpdateAtOffset(
+				mCurrentFrameIndex,
+				mCurrentMaterialCBIndex,
+				&materialData,
+				sizeof(MaterialConstants),
+				ALIGNED_MATERIAL_SIZE
+			);
 
-			D3D12_GPU_VIRTUAL_ADDRESS materialCbvAddress = mMaterialConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
+			D3D12_GPU_VIRTUAL_ADDRESS baseMaterialAddress = mMaterialConstantBuffer->GetGPUAddress(mCurrentFrameIndex);
+			D3D12_GPU_VIRTUAL_ADDRESS materialCbvAddress = baseMaterialAddress + (ALIGNED_MATERIAL_SIZE * mCurrentMaterialCBIndex);
 			cmdList->SetGraphicsRootConstantBufferView(1, materialCbvAddress);
 
 			// 4. Lighting Constants 설정 (b2) - Phase 3.3
@@ -570,6 +576,7 @@ namespace Graphics
 			item.mesh->Draw(cmdList);
 
 			++mCurrentObjectCBIndex;
+			++mCurrentMaterialCBIndex;
 		}
 	}
 

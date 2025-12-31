@@ -182,5 +182,8 @@
     <ClInclude Include="..\include\Framework\Assets\ModelLoader.h">
       <Filter>Header Files\Assets</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Framework\DebugUI\ImGuiHelper.h">
+      <Filter>Header Files\DebugUI</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

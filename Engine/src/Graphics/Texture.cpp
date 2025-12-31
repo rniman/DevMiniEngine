@@ -15,7 +15,7 @@ using namespace std;
 namespace Graphics
 {
 	Texture::~Texture()
-	{ 
+	{
 		Shutdown();
 	}
 
@@ -154,7 +154,188 @@ namespace Graphics
 			mWidth,
 			mHeight,
 			static_cast<int>(mFormat),
-			desc.MipLevels);
+			desc.MipLevels
+		);
+
+		return true;
+	}
+
+	bool Texture::CreateFromMemory(
+		ID3D12Device* device,
+		DX12CommandQueue* commandQueue,
+		DX12CommandContext* commandContext,
+		const void* data,
+		uint32 width,
+		uint32 height,
+		DXGI_FORMAT format
+	)
+	{
+		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
+		CORE_ASSERT(commandQueue != nullptr, "[Texture] CommandQueue is null");
+		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
+		CORE_ASSERT(data != nullptr, "[Texture] Data is null");
+		CORE_ASSERT(width > 0 && height > 0, "[Texture] Invalid dimensions");
+
+		LOG_INFO("[Texture] Creating texture from raw memory (%ux%u)", width, height);
+
+		if (mInitialized)
+		{
+			LOG_WARN("[Texture] Texture already initialized. Shutting down first.");
+			Shutdown();
+		}
+
+		// 포맷별 픽셀 크기 계산
+		uint32 bytesPerPixel = 4;  // R8G8B8A8 기본값
+		switch (format)
+		{
+		case DXGI_FORMAT_R8_UNORM:
+			bytesPerPixel = 1;
+			break;
+		case DXGI_FORMAT_R8G8_UNORM:
+			bytesPerPixel = 2;
+			break;
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+			bytesPerPixel = 4;
+			break;
+		case DXGI_FORMAT_R16G16B16A16_FLOAT:
+			bytesPerPixel = 8;
+			break;
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+			bytesPerPixel = 16;
+			break;
+		default:
+			LOG_WARN("[Texture] Unknown format, assuming 4 bytes per pixel");
+			bytesPerPixel = 4;
+			break;
+		}
+
+		// 텍스처 리소스 생성 (Default Heap, COPY_DEST 상태)
+		D3D12_RESOURCE_DESC texDesc = {};
+		texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		texDesc.Alignment = 0;
+		texDesc.Width = width;
+		texDesc.Height = height;
+		texDesc.DepthOrArraySize = 1;
+		texDesc.MipLevels = 1;
+		texDesc.Format = format;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		CD3DX12_HEAP_PROPERTIES defaultHeapProps(D3D12_HEAP_TYPE_DEFAULT);
+
+		HRESULT hr = device->CreateCommittedResource(
+			&defaultHeapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&texDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(mTexture.GetAddressOf())
+		);
+
+		if (FAILED(hr))
+		{
+			LOG_ERROR("[Texture] Failed to create texture resource (HRESULT: 0x%08X)", hr);
+			return false;
+		}
+
+		// 서브리소스 데이터 구성
+		D3D12_SUBRESOURCE_DATA subresource = {};
+		subresource.pData = data;
+		subresource.RowPitch = static_cast<LONG_PTR>(width * bytesPerPixel);
+		subresource.SlicePitch = subresource.RowPitch * height;
+
+		// GPU로 업로드 (기존 함수 재사용)
+		if (!UploadTextureData(device, commandContext, commandQueue, &subresource, 1))
+		{
+			LOG_ERROR("[Texture] Failed to upload texture data to GPU");
+			mTexture.Reset();
+			return false;
+		}
+
+		// 멤버 변수 설정
+		mWidth = width;
+		mHeight = height;
+		mFormat = format;
+		mInitialized = true;
+
+		LOG_INFO(
+			"[Texture] Texture created from raw memory successfully (%ux%u, Format: %d)",
+			mWidth,
+			mHeight,
+			static_cast<int>(mFormat)
+		);
+
+		return true;
+	}
+
+	bool Texture::LoadFromMemory(
+		ID3D12Device* device,
+		DX12CommandQueue* commandQueue,
+		DX12CommandContext* commandContext,
+		const void* data,
+		uint32 dataSize
+	)
+	{
+		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
+		CORE_ASSERT(commandQueue != nullptr, "[Texture] CommandQueue is null");
+		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
+		CORE_ASSERT(data != nullptr, "[Texture] Data is null");
+		CORE_ASSERT(dataSize > 0, "[Texture] Invalid data size");
+
+		LOG_INFO("[Texture] Loading texture from compressed memory (%u bytes)", dataSize);
+
+		if (mInitialized)
+		{
+			LOG_WARN("[Texture] Texture already initialized. Shutting down first.");
+			Shutdown();
+		}
+
+		// 텍스처 데이터와 서브리소스 정보를 담을 컨테이너
+		unique_ptr<uint8_t[]> wicData;
+		D3D12_SUBRESOURCE_DATA subresource;
+
+		// WICTextureLoader를 사용하여 메모리에서 텍스처 데이터 로드
+		HRESULT hr = DirectX::LoadWICTextureFromMemory(
+			device,
+			static_cast<const uint8_t*>(data),
+			static_cast<size_t>(dataSize),
+			mTexture.GetAddressOf(),
+			wicData,
+			subresource
+		);
+
+		if (FAILED(hr))
+		{
+			LOG_ERROR("[Texture] Failed to load WIC texture from memory (HRESULT: 0x%08X)", hr);
+			return false;
+		}
+
+		// GPU로 텍스처 데이터 업로드
+		if (!UploadTextureData(device, commandContext, commandQueue, &subresource, 1))
+		{
+			LOG_ERROR("[Texture] Failed to upload texture data to GPU");
+			mTexture.Reset();
+			return false;
+		}
+
+		// 텍스처 정보 가져오기
+		D3D12_RESOURCE_DESC desc = mTexture->GetDesc();
+		mWidth = static_cast<uint32>(desc.Width);
+		mHeight = desc.Height;
+		mFormat = desc.Format;
+
+		mInitialized = true;
+		LOG_INFO(
+			"[Texture] Texture loaded from memory successfully (%ux%u, Format: %d)",
+			mWidth,
+			mHeight,
+			static_cast<int>(mFormat)
+		);
 
 		return true;
 	}

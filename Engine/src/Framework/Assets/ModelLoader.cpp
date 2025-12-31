@@ -1,6 +1,8 @@
 ﻿/**
  * @file ModelLoader.cpp
  * @brief ModelLoader 구현
+ *
+ * @note Phase 4.2+: 임베디드 텍스처 지원 추가
  */
 #include "pch.h"
 #include "Framework/Assets/ModelLoader.h"
@@ -29,9 +31,9 @@ namespace Framework
 		aiProcess_ConvertToLeftHanded;  // MakeLeftHanded + FlipUVs + FlipWindingOrder
 	// aiProcess_CalcTangentSpace 제외 - MikkTSpace 사용
 
-//=========================================================================
-// 내부 유틸리티 함수 (Assimp 타입 사용)
-//=========================================================================
+	//=========================================================================
+	// 내부 유틸리티 함수 (Assimp 타입 사용)
+	//=========================================================================
 
 	namespace
 	{
@@ -109,12 +111,127 @@ namespace Framework
 		}
 
 		/**
+		 * @brief 임베디드 텍스처 인덱스 파싱
+		 *
+		 * "*0", "*1" 형식의 경로에서 인덱스 추출
+		 *
+		 * @param path 텍스처 경로 ("*0" 형식)
+		 * @return 인덱스 (실패 시 -1)
+		 */
+		int ParseEmbeddedTextureIndex(const std::string& path)
+		{
+			if (path.empty() || path[0] != '*')
+			{
+				return -1;
+			}
+
+			try
+			{
+				return std::stoi(path.substr(1));
+			}
+			catch (...)
+			{
+				return -1;
+			}
+		}
+
+		/**
+		 * @brief aiScene에서 임베디드 텍스처 데이터 추출
+		 *
+		 * @param scene Assimp 씬
+		 * @param textureIndex 텍스처 인덱스
+		 * @param outTexInfo 출력: 텍스처 정보
+		 * @return 성공 여부
+		 */
+		bool ExtractEmbeddedTexture(
+			const aiScene* scene,
+			int textureIndex,
+			LoadedTextureInfo& outTexInfo
+		)
+		{
+			if (!scene || !scene->HasTextures())
+			{
+				return false;
+			}
+
+			if (textureIndex < 0 || textureIndex >= static_cast<int>(scene->mNumTextures))
+			{
+				LOG_ERROR("[ModelLoader] Invalid embedded texture index: %d (max: %u)",
+					textureIndex, scene->mNumTextures);
+				return false;
+			}
+
+			const aiTexture* tex = scene->mTextures[textureIndex];
+			if (!tex)
+			{
+				return false;
+			}
+
+			outTexInfo.isEmbedded = true;
+
+			// mHeight == 0 이면 압축된 포맷 (PNG, JPG 등)
+			// mHeight > 0 이면 원시 RGBA 데이터
+			if (tex->mHeight == 0)
+			{
+				// 압축 포맷: mWidth가 바이트 크기
+				outTexInfo.isCompressed = true;
+				outTexInfo.width = 0;   // 디코딩 후 결정
+				outTexInfo.height = 0;
+
+				// 바이너리 데이터 복사
+				const Core::uint8* srcData = reinterpret_cast<const Core::uint8*>(tex->pcData);
+				outTexInfo.embeddedData.assign(srcData, srcData + tex->mWidth);
+
+				LOG_DEBUG(
+					"[ModelLoader] Extracted compressed embedded texture: index=%d, size=%u bytes, format=%s",
+					textureIndex,
+					tex->mWidth,
+					tex->achFormatHint
+				);
+			}
+			else
+			{
+				// 원시 RGBA 데이터
+				outTexInfo.isCompressed = false;
+				outTexInfo.width = tex->mWidth;
+				outTexInfo.height = tex->mHeight;
+
+				// ARGB → RGBA 변환하며 복사
+				Core::size_t pixelCount = static_cast<Core::size_t>(tex->mWidth) * tex->mHeight;
+				outTexInfo.embeddedData.resize(pixelCount * 4);
+
+				const aiTexel* srcPixels = tex->pcData;
+				Core::uint8* dstData = outTexInfo.embeddedData.data();
+
+				for (Core::size_t i = 0; i < pixelCount; ++i)
+				{
+					dstData[i * 4 + 0] = srcPixels[i].r;
+					dstData[i * 4 + 1] = srcPixels[i].g;
+					dstData[i * 4 + 2] = srcPixels[i].b;
+					dstData[i * 4 + 3] = srcPixels[i].a;
+				}
+
+				LOG_DEBUG(
+					"[ModelLoader] Extracted raw embedded texture: index=%d, %ux%u",
+					textureIndex,
+					tex->mWidth,
+					tex->mHeight
+				);
+			}
+
+			return true;
+		}
+
+		/**
 		 * @brief 머티리얼에서 특정 타입의 텍스처 경로 추출
+		 *
+		 * 임베디드 텍스처인 경우 aiScene에서 데이터도 추출합니다.
 		 */
 		bool ExtractTexturePath(
 			const aiMaterial* material,
 			aiTextureType aiType,
 			const std::string& modelDirectory,
+			const aiScene* scene,
 			LoadedTextureInfo& outTexInfo
 		)
 		{
@@ -137,20 +254,33 @@ namespace Framework
 				return false;
 			}
 
-			// 내장 텍스처 체크 (glTF에서 *0, *1 형식)
+			outTexInfo.type = ConvertTextureType(aiType);
+			outTexInfo.path = pathStr;
+
+			// 임베디드 텍스처 체크 (glTF/glb에서 *0, *1 형식)
 			if (pathStr[0] == '*')
 			{
-				// 내장 텍스처는 현재 미지원, 경로만 기록
-				outTexInfo.path = pathStr;
-				outTexInfo.type = ConvertTextureType(aiType);
-				LOG_DEBUG("[ModelLoader] Embedded texture found: %s (type: %d)", pathStr.c_str(), static_cast<int>(aiType));
+				int texIndex = ParseEmbeddedTextureIndex(pathStr);
+				if (texIndex >= 0 && scene)
+				{
+					if (ExtractEmbeddedTexture(scene, texIndex, outTexInfo))
+					{
+						LOG_DEBUG("[ModelLoader] Embedded texture extracted: %s (type: %s)",
+							pathStr.c_str(), Graphics::TextureTypeToString(outTexInfo.type));
+						return true;
+					}
+				}
+
+				// 추출 실패해도 경로는 기록 (폴백용)
+				outTexInfo.isEmbedded = true;
+				LOG_WARN("[ModelLoader] Failed to extract embedded texture: %s", pathStr.c_str());
 				return true;
 			}
 
-			// 상대 경로 조합
+			// 외부 텍스처: 상대 경로 조합
 			std::filesystem::path fullPath = std::filesystem::path(modelDirectory) / pathStr;
 			outTexInfo.path = fullPath.string();
-			outTexInfo.type = ConvertTextureType(aiType);
+			outTexInfo.isEmbedded = false;
 
 			return true;
 		}
@@ -161,6 +291,7 @@ namespace Framework
 		void ProcessMaterial(
 			const aiMaterial* material,
 			const std::string& modelDirectory,
+			const aiScene* scene,
 			LoadedMaterialData& outMaterialData
 		)
 		{
@@ -222,7 +353,7 @@ namespace Framework
 			for (aiTextureType aiType : textureTypes)
 			{
 				LoadedTextureInfo texInfo;
-				if (ExtractTexturePath(material, aiType, modelDirectory, texInfo))
+				if (ExtractTexturePath(material, aiType, modelDirectory, scene, texInfo))
 				{
 					// 중복 타입 체크 (같은 TextureType이 이미 있으면 스킵)
 					bool duplicate = false;
@@ -237,7 +368,7 @@ namespace Framework
 
 					if (!duplicate)
 					{
-						outMaterialData.textures.push_back(texInfo);
+						outMaterialData.textures.push_back(std::move(texInfo));
 					}
 				}
 			}
@@ -307,28 +438,21 @@ namespace Framework
 				}
 			}
 
-			// 인덱스 추출
-			std::vector<Core::uint32> indices;
-			indices.reserve(mesh->mNumFaces * 3);
-
+			// 인덱스 데이터 추출
 			for (Core::uint32 i = 0; i < mesh->mNumFaces; ++i)
 			{
 				const aiFace& face = mesh->mFaces[i];
 				for (Core::uint32 j = 0; j < face.mNumIndices; ++j)
 				{
-					indices.push_back(face.mIndices[j]);
+					outMeshData.indices.push_back(face.mIndices[j]);
 				}
 			}
 
-			// MikkTSpace로 Tangent 계산
+			// MikkTSpace로 탄젠트 계산
 			std::vector<Math::Vector4> tangents;
-			if (!MikkTSpaceCalculator::Calculate(positions, normals, texCoords, indices, tangents))
-			{
-				LOG_WARN("[ModelLoader] MikkTSpace calculation failed, using default tangents");
-				tangents.resize(vertexCount, Math::Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-			}
+			MikkTSpaceCalculator::Calculate(positions, normals, texCoords, outMeshData.indices, tangents);
 
-			// StandardVertex 배열 생성
+			// StandardVertex로 조립
 			outMeshData.vertices.resize(vertexCount);
 			for (Core::uint32 i = 0; i < vertexCount; ++i)
 			{
@@ -338,22 +462,20 @@ namespace Framework
 				outMeshData.vertices[i].tangent = tangents[i];
 			}
 
-			// 인덱스 복사
-			outMeshData.indices = std::move(indices);
-
-			// 단일 서브메시 (전체)
+			// 서브메시 정보 (단일 메시이므로 전체 범위)
 			SubmeshInfo submesh;
 			submesh.startIndex = 0;
 			submesh.indexCount = static_cast<Core::uint32>(outMeshData.indices.size());
-			submesh.baseVertex = 0;
 			submesh.materialIndex = mesh->mMaterialIndex;
 			outMeshData.submeshes.push_back(submesh);
+
+			outMeshData.materialIndex = static_cast<Core::int32>(mesh->mMaterialIndex);
 
 			return true;
 		}
 
 		/**
-		 * @brief Assimp aiNode 계층 구조 처리 (재귀)
+		 * @brief 노드 계층 구조 처리 (재귀)
 		 */
 		void ProcessNode(
 			const aiNode* node,
@@ -367,20 +489,15 @@ namespace Framework
 				return;
 			}
 
-			// 현재 노드 정보 저장
 			LoadedNodeInfo nodeInfo;
 			nodeInfo.name = node->mName.C_Str();
 			nodeInfo.localTransform = ConvertMatrix(node->mTransformation);
 			nodeInfo.parentIndex = parentIndex;
 
-			// 메시 인덱스 (첫 번째 메시만)
-			if (node->mNumMeshes > 0)
+			// 메시 인덱스 수집
+			for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 			{
-				nodeInfo.meshIndex = static_cast<Core::int32>(node->mMeshes[0]);
-			}
-			else
-			{
-				nodeInfo.meshIndex = -1;
+				nodeInfo.meshIndices.push_back(node->mMeshes[i]);
 			}
 
 			Core::int32 currentIndex = static_cast<Core::int32>(outModelData.nodes.size());
@@ -455,11 +572,17 @@ namespace Framework
 		if (lastDot == std::string::npos || lastDot < lastSlash) lastDot = filePath.length();
 		outModelData.name = filePath.substr(lastSlash, lastDot - lastSlash);
 
-		// 머티리얼 처리
+		// 임베디드 텍스처 정보 로깅
+		if (scene->HasTextures())
+		{
+			LOG_INFO("[ModelLoader] Model has %u embedded textures", scene->mNumTextures);
+		}
+
+		// 머티리얼 처리 (scene 전달하여 임베디드 텍스처 추출)
 		outModelData.materials.resize(scene->mNumMaterials);
 		for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
 		{
-			ProcessMaterial(scene->mMaterials[i], modelDirectory, outModelData.materials[i]);
+			ProcessMaterial(scene->mMaterials[i], modelDirectory, scene, outModelData.materials[i]);
 		}
 
 		// 메시 처리
@@ -475,12 +598,15 @@ namespace Framework
 		// 노드 계층 구조 처리
 		ProcessNode(scene->mRootNode, scene, -1, outModelData);
 
-		LOG_INFO("[ModelLoader] Loaded model: %s (%zu meshes, %zu materials, %zu nodes, %u textures)",
+		LOG_INFO(
+			"[ModelLoader] Loaded model: %s (%zu meshes, %zu materials, %zu nodes, %u textures, %u embedded)",
 			filePath.c_str(),
 			outModelData.meshes.size(),
 			outModelData.materials.size(),
 			outModelData.nodes.size(),
-			outModelData.GetTotalTextureCount());
+			outModelData.GetTotalTextureCount(),
+			outModelData.GetEmbeddedTextureCount()
+		);
 
 		return true;
 	}

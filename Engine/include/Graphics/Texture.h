@@ -16,6 +16,7 @@ namespace Graphics
 	 * 지원 포맷:
 	 * - WIC: PNG, JPG, BMP, GIF, TIFF, WMP
 	 * - DDS: 압축 텍스처(BC1-BC7), 밉맵, 큐브맵 등
+	 * - Memory: 절차적 생성, 폴백 텍스처 등
 	 */
 	class Texture
 	{
@@ -64,6 +65,56 @@ namespace Graphics
 			DX12CommandQueue* commandQueue,
 			DX12CommandContext* commandContext,
 			const wchar_t* filename
+		);
+
+		/**
+		 * @brief 원시 픽셀 데이터로부터 텍스처 생성
+		 *
+		 * 픽셀 데이터 배열로부터 직접 텍스처를 생성합니다.
+		 * 폴백 텍스처, 절차적 텍스처 생성에 사용됩니다.
+		 *
+		 * @param device DirectX 12 디바이스
+		 * @param commandQueue 커맨드 큐
+		 * @param commandContext 커맨드 컨텍스트
+		 * @param data 픽셀 데이터 (RGBA 순서, 행 우선)
+		 * @param width 텍스처 너비
+		 * @param height 텍스처 높이
+		 * @param format 픽셀 포맷 (기본: DXGI_FORMAT_R8G8B8A8_UNORM)
+		 * @return 성공 시 true, 실패 시 false
+		 *
+		 * @note Phase 4.2: 폴백 텍스처 지원을 위해 추가
+		 */
+		bool CreateFromMemory(
+			ID3D12Device* device,
+			DX12CommandQueue* commandQueue,
+			DX12CommandContext* commandContext,
+			const void* data,
+			uint32 width,
+			uint32 height,
+			DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM
+		);
+
+		/**
+		 * @brief 압축된 이미지 데이터로부터 텍스처 로드 (PNG, JPG 등)
+		 *
+		 * WIC를 사용하여 메모리 상의 압축 이미지를 디코딩합니다.
+		 * glb 파일의 임베디드 텍스처 로딩에 사용됩니다.
+		 *
+		 * @param device DirectX 12 디바이스
+		 * @param commandQueue 커맨드 큐
+		 * @param commandContext 커맨드 컨텍스트
+		 * @param data 압축된 이미지 데이터 (PNG, JPG 바이너리)
+		 * @param dataSize 데이터 크기 (바이트)
+		 * @return 성공 시 true, 실패 시 false
+		 *
+		 * @note Phase 4.2+: 임베디드 텍스처 지원을 위해 추가
+		 */
+		bool LoadFromMemory(
+			ID3D12Device* device,
+			DX12CommandQueue* commandQueue,
+			DX12CommandContext* commandContext,
+			const void* data,
+			uint32 dataSize
 		);
 
 		/**

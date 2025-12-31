@@ -16,6 +16,7 @@
 #include "Framework/Resources/ResourceId.h"
 #include "Framework/Resources/ResourceManager.h"
 #include "Framework/DebugUI/ECSInspector.h"
+#include "Framework/DebugUI/ImGuiHelper.h"
 
 // Core
 #include "Core/Logging/LogMacros.h"
@@ -87,7 +88,8 @@ namespace
 
 	// 모델 경로
 	constexpr const char* SPHERE_MODEL_PATH = "../../Assets/Models/Sphere.glb";
-	constexpr const char* HELMET_MODEL_PATH = "../../Assets/Models/DamagedHelmet.glb";
+	// constexpr const char* HELMET_MODEL_PATH = "../../Assets/Models/DamagedHelmet/DamagedHelmet.gltf";
+	constexpr const char* HELMET_MODEL_PATH = "../../Assets/Models/DamagedHelmet_Glb/DamagedHelmet.glb";
 
 	// UI 단축키
 	constexpr Platform::KeyCode KEY_TOGGLE_ASSET_PANEL = Platform::KeyCode::F4;
@@ -175,7 +177,7 @@ void ModelViewerApp::InitializeECS()
 	);
 	SetupSharedMaterial();
 
-	// Scene 구성
+	// ModelViewerApp 구성
 	CreateCameraEntity();
 	CreateLightEntities();
 	CreateProceduralSphereEntity();
@@ -187,7 +189,7 @@ void ModelViewerApp::InitializeECS()
 
 void ModelViewerApp::CreateCameraEntity()
 {
-	LOG_INFO("[Scene] Creating Camera Entity...");
+	LOG_INFO("[ModelViewerApp] Creating Camera Entity...");
 
 	mCameraEntity = mRegistry->CreateEntity();
 
@@ -216,12 +218,12 @@ void ModelViewerApp::CreateCameraEntity()
 	mRegistry->AddComponent(mCameraEntity, transform);
 	mRegistry->AddComponent(mCameraEntity, camera);
 
-	LOG_INFO("[Scene] Camera created (Main Camera)");
+	LOG_INFO("[ModelViewerApp] Camera created (Main Camera)");
 }
 
 void ModelViewerApp::CreateLightEntities()
 {
-	LOG_INFO("[Scene] Creating Light Entities...");
+	LOG_INFO("[ModelViewerApp] Creating Light Entities...");
 
 	mDirectionalLightEntity = mRegistry->CreateEntity();
 
@@ -233,7 +235,7 @@ void ModelViewerApp::CreateLightEntities()
 
 	mRegistry->AddComponent(mDirectionalLightEntity, dirLight);
 
-	LOG_INFO("[Scene] Directional Light created");
+	LOG_INFO("[ModelViewerApp] Directional Light created");
 }
 
 //=============================================================================
@@ -242,7 +244,7 @@ void ModelViewerApp::CreateLightEntities()
 
 void ModelViewerApp::CreateProceduralSphereEntity()
 {
-	LOG_INFO("[Scene] Creating Procedural Sphere Entity...");
+	LOG_INFO("[ModelViewerApp] Creating Procedural Sphere Entity...");
 
 	mProceduralSphereEntity = mRegistry->CreateEntity();
 
@@ -269,13 +271,13 @@ void ModelViewerApp::CreateProceduralSphereEntity()
 	// Mesh 설정
 	SetupProceduralSphereMesh(mSphereSegments, mSphereRings);
 
-	LOG_INFO("[Scene] Procedural Sphere created at (%.1f, %.1f, %.1f)",
+	LOG_INFO("[ModelViewerApp] Procedural Sphere created at (%.1f, %.1f, %.1f)",
 		PROCEDURAL_SPHERE_POS.x, PROCEDURAL_SPHERE_POS.y, PROCEDURAL_SPHERE_POS.z);
 }
 
 void ModelViewerApp::CreateLoadedSphereEntity()
 {
-	LOG_INFO("[Scene] Creating Loaded Sphere Entity...");
+	LOG_INFO("[ModelViewerApp] Creating Loaded Sphere Entity...");
 
 	mLoadedSphereEntity = mRegistry->CreateEntity();
 
@@ -300,13 +302,15 @@ void ModelViewerApp::CreateLoadedSphereEntity()
 	matComp.materialId = mSharedMaterialId;
 	mRegistry->AddComponent(mLoadedSphereEntity, matComp);
 
-	LOG_INFO("[Scene] Loaded Sphere created at (%.1f, %.1f, %.1f)",
-		LOADED_SPHERE_POS.x, LOADED_SPHERE_POS.y, LOADED_SPHERE_POS.z);
+	LOG_INFO(
+		"[ModelViewerApp] Loaded Sphere created at (%.1f, %.1f, %.1f)",
+		LOADED_SPHERE_POS.x, LOADED_SPHERE_POS.y, LOADED_SPHERE_POS.z
+	);
 }
 
 void ModelViewerApp::CreateHelmetEntity()
 {
-	LOG_INFO("[Scene] Creating DamagedHelmet Entity...");
+	LOG_INFO("[ModelViewerApp] Creating DamagedHelmet Entity...");
 
 	mHelmetEntity = mRegistry->CreateEntity();
 
@@ -320,18 +324,23 @@ void ModelViewerApp::CreateHelmetEntity()
 	// Mesh 설정 (glTF 로드 → MeshAsset → GPU Mesh)
 	SetupHelmetMesh();
 
+	// Helmet 전용 머티리얼 설정 (glTF 텍스처 로딩)
+	SetupHelmetMaterial();
+
 	// Mesh Component
 	ECS::MeshComponent meshComp;
 	meshComp.meshId = mHelmetMeshId;
 	mRegistry->AddComponent(mHelmetEntity, meshComp);
 
-	// Material Component (공유 - 텍스처는 아직 미적용)
+	// Material Component (Helmet 전용)
 	ECS::MaterialComponent matComp;
-	matComp.materialId = mSharedMaterialId;
+	matComp.materialId = mHelmetMaterialId;
 	mRegistry->AddComponent(mHelmetEntity, matComp);
 
-	LOG_INFO("[Scene] DamagedHelmet created at (%.1f, %.1f, %.1f)",
-		HELMET_POS.x, HELMET_POS.y, HELMET_POS.z);
+	LOG_INFO(
+		"[ModelViewerApp] DamagedHelmet created at (%.1f, %.1f, %.1f)",
+		HELMET_POS.x, HELMET_POS.y, HELMET_POS.z
+	);
 }
 
 //=============================================================================
@@ -422,7 +431,8 @@ void ModelViewerApp::SetupLoadedSphereMesh()
 
 	mLoadedMeshValid = true;
 
-	LOG_INFO("[Mesh] Loaded sphere mesh via Asset Pipeline (V:%u, I:%u, AABB: [%.2f,%.2f,%.2f]-[%.2f,%.2f,%.2f])",
+	LOG_INFO(
+		"[Mesh] Loaded sphere mesh via Asset Pipeline (V:%u, I:%u, AABB: [%.2f,%.2f,%.2f]-[%.2f,%.2f,%.2f])",
 		mLoadedSphereMeshAsset->GetVertexCount(),
 		mLoadedSphereMeshAsset->GetIndexCount(),
 		mLoadedSphereMeshAsset->GetAABBMin().x,
@@ -430,7 +440,55 @@ void ModelViewerApp::SetupLoadedSphereMesh()
 		mLoadedSphereMeshAsset->GetAABBMin().z,
 		mLoadedSphereMeshAsset->GetAABBMax().x,
 		mLoadedSphereMeshAsset->GetAABBMax().y,
-		mLoadedSphereMeshAsset->GetAABBMax().z);
+		mLoadedSphereMeshAsset->GetAABBMax().z
+	);
+}
+
+void ModelViewerApp::SetupSharedMaterial()
+{
+	auto* material = mResourceManager->GetMaterial(mSharedMaterialId);
+	if (!material)
+	{
+		LOG_ERROR("[Material] Shared material not found!");
+		return;
+	}
+
+	// Albedo 텍스처 로드
+	auto albedoTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_BaseColor.png");
+	if (albedoTexId.IsValid())
+	{
+		material->SetTexture(Graphics::TextureType::Albedo, albedoTexId);
+		LOG_INFO("[Material] Loaded Albedo texture");
+	}
+	else
+	{
+		LOG_WARN("[Material] Failed to load Albedo texture - using default");
+	}
+
+	// Normal 텍스처 로드
+	auto normalTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_Normal.png");
+	if (normalTexId.IsValid())
+	{
+		material->SetTexture(Graphics::TextureType::Normal, normalTexId);
+		LOG_INFO("[Material] Loaded Normal texture");
+	}
+	else
+	{
+		LOG_WARN("[Material] Failed to load Normal texture - using default");
+	}
+
+	// Descriptor 할당
+	if (!material->AllocateDescriptors(
+		GetDevice()->GetDevice(),
+		GetRenderer()->GetSrvDescriptorHeap(),
+		mResourceManager.get()
+	))
+	{
+		LOG_ERROR("[Material] Failed to allocate descriptors");
+		return;
+	}
+
+	LOG_INFO("[Material] Shared material setup complete (textures: %u)", material->GetTextureCount());
 }
 
 void ModelViewerApp::SetupHelmetMesh()
@@ -493,21 +551,139 @@ void ModelViewerApp::SetupHelmetMesh()
 	}
 }
 
-void ModelViewerApp::SetupSharedMaterial()
+void ModelViewerApp::SetupHelmetMaterial()
 {
-	auto* material = mResourceManager->GetMaterial(mSharedMaterialId);
+	// Helmet 전용 머티리얼 생성
+	mHelmetMaterialId = mResourceManager->CreateMaterial(
+		"HelmetMaterial",
+		L"../../Assets/Shaders/PhongVS.hlsl",
+		L"../../Assets/Shaders/PhongPS.hlsl"
+	);
+
+	auto* material = mResourceManager->GetMaterial(mHelmetMaterialId);
 	if (!material)
 	{
-		LOG_ERROR("[Material] Shared material not found!");
+		LOG_ERROR("[Material] Failed to create helmet material!");
 		return;
 	}
 
-	// 텍스처 로드 및 바인딩
-	auto albedoTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_BaseColor.png");
-	if (albedoTexId.IsValid())
+	// 머티리얼 데이터가 없으면 기본 설정만
+	if (mHelmetModelData.materials.empty())
 	{
-		material->SetTexture(Graphics::TextureType::Albedo, albedoTexId);
+		LOG_WARN("[Material] No material data in helmet model, using defaults");
+
+		if (!material->AllocateDescriptors(
+			GetDevice()->GetDevice(),
+			GetRenderer()->GetSrvDescriptorHeap(),
+			mResourceManager.get()
+		))
+		{
+			LOG_ERROR("[Material] Failed to allocate descriptors for helmet");
+		}
+		return;
 	}
+
+	// 첫 번째 머티리얼의 텍스처들 로드
+	const auto& matData = mHelmetModelData.materials[0];
+	LOG_INFO("[Material] Loading textures for material: %s", matData.name.c_str());
+
+	Core::uint32 loadedCount = 0;
+	Core::uint32 embeddedCount = 0;
+	Core::uint32 fallbackCount = 0;
+
+	// 폴백 텍스처 ID
+	Framework::ResourceId fallbackTexId = mResourceManager->GetFallbackTexture();
+
+	for (const auto& texInfo : matData.textures)
+	{
+		Framework::ResourceId texId;
+
+		// 임베디드 텍스처 처리
+		if (texInfo.HasEmbeddedData())
+		{
+			// 고유 이름 생성 (모델명_텍스처경로)
+			std::string texName = mHelmetModelData.name + "_" + texInfo.path;
+
+			if (texInfo.isCompressed)
+			{
+				// PNG/JPG 압축 포맷
+				texId = mResourceManager->LoadTextureFromMemory(
+					texName,
+					texInfo.embeddedData.data(),
+					static_cast<Core::uint32>(texInfo.embeddedData.size())
+				);
+			}
+			else
+			{
+				// RGBA 원시 데이터
+				texId = mResourceManager->CreateTextureFromMemory(
+					texName,
+					texInfo.embeddedData.data(),
+					texInfo.width,
+					texInfo.height,
+					DXGI_FORMAT_R8G8B8A8_UNORM
+				);
+			}
+
+			if (texId.IsValid())
+			{
+				material->SetTexture(texInfo.type, texId);
+				LOG_INFO("[Material] Loaded embedded %s: %s",
+					Graphics::TextureTypeToString(texInfo.type),
+					texInfo.path.c_str());
+				embeddedCount++;
+				continue;
+			}
+			else
+			{
+				LOG_WARN("[Material] Failed to load embedded texture: %s", texInfo.path.c_str());
+			}
+		}
+		// 임베디드 마커만 있고 데이터가 없는 경우 (추출 실패)
+		else if (texInfo.isEmbedded)
+		{
+			LOG_WARN("[Material] Embedded texture has no data, using fallback: %s", texInfo.path.c_str());
+			if (fallbackTexId.IsValid())
+			{
+				material->SetTexture(texInfo.type, fallbackTexId);
+			}
+			fallbackCount++;
+			continue;
+		}
+
+		// 외부 텍스처 로드 시도
+		texId = mResourceManager->LoadTexture(texInfo.path);
+
+		if (texId.IsValid())
+		{
+			material->SetTexture(texInfo.type, texId);
+			LOG_INFO(
+				"[Material] Loaded %s: %s",
+				Graphics::TextureTypeToString(texInfo.type),
+				texInfo.path.c_str()
+			);
+			loadedCount++;
+		}
+		else
+		{
+			// 로드 실패 → 폴백 텍스처 사용
+			if (fallbackTexId.IsValid())
+			{
+				material->SetTexture(texInfo.type, fallbackTexId);
+				LOG_WARN(
+					"[Material] Using fallback for %s: %s",
+					Graphics::TextureTypeToString(texInfo.type),
+					texInfo.path.c_str()
+				);
+			}
+			fallbackCount++;
+		}
+	}
+
+	LOG_INFO(
+		"[Material] Texture loading complete: %u external, %u embedded, %u fallback",
+		loadedCount, embeddedCount, fallbackCount
+	);
 
 	// Descriptor 할당
 	if (!material->AllocateDescriptors(
@@ -516,11 +692,11 @@ void ModelViewerApp::SetupSharedMaterial()
 		mResourceManager.get()
 	))
 	{
-		LOG_ERROR("[Material] Failed to allocate descriptors");
+		LOG_ERROR("[Material] Failed to allocate descriptors for helmet");
 		return;
 	}
 
-	LOG_INFO("[Material] Shared material setup complete");
+	LOG_INFO("[Material] Helmet material setup complete");
 }
 
 //=============================================================================
@@ -642,254 +818,358 @@ void ModelViewerApp::OnShutdown()
 }
 
 //=============================================================================
-// Debug UI
+// 로컬 헬퍼 (ModelViewerApp 전용)
+//=============================================================================
+
+namespace
+{
+	using namespace Framework;
+
+	/** @brief 텍스처 상태 표시 (임베디드/외부/실패) */
+	void TextTextureStatus(const LoadedTextureInfo& tex)
+	{
+		const char* typeName = Graphics::TextureTypeToString(tex.type);
+
+		if (tex.HasEmbeddedData())
+		{
+			// 임베디드 + 데이터 있음
+			ImGui::TextColored(UIColor::Highlight, "[%s] %s (embedded)", typeName, tex.path.c_str());
+		}
+		else if (tex.isEmbedded)
+		{
+			// 임베디드 + 데이터 없음 (추출 실패)
+			ImGui::TextColored(UIColor::Warning, "[%s] %s (embedded, no data)", typeName, tex.path.c_str());
+		}
+		else
+		{
+			// 외부 텍스처
+			ImGui::BulletText("[%s] %s", typeName, tex.path.c_str());
+		}
+	}
+
+} // anonymous namespace
+
+//=============================================================================
+// Debug UI 메인
 //=============================================================================
 
 void ModelViewerApp::OnRenderDebugUI()
 {
 	// ECS Inspector
-	Framework::ECSInspector* inspector = GetECSInspector();
-	if (inspector)
+	if (Framework::ECSInspector* inspector = GetECSInspector())
 	{
 		inspector->Render(mRegistry.get());
 	}
 
-	// Asset Manager 패널
+	// 각 패널 렌더링
 	if (mShowAssetManagerPanel)
 	{
 		RenderAssetManagerPanel();
 	}
-
-	// Sphere Control 패널
 	if (mShowSphereControlPanel)
 	{
 		RenderSphereControlPanel();
 	}
-
-	// Model Info 패널
 	if (mShowModelInfoPanel)
 	{
 		RenderModelInfoPanel();
 	}
 }
 
+//=============================================================================
+// Asset Manager 패널
+//=============================================================================
+
 void ModelViewerApp::RenderAssetManagerPanel()
 {
+	using namespace Framework;
+
 	ImGui::SetNextWindowSize(ImVec2(350, 300), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin("Asset Manager (F4)", &mShowAssetManagerPanel))
+	if (!ImGui::Begin("Asset Manager (F4)", &mShowAssetManagerPanel))
 	{
-		if (!mAssetManager)
-		{
-			ImGui::TextColored(ImVec4(1, 0, 0, 1), "AssetManager not initialized");
-			ImGui::End();
-			return;
-		}
-
-		ImGui::Text("Asset Root: %s", mAssetManager->GetAssetRoot().c_str());
-		ImGui::Text("Loaded Assets: %u", mAssetManager->GetLoadedAssetCount());
-		ImGui::Separator();
-
-		if (ImGui::CollapsingHeader("Default Assets", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			auto meshId = mAssetManager->GetDefaultAssetId<Framework::MeshAsset>();
-			auto texId = mAssetManager->GetDefaultAssetId<Framework::TextureAsset>();
-			auto matId = mAssetManager->GetDefaultAssetId<Framework::MaterialAsset>();
-			auto modelId = mAssetManager->GetDefaultAssetId<Framework::ModelAsset>();
-
-			ImGui::Text("Mesh:     0x%llX", meshId.id);
-			ImGui::Text("Texture:  0x%llX", texId.id);
-			ImGui::Text("Material: 0x%llX", matId.id);
-			ImGui::Text("Model:    0x%llX", modelId.id);
-		}
-
-		if (ImGui::CollapsingHeader("Loaded Assets", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			auto infos = mAssetManager->GetLoadedAssetInfos(true);
-
-			ImGui::BeginChild("AssetList", ImVec2(0, 120), true);
-			for (const auto& info : infos)
-			{
-				const char* typeName = Framework::AssetTypeToString(info.type);
-				const char* stateName = Framework::AssetStateToString(info.state);
-
-				bool isDefault = mAssetManager->IsDefaultAsset(
-					mAssetManager->FindByPath(info.path)
-				);
-
-				if (isDefault)
-				{
-					ImGui::TextColored(ImVec4(0.5f, 0.5f, 1.0f, 1.0f),
-						"[%s] %s", typeName, info.path.c_str());
-				}
-				else
-				{
-					ImGui::Text("[%s] %s", typeName, info.path.c_str());
-				}
-
-				ImGui::SameLine();
-				ImGui::TextDisabled("(ref=%u, %s)", info.refCount, stateName);
-			}
-			ImGui::EndChild();
-		}
-
-		ImGui::Separator();
-		if (ImGui::Button("Unload Unused"))
-		{
-			Core::uint32 count = mAssetManager->UnloadUnusedAssets();
-			LOG_INFO("[ModelViewer] Unloaded %u unused assets", count);
-		}
+		ImGui::End();
+		return;
 	}
+
+	if (!mAssetManager)
+	{
+		ImGui::TextColored(UIColor::Error, "AssetManager not initialized");
+		ImGui::End();
+		return;
+	}
+
+	// 요약 정보
+	ImGui::Text("Asset Root: %s", mAssetManager->GetAssetRoot().c_str());
+	ImGui::Text("Loaded Assets: %u", mAssetManager->GetLoadedAssetCount());
+	ImGui::Separator();
+
+	// 기본 Asset ID
+	if (ImGuiBeginSection("Default Assets"))
+	{
+		ImGui::Text("Mesh:     0x%llX", mAssetManager->GetDefaultAssetId<MeshAsset>().id);
+		ImGui::Text("Texture:  0x%llX", mAssetManager->GetDefaultAssetId<TextureAsset>().id);
+		ImGui::Text("Material: 0x%llX", mAssetManager->GetDefaultAssetId<MaterialAsset>().id);
+		ImGui::Text("Model:    0x%llX", mAssetManager->GetDefaultAssetId<ModelAsset>().id);
+	}
+
+	// 로드된 Asset 목록
+	if (ImGuiBeginSection("Loaded Assets"))
+	{
+		auto infos = mAssetManager->GetLoadedAssetInfos(true);
+
+		ImGui::BeginChild("AssetList", ImVec2(0, 120), true);
+		for (const auto& info : infos)
+		{
+			const char* typeName = AssetTypeToString(info.type);
+			const char* stateName = AssetStateToString(info.state);
+			bool isDefault = mAssetManager->IsDefaultAsset(mAssetManager->FindByPath(info.path));
+
+			// 기본 Asset은 파란색
+			if (isDefault)
+			{
+				ImGui::TextColored(UIColor::Info, "[%s] %s", typeName, info.path.c_str());
+			}
+			else
+			{
+				ImGui::Text("[%s] %s", typeName, info.path.c_str());
+			}
+
+			ImGui::SameLine();
+			ImGui::TextDisabled("(ref=%u, %s)", info.refCount, stateName);
+		}
+		ImGui::EndChild();
+	}
+
+	// 유틸리티 버튼
+	ImGui::Separator();
+	if (ImGui::Button("Unload Unused"))
+	{
+		Core::uint32 count = mAssetManager->UnloadUnusedAssets();
+		LOG_INFO("[ModelViewer] Unloaded %u unused assets", count);
+	}
+
 	ImGui::End();
 }
+
+//=============================================================================
+// Sphere Control 패널
+//=============================================================================
 
 void ModelViewerApp::RenderSphereControlPanel()
 {
+	using namespace Framework;
+
 	ImGui::SetNextWindowSize(ImVec2(320, 280), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin("Sphere Comparison (F5)", &mShowSphereControlPanel))
+	if (!ImGui::Begin("Sphere Comparison (F5)", &mShowSphereControlPanel))
 	{
-		if (ImGui::CollapsingHeader("Objects", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Text("Left: Procedural Sphere");
-			ImGui::Text("Center: Loaded Sphere (%s)", mLoadedMeshValid ? "OK" : "Failed");
-			ImGui::Text("Right: DamagedHelmet (%s)", mHelmetMeshValid ? "OK" : "Failed");
-		}
-
-		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::SliderFloat("Rotation Speed", &mRotationSpeed, 0.0f, 3.0f);
-		}
-
-		if (ImGui::CollapsingHeader("Procedural Mesh", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			int segments = static_cast<int>(mSphereSegments);
-			int rings = static_cast<int>(mSphereRings);
-
-			bool changed = false;
-			changed |= ImGui::SliderInt("Segments", &segments, 8, 64);
-			changed |= ImGui::SliderInt("Rings", &rings, 4, 32);
-
-			if (changed)
-			{
-				mSphereSegments = static_cast<Core::uint32>(segments);
-				mSphereRings = static_cast<Core::uint32>(rings);
-				mNeedsMeshRebuild = true;
-			}
-		}
+		ImGui::End();
+		return;
 	}
+
+	// 오브젝트 상태
+	if (ImGuiBeginSection("Objects"))
+	{
+		ImGui::Text("Left:   Procedural Sphere");
+		ImGuiTextStatus("Center", mLoadedMeshValid, "Loaded Sphere");
+		ImGuiTextStatus("Right", mHelmetMeshValid, "DamagedHelmet");
+	}
+
+	// 회전 속도
+	if (ImGuiBeginSection("Transform"))
+	{
+		ImGui::SliderFloat("Rotation Speed", &mRotationSpeed, 0.0f, 3.0f);
+	}
+
+	// Procedural Mesh 파라미터
+	if (ImGuiBeginSection("Procedural Mesh"))
+	{
+		int segments = static_cast<int>(mSphereSegments);
+		int rings = static_cast<int>(mSphereRings);
+
+		bool changed = false;
+		changed |= ImGuiSliderIntClamped("Segments", &segments, 8, 64);
+		changed |= ImGuiSliderIntClamped("Rings", &rings, 4, 32);
+
+		if (changed)
+		{
+			mSphereSegments = static_cast<Core::uint32>(segments);
+			mSphereRings = static_cast<Core::uint32>(rings);
+			mNeedsMeshRebuild = true;
+		}
+
+		// 현재 메시 정보
+		ImGui::Separator();
+		Core::uint32 vertCount = (mSphereSegments + 1) * (mSphereRings + 1);
+		Core::uint32 triCount = mSphereSegments * mSphereRings * 2;
+		ImGui::TextDisabled("Vertices: %u, Triangles: %u", vertCount, triCount);
+	}
+
 	ImGui::End();
 }
 
+//=============================================================================
+// Model Info 패널 - 헬퍼 함수
+//=============================================================================
+
+void ModelViewerApp::RenderModelInfoPanelSummary()
+{
+	ImGui::Text("Model: %s", mHelmetModelData.name.c_str());
+	ImGui::Text(
+		"Meshes: %zu | Materials: %zu | Nodes: %zu",
+		mHelmetModelData.meshes.size(),
+		mHelmetModelData.materials.size(),
+		mHelmetModelData.nodes.size()
+	);
+	ImGui::Text(
+		"Vertices: %u | Indices: %u",
+		mHelmetModelData.GetTotalVertexCount(),
+		mHelmetModelData.GetTotalIndexCount()
+	);
+	ImGui::Text(
+		"Textures: %u (Embedded: %u)",
+		mHelmetModelData.GetTotalTextureCount(),
+		mHelmetModelData.GetEmbeddedTextureCount()
+	);
+}
+
+void ModelViewerApp::RenderModelInfoPanelAssetPipeline()
+{
+	using namespace Framework;
+
+	if (!ImGuiBeginSection("Asset Pipeline"))
+	{
+		return;
+	}
+
+	// 소스 데이터 상태
+	bool hasSourceData = mHelmetMeshAsset && mHelmetMeshAsset->HasSourceData();
+	ImGuiTextStatus("Source Data", hasSourceData, "Retained", "Released");
+
+	if (!mHelmetMeshAsset)
+	{
+		return;
+	}
+
+	// 인덱스 포맷
+	ImGui::Text(
+		"Index Format: %s",
+		mHelmetMeshAsset->CanUse16BitIndices() ? "16-bit" : "32-bit"
+	);
+
+	// Bounding 정보
+	ImGuiTextVector3("AABB Min", mHelmetMeshAsset->GetAABBMin());
+	ImGuiTextVector3("AABB Max", mHelmetMeshAsset->GetAABBMax());
+	ImGui::Text("Bounding Sphere: R=%.2f", mHelmetMeshAsset->GetBoundingSphereRadius());
+}
+
+void ModelViewerApp::RenderModelInfoPanelMaterials()
+{
+	using namespace Framework;
+
+	if (!ImGuiBeginSection("Materials"))
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < mHelmetModelData.materials.size(); ++i)
+	{
+		const auto& mat = mHelmetModelData.materials[i];
+		ImGui::PushID(static_cast<int>(i));
+
+		if (ImGui::TreeNode("MaterialNode", "Material %zu: %s", i, mat.name.c_str()))
+		{
+			// PBR 파라미터
+			ImGuiTextVector4("Base Color", mat.baseColorFactor);
+			ImGui::Text("Metallic: %.2f | Roughness: %.2f", mat.metallicFactor, mat.roughnessFactor);
+			ImGuiTextVector3("Emissive", mat.emissiveFactor);
+
+			// 텍스처 목록
+			if (!mat.textures.empty())
+			{
+				ImGui::Separator();
+				ImGui::Text("Textures (%zu):", mat.textures.size());
+				ImGui::Indent();
+				for (const auto& tex : mat.textures)
+				{
+					TextTextureStatus(tex);
+				}
+				ImGui::Unindent();
+			}
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopID();
+	}
+}
+
+void ModelViewerApp::RenderModelInfoPanelMeshes()
+{
+	using namespace Framework;
+
+	if (!ImGuiBeginSection("Meshes", false))  // 기본 접힘
+	{
+		return;
+	}
+
+	// 첫 번째 메시 (MeshAsset에서 정보 - 데이터가 move됨)
+	if (mHelmetMeshAsset && !mHelmetModelData.meshes.empty())
+	{
+		ImGui::Text(
+			"Mesh 0: %s (%u verts, %u indices)",
+			mHelmetModelData.meshes[0].name.c_str(),
+			mHelmetMeshAsset->GetVertexCount(),
+			mHelmetMeshAsset->GetIndexCount()
+		);
+	}
+
+	// 나머지 메시
+	for (size_t i = 1; i < mHelmetModelData.meshes.size(); ++i)
+	{
+		const auto& mesh = mHelmetModelData.meshes[i];
+		ImGui::Text(
+			"Mesh %zu: %s (%zu verts, %zu indices)",
+			i,
+			mesh.name.c_str(),
+			mesh.vertices.size(),
+			mesh.indices.size()
+		);
+	}
+}
+
+//=============================================================================
+// Model Info 패널 - 메인
+//=============================================================================
+
 void ModelViewerApp::RenderModelInfoPanel()
 {
-	ImGui::SetNextWindowSize(ImVec2(400, 400), ImGuiCond_FirstUseEver);
+	using namespace Framework;
 
-	if (ImGui::Begin("Model Info (F6)", &mShowModelInfoPanel))
+	ImGui::SetNextWindowSize(ImVec2(400, 450), ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("Model Info (F6)", &mShowModelInfoPanel))
 	{
-		if (!mHelmetMeshValid)
-		{
-			ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "DamagedHelmet not loaded");
-			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1),
-				"Place DamagedHelmet.glb in Assets/Models/");
-			ImGui::End();
-			return;
-		}
-
-		// 모델 요약
-		ImGui::Text("Model: %s", mHelmetModelData.name.c_str());
-		ImGui::Text("Meshes: %zu", mHelmetModelData.meshes.size());
-		ImGui::Text("Materials: %zu", mHelmetModelData.materials.size());
-		ImGui::Text("Nodes: %zu", mHelmetModelData.nodes.size());
-		ImGui::Text("Total Vertices: %u", mHelmetModelData.GetTotalVertexCount());
-		ImGui::Text("Total Indices: %u", mHelmetModelData.GetTotalIndexCount());
-		ImGui::Text("Total Textures: %u", mHelmetModelData.GetTotalTextureCount());
-		ImGui::Separator();
-
-		// Asset Pipeline 정보
-		if (ImGui::CollapsingHeader("Asset Pipeline", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Text("MeshAsset Source Data: %s",
-				mHelmetMeshAsset && mHelmetMeshAsset->HasSourceData() ? "Retained" : "Released");
-
-			if (mHelmetMeshAsset)
-			{
-				ImGui::Text("Index Format: %s",
-					mHelmetMeshAsset->CanUse16BitIndices() ? "16-bit" : "32-bit");
-
-				// Bounding Box 정보
-				const auto& aabbMin = mHelmetMeshAsset->GetAABBMin();
-				const auto& aabbMax = mHelmetMeshAsset->GetAABBMax();
-				ImGui::Text("AABB Min: (%.2f, %.2f, %.2f)", aabbMin.x, aabbMin.y, aabbMin.z);
-				ImGui::Text("AABB Max: (%.2f, %.2f, %.2f)", aabbMax.x, aabbMax.y, aabbMax.z);
-				ImGui::Text("Bounding Sphere R: %.2f", mHelmetMeshAsset->GetBoundingSphereRadius());
-			}
-		}
-
-		// 머티리얼 목록
-		if (ImGui::CollapsingHeader("Materials", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			for (size_t i = 0; i < mHelmetModelData.materials.size(); ++i)
-			{
-				const auto& mat = mHelmetModelData.materials[i];
-
-				if (ImGui::TreeNode(reinterpret_cast<void*>(i), "Material %zu: %s", i, mat.name.c_str()))
-				{
-					// PBR 값
-					ImGui::Text(
-						"Base Color: (%.2f, %.2f, %.2f, %.2f)",
-						mat.baseColorFactor.x,
-						mat.baseColorFactor.y,
-						mat.baseColorFactor.z,
-						mat.baseColorFactor.w
-					);
-					ImGui::Text("Metallic: %.2f", mat.metallicFactor);
-					ImGui::Text("Roughness: %.2f", mat.roughnessFactor);
-					ImGui::Text(
-						"Emissive: (%.2f, %.2f, %.2f)",
-						mat.emissiveFactor.x,
-						mat.emissiveFactor.y,
-						mat.emissiveFactor.z
-					);
-
-					// 텍스처 목록
-					if (!mat.textures.empty())
-					{
-						ImGui::Separator();
-						ImGui::Text("Textures (%zu):", mat.textures.size());
-						for (const auto& tex : mat.textures)
-						{
-							const char* typeName = Graphics::TextureTypeToString(tex.type);
-							ImGui::BulletText("[%s] %s", typeName, tex.path.c_str());
-						}
-					}
-
-					ImGui::TreePop();
-				}
-			}
-		}
-
-		// 메시 목록
-		if (ImGui::CollapsingHeader("Meshes"))
-		{
-			// 첫 번째 메시는 MeshAsset에서 정보 가져오기 (데이터가 move됨)
-			if (mHelmetMeshAsset)
-			{
-				ImGui::Text("Mesh 0: %s (%u verts, %u indices)",
-					mHelmetModelData.meshes[0].name.c_str(),
-					mHelmetMeshAsset->GetVertexCount(),
-					mHelmetMeshAsset->GetIndexCount());
-			}
-
-			// 나머지 메시 (있다면)
-			for (size_t i = 1; i < mHelmetModelData.meshes.size(); ++i)
-			{
-				const auto& mesh = mHelmetModelData.meshes[i];
-				ImGui::Text("Mesh %zu: %s (%zu verts, %zu indices)",
-					i, mesh.name.c_str(),
-					mesh.vertices.size(), mesh.indices.size());
-			}
-		}
+		ImGui::End();
+		return;
 	}
+
+	// 모델 로드 실패 시
+	if (!mHelmetMeshValid)
+	{
+		ImGui::TextColored(UIColor::Error, "DamagedHelmet not loaded");
+		ImGui::TextColored(UIColor::Disabled, "Place DamagedHelmet.glb in Assets/Models/");
+		ImGui::End();
+		return;
+	}
+
+	// 각 섹션 렌더링
+	RenderModelInfoPanelSummary();
+	ImGui::Separator();
+	RenderModelInfoPanelAssetPipeline();
+	RenderModelInfoPanelMaterials();
+	RenderModelInfoPanelMeshes();
+
 	ImGui::End();
 }

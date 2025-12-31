@@ -21,12 +21,50 @@ namespace Framework
 		, mRenderer(renderer)
 	{
 		LOG_INFO("ResourceManager initialized");
+
+		// 폴백 텍스처 생성 (1x1 Magenta)
+		CreateFallbackTexture();
 	}
 
 	ResourceManager::~ResourceManager()
 	{
 		Clear();
 		LOG_INFO("ResourceManager destroyed");
+	}
+
+	//=========================================================================
+	// 폴백 텍스처 생성
+	//=========================================================================
+
+	void ResourceManager::CreateFallbackTexture()
+	{
+		// 1x1 Magenta 픽셀 (RGBA)
+		const Core::uint8 magentaPixel[4] = { 255, 0, 255, 255 };
+
+		auto texture = std::make_shared<Graphics::Texture>();
+
+		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
+
+		if (!texture->CreateFromMemory(
+			mDevice->GetDevice(),
+			mDevice->GetCommandQueue(),
+			mDevice->GetCommandContext(frameIndex),
+			magentaPixel,
+			1, 1,
+			DXGI_FORMAT_R8G8B8A8_UNORM
+		))
+		{
+			LOG_ERROR("[ResourceManager] Failed to create fallback texture");
+			return;
+		}
+
+		// 특별한 경로로 해시 생성 (일반 파일과 충돌 방지)
+		mFallbackTextureId.id = Core::Hash64("__fallback_magenta__");
+		mTextures[mFallbackTextureId] = texture;
+		mTexturePaths[mFallbackTextureId] = "__fallback_magenta__";
+
+		LOG_INFO("[ResourceManager] Fallback texture created (1x1 Magenta, ID: 0x%llX)",
+			mFallbackTextureId.id);
 	}
 
 	//=========================================================================
@@ -115,8 +153,6 @@ namespace Framework
 				indices16.data(),
 				static_cast<Core::uint32>(indices16.size())
 			);
-
-			LOG_DEBUG("[ResourceManager] Using 16-bit indices for mesh '%s'", name.c_str());
 		}
 		else
 		{
@@ -130,35 +166,29 @@ namespace Framework
 				indices.data(),
 				static_cast<Core::uint32>(indices.size())
 			);
-
-			LOG_DEBUG(
-				"[ResourceManager] Using 32-bit indices for mesh '%s' (%u vertices)",
-				name.c_str(),
-				meshAsset->GetVertexCount()
-			);
 		}
 
 		if (!success)
 		{
-			LOG_ERROR("[ResourceManager] Failed to initialize mesh '%s'", name.c_str());
+			LOG_ERROR("[ResourceManager] Failed to initialize mesh from asset: %s", name.c_str());
 			return ResourceId::Invalid();
 		}
 
-		// 저장
-		mMeshes[id] = mesh;
-		mMeshNames[id] = name;
-
-		// 데이터 정책에 따라 CPU 데이터 해제
+		// MeshDataPolicy에 따라 CPU 데이터 해제
 		if (meshAsset->GetDataPolicy() == MeshDataPolicy::ReleaseAfterUpload)
 		{
 			meshAsset->ReleaseSourceData();
+			LOG_DEBUG("[ResourceManager] Released CPU mesh data after GPU upload");
 		}
 
+		mMeshes[id] = mesh;
+		mMeshNames[id] = name;
+
 		LOG_INFO(
-			"[ResourceManager] Created mesh from asset: %s (V:%u, I:%u, %s indices, ID: 0x%llX)",
+			"[ResourceManager] Created mesh from asset: %s (V:%u, I:%u, %s, ID: 0x%llX)",
 			name.c_str(),
-			meshAsset->GetVertexCount(),
-			meshAsset->GetIndexCount(),
+			static_cast<Core::uint32>(vertices.size()),
+			static_cast<Core::uint32>(indices.size()),
 			use16BitIndices ? "16-bit" : "32-bit",
 			id.id
 		);
@@ -315,6 +345,111 @@ namespace Framework
 		return LoadTexture(Core::WStringToUTF8(path));
 	}
 
+	ResourceId ResourceManager::LoadTextureFromMemory(
+		const std::string& name,
+		const void* data,
+		Core::uint32 dataSize
+	)
+	{
+		if (!data || dataSize == 0)
+		{
+			LOG_ERROR("[ResourceManager] LoadTextureFromMemory: Invalid data");
+			return ResourceId::Invalid();
+		}
+
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
+		// 이미 존재하는지 확인
+		auto it = mTextures.find(id);
+		if (it != mTextures.end())
+		{
+			LOG_DEBUG("[ResourceManager] Texture already loaded: %s (ID: 0x%llX)", name.c_str(), id.id);
+			return id;
+		}
+
+		auto texture = std::make_shared<Graphics::Texture>();
+		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
+
+		if (!texture->LoadFromMemory(
+			mDevice->GetDevice(),
+			mDevice->GetCommandQueue(),
+			mDevice->GetCommandContext(frameIndex),
+			data,
+			dataSize
+		))
+		{
+			LOG_ERROR("[ResourceManager] Failed to load texture from memory: %s", name.c_str());
+			return ResourceId::Invalid();
+		}
+
+		mTextures[id] = texture;
+		mTexturePaths[id] = name;
+
+		LOG_DEBUG(
+			"[ResourceManager] Loaded texture from memory: %s (ID: 0x%llX, %u bytes)",
+			name.c_str(),
+			id.id,
+			dataSize
+		);
+		return id;
+	}
+
+	ResourceId ResourceManager::CreateTextureFromMemory(
+		const std::string& name,
+		const void* data,
+		Core::uint32 width,
+		Core::uint32 height,
+		DXGI_FORMAT format
+	)
+	{
+		if (!data || width == 0 || height == 0)
+		{
+			LOG_ERROR("[ResourceManager] CreateTextureFromMemory: Invalid parameters");
+			return ResourceId::Invalid();
+		}
+
+		ResourceId id;
+		id.id = Core::Hash64(name);
+
+		// 이미 존재하는지 확인
+		auto it = mTextures.find(id);
+		if (it != mTextures.end())
+		{
+			LOG_DEBUG("[ResourceManager] Texture already exists: %s (ID: 0x%llX)", name.c_str(), id.id);
+			return id;
+		}
+
+		auto texture = std::make_shared<Graphics::Texture>();
+		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
+
+		if (!texture->CreateFromMemory(
+			mDevice->GetDevice(),
+			mDevice->GetCommandQueue(),
+			mDevice->GetCommandContext(frameIndex),
+			data,
+			width,
+			height,
+			format
+		))
+		{
+			LOG_ERROR("[ResourceManager] Failed to create texture from memory: %s", name.c_str());
+			return ResourceId::Invalid();
+		}
+
+		mTextures[id] = texture;
+		mTexturePaths[id] = name;
+
+		LOG_DEBUG(
+			"[ResourceManager] Created texture from memory: %s (ID: 0x%llX, %ux%u)",
+			name.c_str(),
+			id.id,
+			width,
+			height
+		);
+		return id;
+	}
+
 	Graphics::Texture* ResourceManager::GetTexture(ResourceId id)
 	{
 		auto it = mTextures.find(id);
@@ -339,6 +474,13 @@ namespace Framework
 
 	bool ResourceManager::RemoveTexture(ResourceId id)
 	{
+		// 폴백 텍스처는 제거 불가
+		if (id.id == mFallbackTextureId.id)
+		{
+			LOG_WARN("[ResourceManager] Cannot remove fallback texture");
+			return false;
+		}
+
 		auto it = mTextures.find(id);
 		if (it != mTextures.end())
 		{
@@ -417,6 +559,9 @@ namespace Framework
 		}
 		mTextures.clear();
 		mTexturePaths.clear();
+
+		// 폴백 텍스처 ID도 초기화
+		mFallbackTextureId = ResourceId::Invalid();
 
 		LOG_INFO("All resources cleared");
 	}

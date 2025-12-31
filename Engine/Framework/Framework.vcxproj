@@ -271,6 +271,7 @@
     <ClInclude Include="..\include\Framework\Assets\TextureAsset.h" />
     <ClInclude Include="..\include\Framework\DebugUI\DebugVisualizationPanel.h" />
     <ClInclude Include="..\include\Framework\DebugUI\ECSInspector.h" />
+    <ClInclude Include="..\include\Framework\DebugUI\ImGuiHelper.h" />
     <ClInclude Include="..\include\Framework\DebugUI\ImGuiManager.h" />
     <ClInclude Include="..\include\Framework\DebugUI\PerformancePanel.h" />
     <ClInclude Include="..\include\Framework\Resources\ResourceId.h" />

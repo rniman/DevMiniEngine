@@ -6,6 +6,7 @@
  * 메시, 머티리얼, 텍스처, 계층 구조 정보를 추출합니다.
  *
  * @note Phase 4.2: Model Loading
+ * @note Phase 4.2+: 임베디드 텍스처 지원
  */
 #pragma once
 #include "Framework/Assets/MeshAsset.h"
@@ -28,11 +29,39 @@ namespace Framework
 
 	/**
 	 * @brief 로드된 텍스처 정보
+	 *
+	 * 외부 텍스처와 임베디드 텍스처(glb) 모두 지원합니다.
+	 *
+	 * 외부 텍스처: path에 파일 경로, isEmbedded = false
+	 * 임베디드 텍스처: path에 "*0" 형식, embeddedData에 바이너리 데이터
 	 */
 	struct LoadedTextureInfo
 	{
-		std::string path;                                      // 텍스처 파일 경로 (상대 경로)
-		Graphics::TextureType type = Graphics::TextureType::Albedo;  // 텍스처 용도
+		std::string path;                                           // 파일 경로 또는 "*index" 형식
+		Graphics::TextureType type = Graphics::TextureType::Albedo; // 텍스처 용도
+
+		// 임베디드 텍스처 데이터 (Phase 4.2+)
+		std::vector<Core::uint8> embeddedData;  // PNG/JPG 바이너리 또는 RGBA 원시 데이터
+		Core::uint32 width = 0;                 // 원시 데이터(비압축)일 때 너비
+		Core::uint32 height = 0;                // 원시 데이터(비압축)일 때 높이
+		bool isEmbedded = false;                // 임베디드 텍스처 여부
+		bool isCompressed = true;               // true: PNG/JPG 압축, false: RGBA 원시
+
+		/** @brief 임베디드 데이터 존재 여부 */
+		bool HasEmbeddedData() const { return isEmbedded && !embeddedData.empty(); }
+
+		/** @brief 데이터 클리어 */
+		void Clear()
+		{
+			path.clear();
+			type = Graphics::TextureType::Albedo;
+			embeddedData.clear();
+			embeddedData.shrink_to_fit();
+			width = 0;
+			height = 0;
+			isEmbedded = false;
+			isCompressed = true;
+		}
 	};
 
 	//=========================================================================
@@ -69,16 +98,40 @@ namespace Framework
 		}
 
 		// 특정 타입 텍스처 경로 반환
-		const std::string* GetTexturePath(Graphics::TextureType type) const
+		const std::string& GetTexturePath(Graphics::TextureType type) const
+		{
+			static const std::string empty;
+			for (const auto& tex : textures)
+			{
+				if (tex.type == type)
+				{
+					return tex.path;
+				}
+			}
+			return empty;
+		}
+
+		// 특정 타입 텍스처 정보 반환 (임베디드 데이터 접근용)
+		const LoadedTextureInfo* GetTextureInfo(Graphics::TextureType type) const
 		{
 			for (const auto& tex : textures)
 			{
 				if (tex.type == type)
 				{
-					return &tex.path;
+					return &tex;
 				}
 			}
 			return nullptr;
+		}
+
+		void Clear()
+		{
+			name.clear();
+			baseColorFactor = { 1.0f, 1.0f, 1.0f, 1.0f };
+			metallicFactor = 0.0f;
+			roughnessFactor = 1.0f;
+			emissiveFactor = { 0.0f, 0.0f, 0.0f };
+			textures.clear();
 		}
 	};
 
@@ -87,20 +140,22 @@ namespace Framework
 	//=========================================================================
 
 	/**
-	 * @brief 로드된 메시 데이터 (CPU 측)
+	 * @brief 로드된 메시 데이터
 	 *
-	 * @note SubmeshInfo는 MeshAsset.h에 정의됨 (단일 정의 원칙)
+	 * MeshAsset과 동일한 구조로, 직접 이동 가능합니다.
 	 */
 	struct LoadedMeshData
 	{
 		std::string name;
+
 		std::vector<Graphics::StandardVertex> vertices;
 		std::vector<Core::uint32> indices;
-		std::vector<SubmeshInfo> submeshes;  // MeshAsset.h의 SubmeshInfo 사용
+		std::vector<SubmeshInfo> submeshes;
 
-		// 바운딩 정보
-		Math::Vector3 aabbMin = Math::Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
-		Math::Vector3 aabbMax = Math::Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		Math::Vector3 aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+		Math::Vector3 aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+		Core::int32 materialIndex = -1;
 
 		void Clear()
 		{
@@ -108,38 +163,46 @@ namespace Framework
 			vertices.clear();
 			indices.clear();
 			submeshes.clear();
-			aabbMin = Math::Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
-			aabbMax = Math::Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+			aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+			aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			materialIndex = -1;
 		}
-
-		bool IsEmpty() const { return vertices.empty(); }
 	};
 
 	//=========================================================================
-	// 노드 정보
+	// 노드 정보 (계층 구조)
 	//=========================================================================
 
 	/**
-	 * @brief 노드 정보 (계층 구조용)
+	 * @brief 모델 노드 정보
 	 */
 	struct LoadedNodeInfo
 	{
 		std::string name;
 		Math::Matrix4x4 localTransform;
-		Core::int32 parentIndex = -1;     // -1이면 루트
-		Core::int32 meshIndex = -1;       // -1이면 메시 없음
+		Core::int32 parentIndex = -1;
+		std::vector<Core::uint32> meshIndices;
+
+		void Clear()
+		{
+			name.clear();
+			localTransform = Math::Matrix4x4::Identity();
+			parentIndex = -1;
+			meshIndices.clear();
+		}
 	};
 
 	//=========================================================================
-	// 모델 데이터 (전체)
+	// 전체 모델 데이터
 	//=========================================================================
 
 	/**
-	 * @brief 로드된 모델 데이터 (전체)
+	 * @brief 로드된 모델 전체 데이터
 	 */
 	struct LoadedModelData
 	{
 		std::string name;
+
 		std::vector<LoadedMeshData> meshes;
 		std::vector<LoadedMaterialData> materials;
 		std::vector<LoadedNodeInfo> nodes;
@@ -152,9 +215,6 @@ namespace Framework
 			nodes.clear();
 		}
 
-		bool IsEmpty() const { return meshes.empty(); }
-
-		// 통계
 		Core::uint32 GetTotalVertexCount() const
 		{
 			Core::uint32 count = 0;
@@ -184,6 +244,22 @@ namespace Framework
 			}
 			return count;
 		}
+
+		Core::uint32 GetEmbeddedTextureCount() const
+		{
+			Core::uint32 count = 0;
+			for (const auto& mat : materials)
+			{
+				for (const auto& tex : mat.textures)
+				{
+					if (tex.isEmbedded)
+					{
+						++count;
+					}
+				}
+			}
+			return count;
+		}
 	};
 
 	//=========================================================================
@@ -193,51 +269,32 @@ namespace Framework
 	/**
 	 * @brief Assimp 기반 모델 로더
 	 *
-	 * glTF 2.0 파일을 로드하여 엔진에서 사용 가능한 형태로 변환합니다.
-	 * Tangent는 MikkTSpace로 계산합니다.
-	 *
-	 * @example
-	 * // 단일 메시 로드
-	 * LoadedMeshData meshData;
-	 * if (ModelLoader::LoadMesh("Assets/Models/Box.glb", meshData))
-	 * {
-	 *     // meshData.vertices, meshData.indices 사용
-	 * }
-	 *
-	 * @example
-	 * // 전체 모델 로드 (메시 + 머티리얼 + 텍스처 경로)
-	 * LoadedModelData modelData;
-	 * if (ModelLoader::LoadModel("Assets/Models/Helmet.glb", modelData))
-	 * {
-	 *     // modelData.meshes, modelData.materials 사용
-	 * }
+	 * 정적 함수만 제공하는 유틸리티 클래스입니다.
 	 */
 	class ModelLoader
 	{
 	public:
+		ModelLoader() = delete;
+
 		/**
 		 * @brief 단일 메시 로드 (첫 번째 메시만)
 		 *
-		 * 간단한 모델 로딩에 사용합니다.
-		 * 머티리얼/텍스처 정보는 포함되지 않습니다.
-		 *
 		 * @param filePath 모델 파일 경로
-		 * @param outMeshData 출력 메시 데이터
+		 * @param outMeshData 출력: 메시 데이터
 		 * @return 성공 여부
 		 */
 		static bool LoadMesh(const std::string& filePath, LoadedMeshData& outMeshData);
 
 		/**
-		 * @brief 전체 모델 로드 (모든 메시 + 머티리얼 + 텍스처 경로 + 계층 구조)
+		 * @brief 전체 모델 로드 (메시, 머티리얼, 노드 포함)
 		 *
 		 * @param filePath 모델 파일 경로
-		 * @param outModelData 출력 모델 데이터
+		 * @param outModelData 출력: 모델 데이터
 		 * @return 성공 여부
+		 *
+		 * @note glb 파일의 임베디드 텍스처도 자동으로 추출됩니다
 		 */
 		static bool LoadModel(const std::string& filePath, LoadedModelData& outModelData);
-
-	private:
-		ModelLoader() = delete;
 	};
 
 } // namespace Framework

@@ -5,10 +5,13 @@
  * 64비트 해시 기반 ResourceId 사용
  * Asset과 GPU Resource를 연결하는 역할
  *
- * @note Phase 4.2: CreateMeshFromAsset 추가
+ * @note Phase 4.2: CreateMeshFromAsset, 폴백 텍스처 추가
+ * @note Phase 4.2+: 임베디드 텍스처 로드 지원
  */
 #pragma once
 #include "Framework/Resources/ResourceId.h"
+#include "Core/Types.h"
+#include <dxgiformat.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -101,9 +104,61 @@ namespace Framework
 		ResourceId LoadTexture(const std::string& path);
 		ResourceId LoadTextureW(const std::wstring& path);
 
+		/**
+		 * @brief 메모리에서 Texture 로드 (압축 포맷: PNG, JPG 등)
+		 *
+		 * glb 파일의 임베디드 텍스처 로딩에 사용됩니다.
+		 *
+		 * @param name 텍스처 이름 (ResourceId 생성용, 예: "Model_*0")
+		 * @param data 압축된 이미지 데이터
+		 * @param dataSize 데이터 크기 (바이트)
+		 * @return 64비트 해시 기반 ResourceId (실패 시 Invalid)
+		 */
+		ResourceId LoadTextureFromMemory(
+			const std::string& name,
+			const void* data,
+			Core::uint32 dataSize
+		);
+
+		/**
+		 * @brief 원시 픽셀 데이터에서 Texture 생성
+		 *
+		 * RGBA 원시 데이터로부터 텍스처를 생성합니다.
+		 *
+		 * @param name 텍스처 이름 (ResourceId 생성용)
+		 * @param data RGBA 픽셀 데이터
+		 * @param width 텍스처 너비
+		 * @param height 텍스처 높이
+		 * @param format 픽셀 포맷 (기본: DXGI_FORMAT_R8G8B8A8_UNORM)
+		 * @return 64비트 해시 기반 ResourceId (실패 시 Invalid)
+		 */
+		ResourceId CreateTextureFromMemory(
+			const std::string& name,
+			const void* data,
+			Core::uint32 width,
+			Core::uint32 height,
+			DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM
+		);
+
 		Graphics::Texture* GetTexture(ResourceId id);
 		const Graphics::Texture* GetTexture(ResourceId id) const;
 		bool RemoveTexture(ResourceId id);
+
+		/**
+		 * @brief 폴백 텍스처 ID 반환
+		 *
+		 * 텍스처 로드 실패 시 사용할 1x1 Magenta 텍스처입니다.
+		 * 누락된 텍스처를 시각적으로 식별하는 데 유용합니다.
+		 *
+		 * @return 폴백 텍스처의 ResourceId
+		 * @note 생성자에서 자동으로 생성됩니다
+		 */
+		ResourceId GetFallbackTexture() const { return mFallbackTextureId; }
+
+		/**
+		 * @brief 폴백 텍스처 존재 여부 확인
+		 */
+		bool HasFallbackTexture() const { return mFallbackTextureId.IsValid(); }
 
 		//=====================================================================
 		// 검색 & 유틸리티
@@ -123,6 +178,14 @@ namespace Framework
 		Graphics::DX12Renderer* GetRenderer() const { return mRenderer; }
 
 	private:
+		/**
+		 * @brief 폴백 텍스처 생성 (1x1 Magenta)
+		 *
+		 * 생성자에서 호출되어 텍스처 로드 실패 시 사용할
+		 * 기본 텍스처를 미리 생성합니다.
+		 */
+		void CreateFallbackTexture();
+
 		Graphics::DX12Device* mDevice;
 		Graphics::DX12Renderer* mRenderer;
 
@@ -137,6 +200,9 @@ namespace Framework
 		// Texture
 		std::unordered_map<ResourceId, std::shared_ptr<Graphics::Texture>> mTextures;
 		std::unordered_map<ResourceId, std::string> mTexturePaths;
+
+		// 폴백 텍스처 (1x1 Magenta)
+		ResourceId mFallbackTextureId;
 	};
 
 } // namespace Framework
