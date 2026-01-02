@@ -24,6 +24,131 @@
 
 ---
 
+## 2026-01-02 - Phase 4.3.1: sRGB/Linear 색공간 처리
+
+### Overview
+
+텍스처 로딩 시 용도(TextureType)에 따라 sRGB/Linear 색공간을 자동으로 처리하는 기능 구현. 물리 기반 렌더링(PBR)의 기초가 되는 올바른 색공간 파이프라인 확립.
+
+### Tasks
+
+- [x] TextureType.h에 `IsSRGBTexture()` 헬퍼 함수 추가
+- [x] Texture 클래스 WICTextureLoaderEx API 적용
+- [x] Texture 클래스 `mIsSRGB` 멤버 및 Getter 추가
+- [x] ResourceManager TextureType 필수 오버로드 구현
+- [x] ModelViewerApp 호출부 TextureType 명시
+- [x] 기존 TextureType 미지정 API 삭제 (강제화)
+
+### Decisions
+
+**색공간 분류 기준**
+- sRGB (감마 보정 필요): Albedo, Emissive
+- Linear (데이터 텍스처): Normal, Roughness, Metallic, AmbientOcclusion, Specular
+
+```cpp
+inline constexpr bool IsSRGBTexture(TextureType type)
+{
+    switch (type)
+    {
+    case TextureType::Albedo:
+    case TextureType::Emissive:
+        return true;
+    default:
+        return false;
+    }
+}
+```
+
+**WIC Loader 플래그 전략**
+- sRGB 텍스처: `WIC_LOADER_FORCE_SRGB` → GPU가 샘플링 시 자동 Linear 변환
+- Linear 텍스처: `WIC_LOADER_IGNORE_SRGB` → 변환 없이 원본 데이터 유지
+
+**API 강제화 결정**
+- TextureType 미지정 API 완전 삭제 (권장→강제)
+- 이유: 개인 프로젝트, 호출부 이미 수정 완료, 색공간 실수 원천 차단
+- 삭제 대상:
+  - `LoadTexture(path)` → `LoadTexture(path, TextureType)`
+  - `LoadTextureW(path)` → `LoadTextureW(path, TextureType)`
+  - `LoadTextureFromMemory(name, data, size)` → `LoadTextureFromMemory(name, data, size, TextureType)`
+  - `CreateTextureFromMemory(name, data, w, h, DXGI_FORMAT)` → `CreateTextureFromMemory(name, data, w, h, TextureType)`
+
+**출력 감마 보정 방식**
+- 현재: `pow(finalColor, 1/2.2)` 유지 (임시)
+- 이유: sRGB RTV 적용 시 ImGui/DebugRenderer 전체 수정 필요
+- 계획: Phase 5.1 HDR Pipeline에서 톤매핑과 함께 처리
+
+### Issues Encountered
+
+**DDS 파일의 sRGB 처리**
+- 문제: DDS는 별도 sRGB 플래그 필요 없음
+- 이유: DDS 메타데이터에 포맷 정보 포함 (BC7_UNORM_SRGB 등)
+- 해결: DDSTextureLoader가 포맷에서 자동 감지, LoadFromDDS에서 mIsSRGB 설정
+
+**RGBA 원시 데이터 색공간**
+- 문제: `CreateTextureFromMemory`는 DXGI_FORMAT만 받아 색공간 불명확
+- 해결: TextureType 오버로드 추가, 내부에서 포맷 자동 결정
+  - Albedo → `DXGI_FORMAT_R8G8B8A8_UNORM_SRGB`
+  - Normal → `DXGI_FORMAT_R8G8B8A8_UNORM`
+
+**폴백 텍스처 예외 처리**
+- 문제: 폴백 텍스처는 TextureType 없이 생성
+- 해결: `Texture::CreateFromMemory(..DXGI_FORMAT)` 유지 (내부용)
+- ResourceManager에서 직접 호출하므로 public API 영향 없음
+
+### Files Modified
+
+| 파일 | 변경 내용 |
+|------|----------|
+| TextureType.h | `IsSRGBTexture()` 헬퍼 함수 추가 |
+| Texture.h | TextureType 파라미터 오버로드, `mIsSRGB` 멤버, `IsSRGB()` Getter |
+| Texture.cpp | `LoadWICTextureFromFileEx`, `LoadWICTextureFromMemoryEx` 적용, sRGB 플래그 처리 |
+| ResourceManager.h | TextureType 필수 오버로드만 유지, 기존 API 삭제 |
+| ResourceManager.cpp | 오버로드 구현, DXGI_FORMAT 버전 통합, 로그에 sRGB 정보 포함 |
+| ModelViewerApp.cpp | `SetupSharedMaterial()`, `SetupHelmetMaterial()` TextureType 명시 |
+
+### Results
+
+**로그 출력 확인**
+```
+[Texture] Loading WIC texture: BaseColor.png (Type: Albedo, sRGB: Yes)
+[Texture] WIC texture loaded (1024x1024, Format: 91, sRGB: Yes)
+[ResourceManager] Loaded texture: BaseColor.png (Type: Albedo, sRGB: Yes)
+
+[Texture] Loading WIC texture: Normal.png (Type: Normal, sRGB: No)
+[Texture] WIC texture loaded (1024x1024, Format: 87, sRGB: No)
+[ResourceManager] Loaded texture: Normal.png (Type: Normal, sRGB: No)
+```
+
+**DXGI_FORMAT 확인**
+- Format 87: `DXGI_FORMAT_B8G8R8A8_UNORM` (Linear)
+- Format 91: `DXGI_FORMAT_B8G8R8A8_UNORM_SRGB` (sRGB)
+
+**색공간 파이프라인**
+```
+[입력]                      [처리]                     [출력]
+sRGB 텍스처 ──→ GPU Linear 변환 ──→ 조명 계산 ──→ pow(1/2.2) ──→ 모니터
+      ↑         (SRV 자동)                         ↑
+  Phase 4.3.1                                 Phase 5.1에서
+  WIC_LOADER_FORCE_SRGB                      HDR + 톤매핑으로 대체
+```
+
+### Notes
+
+- WICTextureLoader Extended 함수: `LoadWICTextureFromFileEx`, `LoadWICTextureFromMemoryEx`
+- DDS 파일은 이미 색공간 정보 포함하므로 TextureType 불필요
+- 폴백 텍스처(1x1 Magenta)는 UNORM으로 생성 (sRGB 불필요)
+- `pow(1/2.2)`는 근사치, 정확한 sRGB 변환은 하드웨어(sRGB RTV) 사용 권장
+
+### Next Steps
+
+- [ ] Phase 4.3.2: TextureAsset 메타데이터 확장 (선택적)
+- [ ] Phase 4.3.3: ImGui 텍스처 정보 표시 (선택적)
+- [ ] Phase 4.3.4: texconv 활용 가이드 문서 (선택적)
+- [ ] Phase 4.4: Descriptor 관리 고도화
+- [ ] Phase 5.1: HDR Pipeline 구축 (pow 제거, 톤매핑)
+
+---
+
 ## 2025-12-31 - Phase 4.2: Model Loading (Step 4~5 완료)
 
 ### Tasks
