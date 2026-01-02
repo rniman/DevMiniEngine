@@ -454,7 +454,7 @@ void ModelViewerApp::SetupSharedMaterial()
 	}
 
 	// Albedo 텍스처 로드
-	auto albedoTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_BaseColor.png");
+	auto albedoTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_BaseColor.png", Graphics::TextureType::Albedo);
 	if (albedoTexId.IsValid())
 	{
 		material->SetTexture(Graphics::TextureType::Albedo, albedoTexId);
@@ -466,7 +466,7 @@ void ModelViewerApp::SetupSharedMaterial()
 	}
 
 	// Normal 텍스처 로드
-	auto normalTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_Normal.png");
+	auto normalTexId = mResourceManager->LoadTexture("../../Assets/Textures/BrickWall17_1K_Normal.png", Graphics::TextureType::Normal);
 	if (normalTexId.IsValid())
 	{
 		material->SetTexture(Graphics::TextureType::Normal, normalTexId);
@@ -533,9 +533,11 @@ void ModelViewerApp::SetupHelmetMesh()
 
 	mHelmetMeshValid = true;
 
-	LOG_INFO("[Mesh] Loaded helmet mesh via Asset Pipeline (V:%u, I:%u)",
+	LOG_INFO(
+		"[Mesh] Loaded helmet mesh via Asset Pipeline (V:%u, I:%u)",
 		mHelmetMeshAsset->GetVertexCount(),
-		mHelmetMeshAsset->GetIndexCount());
+		mHelmetMeshAsset->GetIndexCount()
+	);
 
 	// 머티리얼 정보 로그
 	for (size_t i = 0; i < mHelmetModelData.materials.size(); ++i)
@@ -597,7 +599,6 @@ void ModelViewerApp::SetupHelmetMaterial()
 	for (const auto& texInfo : matData.textures)
 	{
 		Framework::ResourceId texId;
-
 		// 임베디드 텍스처 처리
 		if (texInfo.HasEmbeddedData())
 		{
@@ -610,7 +611,8 @@ void ModelViewerApp::SetupHelmetMaterial()
 				texId = mResourceManager->LoadTextureFromMemory(
 					texName,
 					texInfo.embeddedData.data(),
-					static_cast<Core::uint32>(texInfo.embeddedData.size())
+					static_cast<Core::uint32>(texInfo.embeddedData.size()),
+					texInfo.type
 				);
 			}
 			else
@@ -621,7 +623,7 @@ void ModelViewerApp::SetupHelmetMaterial()
 					texInfo.embeddedData.data(),
 					texInfo.width,
 					texInfo.height,
-					DXGI_FORMAT_R8G8B8A8_UNORM
+					texInfo.type
 				);
 			}
 
@@ -652,7 +654,7 @@ void ModelViewerApp::SetupHelmetMaterial()
 		}
 
 		// 외부 텍스처 로드 시도
-		texId = mResourceManager->LoadTexture(texInfo.path);
+		texId = mResourceManager->LoadTexture(texInfo.path, texInfo.type);
 
 		if (texId.IsValid())
 		{

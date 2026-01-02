@@ -373,14 +373,16 @@ namespace Framework
 				}
 			}
 
-			LOG_DEBUG("[ModelLoader] Material '%s': BaseColor(%.2f,%.2f,%.2f), Metallic=%.2f, Roughness=%.2f, Textures=%zu",
+			LOG_DEBUG(
+				"[ModelLoader] Material '%s': BaseColor(%.2f,%.2f,%.2f), Metallic=%.2f, Roughness=%.2f, Textures=%zu",
 				outMaterialData.name.c_str(),
 				outMaterialData.baseColorFactor.x,
 				outMaterialData.baseColorFactor.y,
 				outMaterialData.baseColorFactor.z,
 				outMaterialData.metallicFactor,
 				outMaterialData.roughnessFactor,
-				outMaterialData.textures.size());
+				outMaterialData.textures.size()
+			);
 		}
 
 		/**

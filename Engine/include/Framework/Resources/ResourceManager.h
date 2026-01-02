@@ -7,9 +7,11 @@
  *
  * @note Phase 4.2: CreateMeshFromAsset, 폴백 텍스처 추가
  * @note Phase 4.2+: 임베디드 텍스처 로드 지원
+ * @note Phase 4.3: sRGB/Linear 색공간 처리 지원
  */
 #pragma once
 #include "Framework/Resources/ResourceId.h"
+#include "Graphics/TextureType.h"
 #include "Core/Types.h"
 #include <dxgiformat.h>
 #include <memory>
@@ -97,47 +99,67 @@ namespace Framework
 		//=====================================================================
 
 		/**
-		 * @brief 파일 경로로 Texture 로드 (해시 ID 반환)
-		 * @param path 텍스처 파일 UTF-8 경로 (해시되어 ID 생성)
+		 * @brief 파일 경로로 Texture 로드 (색공간 자동 적용)
+		 *
+		 * TextureType에 따라 sRGB/Linear 색공간을 자동으로 선택합니다.
+		 * - Albedo, Emissive: sRGB
+		 * - Normal, Roughness 등: Linear
+		 *
+		 * @param path 텍스처 파일 UTF-8 경로
+		 * @param textureType 텍스처 용도 (색공간 결정)
 		 * @return 64비트 해시 기반 ResourceId
+		 *
+		 * @note Phase 4.3: 색공간 처리를 위한 권장 API -> 강제
 		 */
-		ResourceId LoadTexture(const std::string& path);
-		ResourceId LoadTextureW(const std::wstring& path);
+		ResourceId LoadTexture(const std::string& path, Graphics::TextureType textureType);
 
 		/**
-		 * @brief 메모리에서 Texture 로드 (압축 포맷: PNG, JPG 등)
+		 * @brief 와이드 문자열 경로로 Texture 로드 (색공간 자동 적용)
+		 */
+		ResourceId LoadTextureW(const std::wstring& path, Graphics::TextureType textureType);
+
+		/**
+		 * @brief 메모리에서 Texture 로드 (색공간 자동 적용)
 		 *
 		 * glb 파일의 임베디드 텍스처 로딩에 사용됩니다.
 		 *
 		 * @param name 텍스처 이름 (ResourceId 생성용, 예: "Model_*0")
-		 * @param data 압축된 이미지 데이터
+		 * @param data 압축된 이미지 데이터 (PNG, JPG 바이너리)
 		 * @param dataSize 데이터 크기 (바이트)
+		 * @param textureType 텍스처 용도 (색공간 결정)
 		 * @return 64비트 해시 기반 ResourceId (실패 시 Invalid)
+		 *
+		 * @note Phase 4.3: 색공간 처리를 위한 권장 API -> 강제
 		 */
 		ResourceId LoadTextureFromMemory(
 			const std::string& name,
 			const void* data,
-			Core::uint32 dataSize
+			Core::uint32 dataSize,
+			Graphics::TextureType textureType
 		);
 
 		/**
-		 * @brief 원시 픽셀 데이터에서 Texture 생성
+		 * @brief 원시 픽셀 데이터에서 Texture 생성 (색공간 자동 적용)
 		 *
-		 * RGBA 원시 데이터로부터 텍스처를 생성합니다.
+		 * TextureType에 따라 sRGB/Linear 포맷을 자동으로 선택합니다.
+		 * - Albedo, Emissive: DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+		 * - Normal, Roughness 등: DXGI_FORMAT_R8G8B8A8_UNORM
 		 *
 		 * @param name 텍스처 이름 (ResourceId 생성용)
 		 * @param data RGBA 픽셀 데이터
 		 * @param width 텍스처 너비
 		 * @param height 텍스처 높이
-		 * @param format 픽셀 포맷 (기본: DXGI_FORMAT_R8G8B8A8_UNORM)
+		 * @param textureType 텍스처 용도 (색공간 결정)
 		 * @return 64비트 해시 기반 ResourceId (실패 시 Invalid)
+		 *
+		 * @note Phase 4.3: 색공간 처리를 위한 권장 API -> 강제
 		 */
 		ResourceId CreateTextureFromMemory(
 			const std::string& name,
 			const void* data,
 			Core::uint32 width,
 			Core::uint32 height,
-			DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM
+			Graphics::TextureType textureType
 		);
 
 		Graphics::Texture* GetTexture(ResourceId id);

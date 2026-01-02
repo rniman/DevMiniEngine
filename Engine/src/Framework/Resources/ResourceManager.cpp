@@ -1,6 +1,8 @@
 ﻿/**
  * @file ResourceManager.cpp
  * @brief ResourceManager 구현
+ *
+ * @note Phase 4.3: sRGB/Linear 색공간 처리 지원
  */
 #include "pch.h"
 #include "Framework/Resources/ResourceManager.h"
@@ -305,7 +307,7 @@ namespace Framework
 	// Texture 관리
 	//=========================================================================
 
-	ResourceId ResourceManager::LoadTexture(const std::string& path)
+	ResourceId ResourceManager::LoadTexture(const std::string& path, Graphics::TextureType textureType)
 	{
 		ResourceId id;
 		id.id = Core::Hash64(path);
@@ -313,7 +315,7 @@ namespace Framework
 		auto it = mTextures.find(id);
 		if (it != mTextures.end())
 		{
-			LOG_DEBUG("Texture already loaded: %s (ID: 0x%llX)", path.c_str(), id.id);
+			LOG_DEBUG("[ResourceManager] Texture already loaded: %s (ID: 0x%llX)", path.c_str(), id.id);
 			return id;
 		}
 
@@ -322,33 +324,42 @@ namespace Framework
 		auto texture = std::make_shared<Graphics::Texture>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
+		// TextureType 전달하여 색공간 자동 적용
 		if (!texture->LoadFromFile(
 			mDevice->GetDevice(),
 			mDevice->GetCommandQueue(),
 			mDevice->GetCommandContext(frameIndex),
-			wpath.c_str()
+			wpath.c_str(),
+			textureType
 		))
 		{
-			LOG_ERROR("Failed to load texture: %s", path.c_str());
+			LOG_ERROR("[ResourceManager] Failed to load texture: %s", path.c_str());
 			return ResourceId::Invalid();
 		}
 
 		mTextures[id] = texture;
 		mTexturePaths[id] = path;
 
-		LOG_DEBUG("Loaded texture: %s (ID: 0x%llX)", path.c_str(), id.id);
+		LOG_DEBUG(
+			"[ResourceManager] Loaded texture: %s (ID: 0x%llX, Type: %s, sRGB: %s)",
+			path.c_str(),
+			id.id,
+			Graphics::TextureTypeToString(textureType),
+			texture->IsSRGB() ? "Yes" : "No"
+		);
 		return id;
 	}
 
-	ResourceId ResourceManager::LoadTextureW(const std::wstring& path)
+	ResourceId ResourceManager::LoadTextureW(const std::wstring& path, Graphics::TextureType textureType)
 	{
-		return LoadTexture(Core::WStringToUTF8(path));
+		return LoadTexture(Core::WStringToUTF8(path), textureType);
 	}
 
 	ResourceId ResourceManager::LoadTextureFromMemory(
 		const std::string& name,
 		const void* data,
-		Core::uint32 dataSize
+		Core::uint32 dataSize,
+		Graphics::TextureType textureType
 	)
 	{
 		if (!data || dataSize == 0)
@@ -371,12 +382,14 @@ namespace Framework
 		auto texture = std::make_shared<Graphics::Texture>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
+		// TextureType 전달하여 색공간 자동 적용
 		if (!texture->LoadFromMemory(
 			mDevice->GetDevice(),
 			mDevice->GetCommandQueue(),
 			mDevice->GetCommandContext(frameIndex),
 			data,
-			dataSize
+			dataSize,
+			textureType
 		))
 		{
 			LOG_ERROR("[ResourceManager] Failed to load texture from memory: %s", name.c_str());
@@ -387,10 +400,12 @@ namespace Framework
 		mTexturePaths[id] = name;
 
 		LOG_DEBUG(
-			"[ResourceManager] Loaded texture from memory: %s (ID: 0x%llX, %u bytes)",
+			"[ResourceManager] Loaded texture from memory: %s (ID: 0x%llX, %u bytes, Type: %s, sRGB: %s)",
 			name.c_str(),
 			id.id,
-			dataSize
+			dataSize,
+			Graphics::TextureTypeToString(textureType),
+			texture->IsSRGB() ? "Yes" : "No"
 		);
 		return id;
 	}
@@ -400,7 +415,7 @@ namespace Framework
 		const void* data,
 		Core::uint32 width,
 		Core::uint32 height,
-		DXGI_FORMAT format
+		Graphics::TextureType textureType
 	)
 	{
 		if (!data || width == 0 || height == 0)
@@ -419,6 +434,11 @@ namespace Framework
 			LOG_DEBUG("[ResourceManager] Texture already exists: %s (ID: 0x%llX)", name.c_str(), id.id);
 			return id;
 		}
+
+		// TextureType에 따라 포맷 결정
+		DXGI_FORMAT format = Graphics::IsSRGBTexture(textureType)
+			? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+			: DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		auto texture = std::make_shared<Graphics::Texture>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
@@ -441,11 +461,13 @@ namespace Framework
 		mTexturePaths[id] = name;
 
 		LOG_DEBUG(
-			"[ResourceManager] Created texture from memory: %s (ID: 0x%llX, %ux%u)",
+			"[ResourceManager] Created texture from memory: %s (ID: 0x%llX, %ux%u, Type: %s, sRGB: %s)",
 			name.c_str(),
 			id.id,
 			width,
-			height
+			height,
+			Graphics::TextureTypeToString(textureType),
+			texture->IsSRGB() ? "Yes" : "No"
 		);
 		return id;
 	}

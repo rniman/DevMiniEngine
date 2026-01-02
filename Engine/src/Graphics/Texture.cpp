@@ -12,6 +12,28 @@
 
 using namespace std;
 
+namespace
+{
+	/**
+	 * @brief TextureType에 따른 WIC 로더 플래그 반환
+	 *
+	 * @param textureType 텍스처 용도
+	 * @return WIC_LOADER_FLAGS 값
+	 */
+	DirectX::WIC_LOADER_FLAGS GetWICLoaderFlags(Graphics::TextureType textureType)
+	{
+		if (Graphics::IsSRGBTexture(textureType))
+		{
+			return DirectX::WIC_LOADER_FORCE_SRGB;
+		}
+		else
+		{
+			return DirectX::WIC_LOADER_IGNORE_SRGB;
+		}
+	}
+
+} // anonymous namespace
+
 namespace Graphics
 {
 	Texture::~Texture()
@@ -19,11 +41,16 @@ namespace Graphics
 		Shutdown();
 	}
 
+	//=========================================================================
+	// 파일 로딩
+	//=========================================================================
+
 	bool Texture::LoadFromFile(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
-		const wchar_t* filename
+		const wchar_t* filename,
+		TextureType textureType
 	)
 	{
 		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
@@ -31,9 +58,13 @@ namespace Graphics
 		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
 		CORE_ASSERT(filename != nullptr, "[Texture] Filename is null");
 
+		const bool isSRGB = IsSRGBTexture(textureType);
+
 		LOG_INFO(
-			"[Texture] Loading WIC texture from file: %s",
-			filesystem::path(filename).filename().string().c_str()
+			"[Texture] Loading WIC texture: %s (Type: %s, sRGB: %s)",
+			filesystem::path(filename).filename().string().c_str(),
+			TextureTypeToString(textureType),
+			isSRGB ? "Yes" : "No"
 		);
 
 		if (mInitialized)
@@ -46,10 +77,16 @@ namespace Graphics
 		unique_ptr<uint8_t[]> wicData;
 		D3D12_SUBRESOURCE_DATA subresource;
 
-		// WICTextureLoader를 사용하여 텍스처 데이터 로드
-		HRESULT hr = DirectX::LoadWICTextureFromFile(
+		// 텍스처 타입에 따른 WIC 플래그 적용
+		DirectX::WIC_LOADER_FLAGS loadFlags = GetWICLoaderFlags(textureType);
+
+		// WICTextureLoader Extended 버전으로 텍스처 데이터 로드
+		HRESULT hr = DirectX::LoadWICTextureFromFileEx(
 			device,
 			filename,
+			0,                          // maxsize (0 = 제한 없음)
+			D3D12_RESOURCE_FLAG_NONE,   // resFlags
+			loadFlags,                  // sRGB/Linear 플래그
 			mTexture.GetAddressOf(),
 			wicData,
 			subresource
@@ -74,13 +111,15 @@ namespace Graphics
 		mWidth = static_cast<uint32>(desc.Width);
 		mHeight = desc.Height;
 		mFormat = desc.Format;
+		mIsSRGB = isSRGB;
 
 		mInitialized = true;
 		LOG_INFO(
-			"[Texture] WIC texture loaded successfully (%ux%u, Format: %d)",
+			"[Texture] WIC texture loaded (%ux%u, Format: %d, sRGB: %s)",
 			mWidth,
 			mHeight,
-			static_cast<int>(mFormat)
+			static_cast<int>(mFormat),
+			mIsSRGB ? "Yes" : "No"
 		);
 
 		return true;
@@ -148,17 +187,39 @@ namespace Graphics
 		mHeight = desc.Height;
 		mFormat = desc.Format;
 
+		// DDS 포맷에서 sRGB 여부 확인
+		switch (mFormat)
+		{
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+		case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+		case DXGI_FORMAT_BC1_UNORM_SRGB:
+		case DXGI_FORMAT_BC2_UNORM_SRGB:
+		case DXGI_FORMAT_BC3_UNORM_SRGB:
+		case DXGI_FORMAT_BC7_UNORM_SRGB:
+			mIsSRGB = true;
+			break;
+		default:
+			mIsSRGB = false;
+			break;
+		}
+
 		mInitialized = true;
 		LOG_INFO(
-			"[Texture] DDS texture loaded successfully (%ux%u, Format: %d, MipLevels: %u)",
+			"[Texture] DDS texture loaded (%ux%u, Format: %d, MipLevels: %u, sRGB: %s)",
 			mWidth,
 			mHeight,
 			static_cast<int>(mFormat),
-			desc.MipLevels
+			desc.MipLevels,
+			mIsSRGB ? "Yes" : "No"
 		);
 
 		return true;
 	}
+
+	//=========================================================================
+	// 메모리 로딩
+	//=========================================================================
 
 	bool Texture::CreateFromMemory(
 		ID3D12Device* device,
@@ -261,13 +322,27 @@ namespace Graphics
 		mWidth = width;
 		mHeight = height;
 		mFormat = format;
+
+		// 포맷에서 sRGB 여부 확인
+		switch (format)
+		{
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+			mIsSRGB = true;
+			break;
+		default:
+			mIsSRGB = false;
+			break;
+		}
+
 		mInitialized = true;
 
 		LOG_INFO(
-			"[Texture] Texture created from raw memory successfully (%ux%u, Format: %d)",
+			"[Texture] Texture created from raw memory (%ux%u, Format: %d, sRGB: %s)",
 			mWidth,
 			mHeight,
-			static_cast<int>(mFormat)
+			static_cast<int>(mFormat),
+			mIsSRGB ? "Yes" : "No"
 		);
 
 		return true;
@@ -278,7 +353,8 @@ namespace Graphics
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
 		const void* data,
-		uint32 dataSize
+		uint32 dataSize,
+		TextureType textureType
 	)
 	{
 		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
@@ -287,7 +363,14 @@ namespace Graphics
 		CORE_ASSERT(data != nullptr, "[Texture] Data is null");
 		CORE_ASSERT(dataSize > 0, "[Texture] Invalid data size");
 
-		LOG_INFO("[Texture] Loading texture from compressed memory (%u bytes)", dataSize);
+		const bool isSRGB = IsSRGBTexture(textureType);
+
+		LOG_INFO(
+			"[Texture] Loading texture from memory (%u bytes, Type: %s, sRGB: %s)",
+			dataSize,
+			TextureTypeToString(textureType),
+			isSRGB ? "Yes" : "No"
+		);
 
 		if (mInitialized)
 		{
@@ -299,11 +382,17 @@ namespace Graphics
 		unique_ptr<uint8_t[]> wicData;
 		D3D12_SUBRESOURCE_DATA subresource;
 
-		// WICTextureLoader를 사용하여 메모리에서 텍스처 데이터 로드
-		HRESULT hr = DirectX::LoadWICTextureFromMemory(
+		// 텍스처 타입에 따른 WIC 플래그 적용
+		DirectX::WIC_LOADER_FLAGS loadFlags = GetWICLoaderFlags(textureType);
+
+		// WICTextureLoader Extended 버전으로 메모리에서 텍스처 데이터 로드
+		HRESULT hr = DirectX::LoadWICTextureFromMemoryEx(
 			device,
 			static_cast<const uint8_t*>(data),
 			static_cast<size_t>(dataSize),
+			0,                          // maxsize
+			D3D12_RESOURCE_FLAG_NONE,   // resFlags
+			loadFlags,                  // sRGB/Linear 플래그
 			mTexture.GetAddressOf(),
 			wicData,
 			subresource
@@ -328,17 +417,23 @@ namespace Graphics
 		mWidth = static_cast<uint32>(desc.Width);
 		mHeight = desc.Height;
 		mFormat = desc.Format;
+		mIsSRGB = isSRGB;
 
 		mInitialized = true;
 		LOG_INFO(
-			"[Texture] Texture loaded from memory successfully (%ux%u, Format: %d)",
+			"[Texture] Texture loaded from memory (%ux%u, Format: %d, sRGB: %s)",
 			mWidth,
 			mHeight,
-			static_cast<int>(mFormat)
+			static_cast<int>(mFormat),
+			mIsSRGB ? "Yes" : "No"
 		);
 
 		return true;
 	}
+
+	//=========================================================================
+	// GPU 업로드
+	//=========================================================================
 
 	bool Texture::UploadTextureData(
 		ID3D12Device* device,
@@ -425,6 +520,10 @@ namespace Graphics
 		return true;
 	}
 
+	//=========================================================================
+	// SRV 생성
+	//=========================================================================
+
 	bool Texture::CreateSRV(
 		ID3D12Device* device,
 		const DX12DescriptorHeap* descriptorHeap,
@@ -457,12 +556,17 @@ namespace Graphics
 		);
 
 		LOG_INFO(
-			"[Texture] SRV created successfully (MipLevels: %u)",
-			srvDesc.Texture2D.MipLevels
+			"[Texture] SRV created (MipLevels: %u, sRGB: %s)",
+			srvDesc.Texture2D.MipLevels,
+			mIsSRGB ? "Yes" : "No"
 		);
 
 		return true;
 	}
+
+	//=========================================================================
+	// 정리
+	//=========================================================================
 
 	void Texture::Shutdown()
 	{
@@ -471,11 +575,12 @@ namespace Graphics
 			return;
 		}
 
-		LOG_TRACE("[Texture] Shutting down texture (%ux%u)", mWidth, mHeight);
+		LOG_TRACE("[Texture] Shutting down texture (%ux%u, sRGB: %s)", mWidth, mHeight, mIsSRGB ? "Yes" : "No");
 
 		mTexture.Reset();
 		mSRVGPUHandle = {};
-		mSRVGPUHandle = {};
+		mSRVCPUHandle = {};
+		mIsSRGB = false;
 	}
 
 } // namespace Graphics
