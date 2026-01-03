@@ -24,6 +24,65 @@
 - [ ] Upcoming task 2
 ```
 
+## 2026-01-03 - Phase 4.3.2: Asset/Resource 네이밍 변경
+
+### Tasks
+
+- [x] Graphics 모듈 클래스 네이밍 변경
+- [x] 참조 파일 수정 및 빌드 확인
+
+### Changes
+
+**파일명 및 클래스명 변경 (Graphics 모듈)**
+
+| 변경 전 | 변경 후 |
+|---------|---------|
+| Mesh.h/cpp | MeshResource.h/cpp |
+| Texture.h/cpp | TextureResource.h/cpp |
+| Material.h/cpp | MaterialResource.h/cpp |
+
+**유지 (Framework 모듈)**
+
+| 클래스 | 비고 |
+|--------|------|
+| MeshAsset | CPU 데이터 |
+| TextureAsset | CPU 데이터 (Step 3에서 확장 예정) |
+| MaterialAsset | CPU 데이터 |
+
+### Decisions
+
+**Asset/Resource 역할 분리 명확화**
+
+| 구분 | Asset | Resource |
+|------|-------|----------|
+| 역할 | 원본 자산 (파일 로드) | GPU 리소스 (렌더링) |
+| 위치 | CPU 메모리 | GPU 메모리 |
+| 모듈 | Framework | Graphics |
+
+### Files Modified
+
+| 주요 파일 | 변경 내용 |
+|------|----------|
+| MeshResource.h/cpp | 클래스명 Mesh → MeshResource |
+| TextureResource.h/cpp | 클래스명 Texture → TextureResource |
+| MaterialResource.h/cpp | 클래스명 Material → MaterialResource |
+| Graphics.vcxproj | 파일 경로 수정 |
+| Graphics.vcxproj.filters | 파일 경로 수정 |
+| ResourceManager.h/cpp | 전방선언 및 참조 수정 |
+| DX12PipelineStateCache.h/cpp | 전방선언 및 참조 수정 |
+| RenderSystem.h/cpp | 전방선언 및 참조 수정 |
+
+### Results
+
+- Asset(CPU)과 Resource(GPU) 역할 네이밍으로 명확히 구분
+- 기존 기능 동작 확인
+
+### Next Steps
+
+- [ ] Phase 4.3.3: TextureAsset 역할 확장 (로딩 로직 이동)
+- [ ] Phase 4.3.4: TextureResource 정리 (GPU 생성만 담당)
+- [ ] Phase 4.3.5: 검증 및 ImGui 텍스처 정보 표시
+
 ---
 
 ## 2026-01-02 - Phase 4.3.1: sRGB/Linear 색공간 처리
