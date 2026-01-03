@@ -41,6 +41,34 @@ namespace Framework
 		}
 	}
 
+	static bool ValidateIndexRange(const void* indices, Core::size_t indexCount, Core::size_t vertexCount, bool use32BitIndices)
+	{
+		if (use32BitIndices)
+		{
+			const Core::uint32* typedIndices = static_cast<const Core::uint32*>(indices);
+			for (Core::size_t i = 0; i < indexCount; ++i)
+			{
+				if (typedIndices[i] >= vertexCount)
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			const Core::uint16* typedIndices = static_cast<const Core::uint16*>(indices);
+			for (Core::size_t i = 0; i < indexCount; ++i)
+			{
+				if (typedIndices[i] >= vertexCount)
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	//=========================================================================
 	// MikkTSpace 콜백 함수들
 	//=========================================================================
@@ -153,6 +181,11 @@ namespace Framework
 			return false;
 		}
 
+		if (!ValidateIndexRange(indices.data(), indices.size(), positions.size(), false))
+		{
+			return false;
+		}
+
 		// 출력 배열 초기화
 		outTangents.clear();
 		outTangents.resize(positions.size(), Math::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
@@ -209,6 +242,11 @@ namespace Framework
 		}
 
 		if (indices.size() % 3 != 0)
+		{
+			return false;
+		}
+
+		if (!ValidateIndexRange(indices.data(), indices.size(), positions.size(), true))
 		{
 			return false;
 		}

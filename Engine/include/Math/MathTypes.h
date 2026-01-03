@@ -2,6 +2,7 @@
 #include "Core/Types.h"
 #include <DirectXMath.h>
 #include <cmath>
+#include <cstring>
 
 namespace Math
 {

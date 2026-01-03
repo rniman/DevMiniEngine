@@ -67,6 +67,114 @@ namespace Math
 	}
 
 	//=============================================================================
+	// 유틸리티 함수
+	//=============================================================================
+
+	inline Core::float32 InverseSqrt(Core::float32 value) noexcept
+	{
+		return 1.0f / std::sqrt(value);
+	}
+
+	inline Core::float32 Lerp(Core::float32 a, Core::float32 b, Core::float32 t) noexcept
+	{
+		return a + (b - a) * t;
+	}
+
+	inline Core::float32 Clamp(Core::float32 value, Core::float32 min, Core::float32 max) noexcept
+	{
+		return (value < min) ? min : (value > max) ? max : value;
+	}
+
+	template<typename T>
+	inline T Clamp(T value, T min, T max) noexcept
+	{
+		return (value < min) ? min : (value > max) ? max : value;
+	}
+
+	inline Core::float32 DegToRad(Core::float32 degrees) noexcept
+	{
+		return degrees * DEG_TO_RAD;
+	}
+
+	inline Core::float32 RadToDeg(Core::float32 radians) noexcept
+	{
+		return radians * RAD_TO_DEG;
+	}
+
+	/// @brief 값을 0~1 범위로 제한
+	inline Core::float32 Saturate(Core::float32 value) noexcept
+	{
+		return Clamp(value, 0.0f, 1.0f);
+	}
+
+	inline Core::float32 LerpClamped(Core::float32 a, Core::float32 b, Core::float32 t) noexcept
+	{
+		return Lerp(a, b, Saturate(t));
+	}
+
+	/// @brief 두 값 사이에서 t의 위치 비율 반환 (Lerp의 역함수)
+	inline Core::float32 InverseLerp(Core::float32 a, Core::float32 b, Core::float32 value) noexcept
+	{
+		if (std::abs(b - a) < EPSILON)
+		{
+			return 0.0f;
+		}
+		return (value - a) / (b - a);
+	}
+
+	/// @brief 한 범위의 값을 다른 범위로 매핑
+	inline Core::float32 Remap(
+		Core::float32 value,
+		Core::float32 fromMin,
+		Core::float32 fromMax,
+		Core::float32 toMin,
+		Core::float32 toMax
+	) noexcept
+	{
+		Core::float32 t = InverseLerp(fromMin, fromMax, value);
+		return Lerp(toMin, toMax, t);
+	}
+
+	/// @brief Smoothstep 보간 (부드러운 시작/끝)
+	inline Core::float32 SmoothStep(Core::float32 edge0, Core::float32 edge1, Core::float32 x) noexcept
+	{
+		Core::float32 t = Saturate(InverseLerp(edge0, edge1, x));
+		return t * t * (3.0f - 2.0f * t);
+	}
+
+	/// @brief 부호 반환 (-1, 0, 1)
+	inline Core::float32 Sign(Core::float32 value) noexcept
+	{
+		if (value > EPSILON)
+		{
+			return 1.0f;
+		}
+		if (value < -EPSILON)
+		{
+			return -1.0f;
+		}
+		return 0.0f;
+	}
+
+	/// @brief 최소값
+	inline Core::float32 Min(Core::float32 a, Core::float32 b) noexcept
+	{
+		return (a < b) ? a : b;
+	}
+
+	/// @brief 최대값
+	inline Core::float32 Max(Core::float32 a, Core::float32 b) noexcept
+	{
+		return (a > b) ? a : b;
+	}
+
+	/// @brief 절대값
+	inline Core::float32 Abs(Core::float32 value) noexcept
+	{
+		return std::abs(value);
+	}
+
+	//=============================================================================
 	// Vector2 유틸리티 함수
 	//=============================================================================
 
@@ -132,7 +240,12 @@ namespace Math
 	/// @brief 벡터를 평면에 투영
 	inline Vector3 ProjectOnPlane(const Vector3& v, const Vector3& planeNormal) noexcept
 	{
-		return v - planeNormal * v.Dot(planeNormal);
+		Core::float32 normalLenSq = planeNormal.LengthSquared();
+		if (normalLenSq > EPSILON)
+		{
+			return v - planeNormal * (v.Dot(planeNormal) / normalLenSq);
+		}
+		return v;
 	}
 
 	/// @brief 벡터를 다른 벡터에 투영
@@ -157,7 +270,7 @@ namespace Math
 	inline bool IsUniformScale(const Math::Vector3& scale) noexcept
 	{
 		// 1. 가장 흔한 케이스 (1,1,1) 빠른 탈출
-		if (scale.x == 1.0f && scale.y == 1.0f && scale.z == 1.0f)
+		if (IsEqual(scale.x, 1.0f) && IsEqual(scale.y, 1.0f) && IsEqual(scale.z, 1.0f))
 		{
 			return true;
 		}
@@ -390,7 +503,7 @@ namespace Math
 		Vector3 fromNorm = from.Normalized();
 		Vector3 toNorm = to.Normalized();
 
-		Core::float32 dot = fromNorm.Dot(toNorm);
+		Core::float32 dot = Clamp(fromNorm.Dot(toNorm), -1.0f, 1.0f);
 
 		// 거의 같은 방향
 		if (dot > 0.9999f)
@@ -553,109 +666,6 @@ namespace Math
 			return true;
 		}
 		return false;
-	}
-
-	//=============================================================================
-	// 유틸리티 함수
-	//=============================================================================
-
-	inline Core::float32 InverseSqrt(Core::float32 value) noexcept
-	{
-		return 1.0f / std::sqrt(value);
-	}
-
-	inline Core::float32 Lerp(Core::float32 a, Core::float32 b, Core::float32 t) noexcept
-	{
-		return a + (b - a) * t;
-	}
-
-	inline Core::float32 Clamp(Core::float32 value, Core::float32 min, Core::float32 max) noexcept
-	{
-		return (value < min) ? min : (value > max) ? max : value;
-	}
-
-	template<typename T>
-	inline T Clamp(T value, T min, T max) noexcept
-	{
-		return (value < min) ? min : (value > max) ? max : value;
-	}
-
-	inline Core::float32 DegToRad(Core::float32 degrees) noexcept
-	{
-		return degrees * DEG_TO_RAD;
-	}
-
-	inline Core::float32 RadToDeg(Core::float32 radians) noexcept
-	{
-		return radians * RAD_TO_DEG;
-	}
-
-	/// @brief 값을 0~1 범위로 제한
-	inline Core::float32 Saturate(Core::float32 value) noexcept
-	{
-		return Clamp(value, 0.0f, 1.0f);
-	}
-
-	/// @brief 두 값 사이에서 t의 위치 비율 반환 (Lerp의 역함수)
-	inline Core::float32 InverseLerp(Core::float32 a, Core::float32 b, Core::float32 value) noexcept
-	{
-		if (std::abs(b - a) < EPSILON)
-		{
-			return 0.0f;
-		}
-		return (value - a) / (b - a);
-	}
-
-	/// @brief 한 범위의 값을 다른 범위로 매핑
-	inline Core::float32 Remap(
-		Core::float32 value,
-		Core::float32 fromMin,
-		Core::float32 fromMax,
-		Core::float32 toMin,
-		Core::float32 toMax
-	) noexcept
-	{
-		Core::float32 t = InverseLerp(fromMin, fromMax, value);
-		return Lerp(toMin, toMax, t);
-	}
-
-	/// @brief Smoothstep 보간 (부드러운 시작/끝)
-	inline Core::float32 SmoothStep(Core::float32 edge0, Core::float32 edge1, Core::float32 x) noexcept
-	{
-		Core::float32 t = Saturate(InverseLerp(edge0, edge1, x));
-		return t * t * (3.0f - 2.0f * t);
-	}
-
-	/// @brief 부호 반환 (-1, 0, 1)
-	inline Core::float32 Sign(Core::float32 value) noexcept
-	{
-		if (value > EPSILON)
-		{
-			return 1.0f;
-		}
-		if (value < -EPSILON)
-		{
-			return -1.0f;
-		}
-		return 0.0f;
-	}
-
-	/// @brief 최소값
-	inline Core::float32 Min(Core::float32 a, Core::float32 b) noexcept
-	{
-		return (a < b) ? a : b;
-	}
-
-	/// @brief 최대값
-	inline Core::float32 Max(Core::float32 a, Core::float32 b) noexcept
-	{
-		return (a > b) ? a : b;
-	}
-
-	/// @brief 절대값
-	inline Core::float32 Abs(Core::float32 value) noexcept
-	{
-		return std::abs(value);
 	}
 
 } // namespace Math

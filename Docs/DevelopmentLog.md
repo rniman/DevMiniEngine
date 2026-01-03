@@ -3,6 +3,8 @@
 ```markdown
 ## YYYY-MM-DD - Brief Description
 
+### Overview
+
 ### Tasks
 - [ ] Task 1
 - [ ] Task 2
