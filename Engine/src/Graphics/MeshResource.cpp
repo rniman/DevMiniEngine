@@ -1,15 +1,15 @@
 ﻿/**
- * @file Mesh.cpp
- * @brief Mesh 클래스 구현
+ * @file MeshResource.cpp
+ * @brief MeshResource 클래스 구현
  */
 #include "pch.h"
-#include "Graphics/Mesh.h"
+#include "Graphics/MeshResource.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 
 namespace Graphics
 {
-	Mesh::~Mesh()
+	MeshResource::~MeshResource()
 	{
 		Shutdown();
 	}
@@ -18,7 +18,7 @@ namespace Graphics
 	// BasicVertex 초기화
 	//=========================================================================
 
-	bool Mesh::Initialize(
+	bool MeshResource::Initialize(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -30,13 +30,13 @@ namespace Graphics
 	{
 		if (!device || !commandQueue || !commandContext || !vertices || vertexCount == 0)
 		{
-			LOG_ERROR("Mesh::Initialize - Invalid parameters");
+			LOG_ERROR("[MeshResource] Initialize - Invalid parameters");
 			return false;
 		}
 
 		if (mInitialized)
 		{
-			LOG_WARN("Mesh::Initialize - Already initialized, shutting down first");
+			LOG_WARN("[MeshResource] Initialize - Already initialized, shutting down first");
 			Shutdown();
 		}
 
@@ -50,11 +50,11 @@ namespace Graphics
 			sizeof(BasicVertex)
 		))
 		{
-			LOG_ERROR("Mesh::Initialize - Failed to initialize vertex buffer");
+			LOG_ERROR("[MeshResource] Initialize - Failed to initialize vertex buffer");
 			return false;
 		}
 
-		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u vertices)", vertexCount);
+		LOG_GFX_INFO("[MeshResource] - Vertex buffer initialized (%u vertices)", vertexCount);
 
 		// Index Buffer 초기화 (선택적)
 		if (indices && indexCount > 0)
@@ -68,18 +68,18 @@ namespace Graphics
 				DXGI_FORMAT_R16_UINT
 			))
 			{
-				LOG_ERROR("Mesh::Initialize - Failed to initialize index buffer");
+				LOG_ERROR("[MeshResource] Initialize - Failed to initialize index buffer");
 				mVertexBuffer.Shutdown();
 				return false;
 			}
 
-			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
+			LOG_GFX_INFO("[MeshResource] - Index buffer initialized (%u indices)", indexCount);
 		}
 
 		mInputLayout = BasicVertex::GetInputLayout();
 
 		mInitialized = true;
-		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
+		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -87,7 +87,7 @@ namespace Graphics
 	// TexturedVertex 초기화
 	//=========================================================================
 
-	bool Mesh::InitializeTextured(
+	bool MeshResource::InitializeTextured(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -99,13 +99,13 @@ namespace Graphics
 	{
 		if (!device || !commandQueue || !commandContext || !vertices || vertexCount == 0)
 		{
-			LOG_ERROR("Mesh::InitializeTextured - Invalid parameters");
+			LOG_ERROR("[MeshResource] InitializeTextured - Invalid parameters");
 			return false;
 		}
 
 		if (mInitialized)
 		{
-			LOG_WARN("Mesh::InitializeTextured - Already initialized, shutting down first");
+			LOG_WARN("[MeshResource] InitializeTextured - Already initialized, shutting down first");
 			Shutdown();
 		}
 
@@ -119,11 +119,11 @@ namespace Graphics
 			sizeof(TexturedVertex)
 		))
 		{
-			LOG_ERROR("Mesh::InitializeTextured - Failed to initialize vertex buffer");
+			LOG_ERROR("[MeshResource] InitializeTextured - Failed to initialize vertex buffer");
 			return false;
 		}
 
-		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u textured vertices)", vertexCount);
+		LOG_GFX_INFO("[MeshResource] - Vertex buffer initialized (%u textured vertices)", vertexCount);
 
 		// Index Buffer 초기화 (선택적)
 		if (indices && indexCount > 0)
@@ -137,18 +137,18 @@ namespace Graphics
 				DXGI_FORMAT_R16_UINT
 			))
 			{
-				LOG_ERROR("Mesh::InitializeTextured - Failed to initialize index buffer");
+				LOG_ERROR("[MeshResource] InitializeTextured - Failed to initialize index buffer");
 				mVertexBuffer.Shutdown();
 				return false;
 			}
 
-			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices)", indexCount);
+			LOG_GFX_INFO("[MeshResource] - Index buffer initialized (%u indices)", indexCount);
 		}
 
 		mInputLayout = TexturedVertex::GetInputLayout();
 
 		mInitialized = true;
-		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
+		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -156,7 +156,7 @@ namespace Graphics
 	// StandardVertex 초기화 (16비트 인덱스)
 	//=========================================================================
 
-	bool Mesh::InitializeStandard(
+	bool MeshResource::InitializeStandard(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -168,13 +168,13 @@ namespace Graphics
 	{
 		if (!device || !commandQueue || !commandContext || !vertices || vertexCount == 0)
 		{
-			LOG_ERROR("Mesh::InitializeStandard - Invalid parameters");
+			LOG_ERROR("[MeshResource] InitializeStandard - Invalid parameters");
 			return false;
 		}
 
 		if (mInitialized)
 		{
-			LOG_WARN("Mesh::InitializeStandard - Already initialized, shutting down first");
+			LOG_WARN("[MeshResource] InitializeStandard - Already initialized, shutting down first");
 			Shutdown();
 		}
 
@@ -188,11 +188,11 @@ namespace Graphics
 			sizeof(StandardVertex)
 		))
 		{
-			LOG_ERROR("Mesh::InitializeStandard - Failed to initialize vertex buffer");
+			LOG_ERROR("[MeshResource] InitializeStandard - Failed to initialize vertex buffer");
 			return false;
 		}
 
-		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u standard vertices)", vertexCount);
+		LOG_GFX_INFO("[MeshResource] - Vertex buffer initialized (%u standard vertices)", vertexCount);
 
 		// Index Buffer 초기화 (선택적)
 		if (indices && indexCount > 0)
@@ -206,18 +206,18 @@ namespace Graphics
 				DXGI_FORMAT_R16_UINT
 			))
 			{
-				LOG_ERROR("Mesh::InitializeStandard - Failed to initialize index buffer");
+				LOG_ERROR("[MeshResource] InitializeStandard - Failed to initialize index buffer");
 				mVertexBuffer.Shutdown();
 				return false;
 			}
 
-			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices, 16-bit)", indexCount);
+			LOG_GFX_INFO("[MeshResource] - Index buffer initialized (%u indices, 16-bit)", indexCount);
 		}
 
 		mInputLayout = StandardVertex::GetInputLayout();
 
 		mInitialized = true;
-		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u, 16-bit indices)", vertexCount, indexCount);
+		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u, 16-bit indices)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -225,7 +225,7 @@ namespace Graphics
 	// StandardVertex 초기화 (32비트 인덱스)
 	//=========================================================================
 
-	bool Mesh::InitializeStandard32(
+	bool MeshResource::InitializeStandard32(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -237,13 +237,13 @@ namespace Graphics
 	{
 		if (!device || !commandQueue || !commandContext || !vertices || vertexCount == 0)
 		{
-			LOG_GFX_ERROR("Mesh::InitializeStandard32 - Invalid parameters");
+			LOG_GFX_ERROR("[MeshResource] InitializeStandard32 - Invalid parameters");
 			return false;
 		}
 
 		if (mInitialized)
 		{
-			LOG_GFX_WARN("Mesh::InitializeStandard32 - Already initialized, shutting down first");
+			LOG_GFX_WARN("[MeshResource] InitializeStandard32 - Already initialized, shutting down first");
 			Shutdown();
 		}
 
@@ -257,11 +257,11 @@ namespace Graphics
 			sizeof(StandardVertex)
 		))
 		{
-			LOG_GFX_ERROR("Mesh::InitializeStandard32 - Failed to initialize vertex buffer");
+			LOG_GFX_ERROR("[MeshResource] InitializeStandard32 - Failed to initialize vertex buffer");
 			return false;
 		}
 
-		LOG_GFX_INFO("Mesh - Vertex buffer initialized (%u standard vertices)", vertexCount);
+		LOG_GFX_INFO("[MeshResource] - Vertex buffer initialized (%u standard vertices)", vertexCount);
 
 		// Index Buffer 초기화 (32비트)
 		if (indices && indexCount > 0)
@@ -275,18 +275,18 @@ namespace Graphics
 				DXGI_FORMAT_R32_UINT  // 32비트 인덱스
 			))
 			{
-				LOG_GFX_ERROR("Mesh::InitializeStandard32 - Failed to initialize index buffer");
+				LOG_GFX_ERROR("[MeshResource] InitializeStandard32 - Failed to initialize index buffer");
 				mVertexBuffer.Shutdown();
 				return false;
 			}
 
-			LOG_GFX_INFO("Mesh - Index buffer initialized (%u indices, 32-bit)", indexCount);
+			LOG_GFX_INFO("[MeshResource] - Index buffer initialized (%u indices, 32-bit)", indexCount);
 		}
 
 		mInputLayout = StandardVertex::GetInputLayout();
 
 		mInitialized = true;
-		LOG_GFX_INFO("Mesh initialized successfully (V:%u, I:%u, 32-bit indices)", vertexCount, indexCount);
+		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u, 32-bit indices)", vertexCount, indexCount);
 		return true;
 	}
 
@@ -294,14 +294,14 @@ namespace Graphics
 	// 공통
 	//=========================================================================
 
-	void Mesh::Shutdown()
+	void MeshResource::Shutdown()
 	{
 		if (!mInitialized)
 		{
 			return;
 		}
 
-		LOG_GFX_INFO("Mesh shutting down...");
+		LOG_GFX_INFO("[MeshResource] shutting down...");
 
 		mVertexBuffer.Shutdown();
 		mIndexBuffer.Shutdown();
@@ -309,7 +309,7 @@ namespace Graphics
 		mInitialized = false;
 	}
 
-	void Mesh::Draw(ID3D12GraphicsCommandList* commandList) const
+	void MeshResource::Draw(ID3D12GraphicsCommandList* commandList) const
 	{
 		if (!mInitialized || !commandList)
 		{

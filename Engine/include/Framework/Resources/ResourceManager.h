@@ -20,9 +20,9 @@
 
 namespace Graphics
 {
-	class Mesh;
-	class Material;
-	class Texture;
+	class MeshResource;
+	class MaterialResource;
+	class TextureResource;
 	class DX12Device;
 	class DX12Renderer;
 }
@@ -72,8 +72,8 @@ namespace Framework
 		 * @param id 리소스 ID
 		 * @return Mesh 포인터 (없으면 nullptr)
 		 */
-		Graphics::Mesh* GetMesh(ResourceId id);
-		const Graphics::Mesh* GetMesh(ResourceId id) const;
+		Graphics::MeshResource* GetMesh(ResourceId id);
+		const Graphics::MeshResource* GetMesh(ResourceId id) const;
 
 		/**
 		 * @brief ResourceId로 Mesh 제거
@@ -90,8 +90,8 @@ namespace Framework
 			const std::wstring& pixelShader
 		);
 
-		Graphics::Material* GetMaterial(ResourceId id);
-		const Graphics::Material* GetMaterial(ResourceId id) const;
+		Graphics::MaterialResource* GetMaterial(ResourceId id);
+		const Graphics::MaterialResource* GetMaterial(ResourceId id) const;
 		bool RemoveMaterial(ResourceId id);
 
 		//=====================================================================
@@ -162,8 +162,8 @@ namespace Framework
 			Graphics::TextureType textureType
 		);
 
-		Graphics::Texture* GetTexture(ResourceId id);
-		const Graphics::Texture* GetTexture(ResourceId id) const;
+		Graphics::TextureResource* GetTexture(ResourceId id);
+		const Graphics::TextureResource* GetTexture(ResourceId id) const;
 		bool RemoveTexture(ResourceId id);
 
 		/**
@@ -212,15 +212,15 @@ namespace Framework
 		Graphics::DX12Renderer* mRenderer;
 
 		// Mesh
-		std::unordered_map<ResourceId, std::shared_ptr<Graphics::Mesh>> mMeshes;
+		std::unordered_map<ResourceId, std::shared_ptr<Graphics::MeshResource>> mMeshes;
 		std::unordered_map<ResourceId, std::string> mMeshNames;
 
 		// Material
-		std::unordered_map<ResourceId, std::shared_ptr<Graphics::Material>> mMaterials;
+		std::unordered_map<ResourceId, std::shared_ptr<Graphics::MaterialResource>> mMaterials;
 		std::unordered_map<ResourceId, std::string> mMaterialNames;
 
 		// Texture
-		std::unordered_map<ResourceId, std::shared_ptr<Graphics::Texture>> mTextures;
+		std::unordered_map<ResourceId, std::shared_ptr<Graphics::TextureResource>> mTextures;
 		std::unordered_map<ResourceId, std::string> mTexturePaths;
 
 		// 폴백 텍스처 (1x1 Magenta)

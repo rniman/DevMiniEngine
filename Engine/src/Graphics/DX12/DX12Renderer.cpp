@@ -11,9 +11,9 @@
 #include "Graphics/DX12/DX12ShaderCompiler.h"
 #include "Graphics/DX12/DX12SwapChain.h"
 #include "Graphics/DebugDraw/DebugRenderer.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
-#include "Graphics/Texture.h"
+#include "Graphics/MaterialResource.h"
+#include "Graphics/MeshResource.h"
+#include "Graphics/TextureResource.h"
 #include "Graphics/TextureType.h"
 #include "Math/MathTypes.h"
 
@@ -183,7 +183,7 @@ namespace Graphics
 			D3D12_SHADER_VISIBILITY_VERTEX
 		);
 
-		// CBV (b1) - Material Constants
+		// CBV (b1) - MaterialResource Constants
 		rootParameters[1].InitAsConstantBufferView(
 			1,
 			0,
@@ -569,7 +569,7 @@ namespace Graphics
 			}
 			else
 			{
-				LOG_WARN("Material has no allocated descriptors");
+				LOG_WARN("MaterialResource has no allocated descriptors");
 			}
 
 			// 6. 메시 그리기

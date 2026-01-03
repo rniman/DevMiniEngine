@@ -270,7 +270,7 @@ namespace Graphics
 		}
 
 		// 프레임 상태 초기화
-		mCurrentFrameIndex = mDevice->GetSwapChain()->GetCurrentBackBufferIndex();
+		mCurrentFrameIndex = static_cast<uint32>(mDevice->GetSwapChain()->GetCurrentBackBufferIndex());
 		mCurrentDrawIndex = 0;
 
 		// PSO 및 공통 상태 설정

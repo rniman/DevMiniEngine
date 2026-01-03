@@ -13,12 +13,6 @@
     <Filter Include="Source Files\Resources">
       <UniqueIdentifier>{2523286a-970e-4568-a481-40a3c61b0bc1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Scene">
-      <UniqueIdentifier>{b612d706-863f-4829-ab87-56937f0f5213}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Scene">
-      <UniqueIdentifier>{ba01594e-1587-45a7-a7ca-8eba454d6f11}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\DebugUI">
       <UniqueIdentifier>{bb50d48d-f128-4734-aea5-6f1620ca77e8}</UniqueIdentifier>
     </Filter>
@@ -47,12 +41,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Framework\Resources\ResourceManager.cpp">
       <Filter>Source Files\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Framework\Scene\GameObject.cpp">
-      <Filter>Source Files\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Framework\Scene\Scene.cpp">
-      <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ThirdParty\imgui\imgui.cpp">
       <Filter>imgui</Filter>
@@ -127,12 +115,6 @@
     </ClInclude>
     <ClInclude Include="..\include\Framework\Resources\ResourceManager.h">
       <Filter>Header Files\Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\Framework\Scene\GameObject.h">
-      <Filter>Header Files\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\Framework\Scene\Scene.h">
-      <Filter>Header Files\Scene</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Framework\Resources\ResourceId.h">
       <Filter>Header Files\Resources</Filter>

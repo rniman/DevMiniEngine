@@ -6,13 +6,13 @@
 
 namespace Graphics
 {
-	class Material;
+	class MaterialResource;
 	class DX12ShaderCompiler;
 
 	/**
 	 * @brief PSO 생성 및 캐싱을 관리하는 클래스
 	 *
-	 * Material 기반으로 Pipeline State Object를 생성하고,
+	 * MaterialResource 기반으로 Pipeline State Object를 생성하고,
 	 * 동일한 설정의 PSO 재생성을 방지합니다.
 	 */
 	class DX12PipelineStateCache
@@ -34,7 +34,7 @@ namespace Graphics
 		bool Initialize(ID3D12Device* device, DX12ShaderCompiler* shaderCompiler);
 
 		/**
-		 * @brief Material 기반 PSO 가져오기 또는 생성
+		 * @brief MaterialResource 기반 PSO 가져오기 또는 생성
 		 *
 		 * 캐시에 동일한 설정의 PSO가 있으면 반환하고, 없으면 새로 생성합니다.
 		 *
@@ -44,7 +44,7 @@ namespace Graphics
 		 * @return 생성되거나 캐싱된 PSO (실패 시 nullptr)
 		 */
 		ID3D12PipelineState* GetOrCreatePipelineState(
-			const Material& material,
+			const MaterialResource& material,
 			ID3D12RootSignature* rootSignature,
 			const D3D12_INPUT_LAYOUT_DESC& inputLayout
 		);
@@ -66,7 +66,7 @@ namespace Graphics
 		/**
 		 * @brief PSO 캐시 키 구조체
 		 *
-		 * Material, InputLayout, RootSignature 조합으로 PSO를 고유하게 식별합니다.
+		 * MaterialResource, InputLayout, RootSignature 조합으로 PSO를 고유하게 식별합니다.
 		 */
 		struct PSOKey
 		{
@@ -100,7 +100,7 @@ namespace Graphics
 		 * @brief PSO 생성 헬퍼 함수
 		 */
 		ComPtr<ID3D12PipelineState> CreatePSO(
-			const Material& material,
+			const MaterialResource& material,
 			ID3D12RootSignature* rootSignature,
 			const D3D12_INPUT_LAYOUT_DESC& inputLayout
 		);
@@ -109,7 +109,7 @@ namespace Graphics
 		 * @brief 셰이더 컴파일 및 PSO Desc 구성
 		 */
 		bool CompileShadersAndFillDesc(
-			const Material& material,
+			const MaterialResource& material,
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc,
 			ComPtr<ID3DBlob>& vsBlob,
 			ComPtr<ID3DBlob>& psBlob

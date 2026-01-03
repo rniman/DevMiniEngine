@@ -21,14 +21,14 @@ namespace Graphics
 	 *
 	 * @note Phase 4.3: sRGB/Linear 색공간 자동 처리 지원
 	 */
-	class Texture
+	class TextureResource
 	{
 	public:
-		Texture() = default;
-		~Texture();
+		TextureResource() = default;
+		~TextureResource();
 
-		Texture(const Texture&) = delete;
-		Texture& operator=(const Texture&) = delete;
+		TextureResource(const TextureResource&) = delete;
+		TextureResource& operator=(const TextureResource&) = delete;
 
 		//=========================================================================
 		// 파일 로딩 (색공간 자동 적용)

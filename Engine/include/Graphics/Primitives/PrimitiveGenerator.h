@@ -19,7 +19,7 @@ namespace Graphics
 		/**
 		 * @brief 도형 생성 결과 데이터
 		 *
-		 * Mesh::InitializeStandard()에 전달할 수 있는 형태입니다.
+		 * MeshResource::InitializeStandard()에 전달할 수 있는 형태입니다.
 		 */
 		struct MeshData
 		{

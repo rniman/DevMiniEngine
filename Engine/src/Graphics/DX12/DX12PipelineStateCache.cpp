@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Graphics/DX12/DX12PipelineStateCache.h"
 #include "Graphics/DX12/DX12ShaderCompiler.h"
-#include "Graphics/Material.h"
+#include "Graphics/MaterialResource.h"
 
 using namespace std;
 
@@ -34,7 +34,7 @@ namespace Graphics
 	}
 
 	ID3D12PipelineState* DX12PipelineStateCache::GetOrCreatePipelineState(
-		const Material& material,
+		const MaterialResource& material,
 		ID3D12RootSignature* rootSignature,
 		const D3D12_INPUT_LAYOUT_DESC& inputLayout
 	)
@@ -61,12 +61,12 @@ namespace Graphics
 		auto it = mPSOCache.find(key);
 		if (it != mPSOCache.end())
 		{
-			// LOG_DEBUG("DX12PipelineStateCache: PSO cache hit (Material hash: %zu)", key.materialHash);
+			// LOG_DEBUG("DX12PipelineStateCache: PSO cache hit (MaterialResource hash: %zu)", key.materialHash);
 			return it->second.Get();
 		}
 
 		// 새로 생성
-		LOG_INFO("DX12PipelineStateCache: Creating new PSO (Material hash: %zu)", key.materialHash);
+		LOG_INFO("DX12PipelineStateCache: Creating new PSO (MaterialResource hash: %zu)", key.materialHash);
 
 		ComPtr<ID3D12PipelineState> pso = CreatePSO(material, rootSignature, inputLayout);
 		if (!pso)
@@ -84,7 +84,7 @@ namespace Graphics
 	}
 
 	ComPtr<ID3D12PipelineState> DX12PipelineStateCache::CreatePSO(
-		const Material& material,
+		const MaterialResource& material,
 		ID3D12RootSignature* rootSignature,
 		const D3D12_INPUT_LAYOUT_DESC& inputLayout
 	)
@@ -147,7 +147,7 @@ namespace Graphics
 	}
 
 	bool DX12PipelineStateCache::CompileShadersAndFillDesc(
-		const Material& material,
+		const MaterialResource& material,
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc,
 		ComPtr<ID3DBlob>& vsBlob,
 		ComPtr<ID3DBlob>& psBlob

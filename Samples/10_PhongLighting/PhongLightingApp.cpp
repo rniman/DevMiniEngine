@@ -18,8 +18,8 @@
 #include "Platform/Window.h"
 
 // Graphics
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
+#include "Graphics/MaterialResource.h"
+#include "Graphics/MeshResource.h"
 #include "Graphics/RenderTypes.h"
 #include "Graphics/TextureType.h"
 
@@ -393,7 +393,8 @@ void PhongLightingApp::SetupSharedMaterial()
 	}
 
 	Framework::ResourceId diffuseId = mResourceManager->LoadTexture(
-		"../../Assets/Textures/BrickWall17_1K_BaseColor.png"
+		"../../Assets/Textures/BrickWall17_1K_BaseColor.png",
+		Graphics::TextureType::Albedo
 	);
 
 	if (diffuseId.IsValid())
@@ -404,7 +405,8 @@ void PhongLightingApp::SetupSharedMaterial()
 
 	// Normal Map 로드 (선택적)
 	Framework::ResourceId normalId = mResourceManager->LoadTexture(
-		"../../Assets/Textures/BrickWall17_1K_Normal.png"
+		"../../Assets/Textures/BrickWall17_1K_Normal.png",
+		Graphics::TextureType::Normal
 	);
 
 	if (normalId.IsValid())

@@ -12,9 +12,9 @@
 #include "Core/Types.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
-#include "Graphics/Texture.h"
+#include "Graphics/MaterialResource.h"
+#include "Graphics/MeshResource.h"
+#include "Graphics/TextureResource.h"
 
 namespace Framework
 {
@@ -43,7 +43,7 @@ namespace Framework
 		// 1x1 Magenta 픽셀 (RGBA)
 		const Core::uint8 magentaPixel[4] = { 255, 0, 255, 255 };
 
-		auto texture = std::make_shared<Graphics::Texture>();
+		auto texture = std::make_shared<Graphics::TextureResource>();
 
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
@@ -65,8 +65,10 @@ namespace Framework
 		mTextures[mFallbackTextureId] = texture;
 		mTexturePaths[mFallbackTextureId] = "__fallback_magenta__";
 
-		LOG_INFO("[ResourceManager] Fallback texture created (1x1 Magenta, ID: 0x%llX)",
-			mFallbackTextureId.id);
+		LOG_INFO(
+			"[ResourceManager] Fallback texture created (1x1 Magenta, ID: 0x%llX)",
+			mFallbackTextureId.id
+		);
 	}
 
 	//=========================================================================
@@ -88,7 +90,7 @@ namespace Framework
 		}
 
 		// 새 메시 생성
-		auto mesh = std::make_shared<Graphics::Mesh>();
+		auto mesh = std::make_shared<Graphics::MeshResource>();
 		mMeshes[id] = mesh;
 		mMeshNames[id] = name;
 
@@ -129,7 +131,7 @@ namespace Framework
 		}
 
 		// 새 메시 생성
-		auto mesh = std::make_shared<Graphics::Mesh>();
+		auto mesh = std::make_shared<Graphics::MeshResource>();
 
 		// 정점 데이터
 		const auto& vertices = meshAsset->GetVertices();
@@ -198,7 +200,7 @@ namespace Framework
 		return id;
 	}
 
-	Graphics::Mesh* ResourceManager::GetMesh(ResourceId id)
+	Graphics::MeshResource* ResourceManager::GetMesh(ResourceId id)
 	{
 		auto it = mMeshes.find(id);
 		if (it != mMeshes.end())
@@ -210,7 +212,7 @@ namespace Framework
 		return nullptr;
 	}
 
-	const Graphics::Mesh* ResourceManager::GetMesh(ResourceId id) const
+	const Graphics::MeshResource* ResourceManager::GetMesh(ResourceId id) const
 	{
 		auto it = mMeshes.find(id);
 		if (it != mMeshes.end())
@@ -259,7 +261,7 @@ namespace Framework
 		desc.vertexShaderPath = vertexShader.c_str();
 		desc.pixelShaderPath = pixelShader.c_str();
 
-		auto material = std::make_shared<Graphics::Material>(desc);
+		auto material = std::make_shared<Graphics::MaterialResource>(desc);
 		mMaterials[id] = material;
 		mMaterialNames[id] = name;
 
@@ -267,7 +269,7 @@ namespace Framework
 		return id;
 	}
 
-	Graphics::Material* ResourceManager::GetMaterial(ResourceId id)
+	Graphics::MaterialResource* ResourceManager::GetMaterial(ResourceId id)
 	{
 		auto it = mMaterials.find(id);
 		if (it != mMaterials.end())
@@ -279,7 +281,7 @@ namespace Framework
 		return nullptr;
 	}
 
-	const Graphics::Material* ResourceManager::GetMaterial(ResourceId id) const
+	const Graphics::MaterialResource* ResourceManager::GetMaterial(ResourceId id) const
 	{
 		auto it = mMaterials.find(id);
 		if (it != mMaterials.end())
@@ -321,7 +323,7 @@ namespace Framework
 
 		std::wstring wpath = Core::UTF8ToWString(path);
 
-		auto texture = std::make_shared<Graphics::Texture>();
+		auto texture = std::make_shared<Graphics::TextureResource>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
 		// TextureType 전달하여 색공간 자동 적용
@@ -379,7 +381,7 @@ namespace Framework
 			return id;
 		}
 
-		auto texture = std::make_shared<Graphics::Texture>();
+		auto texture = std::make_shared<Graphics::TextureResource>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
 		// TextureType 전달하여 색공간 자동 적용
@@ -440,7 +442,7 @@ namespace Framework
 			? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
 			: DXGI_FORMAT_R8G8B8A8_UNORM;
 
-		auto texture = std::make_shared<Graphics::Texture>();
+		auto texture = std::make_shared<Graphics::TextureResource>();
 		Core::uint32 frameIndex = mRenderer->GetCurrentFrameIndex();
 
 		if (!texture->CreateFromMemory(
@@ -472,7 +474,7 @@ namespace Framework
 		return id;
 	}
 
-	Graphics::Texture* ResourceManager::GetTexture(ResourceId id)
+	Graphics::TextureResource* ResourceManager::GetTexture(ResourceId id)
 	{
 		auto it = mTextures.find(id);
 		if (it != mTextures.end())
@@ -484,7 +486,7 @@ namespace Framework
 		return nullptr;
 	}
 
-	const Graphics::Texture* ResourceManager::GetTexture(ResourceId id) const
+	const Graphics::TextureResource* ResourceManager::GetTexture(ResourceId id) const
 	{
 		auto it = mTextures.find(id);
 		if (it != mTextures.end())

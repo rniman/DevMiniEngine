@@ -14,7 +14,7 @@ namespace Framework
 namespace Graphics
 {
 	class DX12DescriptorHeap;
-	class Texture;
+	class TextureResource;
 
 	/**
 	 * @brief 블렌드 모드 프리셋 열거형
@@ -62,7 +62,7 @@ namespace Graphics
 	}
 
 	/**
-	 * @brief Material 생성을 위한 설정 구조체
+	 * @brief MaterialResource 생성을 위한 설정 구조체
 	 */
 	struct MaterialDesc
 	{
@@ -107,27 +107,27 @@ namespace Graphics
 	 * Material은 PSO 생성에 필요한 모든 렌더링 상태 정보를 관리합니다.
 	 * 셰이더 경로, 블렌드 상태, 래스터라이저 상태, 깊이-스텐실 상태를 포함합니다.
 	 */
-	class Material
+	class MaterialResource
 	{
 	public:
 		/**
 		 * @brief MaterialDesc를 사용한 생성자
 		 *
-		 * @param desc Material 설정 정보
+		 * @param desc MaterialResource 설정 정보
 		 */
-		explicit Material(const MaterialDesc& desc);
+		explicit MaterialResource(const MaterialDesc& desc);
 
 		/**
 		 * @brief 기본 생성자 (Opaque Material)
 		 */
-		Material();
-		~Material() = default;
+		MaterialResource();
+		~MaterialResource() = default;
 
 		// 복사, 이동 허용 
-		Material(const Material&) = default;
-		Material& operator=(const Material&) = default;
-		Material(Material&&) noexcept = default;
-		Material& operator=(Material&&) noexcept = default;
+		MaterialResource(const MaterialResource&) = default;
+		MaterialResource& operator=(const MaterialResource&) = default;
+		MaterialResource(MaterialResource&&) noexcept = default;
+		MaterialResource& operator=(MaterialResource&&) noexcept = default;
 
 		/**
 		 * @brief Material의 모든 텍스처를 위한 Descriptor 블록 할당
@@ -180,8 +180,8 @@ namespace Graphics
 
 		Core::uint32 GetTextureFlags() const;
 
-		//// Texture 관련
-		//std::shared_ptr<Texture> GetTexture(TextureType type) const;
+		//// TextureResource 관련
+		//std::shared_ptr<TextureResource> GetTexture(TextureType type) const;
 		//bool HasTexture(TextureType type) const;
 		//uint32 GetTextureCount() const;
 
@@ -221,11 +221,11 @@ namespace Graphics
 		}
 
 		/**
-		 * @brief Material 설정 기반 해시 값 계산
+		 * @brief MaterialResource 설정 기반 해시 값 계산
 		 *
 		 * PSO 캐싱에 사용됩니다.
 		 *
-		 * @return Material 고유 해시 값
+		 * @return MaterialResource 고유 해시 값
 		 */
 		size_t GetHash() const;
 

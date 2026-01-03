@@ -15,8 +15,8 @@
 #include "Core/Assert.h"
 #include "Core/Logging/LogMacros.h"
 #include "Framework/Resources/ResourceManager.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
+#include "Graphics/MaterialResource.h"
+#include "Graphics/MeshResource.h"
 #include "Math/MathUtils.h"
 
 namespace ECS
@@ -83,14 +83,14 @@ namespace ECS
 
 			Math::Matrix4x4 worldMatrix = TransformSystem::GetWorldMatrix(*transform);
 
-			Graphics::Mesh* mesh = mResourceManager->GetMesh(meshComp->meshId);
+			Graphics::MeshResource* mesh = mResourceManager->GetMesh(meshComp->meshId);
 			if (!mesh)
 			{
 				LOG_WARN("[RenderSystem] Mesh not found for entity %u", entity.id);
 				continue;
 			}
 
-			Graphics::Material* material = mResourceManager->GetMaterial(materialComp->materialId);
+			Graphics::MaterialResource* material = mResourceManager->GetMaterial(materialComp->materialId);
 			if (!material)
 			{
 				LOG_WARN("[RenderSystem] Material not found for entity %u", entity.id);

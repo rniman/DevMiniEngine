@@ -1,10 +1,10 @@
 ﻿#include "pch.h" 
-#include "Graphics/Texture.h"
+#include "Graphics/TextureResource.h"
 #include "Graphics/DX12/DX12CommandContext.h"
 #include "Graphics/DX12/DX12CommandQueue.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
 
-// WIC/DDS Texture Loader (DirectXTK12)
+// WIC/DDS TextureResource Loader (DirectXTK12)
 #include "WICTextureLoader12.h"
 #include "DDSTextureLoader12.h"
 
@@ -36,7 +36,7 @@ namespace
 
 namespace Graphics
 {
-	Texture::~Texture()
+	TextureResource::~TextureResource()
 	{
 		Shutdown();
 	}
@@ -45,7 +45,7 @@ namespace Graphics
 	// 파일 로딩
 	//=========================================================================
 
-	bool Texture::LoadFromFile(
+	bool TextureResource::LoadFromFile(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -53,15 +53,15 @@ namespace Graphics
 		TextureType textureType
 	)
 	{
-		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
-		CORE_ASSERT(commandQueue != nullptr, "[Texture] CommandQueue is null");
-		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
-		CORE_ASSERT(filename != nullptr, "[Texture] Filename is null");
+		CORE_ASSERT(device != nullptr, "[TextureResource] Device is null");
+		CORE_ASSERT(commandQueue != nullptr, "[TextureResource] CommandQueue is null");
+		CORE_ASSERT(commandContext != nullptr, "[TextureResource] CommandContext is null");
+		CORE_ASSERT(filename != nullptr, "[TextureResource] Filename is null");
 
 		const bool isSRGB = IsSRGBTexture(textureType);
 
 		LOG_INFO(
-			"[Texture] Loading WIC texture: %s (Type: %s, sRGB: %s)",
+			"[TextureResource] Loading WIC texture: %s (Type: %s, sRGB: %s)",
 			filesystem::path(filename).filename().string().c_str(),
 			TextureTypeToString(textureType),
 			isSRGB ? "Yes" : "No"
@@ -69,7 +69,7 @@ namespace Graphics
 
 		if (mInitialized)
 		{
-			LOG_WARN("[Texture] Texture already initialized. Shutting down first.");
+			LOG_WARN("[TextureResource] TextureResource already initialized. Shutting down first.");
 			Shutdown();
 		}
 
@@ -94,14 +94,14 @@ namespace Graphics
 
 		if (FAILED(hr))
 		{
-			LOG_ERROR("[Texture] Failed to load WIC texture (HRESULT: 0x%08X)", hr);
+			LOG_ERROR("[TextureResource] Failed to load WIC texture (HRESULT: 0x%08X)", hr);
 			return false;
 		}
 
 		// GPU로 텍스처 데이터 업로드 (서브리소스 1개)
 		if (!UploadTextureData(device, commandContext, commandQueue, &subresource, 1))
 		{
-			LOG_ERROR("[Texture] Failed to upload WIC texture data to GPU");
+			LOG_ERROR("[TextureResource] Failed to upload WIC texture data to GPU");
 			mTexture.Reset();
 			return false;
 		}
@@ -115,7 +115,7 @@ namespace Graphics
 
 		mInitialized = true;
 		LOG_INFO(
-			"[Texture] WIC texture loaded (%ux%u, Format: %d, sRGB: %s)",
+			"[TextureResource] WIC texture loaded (%ux%u, Format: %d, sRGB: %s)",
 			mWidth,
 			mHeight,
 			static_cast<int>(mFormat),
@@ -125,26 +125,26 @@ namespace Graphics
 		return true;
 	}
 
-	bool Texture::LoadFromDDS(
+	bool TextureResource::LoadFromDDS(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
 		const wchar_t* filename
 	)
 	{
-		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
-		CORE_ASSERT(commandQueue != nullptr, "[Texture] CommandQueue is null");
-		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
-		CORE_ASSERT(filename != nullptr, "[Texture] Filename is null");
+		CORE_ASSERT(device != nullptr, "[TextureResource] Device is null");
+		CORE_ASSERT(commandQueue != nullptr, "[TextureResource] CommandQueue is null");
+		CORE_ASSERT(commandContext != nullptr, "[TextureResource] CommandContext is null");
+		CORE_ASSERT(filename != nullptr, "[TextureResource] Filename is null");
 
 		LOG_INFO(
-			"[Texture] Loading DDS texture from file: %s",
+			"[TextureResource] Loading DDS texture from file: %s",
 			filesystem::path(filename).filename().string().c_str()
 		);
 
 		if (mInitialized)
 		{
-			LOG_WARN("[Texture] Texture already initialized. Shutting down first.");
+			LOG_WARN("[TextureResource] TextureResource already initialized. Shutting down first.");
 			Shutdown();
 		}
 
@@ -163,7 +163,7 @@ namespace Graphics
 
 		if (FAILED(hr))
 		{
-			LOG_ERROR("[Texture] Failed to load DDS texture (HRESULT: 0x%08X)", hr);
+			LOG_ERROR("[TextureResource] Failed to load DDS texture (HRESULT: 0x%08X)", hr);
 			return false;
 		}
 
@@ -176,7 +176,7 @@ namespace Graphics
 			static_cast<UINT>(subresources.size())
 		))
 		{
-			LOG_ERROR("[Texture] Failed to upload DDS texture data to GPU");
+			LOG_ERROR("[TextureResource] Failed to upload DDS texture data to GPU");
 			mTexture.Reset();
 			return false;
 		}
@@ -206,7 +206,7 @@ namespace Graphics
 
 		mInitialized = true;
 		LOG_INFO(
-			"[Texture] DDS texture loaded (%ux%u, Format: %d, MipLevels: %u, sRGB: %s)",
+			"[TextureResource] DDS texture loaded (%ux%u, Format: %d, MipLevels: %u, sRGB: %s)",
 			mWidth,
 			mHeight,
 			static_cast<int>(mFormat),
@@ -221,7 +221,7 @@ namespace Graphics
 	// 메모리 로딩
 	//=========================================================================
 
-	bool Texture::CreateFromMemory(
+	bool TextureResource::CreateFromMemory(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -231,17 +231,17 @@ namespace Graphics
 		DXGI_FORMAT format
 	)
 	{
-		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
-		CORE_ASSERT(commandQueue != nullptr, "[Texture] CommandQueue is null");
-		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
-		CORE_ASSERT(data != nullptr, "[Texture] Data is null");
-		CORE_ASSERT(width > 0 && height > 0, "[Texture] Invalid dimensions");
+		CORE_ASSERT(device != nullptr, "[TextureResource] Device is null");
+		CORE_ASSERT(commandQueue != nullptr, "[TextureResource] CommandQueue is null");
+		CORE_ASSERT(commandContext != nullptr, "[TextureResource] CommandContext is null");
+		CORE_ASSERT(data != nullptr, "[TextureResource] Data is null");
+		CORE_ASSERT(width > 0 && height > 0, "[TextureResource] Invalid dimensions");
 
-		LOG_INFO("[Texture] Creating texture from raw memory (%ux%u)", width, height);
+		LOG_INFO("[TextureResource] Creating texture from raw memory (%ux%u)", width, height);
 
 		if (mInitialized)
 		{
-			LOG_WARN("[Texture] Texture already initialized. Shutting down first.");
+			LOG_WARN("[TextureResource] TextureResource already initialized. Shutting down first.");
 			Shutdown();
 		}
 
@@ -268,7 +268,7 @@ namespace Graphics
 			bytesPerPixel = 16;
 			break;
 		default:
-			LOG_WARN("[Texture] Unknown format, assuming 4 bytes per pixel");
+			LOG_WARN("[TextureResource] Unknown format, assuming 4 bytes per pixel");
 			bytesPerPixel = 4;
 			break;
 		}
@@ -300,7 +300,7 @@ namespace Graphics
 
 		if (FAILED(hr))
 		{
-			LOG_ERROR("[Texture] Failed to create texture resource (HRESULT: 0x%08X)", hr);
+			LOG_ERROR("[TextureResource] Failed to create texture resource (HRESULT: 0x%08X)", hr);
 			return false;
 		}
 
@@ -313,7 +313,7 @@ namespace Graphics
 		// GPU로 업로드 (기존 함수 재사용)
 		if (!UploadTextureData(device, commandContext, commandQueue, &subresource, 1))
 		{
-			LOG_ERROR("[Texture] Failed to upload texture data to GPU");
+			LOG_ERROR("[TextureResource] Failed to upload texture data to GPU");
 			mTexture.Reset();
 			return false;
 		}
@@ -338,7 +338,7 @@ namespace Graphics
 		mInitialized = true;
 
 		LOG_INFO(
-			"[Texture] Texture created from raw memory (%ux%u, Format: %d, sRGB: %s)",
+			"[TextureResource] TextureResource created from raw memory (%ux%u, Format: %d, sRGB: %s)",
 			mWidth,
 			mHeight,
 			static_cast<int>(mFormat),
@@ -348,7 +348,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool Texture::LoadFromMemory(
+	bool TextureResource::LoadFromMemory(
 		ID3D12Device* device,
 		DX12CommandQueue* commandQueue,
 		DX12CommandContext* commandContext,
@@ -357,16 +357,16 @@ namespace Graphics
 		TextureType textureType
 	)
 	{
-		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
-		CORE_ASSERT(commandQueue != nullptr, "[Texture] CommandQueue is null");
-		CORE_ASSERT(commandContext != nullptr, "[Texture] CommandContext is null");
-		CORE_ASSERT(data != nullptr, "[Texture] Data is null");
-		CORE_ASSERT(dataSize > 0, "[Texture] Invalid data size");
+		CORE_ASSERT(device != nullptr, "[TextureResource] Device is null");
+		CORE_ASSERT(commandQueue != nullptr, "[TextureResource] CommandQueue is null");
+		CORE_ASSERT(commandContext != nullptr, "[TextureResource] CommandContext is null");
+		CORE_ASSERT(data != nullptr, "[TextureResource] Data is null");
+		CORE_ASSERT(dataSize > 0, "[TextureResource] Invalid data size");
 
 		const bool isSRGB = IsSRGBTexture(textureType);
 
 		LOG_INFO(
-			"[Texture] Loading texture from memory (%u bytes, Type: %s, sRGB: %s)",
+			"[TextureResource] Loading texture from memory (%u bytes, Type: %s, sRGB: %s)",
 			dataSize,
 			TextureTypeToString(textureType),
 			isSRGB ? "Yes" : "No"
@@ -374,7 +374,7 @@ namespace Graphics
 
 		if (mInitialized)
 		{
-			LOG_WARN("[Texture] Texture already initialized. Shutting down first.");
+			LOG_WARN("[TextureResource] TextureResource already initialized. Shutting down first.");
 			Shutdown();
 		}
 
@@ -400,14 +400,14 @@ namespace Graphics
 
 		if (FAILED(hr))
 		{
-			LOG_ERROR("[Texture] Failed to load WIC texture from memory (HRESULT: 0x%08X)", hr);
+			LOG_ERROR("[TextureResource] Failed to load WIC texture from memory (HRESULT: 0x%08X)", hr);
 			return false;
 		}
 
 		// GPU로 텍스처 데이터 업로드
 		if (!UploadTextureData(device, commandContext, commandQueue, &subresource, 1))
 		{
-			LOG_ERROR("[Texture] Failed to upload texture data to GPU");
+			LOG_ERROR("[TextureResource] Failed to upload texture data to GPU");
 			mTexture.Reset();
 			return false;
 		}
@@ -421,7 +421,7 @@ namespace Graphics
 
 		mInitialized = true;
 		LOG_INFO(
-			"[Texture] Texture loaded from memory (%ux%u, Format: %d, sRGB: %s)",
+			"[TextureResource] TextureResource loaded from memory (%ux%u, Format: %d, sRGB: %s)",
 			mWidth,
 			mHeight,
 			static_cast<int>(mFormat),
@@ -435,7 +435,7 @@ namespace Graphics
 	// GPU 업로드
 	//=========================================================================
 
-	bool Texture::UploadTextureData(
+	bool TextureResource::UploadTextureData(
 		ID3D12Device* device,
 		DX12CommandContext* commandContext,
 		DX12CommandQueue* commandQueue,
@@ -449,7 +449,7 @@ namespace Graphics
 		// 서브리소스가 없으면 실패
 		if (numSubresources == 0 || subresources == nullptr)
 		{
-			LOG_ERROR("[Texture] No subresources to upload");
+			LOG_ERROR("[TextureResource] No subresources to upload");
 			return false;
 		}
 
@@ -480,7 +480,7 @@ namespace Graphics
 		if (FAILED(hr))
 		{
 			LOG_ERROR(
-				"[Texture] Failed to create upload buffer: HRESULT = 0x%08X",
+				"[TextureResource] Failed to create upload buffer: HRESULT = 0x%08X",
 				static_cast<uint32>(hr)
 			);
 			return false;
@@ -513,7 +513,7 @@ namespace Graphics
 
 		// Upload Buffer는 자동으로 해제됨 (ComPtr)
 		LOG_TRACE(
-			"[Texture] Texture data uploaded to GPU (%u subresource%s)",
+			"[TextureResource] TextureResource data uploaded to GPU (%u subresource%s)",
 			numSubresources, numSubresources > 1 ? "s" : ""
 		);
 
@@ -524,17 +524,17 @@ namespace Graphics
 	// SRV 생성
 	//=========================================================================
 
-	bool Texture::CreateSRV(
+	bool TextureResource::CreateSRV(
 		ID3D12Device* device,
 		const DX12DescriptorHeap* descriptorHeap,
 		uint32 descriptorIndex
 	)
 	{
-		CORE_ASSERT(mInitialized, "[Texture] Texture not initialized");
-		CORE_ASSERT(device != nullptr, "[Texture] Device is null");
-		CORE_ASSERT(descriptorHeap != nullptr, "[Texture] Descriptor heap is null");
+		CORE_ASSERT(mInitialized, "[TextureResource] TextureResource not initialized");
+		CORE_ASSERT(device != nullptr, "[TextureResource] Device is null");
+		CORE_ASSERT(descriptorHeap != nullptr, "[TextureResource] Descriptor heap is null");
 
-		LOG_INFO("[Texture] Creating SRV for texture...");
+		LOG_INFO("[TextureResource] Creating SRV for texture...");
 
 		// 디스크립터 힙에서 SRV용 핸들 할당
 		// TODO: DX12DescriptorHeap에 AllocateSRV 메서드 구현 필요
@@ -556,7 +556,7 @@ namespace Graphics
 		);
 
 		LOG_INFO(
-			"[Texture] SRV created (MipLevels: %u, sRGB: %s)",
+			"[TextureResource] SRV created (MipLevels: %u, sRGB: %s)",
 			srvDesc.Texture2D.MipLevels,
 			mIsSRGB ? "Yes" : "No"
 		);
@@ -568,14 +568,14 @@ namespace Graphics
 	// 정리
 	//=========================================================================
 
-	void Texture::Shutdown()
+	void TextureResource::Shutdown()
 	{
 		if (!mInitialized)
 		{
 			return;
 		}
 
-		LOG_TRACE("[Texture] Shutting down texture (%ux%u, sRGB: %s)", mWidth, mHeight, mIsSRGB ? "Yes" : "No");
+		LOG_TRACE("[TextureResource] Shutting down texture (%ux%u, sRGB: %s)", mWidth, mHeight, mIsSRGB ? "Yes" : "No");
 
 		mTexture.Reset();
 		mSRVGPUHandle = {};

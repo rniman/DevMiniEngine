@@ -8,16 +8,16 @@
 namespace Graphics
 {
 	// 전방 선언
-	class Mesh;
-	class Material;
+	class MeshResource;
+	class MaterialResource;
 
 	/**
 	 * @brief 단일 렌더링 아이템 (Draw Call 단위)
 	 */
 	struct RenderItem
 	{
-		const Mesh* mesh = nullptr;
-		const Material* material = nullptr;
+		const MeshResource* mesh = nullptr;
+		const MaterialResource* material = nullptr;
 		Math::Matrix4x4 worldMatrix = Math::Matrix4x4::Identity();
 		Math::Matrix4x4 mvpMatrix = Math::Matrix4x4::Identity();
 	};

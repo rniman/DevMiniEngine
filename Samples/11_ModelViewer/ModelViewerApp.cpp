@@ -31,8 +31,8 @@
 #include "Platform/Window.h"
 
 // Graphics
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
+#include "Graphics/MaterialResource.h"
+#include "Graphics/MeshResource.h"
 #include "Graphics/Primitives/PrimitiveGenerator.h"
 #include "Graphics/RenderTypes.h"
 #include "Graphics/TextureType.h"

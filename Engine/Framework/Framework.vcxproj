@@ -246,8 +246,6 @@
     <ClCompile Include="..\src\Framework\DebugUI\ImGuiManager.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\PerformancePanel.cpp" />
     <ClCompile Include="..\src\Framework\Resources\ResourceManager.cpp" />
-    <ClCompile Include="..\src\Framework\Scene\GameObject.cpp" />
-    <ClCompile Include="..\src\Framework\Scene\Scene.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -276,8 +274,6 @@
     <ClInclude Include="..\include\Framework\DebugUI\PerformancePanel.h" />
     <ClInclude Include="..\include\Framework\Resources\ResourceId.h" />
     <ClInclude Include="..\include\Framework\Resources\ResourceManager.h" />
-    <ClInclude Include="..\include\Framework\Scene\GameObject.h" />
-    <ClInclude Include="..\include\Framework\Scene\Scene.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

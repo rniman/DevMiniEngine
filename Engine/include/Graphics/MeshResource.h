@@ -1,5 +1,5 @@
 ﻿/**
- * @file Mesh.h
+ * @file MeshResource.h
  * @brief 렌더링 가능한 메시를 관리하는 클래스
  *
  * VertexBuffer와 IndexBuffer를 하나의 렌더링 단위로 조합하여 관리합니다.
@@ -25,14 +25,14 @@ namespace Graphics
 	 * VertexBuffer와 IndexBuffer를 하나의 렌더링 단위로 조합하여 관리합니다.
 	 * GPU 메모리에 지오메트리 데이터를 업로드하고 렌더링 시 바인딩/드로우를 수행합니다.
 	 */
-	class Mesh
+	class MeshResource
 	{
 	public:
-		Mesh() = default;
-		~Mesh();
+		MeshResource() = default;
+		~MeshResource();
 
-		Mesh(const Mesh&) = delete;
-		Mesh& operator=(const Mesh&) = delete;
+		MeshResource(const MeshResource&) = delete;
+		MeshResource& operator=(const MeshResource&) = delete;
 
 		//=====================================================================
 		// BasicVertex 초기화

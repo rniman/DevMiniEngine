@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
-#include "Graphics/Material.h"
+#include "Graphics/MaterialResource.h"
 #include "Graphics/DX12/DX12DescriptorHeap.h"
-#include "Graphics/Texture.h"
+#include "Graphics/TextureResource.h"
 #include "Framework/Resources/ResourceManager.h"
 
 using namespace std;
@@ -9,7 +9,7 @@ using namespace std;
 namespace Graphics
 {
 
-	Material::Material(const MaterialDesc& desc)
+	MaterialResource::MaterialResource(const MaterialDesc& desc)
 		: mVertexShaderPath(desc.vertexShaderPath)
 		, mPixelShaderPath(desc.pixelShaderPath)
 		, mVSEntryPoint(desc.vsEntryPoint)
@@ -56,7 +56,7 @@ namespace Graphics
 		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
 	}
 
-	Material::Material()
+	MaterialResource::MaterialResource()
 		: mVertexShaderPath(L"BasicShader.hlsl")
 		, mPixelShaderPath(L"BasicShader.hlsl")
 		, mVSEntryPoint("VSMain")
@@ -101,7 +101,7 @@ namespace Graphics
 		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
 	}
 
-	bool Material::AllocateDescriptors(
+	bool MaterialResource::AllocateDescriptors(
 		ID3D12Device* device,
 		DX12DescriptorHeap* heap,
 		Framework::ResourceManager* resourceMgr
@@ -109,13 +109,13 @@ namespace Graphics
 	{
 		if (!device || !heap)
 		{
-			LOG_ERROR("[Material] Device or Heap is null");
+			LOG_ERROR("[MaterialResource] Device or Heap is null");
 			return false;
 		}
 
 		if (mDescriptorStartIndex != INVALID_DESCRIPTOR_INDEX)
 		{
-			LOG_WARN("[Material] Descriptors already allocated. Freeing first.");
+			LOG_WARN("[MaterialResource] Descriptors already allocated. Freeing first.");
 			FreeDescriptors(heap);
 		}
 
@@ -125,12 +125,12 @@ namespace Graphics
 
 		if (mDescriptorStartIndex == INVALID_DESCRIPTOR_INDEX)
 		{
-			LOG_ERROR("[Material] Failed to allocate descriptor block");
+			LOG_ERROR("[MaterialResource] Failed to allocate descriptor block");
 			return false;
 		}
 
 		LOG_INFO(
-			"[Material] Allocated descriptor block [%u ~ %u]",
+			"[MaterialResource] Allocated descriptor block [%u ~ %u]",
 			mDescriptorStartIndex,
 			mDescriptorStartIndex + slotCount - 1
 		);
@@ -145,7 +145,7 @@ namespace Graphics
 			if (mTextureIds[i].IsValid())
 			{
 				// ResourceManager에서 실제 Texture 포인터 조회
-				Texture* texture = resourceMgr->GetTexture(mTextureIds[i]);
+				TextureResource* texture = resourceMgr->GetTexture(mTextureIds[i]);
 
 				if (texture && texture->IsInitialized())
 				{
@@ -153,7 +153,7 @@ namespace Graphics
 					if (!texture->CreateSRV(device, heap, descriptorIndex))
 					{
 						LOG_ERROR(
-							"[Material] Failed to create SRV for texture type: %s (ID: 0x%llX)",
+							"[MaterialResource] Failed to create SRV for texture type: %s (ID: 0x%llX)",
 							TextureTypeToString(type),
 							mTextureIds[i].id
 						);
@@ -162,7 +162,7 @@ namespace Graphics
 					}
 
 					LOG_TRACE(
-						"[Material] Created SRV for %s at descriptor %u (ID: 0x%llX)",
+						"[MaterialResource] Created SRV for %s at descriptor %u (ID: 0x%llX)",
 						TextureTypeToString(type),
 						descriptorIndex,
 						mTextureIds[i].id
@@ -171,7 +171,7 @@ namespace Graphics
 				else
 				{
 					LOG_WARN(
-						"[Material] Texture not found for type %s (ID: 0x%llX), creating Dummy SRV",
+						"[MaterialResource] TextureResource not found for type %s (ID: 0x%llX), creating Dummy SRV",
 						TextureTypeToString(type),
 						mTextureIds[i].id
 					);
@@ -184,28 +184,28 @@ namespace Graphics
 				CreateDummySRV(device, heap, descriptorIndex);
 
 				LOG_TRACE(
-					"[Material] Created Dummy SRV for %s at descriptor %u (no texture)",
+					"[MaterialResource] Created Dummy SRV for %s at descriptor %u (no texture)",
 					TextureTypeToString(type),
 					descriptorIndex
 				);
 			}
 		}
 
-		LOG_INFO("[Material] All descriptors allocated successfully");
+		LOG_INFO("[MaterialResource] All descriptors allocated successfully");
 		return true;
 	}
 
-	void Material::FreeDescriptors(DX12DescriptorHeap* heap)
+	void MaterialResource::FreeDescriptors(DX12DescriptorHeap* heap)
 	{
 		if (!heap)
 		{
-			LOG_ERROR("[Material] Heap is null");
+			LOG_ERROR("[MaterialResource] Heap is null");
 			return;
 		}
 
 		if (mDescriptorStartIndex == INVALID_DESCRIPTOR_INDEX)
 		{
-			LOG_WARN("[Material] No descriptors to free");
+			LOG_WARN("[MaterialResource] No descriptors to free");
 			return;
 		}
 
@@ -213,7 +213,7 @@ namespace Graphics
 		heap->FreeBlock(mDescriptorStartIndex, slotCount);
 
 		LOG_INFO(
-			"[Material] Freed descriptor block [%u ~ %u]",
+			"[MaterialResource] Freed descriptor block [%u ~ %u]",
 			mDescriptorStartIndex,
 			mDescriptorStartIndex + slotCount - 1
 		);
@@ -221,31 +221,31 @@ namespace Graphics
 		mDescriptorStartIndex = INVALID_DESCRIPTOR_INDEX;
 	}
 
-	void Material::SetTexture(TextureType type, Framework::ResourceId textureId)
+	void MaterialResource::SetTexture(TextureType type, Framework::ResourceId textureId)
 	{
 		size_t index = static_cast<size_t>(type);
 		mTextureIds[index] = textureId;
 
 		LOG_DEBUG(
-			"[Material] Set texture %s to ID: 0x%llX",
+			"[MaterialResource] Set texture %s to ID: 0x%llX",
 			TextureTypeToString(type),
 			textureId.id
 		);
 	}
 
-	Framework::ResourceId Material::GetTextureId(TextureType type) const
+	Framework::ResourceId MaterialResource::GetTextureId(TextureType type) const
 	{
 		size_t index = static_cast<size_t>(type);
 		return mTextureIds[index];
 	}
 
-	bool Material::HasTexture(TextureType type) const
+	bool MaterialResource::HasTexture(TextureType type) const
 	{
 		size_t index = static_cast<size_t>(type);
 		return mTextureIds[index].IsValid();
 	}
 
-	uint32 Material::GetTextureCount() const
+	uint32 MaterialResource::GetTextureCount() const
 	{
 		uint32 count = 0;
 		for (const auto& id : mTextureIds)
@@ -258,7 +258,7 @@ namespace Graphics
 		return count;
 	}
 
-	D3D12_BLEND_DESC Material::CreateBlendDesc(BlendMode mode)
+	D3D12_BLEND_DESC MaterialResource::CreateBlendDesc(BlendMode mode)
 	{
 		D3D12_BLEND_DESC blendDesc = {};
 		blendDesc.AlphaToCoverageEnable = FALSE;
@@ -317,7 +317,7 @@ namespace Graphics
 		return blendDesc;
 	}
 
-	D3D12_DEPTH_STENCIL_DESC Material::CreateDepthStencilDesc(
+	D3D12_DEPTH_STENCIL_DESC MaterialResource::CreateDepthStencilDesc(
 		bool depthTest,
 		bool depthWrite,
 		D3D12_COMPARISON_FUNC depthComparisonFunc
@@ -346,19 +346,19 @@ namespace Graphics
 		return depthStencilDesc;
 	}
 
-	//std::shared_ptr<Texture> Material::GetTexture(TextureType type) const
+	//std::shared_ptr<TextureResource> MaterialResource::GetTexture(TextureType type) const
 	//{
 	//	size_t index = static_cast<size_t>(type);
 	//	return mTextures[index];
 	//}
 
-	//bool Material::HasTexture(TextureType type) const
+	//bool MaterialResource::HasTexture(TextureType type) const
 	//{
 	//	size_t index = static_cast<size_t>(type);
 	//	return mTextures[index] != nullptr;
 	//}
 
-	//uint32 Material::GetTextureCount() const
+	//uint32 MaterialResource::GetTextureCount() const
 	//{
 	//	uint32 count = 0;
 	//	for (const auto& texture : mTextures)
@@ -371,7 +371,7 @@ namespace Graphics
 	//	return count;
 	//}
 
-	Core::uint32 Material::GetTextureFlags() const
+	Core::uint32 MaterialResource::GetTextureFlags() const
 	{
 		Core::uint32 flags = 0;
 
@@ -403,26 +403,26 @@ namespace Graphics
 		return flags;
 	}
 
-	D3D12_GPU_DESCRIPTOR_HANDLE Material::GetDescriptorTableHandle(const DX12DescriptorHeap* heap) const
+	D3D12_GPU_DESCRIPTOR_HANDLE MaterialResource::GetDescriptorTableHandle(const DX12DescriptorHeap* heap) const
 	{
 		if (!heap)
 		{
-			LOG_ERROR("[Material] Heap is null");
+			LOG_ERROR("[MaterialResource] Heap is null");
 			return {};
 		}
 
 		if (mDescriptorStartIndex == INVALID_DESCRIPTOR_INDEX)
 		{
-			LOG_ERROR("[Material] Descriptors not allocated");
+			LOG_ERROR("[MaterialResource] Descriptors not allocated");
 			return {};
 		}
 
 		return heap->GetGPUHandle(mDescriptorStartIndex);
 	}
 
-	bool Material::HasAllocatedDescriptors() const { return mDescriptorStartIndex != INVALID_DESCRIPTOR_INDEX; }
+	bool MaterialResource::HasAllocatedDescriptors() const { return mDescriptorStartIndex != INVALID_DESCRIPTOR_INDEX; }
 
-	size_t Material::GetHash() const
+	size_t MaterialResource::GetHash() const
 	{
 		// 캐시된 해시가 있으면 반환
 		if (mCachedHash != 0)
@@ -451,7 +451,7 @@ namespace Graphics
 		return mCachedHash;
 	}
 
-	void Material::CreateDummySRV(ID3D12Device* device, DX12DescriptorHeap* heap, uint32 index)
+	void MaterialResource::CreateDummySRV(ID3D12Device* device, DX12DescriptorHeap* heap, uint32 index)
 	{
 		// 1x1 검은색 텍스처 대신, null descriptor 생성
 		// D3D12에서는 null descriptor를 명시적으로 생성할 수 없으므로
@@ -480,12 +480,12 @@ namespace Graphics
 		// TODO: 향후 TextureManager에서 전역 Dummy 텍스처 관리
 	}
 
-	size_t Material::HashString(const wstring& str)
+	size_t MaterialResource::HashString(const wstring& str)
 	{
 		return std::hash<wstring>()(str);
 	}
 
-	size_t Material::HashString(const string& str)
+	size_t MaterialResource::HashString(const string& str)
 	{
 		return std::hash<string>()(str);
 	}

@@ -9,9 +9,9 @@
 
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
-#include "Graphics/Mesh.h"
-#include "Graphics/Texture.h"
-#include "Graphics/Material.h"
+#include "Graphics/MeshResource.h"
+#include "Graphics/TextureResource.h"
+#include "Graphics/MaterialResource.h"
 
 #include "Core/Logging/Logger.h"
 #include "Core/Logging/ConsoleSink.h"
