@@ -24,6 +24,85 @@
 - [ ] Upcoming task 2
 ```
 
+---
+
+## 2025-01-04 - Phase 4.3: Texture Pipeline (Step 3~5 완료)
+
+### Tasks
+
+- [x] Step 3: TextureAsset 메타데이터 확장
+- [x] Step 4: Asset/Resource 소유권 분리
+- [x] Step 5: ImGui 텍스처 정보 패널
+
+### 구현 상세
+
+**Step 3: TextureAsset 메타데이터**
+```cpp
+// 추가 멤버
+Graphics::TextureType mTextureType;
+uint32 mWidth, mHeight;
+DXGI_FORMAT mFormat;
+bool mIsSRGB;
+
+// ResourceManager만 설정 가능 (friend)
+void SetMetadata(uint32 w, uint32 h, DXGI_FORMAT fmt, bool srgb);
+void SetTextureType(Graphics::TextureType type);
+```
+
+**Step 4: 소유권 분리**
+```
+AssetManager (CPU)          ResourceManager (GPU)
+├─ TextureAsset       ←──── RegisterTextureAsset()
+├─ MeshAsset                ├─ TextureResource
+└─ MaterialAsset            └─ MeshResource
+```
+
+초기화 순서:
+```cpp
+mResourceManager = make_unique<ResourceManager>(device, renderer);
+mAssetManager = make_unique<AssetManager>(mResourceManager.get());
+mAssetManager->Initialize();
+mResourceManager->SetAssetManager(mAssetManager.get());  // 양방향 연결
+```
+
+**Step 5: ImGui 패널**
+- `DXGIFormatToString()`: 포맷 문자열 변환
+- `TextTextureStatus()`: 메타데이터 인라인 표시
+- `RenderModelInfoPanelTextures()`: 테이블 뷰 (Type, Size, Format, Color Space)
+
+### Decisions
+
+- **메타데이터만 저장**: WICTextureLoader가 ID3D12Device 필수, CPU 전용 로딩 불가
+- **friend class**: SetMetadata()는 ResourceManager만 호출 가능하도록 제한
+- **폴백 텍스처**: AssetManager에 미등록 (특수 내부 리소스)
+
+### Files Modified
+
+| 파일 | 변경 |
+|------|------|
+| TextureAsset.h/cpp | 메타데이터 멤버, Getter/Setter, friend 선언 |
+| AssetManager.h/cpp | Register/Unregister/GetTextureAsset |
+| ResourceManager.h/cpp | mAssetManager 연결, GetTextureAsset 위임 |
+| ModelViewerApp.cpp | DXGIFormatToString, RenderModelInfoPanelTextures |
+
+### Results
+
+```
+▶ Loaded Textures
+  Type      Size       Format      Space
+  ────────────────────────────────────────
+  Albedo    2048x2048  R8G8B8A8    sRGB
+  Normal    2048x2048  R8G8B8A8    Linear
+  Total: 5 textures
+```
+
+### Next Steps
+
+- [ ] Phase 5: PBR Pipeline
+- [ ] Phase 6: Shader System (DXC, Hot Reload)
+
+---
+
 ## 2026-01-03 - Phase 4.3.2: Asset/Resource 네이밍 변경
 
 ### Tasks
@@ -423,4 +502,4 @@ template<> ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const;
 
 ---
 
-**최종 업데이트**: 2025-12-29
+**최종 업데이트**: 2025-01-04
