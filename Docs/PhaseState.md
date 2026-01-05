@@ -44,11 +44,15 @@
 - [x] 다중 머티리얼 Constant Buffer
 - [x] 11_ModelViewer glTF 렌더링
 
-### 4.3 Texture Pipeline (예정)
-- [ ] sRGB / Linear 색공간 처리
-- [ ] DDS 로더 구현 (DirectXTex)
-- [ ] BCn 압축 텍스처 지원
-- [ ] Mipmap 자동 생성
+### 4.3 Texture Pipeline (완료)
+- [x] sRGB / Linear 색공간 처리 (WICTextureLoader Extended)
+- [x] Asset/Resource 클래스 이름 정리 (Mesh/Texture/Material → *Resource)
+- [x] TextureAsset 메타데이터 확장 (width, height, format, sRGB)
+- [x] Asset/Resource 소유권 분리 (AssetManager ↔ ResourceManager)
+- [x] ImGui 텍스처 정보 패널 (Loaded Textures 테이블)
+- [ ] DDS 로더 구현 (DirectXTex) - 선택적, 필요 시 추가
+- [ ] BCn 압축 텍스처 지원 - 선택적
+- [ ] Mipmap 자동 생성 - 선택적
 
 ### 4.4 Descriptor 관리 고도화 (예정)
 - [ ] SRV Descriptor 풀 및 슬롯 재활용
@@ -74,12 +78,29 @@
 
 ---
 
-### Phase 5: PBR Lighting (예정)
+### Phase 5: PBR Rendering (예정)
+
+#### 5.1 HDR Pipeline 구축
+- [ ] HDR 렌더 타겟 (R16G16B16A16_FLOAT)
+- [ ] 톤매핑 셰이더 (ACES)
+- [ ] 렌더 패스 분리 (Scene → Post → UI)
+- [ ] 기존 pow(1/2.2) 제거
+
+#### 5.2 PBR Material
 - [ ] Metallic-Roughness Workflow
 - [ ] Cook-Torrance BRDF
-- [ ] IBL (Skybox, PMREM, Irradiance Map)
+- [ ] PBR 텍스처 슬롯 활용 (4.3에서 준비된 sRGB/Linear)
 
-### Phase 5.5: Physics Integration (포트폴리오 마일스톤)
+#### 5.3 IBL (Image-Based Lighting)
+- [ ] Skybox
+- [ ] Irradiance Map
+- [ ] PMREM (Prefiltered Mipmaped Radiance Environment Map)
+
+#### 5.4 Post-Process (선택적)
+- [ ] Bloom
+- [ ] Exposure Control
+
+### Phase 5.b: Physics Integration (포트폴리오 마일스톤)
 - [ ] 물리 엔진 통합
 - [ ] 충돌 감지
 - [ ] Rigidbody Component
@@ -89,15 +110,13 @@
 ## 진행 순서 (권장)
 
 ```
-Phase 4.2 완료
+Phase 4.3 완료
     ↓
-Phase 4.3 Texture Pipeline (sRGB, DDS)
+Phase 4.7 멀티 서브메시 + ECS 통합 (또는 Phase 5로 직행)
     ↓
-Phase 4.7 멀티 서브메시 + ECS 통합
+Phase 5 PBR Rendering
     ↓
-Phase 5 PBR Lighting
-    ↓
-Phase 5.5 Physics
+Phase 5.b Physics
 ```
 
 ---
@@ -123,6 +142,7 @@ Phase 5.5 Physics
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2025-01-04 | Phase 4.3 완료 (sRGB, Asset/Resource 분리, ImGui 패널) |
 | 2025-12-31 | Phase 4.1, 4.2 완료 표시, 멀티 서브메시 4.7로 이동 |
 | 2025-12-30 | Phase 4.2 Step 1~3 완료 |
 | 2025-12-26 | Phase 4.1 완료 |
