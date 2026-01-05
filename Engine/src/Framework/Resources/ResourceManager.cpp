@@ -2,11 +2,13 @@
  * @file ResourceManager.cpp
  * @brief ResourceManager 구현
  *
- * @note Phase 4.3: sRGB/Linear 색공간 처리 지원
+ * @note Phase 4.3: sRGB/Linear 색공간 처리, AssetManager 연동
  */
 #include "pch.h"
 #include "Framework/Resources/ResourceManager.h"
+#include "Framework/Assets/AssetManager.h"
 #include "Framework/Assets/MeshAsset.h"
+#include "Framework/Assets/TextureAsset.h"
 #include "Core/Logging/LogMacros.h"
 #include "Core/Hash.h"
 #include "Core/Types.h"
@@ -21,6 +23,7 @@ namespace Framework
 	ResourceManager::ResourceManager(Graphics::DX12Device* device, Graphics::DX12Renderer* renderer)
 		: mDevice(device)
 		, mRenderer(renderer)
+		, mAssetManager(nullptr)
 	{
 		LOG_INFO("ResourceManager initialized");
 
@@ -65,9 +68,38 @@ namespace Framework
 		mTextures[mFallbackTextureId] = texture;
 		mTexturePaths[mFallbackTextureId] = "__fallback_magenta__";
 
+		// 폴백 텍스처는 AssetManager에 등록하지 않음 (특수 용도)
+
 		LOG_INFO(
 			"[ResourceManager] Fallback texture created (1x1 Magenta, ID: 0x%llX)",
 			mFallbackTextureId.id
+		);
+	}
+
+	//=========================================================================
+	// AssetManager 연동 헬퍼
+	//=========================================================================
+
+	void ResourceManager::RegisterTextureAssetToManager(
+		ResourceId id,
+		const std::string& path,
+		Graphics::TextureType textureType,
+		const Graphics::TextureResource* texture
+	)
+	{
+		if (!mAssetManager)
+		{
+			return;
+		}
+
+		mAssetManager->RegisterTextureAsset(
+			id,
+			path,
+			textureType,
+			texture->GetWidth(),
+			texture->GetHeight(),
+			texture->GetFormat(),
+			texture->IsSRGB()
 		);
 	}
 
@@ -342,10 +374,15 @@ namespace Framework
 		mTextures[id] = texture;
 		mTexturePaths[id] = path;
 
+		// AssetManager에 TextureAsset 등록
+		RegisterTextureAssetToManager(id, path, textureType, texture.get());
+
 		LOG_DEBUG(
-			"[ResourceManager] Loaded texture: %s (ID: 0x%llX, Type: %s, sRGB: %s)",
+			"[ResourceManager] Loaded texture: %s (ID: 0x%llX, %ux%u, Type: %s, sRGB: %s)",
 			path.c_str(),
 			id.id,
+			texture->GetWidth(),
+			texture->GetHeight(),
 			Graphics::TextureTypeToString(textureType),
 			texture->IsSRGB() ? "Yes" : "No"
 		);
@@ -401,10 +438,15 @@ namespace Framework
 		mTextures[id] = texture;
 		mTexturePaths[id] = name;
 
+		// AssetManager에 TextureAsset 등록
+		RegisterTextureAssetToManager(id, name, textureType, texture.get());
+
 		LOG_DEBUG(
-			"[ResourceManager] Loaded texture from memory: %s (ID: 0x%llX, %u bytes, Type: %s, sRGB: %s)",
+			"[ResourceManager] Loaded texture from memory: %s (ID: 0x%llX, %ux%u, %u bytes, Type: %s, sRGB: %s)",
 			name.c_str(),
 			id.id,
+			texture->GetWidth(),
+			texture->GetHeight(),
 			dataSize,
 			Graphics::TextureTypeToString(textureType),
 			texture->IsSRGB() ? "Yes" : "No"
@@ -462,6 +504,9 @@ namespace Framework
 		mTextures[id] = texture;
 		mTexturePaths[id] = name;
 
+		// AssetManager에 TextureAsset 등록
+		RegisterTextureAssetToManager(id, name, textureType, texture.get());
+
 		LOG_DEBUG(
 			"[ResourceManager] Created texture from memory: %s (ID: 0x%llX, %ux%u, Type: %s, sRGB: %s)",
 			name.c_str(),
@@ -511,10 +556,38 @@ namespace Framework
 			mTextures.erase(it);
 			mTexturePaths.erase(id);
 
+			// AssetManager에서도 제거
+			if (mAssetManager)
+			{
+				mAssetManager->UnregisterTextureAsset(id);
+			}
+
 			LOG_DEBUG("Removed texture: ID 0x%llX", id.id);
 			return true;
 		}
 		return false;
+	}
+
+	//=========================================================================
+	// TextureAsset 접근 (AssetManager 위임)
+	//=========================================================================
+
+	TextureAsset* ResourceManager::GetTextureAsset(ResourceId id)
+	{
+		if (mAssetManager)
+		{
+			return mAssetManager->GetTextureAsset(id);
+		}
+		return nullptr;
+	}
+
+	const TextureAsset* ResourceManager::GetTextureAsset(ResourceId id) const
+	{
+		if (mAssetManager)
+		{
+			return mAssetManager->GetTextureAsset(id);
+		}
+		return nullptr;
 	}
 
 	//=========================================================================

@@ -129,6 +129,8 @@ bool ModelViewerApp::OnInitialize()
 		mResourceManager.get()
 	);
 
+	mResourceManager->SetAssetManager(mAssetManager.get());
+
 	if (!mAssetManager->Initialize("Assets/"))
 	{
 		LOG_ERROR("Failed to initialize AssetManager");
@@ -586,7 +588,7 @@ void ModelViewerApp::SetupHelmetMaterial()
 	}
 
 	// 첫 번째 머티리얼의 텍스처들 로드
-	const auto& matData = mHelmetModelData.materials[0];
+	auto& matData = mHelmetModelData.materials[0];
 	LOG_INFO("[Material] Loading textures for material: %s", matData.name.c_str());
 
 	Core::uint32 loadedCount = 0;
@@ -596,7 +598,7 @@ void ModelViewerApp::SetupHelmetMaterial()
 	// 폴백 텍스처 ID
 	Framework::ResourceId fallbackTexId = mResourceManager->GetFallbackTexture();
 
-	for (const auto& texInfo : matData.textures)
+	for (auto& texInfo : matData.textures)
 	{
 		Framework::ResourceId texId;
 		// 임베디드 텍스처 처리
@@ -630,9 +632,12 @@ void ModelViewerApp::SetupHelmetMaterial()
 			if (texId.IsValid())
 			{
 				material->SetTexture(texInfo.type, texId);
-				LOG_INFO("[Material] Loaded embedded %s: %s",
+				texInfo.path = texName;
+				LOG_INFO(
+					"[Material] Loaded embedded %s: %s",
 					Graphics::TextureTypeToString(texInfo.type),
-					texInfo.path.c_str());
+					texInfo.path.c_str()
+				);
 				embeddedCount++;
 				continue;
 			}
@@ -827,11 +832,39 @@ namespace
 {
 	using namespace Framework;
 
-	/** @brief 텍스처 상태 표시 (임베디드/외부/실패) */
-	void TextTextureStatus(const LoadedTextureInfo& tex)
+	/**
+	 * @brief DXGI 포맷을 문자열로 변환
+	 */
+	const char* DXGIFormatToString(DXGI_FORMAT format)
+	{
+		switch (format)
+		{
+		case DXGI_FORMAT_R8G8B8A8_UNORM:      return "R8G8B8A8_UNORM";
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: return "R8G8B8A8_SRGB";
+		case DXGI_FORMAT_B8G8R8A8_UNORM:      return "B8G8R8A8_UNORM";
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: return "B8G8R8A8_SRGB";
+		case DXGI_FORMAT_BC1_UNORM:           return "BC1_UNORM";
+		case DXGI_FORMAT_BC1_UNORM_SRGB:      return "BC1_SRGB";
+		case DXGI_FORMAT_BC3_UNORM:           return "BC3_UNORM";
+		case DXGI_FORMAT_BC3_UNORM_SRGB:      return "BC3_SRGB";
+		case DXGI_FORMAT_BC5_UNORM:           return "BC5_UNORM";
+		case DXGI_FORMAT_BC7_UNORM:           return "BC7_UNORM";
+		case DXGI_FORMAT_BC7_UNORM_SRGB:      return "BC7_SRGB";
+		default:                              return "Unknown";
+		}
+	}
+
+	/**
+	 * @brief 텍스처 상태 표시 (임베디드/외부/실패) + TextureAsset 메타데이터
+	 *
+	 * @param tex LoadedTextureInfo (ModelLoader에서)
+	 * @param resourceManager ResourceManager (TextureAsset 조회용, nullable)
+	 */
+	void TextTextureStatus(const LoadedTextureInfo& tex, ResourceManager* resourceManager = nullptr)
 	{
 		const char* typeName = Graphics::TextureTypeToString(tex.type);
 
+		// 텍스처 상태 표시
 		if (tex.HasEmbeddedData())
 		{
 			// 임베디드 + 데이터 있음
@@ -846,6 +879,28 @@ namespace
 		{
 			// 외부 텍스처
 			ImGui::BulletText("[%s] %s", typeName, tex.path.c_str());
+		}
+
+		// TextureAsset 메타데이터 표시 (ResourceManager가 있는 경우)
+		if (resourceManager)
+		{
+			ResourceId texId = resourceManager->FindTextureByPath(tex.path);
+			if (texId.IsValid())
+			{
+				const TextureAsset* asset = resourceManager->GetTextureAsset(texId);
+				if (asset)
+				{
+					ImGui::SameLine();
+					ImGui::TextColored(
+						UIColor::Disabled,
+						"(%ux%u, %s%s)",
+						asset->GetWidth(),
+						asset->GetHeight(),
+						DXGIFormatToString(asset->GetFormat()),
+						asset->IsSRGB() ? ", sRGB" : ""
+					);
+				}
+			}
 		}
 	}
 
@@ -1095,7 +1150,7 @@ void ModelViewerApp::RenderModelInfoPanelMaterials()
 				ImGui::Indent();
 				for (const auto& tex : mat.textures)
 				{
-					TextTextureStatus(tex);
+					TextTextureStatus(tex, mResourceManager.get());
 				}
 				ImGui::Unindent();
 			}
@@ -1141,6 +1196,86 @@ void ModelViewerApp::RenderModelInfoPanelMeshes()
 	}
 }
 
+void ModelViewerApp::RenderModelInfoPanelTextures()
+{
+	using namespace Framework;
+
+	if (!ImGuiBeginSection("Loaded Textures", false))  // 기본 접힘
+	{
+		return;
+	}
+
+	if (!mResourceManager)
+	{
+		ImGui::TextColored(UIColor::Error, "ResourceManager not available");
+		return;
+	}
+
+	// 모든 머티리얼의 텍스처 수집
+	Core::uint32 textureCount = 0;
+	for (const auto& mat : mHelmetModelData.materials)
+	{
+		for (const auto& tex : mat.textures)
+		{
+			ResourceId texId = mResourceManager->FindTextureByPath(tex.path);
+			if (!texId.IsValid())
+			{
+				continue;
+			}
+
+			const TextureAsset* asset = mResourceManager->GetTextureAsset(texId);
+			if (!asset)
+			{
+				continue;
+			}
+
+			++textureCount;
+
+			const char* typeName = Graphics::TextureTypeToString(tex.type);
+			const char* formatName = DXGIFormatToString(asset->GetFormat());
+
+			// 테이블 형태로 표시
+			if (textureCount == 1)
+			{
+				// 헤더
+				ImGui::Columns(4, "TextureTable", true);
+				ImGui::Separator();
+				ImGui::Text("Type"); ImGui::NextColumn();
+				ImGui::Text("Size"); ImGui::NextColumn();
+				ImGui::Text("Format"); ImGui::NextColumn();
+				ImGui::Text("Color Space"); ImGui::NextColumn();
+				ImGui::Separator();
+			}
+
+			// 데이터 행
+			ImGui::Text("%s", typeName); ImGui::NextColumn();
+			ImGui::Text("%ux%u", asset->GetWidth(), asset->GetHeight()); ImGui::NextColumn();
+			ImGui::Text("%s", formatName); ImGui::NextColumn();
+
+			if (asset->IsSRGB())
+			{
+				ImGui::TextColored(UIColor::Highlight, "sRGB");
+			}
+			else
+			{
+				ImGui::Text("Linear");
+			}
+			ImGui::NextColumn();
+		}
+	}
+
+	if (textureCount > 0)
+	{
+		ImGui::Columns(1);
+		ImGui::Separator();
+		ImGui::Text("Total: %u textures", textureCount);
+	}
+	else
+	{
+		ImGui::TextColored(UIColor::Disabled, "No textures loaded");
+	}
+}
+
 //=============================================================================
 // Model Info 패널 - 메인
 //=============================================================================
@@ -1171,6 +1306,7 @@ void ModelViewerApp::RenderModelInfoPanel()
 	ImGui::Separator();
 	RenderModelInfoPanelAssetPipeline();
 	RenderModelInfoPanelMaterials();
+	RenderModelInfoPanelTextures();
 	RenderModelInfoPanelMeshes();
 
 	ImGui::End();

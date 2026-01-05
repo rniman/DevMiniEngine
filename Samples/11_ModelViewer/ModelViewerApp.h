@@ -137,6 +137,7 @@ private:
 	void RenderModelInfoPanelAssetPipeline();
 	void RenderModelInfoPanelMaterials();
 	void RenderModelInfoPanelMeshes();
+	void RenderModelInfoPanelTextures();
 
 private:
 

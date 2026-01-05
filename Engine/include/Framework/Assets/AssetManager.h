@@ -4,12 +4,16 @@
  *
  * Asset의 로딩, 캐싱, 생명주기를 관리합니다.
  * ResourceManager와 협력하여 Asset을 GPU Resource로 변환합니다.
+ *
+ * @note Phase 4.3: TextureAsset 메타데이터 관리 추가
  */
 #pragma once
 #include "Framework/Assets/AssetTypes.h"
 #include "Framework/Assets/IAsset.h"
 #include "Framework/Resources/ResourceId.h"
+#include "Graphics/TextureType.h"
 #include "Core/Types.h"
+#include <dxgiformat.h>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -68,6 +72,7 @@ namespace Framework
 	 * 파일 경로의 해시를 ID로 사용하여 중복 로딩 방지.
 	 *
 	 * @note Phase 4.1: 동기 로딩만 구현, 비동기는 API만 정의
+	 * @note Phase 4.3: TextureAsset 메타데이터 관리
 	 * @note Asset은 CPU 데이터, GPU Resource 변환은 ResourceManager 담당
 	 */
 	class AssetManager
@@ -181,6 +186,47 @@ namespace Framework
 		 * @return Loaded 상태이면 true
 		 */
 		bool IsLoaded(ResourceId id) const;
+
+		//=========================================================================
+		// TextureAsset 등록 (ResourceManager 전용)
+		//=========================================================================
+
+		/**
+		 * @brief TextureAsset 등록 (ResourceManager가 호출)
+		 *
+		 * ResourceManager가 GPU 텍스처 로드 후 메타데이터를 등록합니다.
+		 *
+		 * @param id ResourceId (ResourceManager와 동일한 ID 사용)
+		 * @param path 파일 경로 또는 이름
+		 * @param textureType 텍스처 용도
+		 * @param width 텍스처 너비
+		 * @param height 텍스처 높이
+		 * @param format DXGI 포맷
+		 * @param isSRGB sRGB 색공간 여부
+		 */
+		void RegisterTextureAsset(
+			ResourceId id,
+			const std::string& path,
+			Graphics::TextureType textureType,
+			Core::uint32 width,
+			Core::uint32 height,
+			DXGI_FORMAT format,
+			bool isSRGB
+		);
+
+		/**
+		 * @brief TextureAsset 등록 해제 (ResourceManager가 호출)
+		 * @param id ResourceId
+		 */
+		void UnregisterTextureAsset(ResourceId id);
+
+		/**
+		 * @brief TextureAsset 조회
+		 * @param id ResourceId
+		 * @return TextureAsset 포인터 (없으면 nullptr)
+		 */
+		TextureAsset* GetTextureAsset(ResourceId id);
+		const TextureAsset* GetTextureAsset(ResourceId id) const;
 
 		//=========================================================================
 		// 기본 Asset (Default Assets)

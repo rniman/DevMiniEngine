@@ -7,7 +7,7 @@
  *
  * @note Phase 4.2: CreateMeshFromAsset, 폴백 텍스처 추가
  * @note Phase 4.2+: 임베디드 텍스처 로드 지원
- * @note Phase 4.3: sRGB/Linear 색공간 처리 지원
+ * @note Phase 4.3: sRGB/Linear 색공간 처리, AssetManager 연동
  */
 #pragma once
 #include "Framework/Resources/ResourceId.h"
@@ -31,18 +31,41 @@ namespace Framework
 {
 	// 전방 선언
 	class MeshAsset;
+	class TextureAsset;
+	class AssetManager;
 
 	/**
 	 * @brief 중앙 집중식 리소스 관리자
 	 *
 	 * 64비트 해시 기반 ResourceId 사용
-	 * 모든 리소스의 유일한 소유자
+	 * 모든 GPU 리소스의 유일한 소유자
+	 *
+	 * @note TextureAsset 메타데이터는 AssetManager가 소유
 	 */
 	class ResourceManager
 	{
 	public:
 		ResourceManager(Graphics::DX12Device* device, Graphics::DX12Renderer* renderer);
 		~ResourceManager();
+
+		//=====================================================================
+		// AssetManager 연결
+		//=====================================================================
+
+		/**
+		 * @brief AssetManager 설정
+		 *
+		 * ResourceManager 생성 후, AssetManager 생성 후 호출합니다.
+		 * TextureAsset 메타데이터 등록에 사용됩니다.
+		 *
+		 * @param assetManager AssetManager 포인터
+		 */
+		void SetAssetManager(AssetManager* assetManager) { mAssetManager = assetManager; }
+
+		/**
+		 * @brief AssetManager 접근자
+		 */
+		AssetManager* GetAssetManager() const { return mAssetManager; }
 
 		//=====================================================================
 		// Mesh 관리
@@ -109,7 +132,7 @@ namespace Framework
 		 * @param textureType 텍스처 용도 (색공간 결정)
 		 * @return 64비트 해시 기반 ResourceId
 		 *
-		 * @note Phase 4.3: 색공간 처리를 위한 권장 API -> 강제
+		 * @note TextureAsset 메타데이터가 AssetManager에 자동 등록됨
 		 */
 		ResourceId LoadTexture(const std::string& path, Graphics::TextureType textureType);
 
@@ -129,7 +152,7 @@ namespace Framework
 		 * @param textureType 텍스처 용도 (색공간 결정)
 		 * @return 64비트 해시 기반 ResourceId (실패 시 Invalid)
 		 *
-		 * @note Phase 4.3: 색공간 처리를 위한 권장 API -> 강제
+		 * @note TextureAsset 메타데이터가 AssetManager에 자동 등록됨
 		 */
 		ResourceId LoadTextureFromMemory(
 			const std::string& name,
@@ -152,7 +175,7 @@ namespace Framework
 		 * @param textureType 텍스처 용도 (색공간 결정)
 		 * @return 64비트 해시 기반 ResourceId (실패 시 Invalid)
 		 *
-		 * @note Phase 4.3: 색공간 처리를 위한 권장 API -> 강제
+		 * @note TextureAsset 메타데이터가 AssetManager에 자동 등록됨
 		 */
 		ResourceId CreateTextureFromMemory(
 			const std::string& name,
@@ -183,6 +206,22 @@ namespace Framework
 		bool HasFallbackTexture() const { return mFallbackTextureId.IsValid(); }
 
 		//=====================================================================
+		// TextureAsset 접근 (AssetManager 위임)
+		//=====================================================================
+
+		/**
+		 * @brief ResourceId로 TextureAsset 조회
+		 *
+		 * 텍스처의 메타데이터(크기, 포맷, 색공간 등)에 접근할 때 사용합니다.
+		 * 내부적으로 AssetManager에 위임합니다.
+		 *
+		 * @param id 리소스 ID
+		 * @return TextureAsset 포인터 (없으면 nullptr)
+		 */
+		TextureAsset* GetTextureAsset(ResourceId id);
+		const TextureAsset* GetTextureAsset(ResourceId id) const;
+
+		//=====================================================================
 		// 검색 & 유틸리티
 		//=====================================================================
 
@@ -208,8 +247,24 @@ namespace Framework
 		 */
 		void CreateFallbackTexture();
 
+		/**
+		 * @brief AssetManager에 TextureAsset 등록 (내부 헬퍼)
+		 *
+		 * @param id 리소스 ID
+		 * @param path 파일 경로 또는 이름
+		 * @param textureType 텍스처 용도
+		 * @param texture GPU 텍스처 (메타데이터 소스)
+		 */
+		void RegisterTextureAssetToManager(
+			ResourceId id,
+			const std::string& path,
+			Graphics::TextureType textureType,
+			const Graphics::TextureResource* texture
+		);
+
 		Graphics::DX12Device* mDevice;
 		Graphics::DX12Renderer* mRenderer;
+		AssetManager* mAssetManager = nullptr;
 
 		// Mesh
 		std::unordered_map<ResourceId, std::shared_ptr<Graphics::MeshResource>> mMeshes;
@@ -219,7 +274,7 @@ namespace Framework
 		std::unordered_map<ResourceId, std::shared_ptr<Graphics::MaterialResource>> mMaterials;
 		std::unordered_map<ResourceId, std::string> mMaterialNames;
 
-		// Texture
+		// Texture (GPU Resource만, Asset은 AssetManager 소유)
 		std::unordered_map<ResourceId, std::shared_ptr<Graphics::TextureResource>> mTextures;
 		std::unordered_map<ResourceId, std::string> mTexturePaths;
 

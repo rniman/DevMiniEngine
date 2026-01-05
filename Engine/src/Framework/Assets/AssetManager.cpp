@@ -1,6 +1,8 @@
 ﻿/**
  * @file AssetManager.cpp
  * @brief AssetManager 클래스 구현
+ *
+ * @note Phase 4.3: TextureAsset 메타데이터 관리 추가
  */
 #include "pch.h"
 #include "Framework/Assets/AssetManager.h"
@@ -221,6 +223,110 @@ namespace Framework
 		}
 
 		LOG_INFO("[AssetManager] Default assets created (4 assets)");
+	}
+
+	//=========================================================================
+	// TextureAsset 등록 (ResourceManager 전용)
+	//=========================================================================
+
+	void AssetManager::RegisterTextureAsset(
+		ResourceId id,
+		const std::string& path,
+		Graphics::TextureType textureType,
+		Core::uint32 width,
+		Core::uint32 height,
+		DXGI_FORMAT format,
+		bool isSRGB
+	)
+	{
+		// 이미 존재하면 스킵
+		auto it = mAssetCache.find(id);
+		if (it != mAssetCache.end())
+		{
+			LOG_DEBUG("[AssetManager] TextureAsset already registered: %s (ID: 0x%llX)", path.c_str(), id.id);
+			return;
+		}
+
+		// TextureAsset 생성 및 메타데이터 설정
+		auto asset = std::make_unique<TextureAsset>();
+		asset->mPath = path;
+		asset->mState = AssetState::Loaded;
+		asset->SetTextureType(textureType);
+		asset->SetMetadata(width, height, format, isSRGB);
+
+		// AssetEntry 생성
+		AssetEntry entry;
+		entry.asset = std::move(asset);
+		entry.state = AssetState::Loaded;
+		entry.refCount = 0;
+		entry.isDefault = false;
+
+		// 캐시에 추가
+		mAssetCache[id] = std::move(entry);
+		mAssetPaths[id] = path;
+
+		LOG_DEBUG(
+			"[AssetManager] Registered TextureAsset: %s (ID: 0x%llX, %ux%u, sRGB: %s)",
+			path.c_str(),
+			id.id,
+			width,
+			height,
+			isSRGB ? "Yes" : "No"
+		);
+	}
+
+	void AssetManager::UnregisterTextureAsset(ResourceId id)
+	{
+		auto it = mAssetCache.find(id);
+		if (it == mAssetCache.end())
+		{
+			return;
+		}
+
+		// 기본 Asset은 해제 불가
+		if (it->second.isDefault)
+		{
+			LOG_WARN("[AssetManager] Cannot unregister default TextureAsset (ID: 0x%llX)", id.id);
+			return;
+		}
+
+		// TextureAsset인지 확인
+		if (it->second.asset && it->second.asset->GetType() != AssetType::Texture)
+		{
+			LOG_WARN("[AssetManager] Asset is not a TextureAsset (ID: 0x%llX)", id.id);
+			return;
+		}
+
+		mAssetCache.erase(it);
+		mAssetPaths.erase(id);
+
+		LOG_DEBUG("[AssetManager] Unregistered TextureAsset (ID: 0x%llX)", id.id);
+	}
+
+	TextureAsset* AssetManager::GetTextureAsset(ResourceId id)
+	{
+		auto it = mAssetCache.find(id);
+		if (it != mAssetCache.end() && it->second.asset)
+		{
+			if (it->second.asset->GetType() == AssetType::Texture)
+			{
+				return static_cast<TextureAsset*>(it->second.asset.get());
+			}
+		}
+		return nullptr;
+	}
+
+	const TextureAsset* AssetManager::GetTextureAsset(ResourceId id) const
+	{
+		auto it = mAssetCache.find(id);
+		if (it != mAssetCache.end() && it->second.asset)
+		{
+			if (it->second.asset->GetType() == AssetType::Texture)
+			{
+				return static_cast<const TextureAsset*>(it->second.asset.get());
+			}
+		}
+		return nullptr;
 	}
 
 	//=========================================================================
