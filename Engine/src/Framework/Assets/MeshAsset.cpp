@@ -13,7 +13,7 @@ namespace Framework
 	// 정적 더미 서브메시 (범위 초과 시 반환)
 	//=========================================================================
 
-	static const SubmeshInfo sEmptySubmesh = {};
+	static const Graphics::SubmeshInfo sEmptySubmesh = {};
 
 	//=========================================================================
 	// 생성자
@@ -41,7 +41,7 @@ namespace Framework
 		{
 			usage += mVertices.capacity() * sizeof(Graphics::StandardVertex);
 			usage += mIndices.capacity() * sizeof(Core::uint32);
-			usage += mSubmeshes.capacity() * sizeof(SubmeshInfo);
+			usage += mSubmeshes.capacity() * sizeof(Graphics::SubmeshInfo);
 		}
 
 		return usage;
@@ -51,7 +51,7 @@ namespace Framework
 	// 서브메시 접근
 	//=========================================================================
 
-	const SubmeshInfo& MeshAsset::GetSubmesh(Core::uint32 index) const
+	const Graphics::SubmeshInfo& MeshAsset::GetSubmesh(Core::uint32 index) const
 	{
 		if (index < mSubmeshes.size())
 		{
@@ -156,7 +156,7 @@ namespace Framework
 		mSourceDataReleased = false;
 	}
 
-	void MeshAsset::SetSubmeshes(std::vector<SubmeshInfo>&& submeshes)
+	void MeshAsset::SetSubmeshes(std::vector<Graphics::SubmeshInfo>&& submeshes)
 	{
 		mSubmeshes = std::move(submeshes);
 	}

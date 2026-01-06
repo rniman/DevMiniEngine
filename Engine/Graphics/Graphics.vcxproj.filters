@@ -33,12 +33,6 @@
     <Filter Include="Source Files\DebugDraw">
       <UniqueIdentifier>{61493d3b-f0e4-464d-b3cb-51ec19993828}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{849562e3-32e8-4ff8-be8e-b739ce689add}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\DebugDraw">
-      <UniqueIdentifier>{f6ca1a40-81bd-469e-8ed9-60955248e379}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\DebugDraw">
       <UniqueIdentifier>{093553a1-b441-4bf1-b3d3-77cf1e62fcc8}</UniqueIdentifier>
     </Filter>
@@ -214,19 +208,8 @@
     <ClInclude Include="..\include\Graphics\DebugDraw\DebugRenderer.h">
       <Filter>Header Files\DebugDraw</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\Assets\Shaders\DebugPS.hlsl">
-      <Filter>Shaders\DebugDraw</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\Assets\Shaders\DebugVS.hlsl">
-      <Filter>Shaders\DebugDraw</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\Assets\Shaders\PhongPS.hlsl">
-      <Filter>Shaders\DebugDraw</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\Assets\Shaders\PhongVs.hlsl">
-      <Filter>Shaders\DebugDraw</Filter>
-    </FxCompile>
+    <ClInclude Include="..\include\Graphics\SubmeshInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

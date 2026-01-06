@@ -3,6 +3,7 @@
  * @brief ResourceManager 구현
  *
  * @note Phase 4.3: sRGB/Linear 색공간 처리, AssetManager 연동
+ * @note Phase 4.4: 서브메시 정보 복사 (CreateMeshFromAsset)
  */
 #include "pch.h"
 #include "Framework/Resources/ResourceManager.h"
@@ -209,6 +210,15 @@ namespace Framework
 			LOG_ERROR("[ResourceManager] Failed to initialize mesh from asset: %s", name.c_str());
 			return ResourceId::Invalid();
 		}
+
+		// Phase 4.4: 서브메시 정보 복사
+		const auto& submeshes = meshAsset->GetSubmeshes();
+		mesh->SetSubmeshes(submeshes);
+
+		LOG_DEBUG(
+			"[ResourceManager] Submeshes copied: %u submesh(es)",
+			mesh->GetSubmeshCount()
+		);
 
 		// MeshDataPolicy에 따라 CPU 데이터 해제
 		if (meshAsset->GetDataPolicy() == MeshDataPolicy::ReleaseAfterUpload)

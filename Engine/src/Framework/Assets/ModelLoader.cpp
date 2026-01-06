@@ -465,7 +465,7 @@ namespace Framework
 			}
 
 			// 서브메시 정보 (단일 메시이므로 전체 범위)
-			SubmeshInfo submesh;
+			Graphics::SubmeshInfo submesh;
 			submesh.startIndex = 0;
 			submesh.indexCount = static_cast<Core::uint32>(outMeshData.indices.size());
 			submesh.materialIndex = mesh->mMaterialIndex;

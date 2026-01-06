@@ -6,10 +6,12 @@
  * ResourceManager를 통해 GPU Mesh로 변환됩니다.
  *
  * @note Phase 4.2: 실제 데이터 저장 구현
+ * @note Phase 4.4: SubmeshInfo를 Graphics 모듈로 이동 (의존성 방향 정리)
  */
 #pragma once
 #include "Framework/Assets/IAsset.h"
 #include "Graphics/VertexTypes.h"
+#include "Graphics/SubmeshInfo.h"
 #include "Math/MathTypes.h"
 #include "Core/Types.h"
 #include <string>
@@ -17,23 +19,6 @@
 
 namespace Framework
 {
-	//=========================================================================
-	// 서브메시 정보
-	//=========================================================================
-
-	/**
-	 * @brief 서브메시 정보
-	 *
-	 * 하나의 MeshAsset이 여러 머티리얼을 사용할 때 각 부분을 정의합니다.
-	 */
-	struct SubmeshInfo
-	{
-		Core::uint32 startIndex = 0;      // 인덱스 버퍼 시작 위치
-		Core::uint32 indexCount = 0;      // 인덱스 개수
-		Core::uint32 baseVertex = 0;      // 정점 버퍼 시작 위치 (DrawIndexedInstanced용)
-		Core::uint32 materialIndex = 0;   // 머티리얼 인덱스
-	};
-
 	//=========================================================================
 	// 메시 데이터 정책
 	//=========================================================================
@@ -86,7 +71,7 @@ namespace Framework
 		const std::vector<Core::uint32>& GetIndices() const { return mIndices; }
 
 		/** @brief 서브메시 배열 반환 */
-		const std::vector<SubmeshInfo>& GetSubmeshes() const { return mSubmeshes; }
+		const std::vector<Graphics::SubmeshInfo>& GetSubmeshes() const { return mSubmeshes; }
 
 		/** @brief 정점 개수 (ReleaseSourceData 후에도 유효) */
 		Core::uint32 GetVertexCount() const { return mVertexCount; }
@@ -98,7 +83,7 @@ namespace Framework
 		Core::uint32 GetSubmeshCount() const { return static_cast<Core::uint32>(mSubmeshes.size()); }
 
 		/** @brief 특정 서브메시 정보 반환 */
-		const SubmeshInfo& GetSubmesh(Core::uint32 index) const;
+		const Graphics::SubmeshInfo& GetSubmesh(Core::uint32 index) const;
 
 		//=========================================================================
 		// 바운딩 정보
@@ -183,7 +168,7 @@ namespace Framework
 		 * @brief 서브메시 데이터 설정
 		 * @param submeshes 서브메시 배열 (이동)
 		 */
-		void SetSubmeshes(std::vector<SubmeshInfo>&& submeshes);
+		void SetSubmeshes(std::vector<Graphics::SubmeshInfo>&& submeshes);
 
 		/**
 		 * @brief AABB 설정
@@ -208,7 +193,7 @@ namespace Framework
 		// 정점/인덱스 데이터
 		std::vector<Graphics::StandardVertex> mVertices;
 		std::vector<Core::uint32> mIndices;
-		std::vector<SubmeshInfo> mSubmeshes;
+		std::vector<Graphics::SubmeshInfo> mSubmeshes;
 
 		// 캐시된 카운트 (ReleaseSourceData 후에도 유효)
 		Core::uint32 mVertexCount = 0;

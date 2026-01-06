@@ -6,13 +6,16 @@
  * GPU 메모리에 지오메트리 데이터를 업로드하고 렌더링 시 바인딩/드로우를 수행합니다.
  *
  * @note Phase 4.2: 32비트 인덱스 지원 추가
+ * @note Phase 4.4: 서브메시 지원 추가 (DrawSubmesh)
  */
 #pragma once
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/DX12/DX12IndexBuffer.h"
 #include "Graphics/DX12/DX12VertexBuffer.h"
 #include "Graphics/VertexTypes.h"
+#include "Graphics/SubmeshInfo.h"
 #include "Math/MathTypes.h"
+#include <vector>
 
 namespace Graphics
 {
@@ -24,6 +27,8 @@ namespace Graphics
 	 *
 	 * VertexBuffer와 IndexBuffer를 하나의 렌더링 단위로 조합하여 관리합니다.
 	 * GPU 메모리에 지오메트리 데이터를 업로드하고 렌더링 시 바인딩/드로우를 수행합니다.
+	 *
+	 * @note Phase 4.4: 서브메시별 개별 렌더링 지원
 	 */
 	class MeshResource
 	{
@@ -112,17 +117,56 @@ namespace Graphics
 		void Shutdown();
 
 		/**
-		 * @brief Vertex/Index Buffer를 바인딩하고 Draw 커맨드를 실행합니다.
+		 * @brief 전체 메시 렌더링 (하위 호환용)
 		 *
 		 * 내부적으로 IASetVertexBuffers, IASetIndexBuffer를 호출하여 버퍼를 바인딩한 후,
 		 * 인덱스 버퍼 유무에 따라 DrawIndexedInstanced 또는 DrawInstanced를 호출합니다.
-		 * 렌더링에 필요한 모든 상태 (PSO, Root Signature)는 외부에서 미리 설정되어 있어야 합니다.
 		 *
 		 * @param commandList 바인딩 및 드로우 커맨드를 기록할 커맨드 리스트
+		 *
+		 * @note 서브메시가 있는 경우 전체 인덱스를 한 번에 그립니다.
+		 *       서브메시별 렌더링이 필요하면 DrawSubmesh()를 사용하세요.
 		 */
 		void Draw(ID3D12GraphicsCommandList* commandList) const;
 
+		/**
+		 * @brief 특정 서브메시만 렌더링
+		 *
+		 * @param commandList 커맨드 리스트
+		 * @param submeshIndex 서브메시 인덱스 (0부터 시작)
+		 *
+		 * @note 버퍼 바인딩 후 해당 서브메시의 인덱스 범위만 그립니다.
+		 * @note 유효하지 않은 인덱스는 무시됩니다.
+		 */
+		void DrawSubmesh(ID3D12GraphicsCommandList* commandList, Core::uint32 submeshIndex) const;
+
+		//=====================================================================
+		// 서브메시 관리
+		//=====================================================================
+
+		/**
+		 * @brief 서브메시 정보 설정
+		 *
+		 * @param submeshes 서브메시 배열 (복사)
+		 *
+		 * @note ResourceManager::CreateMeshFromAsset()에서 호출됩니다.
+		 * @note 빈 배열을 전달하면 전체 메시를 단일 서브메시로 자동 등록합니다.
+		 */
+		void SetSubmeshes(const std::vector<SubmeshInfo>& submeshes);
+
+		/** @brief 서브메시 개수 (최소 1) */
+		Core::uint32 GetSubmeshCount() const;
+
+		/** @brief 특정 서브메시 정보 반환 */
+		const SubmeshInfo& GetSubmesh(Core::uint32 index) const;
+
+		/** @brief 서브메시 배열 반환 */
+		const std::vector<SubmeshInfo>& GetSubmeshes() const { return mSubmeshes; }
+
+		//=====================================================================
 		// Getters
+		//=====================================================================
+
 		size_t GetVertexCount() const { return mVertexBuffer.GetVertexCount(); }
 		size_t GetIndexCount() const { return mIndexBuffer.GetIndexCount(); }
 		bool IsInitialized() const { return mInitialized; }
@@ -130,10 +174,20 @@ namespace Graphics
 		D3D12_INPUT_LAYOUT_DESC GetInputLayout() const { return mInputLayout; }
 
 	private:
+		/**
+		 * @brief 전체 메시를 단일 서브메시로 등록
+		 *
+		 * 서브메시 정보가 없는 경우 자동으로 호출됩니다.
+		 */
+		void CreateDefaultSubmesh();
+
 		DX12VertexBuffer mVertexBuffer;
 		DX12IndexBuffer mIndexBuffer;
 		D3D12_INPUT_LAYOUT_DESC mInputLayout = {};
 		bool mInitialized = false;
+
+		// Phase 4.4: 서브메시 정보
+		std::vector<SubmeshInfo> mSubmeshes;
 	};
 
 } // namespace Graphics

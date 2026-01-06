@@ -14,6 +14,7 @@
 #include "Math/MathTypes.h"
 #include "Graphics/VertexTypes.h"
 #include "Graphics/TextureType.h"
+#include "Graphics/SubmeshInfo.h"
 #include <string>
 #include <vector>
 
@@ -150,7 +151,7 @@ namespace Framework
 
 		std::vector<Graphics::StandardVertex> vertices;
 		std::vector<Core::uint32> indices;
-		std::vector<SubmeshInfo> submeshes;
+		std::vector<Graphics::SubmeshInfo> submeshes;
 
 		Math::Vector3 aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
 		Math::Vector3 aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };

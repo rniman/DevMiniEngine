@@ -9,6 +9,12 @@
 
 namespace Graphics
 {
+	//=========================================================================
+	// 정적 더미 서브메시 (범위 초과 시 반환)
+	//=========================================================================
+
+	static const SubmeshInfo sEmptySubmesh = {};
+
 	MeshResource::~MeshResource()
 	{
 		Shutdown();
@@ -337,6 +343,108 @@ namespace Graphics
 				1, 0, 0
 			);
 		}
+	}
+
+
+	void MeshResource::DrawSubmesh(ID3D12GraphicsCommandList* commandList, Core::uint32 submeshIndex) const
+	{
+		if (!mInitialized || !commandList)
+		{
+			return;
+		}
+
+		if (submeshIndex >= mSubmeshes.size())
+		{
+			LOG_WARN(
+				"[MeshResource] DrawSubmesh: index %u out of range (count: %zu)",
+				submeshIndex, mSubmeshes.size()
+			);
+			return;
+		}
+
+		const SubmeshInfo& submesh = mSubmeshes[submeshIndex];
+
+		// Vertex Buffer 바인딩
+		D3D12_VERTEX_BUFFER_VIEW vbView = mVertexBuffer.GetVertexBufferView();
+		commandList->IASetVertexBuffers(0, 1, &vbView);
+
+		// Index Buffer 바인딩 및 서브메시 범위만 Draw
+		if (mIndexBuffer.IsInitialized())
+		{
+			D3D12_INDEX_BUFFER_VIEW ibView = mIndexBuffer.GetIndexBufferView();
+			commandList->IASetIndexBuffer(&ibView);
+			commandList->DrawIndexedInstanced(
+				static_cast<UINT>(submesh.indexCount),
+				1,
+				static_cast<UINT>(submesh.startIndex),
+				static_cast<INT>(submesh.baseVertex),
+				0
+			);
+		}
+		else
+		{
+			// 인덱스 버퍼 없는 경우 (드문 케이스)
+			commandList->DrawInstanced(
+				static_cast<UINT>(submesh.indexCount),  // 정점 수로 해석
+				1,
+				static_cast<UINT>(submesh.startIndex),
+				0
+			);
+		}
+	}
+
+	//=========================================================================
+	// 서브메시 관리
+	//=========================================================================
+
+	void MeshResource::SetSubmeshes(const std::vector<SubmeshInfo>& submeshes)
+	{
+		if (submeshes.empty())
+		{
+			// 서브메시 정보 없으면 전체를 단일 서브메시로
+			CreateDefaultSubmesh();
+		}
+		else
+		{
+			mSubmeshes = submeshes;
+		}
+
+		LOG_DEBUG("[MeshResource] SetSubmeshes: %zu submesh(es)", mSubmeshes.size());
+	}
+
+	Core::uint32 MeshResource::GetSubmeshCount() const
+	{
+		return static_cast<Core::uint32>(mSubmeshes.size());
+	}
+
+	const SubmeshInfo& MeshResource::GetSubmesh(Core::uint32 index) const
+	{
+		if (index < mSubmeshes.size())
+		{
+			return mSubmeshes[index];
+		}
+
+		LOG_WARN(
+			"[MeshResource] GetSubmesh: index %u out of range (count: %zu)",
+			index,
+			mSubmeshes.size()
+		);
+		return sEmptySubmesh;
+	}
+
+	void MeshResource::CreateDefaultSubmesh()
+	{
+		mSubmeshes.clear();
+
+		SubmeshInfo defaultSubmesh;
+		defaultSubmesh.startIndex = 0;
+		defaultSubmesh.indexCount = static_cast<Core::uint32>(mIndexBuffer.GetIndexCount());
+		defaultSubmesh.baseVertex = 0;
+		defaultSubmesh.materialIndex = 0;
+
+		mSubmeshes.push_back(defaultSubmesh);
+
+		LOG_DEBUG("[MeshResource] Created default submesh (indexCount: %u)", defaultSubmesh.indexCount);
 	}
 
 } // namespace Graphics

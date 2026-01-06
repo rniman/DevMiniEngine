@@ -19,7 +19,7 @@ int main()
 	// 로깅 시스템 초기화
 	auto& logger = Core::Logging::Logger::GetInstance();
 	logger.AddSink(std::make_unique<Core::Logging::ConsoleSink>(true));
-	logger.AddSink(std::make_unique<Core::Logging::FileSink>("11_MODELVIEWER_LOG.txt"));
+	// logger.AddSink(std::make_unique<Core::Logging::FileSink>("11_MODELVIEWER_LOG.txt"));
 
 	try
 	{
