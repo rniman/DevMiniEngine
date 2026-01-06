@@ -26,6 +26,113 @@
 
 ---
 
+
+## 2026-01-06 - Phase 4.4.1: Graphics 레이어 서브메시 지원
+
+### Overview
+
+PBR 모델의 서브메시별 Material 적용을 위한 Graphics 레이어 기반 구축. 기존 MeshResource는 전체 메시를 한 번에 렌더링하는 `Draw()`만 제공했으나, 서브메시별 개별 렌더링이 가능하도록 확장.
+
+### Tasks
+
+- [x] SubmeshInfo를 Framework에서 Graphics 모듈로 이동 (의존성 방향 정리)
+- [x] MeshResource 서브메시 지원 (DrawSubmesh, SetSubmeshes, GetSubmeshCount)
+- [x] ResourceManager에서 MeshAsset → MeshResource 서브메시 복사
+
+### 구현 상세
+
+**SubmeshInfo 위치 이동**
+
+```
+변경 전: Framework::SubmeshInfo (MeshAsset.h)
+         → Graphics에서 사용 불가 (순환 의존성)
+
+변경 후: Graphics::SubmeshInfo (SubmeshInfo.h)
+         → Framework가 Graphics를 include (정상적인 의존성 방향)
+```
+
+**MeshResource 확장**
+
+| 추가 항목 | 설명 |
+|----------|------|
+| `std::vector<SubmeshInfo> mSubmeshes` | 서브메시 정보 저장 |
+| `DrawSubmesh(cmdList, index)` | 특정 서브메시만 렌더링 |
+| `SetSubmeshes(submeshes)` | 서브메시 정보 설정 |
+| `GetSubmeshCount()` | 서브메시 개수 반환 (최소 1 보장) |
+| `CreateDefaultSubmesh()` | 서브메시 없을 때 전체를 단일 서브메시로 등록 |
+
+**DrawSubmesh 동작**
+
+```cpp
+void MeshResource::DrawSubmesh(ID3D12GraphicsCommandList* cmdList, uint32 submeshIndex) const
+{
+    const SubmeshInfo& submesh = mSubmeshes[submeshIndex];
+    
+    cmdList->IASetVertexBuffers(0, 1, &vbView);
+    cmdList->IASetIndexBuffer(&ibView);
+    cmdList->DrawIndexedInstanced(
+        submesh.indexCount,   // 이 서브메시의 인덱스 개수
+        1,
+        submesh.startIndex,   // 인덱스 버퍼 내 시작 위치
+        submesh.baseVertex,   // 정점 버퍼 오프셋
+        0
+    );
+}
+```
+
+### Decisions
+
+**서브메시 없는 메시도 GetSubmeshCount() == 1 보장**
+
+- RenderSystem에서 분기 없이 일관된 처리 가능
+- `CreateDefaultSubmesh()`가 전체 인덱스 범위를 단일 서브메시로 등록
+
+**의존성 방향 정리**
+
+- 모듈 의존성은 `Framework → Graphics` 방향이어야 함
+- Graphics가 Framework에 의존하면 순환 참조 위험
+
+### Files Modified
+
+| 파일 | 변경 내용 |
+|------|----------|
+| Graphics/SubmeshInfo.h | 신규 생성 |
+| Graphics/MeshResource.h | 서브메시 멤버, DrawSubmesh, Getter/Setter |
+| Graphics/MeshResource.cpp | DrawSubmesh 구현, CreateDefaultSubmesh |
+| Framework/Assets/MeshAsset.h | `#include "Graphics/SubmeshInfo.h"`, 기존 SubmeshInfo 제거 |
+| Framework/Assets/MeshAsset.cpp | `Graphics::SubmeshInfo` 타입 사용 |
+| Framework/Assets/ModelLoader.h | `Graphics::SubmeshInfo` 타입 사용 |
+| Framework/Resources/ResourceManager.cpp | 서브메시 복사 로직 추가 |
+
+### Data Flow
+
+```
+[glTF 파일]
+    ↓ ModelLoader::LoadModel()
+LoadedMeshData.submeshes (파싱)
+    ↓ MeshAsset::SetSubmeshes()
+MeshAsset.mSubmeshes (CPU)
+    ↓ ResourceManager::CreateMeshFromAsset()
+MeshResource.mSubmeshes (GPU 측 메타데이터)
+    ↓ RenderSystem (Phase 4.4.2에서 구현)
+DrawSubmesh() 호출
+```
+
+### Results
+
+- 서브메시별 Material 적용 기반 완성
+- 기존 `Draw()` 함수 하위 호환성 유지
+- 서브메시 유무와 관계없이 동일한 렌더링 API
+
+### Next Steps
+
+- [ ] Phase 4.4.2: ECS 레이어 확장
+- [ ] Phase 4.4.3: DX12Renderer 수정
+- [ ] Phase 4.4.4: 검증 및 테스트
+- [ ] Phase 5: PBR Pipeline
+
+---
+
 ## 2025-01-04 - Phase 4.3: Texture Pipeline (Step 3~5 완료)
 
 ### Tasks
