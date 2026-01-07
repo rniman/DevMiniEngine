@@ -456,8 +456,20 @@ namespace Framework
 			return;
 		}
 
-		ImGui::Text("Material ID: 0x%llX", material->materialId.IsValid() ? material->materialId.id : 0);
+		ImGui::Text("Material Count: %u / %u", material->count, ECS::MaterialComponent::MAX_MATERIALS);
+		ImGui::Separator();
+
+		for (Core::uint32 i = 0; i < material->count; ++i)
+		{
+			ImGui::Text(
+				"[%u] ID: 0x%llX",
+				i,
+				material->materialIds[i].IsValid() ? material->materialIds[i].id : 0
+			);
+		}
+
 		ImGui::TextDisabled("(Read-only)");
+
 	}
 
 	void ECSInspector::RenderAddComponentMenu(ECS::Registry* registry, ECS::Entity entity)

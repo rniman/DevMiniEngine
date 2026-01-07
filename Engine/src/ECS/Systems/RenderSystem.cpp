@@ -90,20 +90,30 @@ namespace ECS
 				continue;
 			}
 
-			Graphics::MaterialResource* material = mResourceManager->GetMaterial(materialComp->materialId);
-			if (!material)
+			// Phase 4.4: 서브메시별 RenderItem 생성
+			Core::uint32 submeshCount = mesh->GetSubmeshCount();
+
+			for (Core::uint32 i = 0; i < submeshCount; ++i)
 			{
-				LOG_WARN("[RenderSystem] Material not found for entity %u", entity.id);
-				continue;
+				// 서브메시에 해당하는 Material 획득
+				Framework::ResourceId matId = materialComp->GetMaterial(i);
+				Graphics::MaterialResource* material = mResourceManager->GetMaterial(matId);
+
+				if (!material)
+				{
+					LOG_WARN("[RenderSystem] Material not found for entity %u submesh %u", entity.id, i);
+					continue;
+				}
+
+				Graphics::RenderItem renderItem;
+				renderItem.mesh = mesh;
+				renderItem.material = material;
+				renderItem.worldMatrix = worldMatrix;
+				renderItem.mvpMatrix = Math::MatrixTranspose(worldMatrix * viewProj);
+				renderItem.submeshIndex = i;
+
+				mFrameData.opaqueItems.push_back(renderItem);
 			}
-
-			Graphics::RenderItem renderItem;
-			renderItem.mesh = mesh;
-			renderItem.material = material;
-			renderItem.worldMatrix = worldMatrix;
-			renderItem.mvpMatrix = Math::MatrixTranspose(worldMatrix * viewProj);
-
-			mFrameData.opaqueItems.push_back(renderItem);
 		}
 	}
 

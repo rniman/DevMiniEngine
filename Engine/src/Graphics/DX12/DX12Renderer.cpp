@@ -573,7 +573,7 @@ namespace Graphics
 			}
 
 			// 6. 메시 그리기
-			item.mesh->Draw(cmdList);
+			item.mesh->DrawSubmesh(cmdList, item.submeshIndex);
 
 			++mCurrentObjectCBIndex;
 			++mCurrentMaterialCBIndex;

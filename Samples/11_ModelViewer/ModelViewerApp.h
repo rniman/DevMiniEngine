@@ -92,6 +92,9 @@ private:
 	/** @brief DamagedHelmet Entity 생성 (오른쪽) */
 	void CreateHelmetEntity();
 
+	/** @brief MultiMaterialCube Entity 생성 (상단) */
+	void CreateCubeEntity();
+
 	//=========================================================================
 	// 메시 설정
 	//=========================================================================
@@ -123,6 +126,12 @@ private:
 	 *    - GetFallbackTexture() (1x1 Magenta)
 	 */
 	void SetupHelmetMaterial();
+
+	/** @brief MultiMaterialCube 메시 로드 */
+	void SetupCubeMesh();
+
+	/** @brief MultiMaterialCube 머티리얼 설정 */
+	void SetupCubeMaterial();
 
 	//=========================================================================
 	// Debug UI
@@ -171,16 +180,19 @@ private:
 	//=========================================================================
 	ECS::Entity mHelmetEntity;
 	Framework::ResourceId mHelmetMeshId;
-	Framework::ResourceId mHelmetMaterialId;
+	std::vector<Framework::ResourceId> mHelmetMaterialIds;
 	std::unique_ptr<Framework::MeshAsset> mHelmetMeshAsset;
-
-	/**
-	 * @brief 로드된 모델 데이터 (메시, 머티리얼, 텍스처 정보)
-	 *
-	 * SetupHelmetMesh()에서 채워지고, SetupHelmetMaterial()에서 사용됩니다.
-	 * 임베디드 텍스처의 경우 embeddedData에 바이너리가 저장되어 있습니다.
-	 */
 	Framework::LoadedModelData mHelmetModelData;
+
+	//=========================================================================
+	// MultiMaterialCube (상단) - Phase 4.4 멀티 서브메시 테스트
+	//=========================================================================
+	ECS::Entity mCubeEntity;
+	Framework::ResourceId mCubeMeshId;
+	std::vector<Framework::ResourceId> mCubeMaterialIds;
+	std::unique_ptr<Framework::MeshAsset> mCubeMeshAsset;
+	Framework::LoadedModelData mCubeModelData;
+	bool mCubeMeshValid = false;
 
 	//=========================================================================
 	// 공유 리소스

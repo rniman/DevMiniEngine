@@ -13,6 +13,8 @@ namespace Graphics
 
 	/**
 	 * @brief 단일 렌더링 아이템 (Draw Call 단위)
+	 *
+	 * @note Phase 4.4: submeshIndex 추가 (서브메시별 렌더링)
 	 */
 	struct RenderItem
 	{
@@ -20,6 +22,7 @@ namespace Graphics
 		const MaterialResource* material = nullptr;
 		Math::Matrix4x4 worldMatrix = Math::Matrix4x4::Identity();
 		Math::Matrix4x4 mvpMatrix = Math::Matrix4x4::Identity();
+		Core::uint32 submeshIndex = 0;
 	};
 
 	/**

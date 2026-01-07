@@ -85,6 +85,12 @@ namespace Graphics
 		mInputLayout = BasicVertex::GetInputLayout();
 
 		mInitialized = true;
+
+		if (mSubmeshes.empty())
+		{
+			CreateDefaultSubmesh();
+		}
+
 		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
@@ -154,6 +160,12 @@ namespace Graphics
 		mInputLayout = TexturedVertex::GetInputLayout();
 
 		mInitialized = true;
+
+		if (mSubmeshes.empty())
+		{
+			CreateDefaultSubmesh();
+		}
+
 		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u)", vertexCount, indexCount);
 		return true;
 	}
@@ -224,6 +236,12 @@ namespace Graphics
 
 		mInitialized = true;
 		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u, 16-bit indices)", vertexCount, indexCount);
+
+		if (mSubmeshes.empty())
+		{
+			CreateDefaultSubmesh();
+		}
+
 		return true;
 	}
 
@@ -292,6 +310,12 @@ namespace Graphics
 		mInputLayout = StandardVertex::GetInputLayout();
 
 		mInitialized = true;
+
+		if (mSubmeshes.empty())
+		{
+			CreateDefaultSubmesh();
+		}
+
 		LOG_GFX_INFO("[MeshResource] initialized successfully (V:%u, I:%u, 32-bit indices)", vertexCount, indexCount);
 		return true;
 	}

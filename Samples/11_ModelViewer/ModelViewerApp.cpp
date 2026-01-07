@@ -85,11 +85,13 @@ namespace
 	constexpr Math::Vector3 PROCEDURAL_SPHERE_POS = { -3.5f, 0.0f, 0.0f };
 	constexpr Math::Vector3 LOADED_SPHERE_POS = { 0.0f, 0.0f, 0.0f };
 	constexpr Math::Vector3 HELMET_POS = { 3.5f, 0.0f, 0.0f };
+	constexpr Math::Vector3 CUBE_POS = { 0.0f, 2.5f, 0.0f };
 
 	// 모델 경로
 	constexpr const char* SPHERE_MODEL_PATH = "../../Assets/Models/Sphere.glb";
 	// constexpr const char* HELMET_MODEL_PATH = "../../Assets/Models/DamagedHelmet/DamagedHelmet.gltf";
 	constexpr const char* HELMET_MODEL_PATH = "../../Assets/Models/DamagedHelmet_Glb/DamagedHelmet.glb";
+	constexpr const char* CUBE_MODEL_PATH = "../../Assets/Models/MultiMaterialCube.glb";
 
 	// UI 단축키
 	constexpr Platform::KeyCode KEY_TOGGLE_ASSET_PANEL = Platform::KeyCode::F4;
@@ -185,6 +187,7 @@ void ModelViewerApp::InitializeECS()
 	CreateProceduralSphereEntity();
 	CreateLoadedSphereEntity();
 	CreateHelmetEntity();
+	CreateCubeEntity();
 
 	LOG_INFO("[ECS] Registry initialized");
 }
@@ -267,7 +270,7 @@ void ModelViewerApp::CreateProceduralSphereEntity()
 
 	// Material Component (공유)
 	ECS::MaterialComponent matComp;
-	matComp.materialId = mSharedMaterialId;
+	matComp.SetSingleMaterial(mSharedMaterialId);
 	mRegistry->AddComponent(mProceduralSphereEntity, matComp);
 
 	// Mesh 설정
@@ -301,7 +304,7 @@ void ModelViewerApp::CreateLoadedSphereEntity()
 
 	// Material Component (공유)
 	ECS::MaterialComponent matComp;
-	matComp.materialId = mSharedMaterialId;
+	matComp.SetSingleMaterial(mSharedMaterialId);
 	mRegistry->AddComponent(mLoadedSphereEntity, matComp);
 
 	LOG_INFO(
@@ -334,14 +337,55 @@ void ModelViewerApp::CreateHelmetEntity()
 	meshComp.meshId = mHelmetMeshId;
 	mRegistry->AddComponent(mHelmetEntity, meshComp);
 
-	// Material Component (Helmet 전용)
+	// Material Component (멀티 서브메시용)
 	ECS::MaterialComponent matComp;
-	matComp.materialId = mHelmetMaterialId;
+	for (size_t i = 0; i < mHelmetMaterialIds.size() && i < ECS::MaterialComponent::MAX_MATERIALS; ++i)
+	{
+		matComp.SetMaterial(static_cast<Core::uint32>(i), mHelmetMaterialIds[i]);
+	}
 	mRegistry->AddComponent(mHelmetEntity, matComp);
 
 	LOG_INFO(
 		"[ModelViewerApp] DamagedHelmet created at (%.1f, %.1f, %.1f)",
 		HELMET_POS.x, HELMET_POS.y, HELMET_POS.z
+	);
+}
+
+void ModelViewerApp::CreateCubeEntity()
+{
+	LOG_INFO("[ModelViewerApp] Creating MultiMaterialCube Entity...");
+
+	mCubeEntity = mRegistry->CreateEntity();
+
+	// Transform (상단)
+	ECS::TransformComponent transform;
+	transform.position = CUBE_POS;
+	transform.scale = Math::Vector3(1.0f, 1.0f, 1.0f);
+	ECS::TransformSystem::SetRotationEuler(transform, 0.0f, 0.0f, 0.0f);
+	mRegistry->AddComponent(mCubeEntity, transform);
+
+	// Mesh 설정
+	SetupCubeMesh();
+
+	// Material 설정
+	SetupCubeMaterial();
+
+	// Mesh Component
+	ECS::MeshComponent meshComp;
+	meshComp.meshId = mCubeMeshId;
+	mRegistry->AddComponent(mCubeEntity, meshComp);
+
+	// Material Component (멀티 서브메시용)
+	ECS::MaterialComponent matComp;
+	for (size_t i = 0; i < mCubeMaterialIds.size() && i < ECS::MaterialComponent::MAX_MATERIALS; ++i)
+	{
+		matComp.SetMaterial(static_cast<Core::uint32>(i), mCubeMaterialIds[i]);
+	}
+	mRegistry->AddComponent(mCubeEntity, matComp);
+
+	LOG_INFO(
+		"[ModelViewerApp] MultiMaterialCube created at (%.1f, %.1f, %.1f)",
+		CUBE_POS.x, CUBE_POS.y, CUBE_POS.z
 	);
 }
 
@@ -510,17 +554,58 @@ void ModelViewerApp::SetupHelmetMesh()
 		return;
 	}
 
-	// 첫 번째 메시 데이터
-	auto& meshData = mHelmetModelData.meshes[0];
+	// 모든 메시를 하나로 병합 + 서브메시 정보 생성
+	std::vector<Graphics::StandardVertex> allVertices;
+	std::vector<Core::uint32> allIndices;
+	std::vector<Graphics::SubmeshInfo> submeshes;
+
+	Math::Vector3 aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+	Math::Vector3 aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+	Core::uint32 baseVertex = 0;
+	Core::uint32 baseIndex = 0;
+
+	for (size_t i = 0; i < mHelmetModelData.meshes.size(); ++i)
+	{
+		auto& meshData = mHelmetModelData.meshes[i];
+
+		// 서브메시 정보 생성
+		Graphics::SubmeshInfo submesh;
+		submesh.startIndex = baseIndex;
+		submesh.indexCount = static_cast<Core::uint32>(meshData.indices.size());
+		submesh.baseVertex = baseVertex;
+		submesh.materialIndex = static_cast<Core::uint32>(i);
+		submeshes.push_back(submesh);
+
+		// 버텍스 추가
+		allVertices.insert(allVertices.end(),
+			meshData.vertices.begin(), meshData.vertices.end());
+
+		// 인덱스 추가
+		allIndices.insert(allIndices.end(),
+			meshData.indices.begin(), meshData.indices.end());
+
+		// AABB 병합
+		aabbMin.x = std::min(aabbMin.x, meshData.aabbMin.x);
+		aabbMin.y = std::min(aabbMin.y, meshData.aabbMin.y);
+		aabbMin.z = std::min(aabbMin.z, meshData.aabbMin.z);
+		aabbMax.x = std::max(aabbMax.x, meshData.aabbMax.x);
+		aabbMax.y = std::max(aabbMax.y, meshData.aabbMax.y);
+		aabbMax.z = std::max(aabbMax.z, meshData.aabbMax.z);
+
+		LOG_INFO("[Mesh] Submesh[%zu]: startIdx=%u, idxCount=%u, baseVtx=%u, mat=%u",
+			i, submesh.startIndex, submesh.indexCount, submesh.baseVertex, submesh.materialIndex);
+
+		baseVertex += static_cast<Core::uint32>(meshData.vertices.size());
+		baseIndex += static_cast<Core::uint32>(meshData.indices.size());
+	}
 
 	// MeshAsset 생성 및 데이터 설정
 	mHelmetMeshAsset = std::make_unique<Framework::MeshAsset>();
-
-	// MeshAsset에 데이터 설정 (같은 타입이므로 직접 이동)
-	mHelmetMeshAsset->SetVertices(std::move(meshData.vertices));
-	mHelmetMeshAsset->SetIndices(std::move(meshData.indices));
-	mHelmetMeshAsset->SetSubmeshes(std::move(meshData.submeshes));
-	mHelmetMeshAsset->SetAABB(meshData.aabbMin, meshData.aabbMax);
+	mHelmetMeshAsset->SetVertices(std::move(allVertices));
+	mHelmetMeshAsset->SetIndices(std::move(allIndices));
+	mHelmetMeshAsset->SetSubmeshes(std::move(submeshes));
+	mHelmetMeshAsset->SetAABB(aabbMin, aabbMax);
 	mHelmetMeshAsset->SetDataPolicy(Framework::MeshDataPolicy::ReleaseAfterUpload);
 
 	// ResourceManager를 통해 GPU Mesh 생성
@@ -535,11 +620,11 @@ void ModelViewerApp::SetupHelmetMesh()
 
 	mHelmetMeshValid = true;
 
-	LOG_INFO(
-		"[Mesh] Loaded helmet mesh via Asset Pipeline (V:%u, I:%u)",
+	LOG_INFO("[Mesh] Merged %zu meshes: V=%u, I=%u, Submeshes=%zu",
+		mHelmetModelData.meshes.size(),
 		mHelmetMeshAsset->GetVertexCount(),
-		mHelmetMeshAsset->GetIndexCount()
-	);
+		mHelmetMeshAsset->GetIndexCount(),
+		submeshes.size());
 
 	// 머티리얼 정보 로그
 	for (size_t i = 0; i < mHelmetModelData.materials.size(); ++i)
@@ -557,24 +642,277 @@ void ModelViewerApp::SetupHelmetMesh()
 
 void ModelViewerApp::SetupHelmetMaterial()
 {
-	// Helmet 전용 머티리얼 생성
-	mHelmetMaterialId = mResourceManager->CreateMaterial(
-		"HelmetMaterial",
-		L"../../Assets/Shaders/PhongVS.hlsl",
-		L"../../Assets/Shaders/PhongPS.hlsl"
-	);
-
-	auto* material = mResourceManager->GetMaterial(mHelmetMaterialId);
-	if (!material)
+	if (mHelmetModelData.materials.empty())
 	{
-		LOG_ERROR("[Material] Failed to create helmet material!");
+		LOG_WARN("[Material] No material data in model");
 		return;
 	}
 
-	// 머티리얼 데이터가 없으면 기본 설정만
-	if (mHelmetModelData.materials.empty())
+	mHelmetMaterialIds.clear();
+	Framework::ResourceId fallbackTexId = mResourceManager->GetFallbackTexture();
+
+	// 각 머티리얼에 대해 처리
+	for (size_t matIndex = 0; matIndex < mHelmetModelData.materials.size(); ++matIndex)
 	{
-		LOG_WARN("[Material] No material data in helmet model, using defaults");
+		auto& matData = mHelmetModelData.materials[matIndex];
+
+		// Material 이름 생성
+		std::string matName = mHelmetModelData.name + "_Mat_" + std::to_string(matIndex);
+
+		Framework::ResourceId matId = mResourceManager->CreateMaterial(
+			matName,
+			L"../../Assets/Shaders/PhongVS.hlsl",
+			L"../../Assets/Shaders/PhongPS.hlsl"
+		);
+
+		auto* material = mResourceManager->GetMaterial(matId);
+		if (!material)
+		{
+			LOG_ERROR("[Material] Failed to create material: %s", matName.c_str());
+			mHelmetMaterialIds.push_back(Framework::ResourceId::Invalid());
+			continue;
+		}
+
+		LOG_INFO("[Material] Loading textures for material[%zu]: %s", matIndex, matData.name.c_str());
+
+		// 텍스처 로드 (기존 로직과 동일)
+		for (auto& texInfo : matData.textures)
+		{
+			Framework::ResourceId texId;
+
+			if (texInfo.HasEmbeddedData())
+			{
+				std::string texName = mHelmetModelData.name + "_" + texInfo.path;
+
+				if (texInfo.isCompressed)
+				{
+					texId = mResourceManager->LoadTextureFromMemory(
+						texName,
+						texInfo.embeddedData.data(),
+						static_cast<Core::uint32>(texInfo.embeddedData.size()),
+						texInfo.type
+					);
+				}
+				else
+				{
+					texId = mResourceManager->CreateTextureFromMemory(
+						texName,
+						texInfo.embeddedData.data(),
+						texInfo.width,
+						texInfo.height,
+						texInfo.type
+					);
+				}
+
+				if (texId.IsValid())
+				{
+					material->SetTexture(texInfo.type, texId);
+					texInfo.path = texName;
+					LOG_INFO("[Material] Loaded embedded %s", texInfo.path.c_str());
+				}
+			}
+			else if (!texInfo.isEmbedded)
+			{
+				texId = mResourceManager->LoadTexture(texInfo.path, texInfo.type);
+				if (texId.IsValid())
+				{
+					material->SetTexture(texInfo.type, texId);
+					LOG_INFO("[Material] Loaded %s: %s",
+						Graphics::TextureTypeToString(texInfo.type), texInfo.path.c_str());
+				}
+			}
+
+			// 실패 시 폴백
+			if (!texId.IsValid() && fallbackTexId.IsValid())
+			{
+				material->SetTexture(texInfo.type, fallbackTexId);
+			}
+		}
+
+		// Descriptor 할당
+		if (!material->AllocateDescriptors(
+			GetDevice()->GetDevice(),
+			GetRenderer()->GetSrvDescriptorHeap(),
+			mResourceManager.get()
+		))
+		{
+			LOG_ERROR("[Material] Failed to allocate descriptors for: %s", matName.c_str());
+		}
+
+		mHelmetMaterialIds.push_back(matId);
+		LOG_INFO("[Material] Created material[%zu]: %s (ID: 0x%llX)",
+			matIndex, matName.c_str(), matId.id);
+	}
+
+	LOG_INFO("[Material] Total %zu materials created", mHelmetMaterialIds.size());
+}
+
+void ModelViewerApp::SetupCubeMesh()
+{
+	if (!Framework::ModelLoader::LoadModel(CUBE_MODEL_PATH, mCubeModelData))
+	{
+		LOG_ERROR("[Cube] Failed to load cube model: %s", CUBE_MODEL_PATH);
+		mCubeMeshValid = false;
+		return;
+	}
+
+	if (mCubeModelData.meshes.empty())
+	{
+		LOG_ERROR("[Cube] Cube model has no meshes");
+		mCubeMeshValid = false;
+		return;
+	}
+
+	// 모든 메시를 하나로 병합 + 서브메시 정보 생성
+	std::vector<Graphics::StandardVertex> allVertices;
+	std::vector<Core::uint32> allIndices;
+	std::vector<Graphics::SubmeshInfo> submeshes;
+
+	Math::Vector3 aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+	Math::Vector3 aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+	Core::uint32 baseVertex = 0;
+	Core::uint32 baseIndex = 0;
+
+	for (size_t i = 0; i < mCubeModelData.meshes.size(); ++i)
+	{
+		auto& meshData = mCubeModelData.meshes[i];
+
+		Graphics::SubmeshInfo submesh;
+		submesh.startIndex = baseIndex;
+		submesh.indexCount = static_cast<Core::uint32>(meshData.indices.size());
+		submesh.baseVertex = baseVertex;
+		submesh.materialIndex = static_cast<Core::uint32>(i);
+		submeshes.push_back(submesh);
+
+		allVertices.insert(allVertices.end(),
+			meshData.vertices.begin(), meshData.vertices.end());
+
+		allIndices.insert(allIndices.end(),
+			meshData.indices.begin(), meshData.indices.end());
+
+		aabbMin.x = std::min(aabbMin.x, meshData.aabbMin.x);
+		aabbMin.y = std::min(aabbMin.y, meshData.aabbMin.y);
+		aabbMin.z = std::min(aabbMin.z, meshData.aabbMin.z);
+		aabbMax.x = std::max(aabbMax.x, meshData.aabbMax.x);
+		aabbMax.y = std::max(aabbMax.y, meshData.aabbMax.y);
+		aabbMax.z = std::max(aabbMax.z, meshData.aabbMax.z);
+
+		LOG_INFO("[Cube] Submesh[%zu]: startIdx=%u, idxCount=%u, baseVtx=%u",
+			i, submesh.startIndex, submesh.indexCount, submesh.baseVertex);
+
+		baseVertex += static_cast<Core::uint32>(meshData.vertices.size());
+		baseIndex += static_cast<Core::uint32>(meshData.indices.size());
+	}
+
+	mCubeMeshAsset = std::make_unique<Framework::MeshAsset>();
+	mCubeMeshAsset->SetVertices(std::move(allVertices));
+	mCubeMeshAsset->SetIndices(std::move(allIndices));
+	mCubeMeshAsset->SetSubmeshes(std::move(submeshes));
+	mCubeMeshAsset->SetAABB(aabbMin, aabbMax);
+	mCubeMeshAsset->SetDataPolicy(Framework::MeshDataPolicy::ReleaseAfterUpload);
+
+	mCubeMeshId = mResourceManager->CreateMeshFromAsset("CubeMesh", mCubeMeshAsset.get());
+
+	if (!mCubeMeshId.IsValid())
+	{
+		LOG_ERROR("[Cube] Failed to create GPU mesh from cube asset");
+		mCubeMeshValid = false;
+		return;
+	}
+
+	mCubeMeshValid = true;
+	LOG_INFO("[Cube] Merged %zu meshes into %zu submeshes",
+		mCubeModelData.meshes.size(), submeshes.size());
+}
+
+void ModelViewerApp::SetupCubeMaterial()
+{
+	if (mCubeModelData.materials.empty())
+	{
+		LOG_WARN("[Cube] No material data");
+		return;
+	}
+
+	mCubeMaterialIds.clear();
+	Framework::ResourceId fallbackTexId = mResourceManager->GetFallbackTexture();
+
+	for (size_t matIndex = 0; matIndex < mCubeModelData.materials.size(); ++matIndex)
+	{
+		auto& matData = mCubeModelData.materials[matIndex];
+
+		// 빈 머티리얼 건너뛰기
+		if (matData.textures.empty())
+		{
+			LOG_DEBUG("[Cube] Skipping empty material[%zu]", matIndex);
+			mCubeMaterialIds.push_back(Framework::ResourceId::Invalid());
+			continue;
+		}
+
+		std::string matName = "CubeMat_" + std::to_string(matIndex);
+
+		Framework::ResourceId matId = mResourceManager->CreateMaterial(
+			matName,
+			L"../../Assets/Shaders/PhongVS.hlsl",
+			L"../../Assets/Shaders/PhongPS.hlsl"
+		);
+
+		auto* material = mResourceManager->GetMaterial(matId);
+		if (!material)
+		{
+			LOG_ERROR("[Cube] Failed to create material: %s", matName.c_str());
+			mCubeMaterialIds.push_back(Framework::ResourceId::Invalid());
+			continue;
+		}
+
+		for (auto& texInfo : matData.textures)
+		{
+			Framework::ResourceId texId;
+
+			if (texInfo.HasEmbeddedData())
+			{
+				std::string texName = mCubeModelData.name + "_" + texInfo.path;
+
+				if (texInfo.isCompressed)
+				{
+					texId = mResourceManager->LoadTextureFromMemory(
+						texName,
+						texInfo.embeddedData.data(),
+						static_cast<Core::uint32>(texInfo.embeddedData.size()),
+						texInfo.type
+					);
+				}
+				else
+				{
+					texId = mResourceManager->CreateTextureFromMemory(
+						texName,
+						texInfo.embeddedData.data(),
+						texInfo.width,
+						texInfo.height,
+						texInfo.type
+					);
+				}
+
+				if (texId.IsValid())
+				{
+					material->SetTexture(texInfo.type, texId);
+					texInfo.path = texName;
+				}
+			}
+			else if (!texInfo.isEmbedded)
+			{
+				texId = mResourceManager->LoadTexture(texInfo.path, texInfo.type);
+				if (texId.IsValid())
+				{
+					material->SetTexture(texInfo.type, texId);
+				}
+			}
+
+			if (!texId.IsValid() && fallbackTexId.IsValid())
+			{
+				material->SetTexture(texInfo.type, fallbackTexId);
+			}
+		}
 
 		if (!material->AllocateDescriptors(
 			GetDevice()->GetDevice(),
@@ -582,128 +920,12 @@ void ModelViewerApp::SetupHelmetMaterial()
 			mResourceManager.get()
 		))
 		{
-			LOG_ERROR("[Material] Failed to allocate descriptors for helmet");
+			LOG_ERROR("[Cube] Failed to allocate descriptors: %s", matName.c_str());
 		}
-		return;
+
+		mCubeMaterialIds.push_back(matId);
+		LOG_INFO("[Cube] Created material[%zu]: %s", matIndex, matName.c_str());
 	}
-
-	// 첫 번째 머티리얼의 텍스처들 로드
-	auto& matData = mHelmetModelData.materials[0];
-	LOG_INFO("[Material] Loading textures for material: %s", matData.name.c_str());
-
-	Core::uint32 loadedCount = 0;
-	Core::uint32 embeddedCount = 0;
-	Core::uint32 fallbackCount = 0;
-
-	// 폴백 텍스처 ID
-	Framework::ResourceId fallbackTexId = mResourceManager->GetFallbackTexture();
-
-	for (auto& texInfo : matData.textures)
-	{
-		Framework::ResourceId texId;
-		// 임베디드 텍스처 처리
-		if (texInfo.HasEmbeddedData())
-		{
-			// 고유 이름 생성 (모델명_텍스처경로)
-			std::string texName = mHelmetModelData.name + "_" + texInfo.path;
-
-			if (texInfo.isCompressed)
-			{
-				// PNG/JPG 압축 포맷
-				texId = mResourceManager->LoadTextureFromMemory(
-					texName,
-					texInfo.embeddedData.data(),
-					static_cast<Core::uint32>(texInfo.embeddedData.size()),
-					texInfo.type
-				);
-			}
-			else
-			{
-				// RGBA 원시 데이터
-				texId = mResourceManager->CreateTextureFromMemory(
-					texName,
-					texInfo.embeddedData.data(),
-					texInfo.width,
-					texInfo.height,
-					texInfo.type
-				);
-			}
-
-			if (texId.IsValid())
-			{
-				material->SetTexture(texInfo.type, texId);
-				texInfo.path = texName;
-				LOG_INFO(
-					"[Material] Loaded embedded %s: %s",
-					Graphics::TextureTypeToString(texInfo.type),
-					texInfo.path.c_str()
-				);
-				embeddedCount++;
-				continue;
-			}
-			else
-			{
-				LOG_WARN("[Material] Failed to load embedded texture: %s", texInfo.path.c_str());
-			}
-		}
-		// 임베디드 마커만 있고 데이터가 없는 경우 (추출 실패)
-		else if (texInfo.isEmbedded)
-		{
-			LOG_WARN("[Material] Embedded texture has no data, using fallback: %s", texInfo.path.c_str());
-			if (fallbackTexId.IsValid())
-			{
-				material->SetTexture(texInfo.type, fallbackTexId);
-			}
-			fallbackCount++;
-			continue;
-		}
-
-		// 외부 텍스처 로드 시도
-		texId = mResourceManager->LoadTexture(texInfo.path, texInfo.type);
-
-		if (texId.IsValid())
-		{
-			material->SetTexture(texInfo.type, texId);
-			LOG_INFO(
-				"[Material] Loaded %s: %s",
-				Graphics::TextureTypeToString(texInfo.type),
-				texInfo.path.c_str()
-			);
-			loadedCount++;
-		}
-		else
-		{
-			// 로드 실패 → 폴백 텍스처 사용
-			if (fallbackTexId.IsValid())
-			{
-				material->SetTexture(texInfo.type, fallbackTexId);
-				LOG_WARN(
-					"[Material] Using fallback for %s: %s",
-					Graphics::TextureTypeToString(texInfo.type),
-					texInfo.path.c_str()
-				);
-			}
-			fallbackCount++;
-		}
-	}
-
-	LOG_INFO(
-		"[Material] Texture loading complete: %u external, %u embedded, %u fallback",
-		loadedCount, embeddedCount, fallbackCount
-	);
-
-	// Descriptor 할당
-	if (!material->AllocateDescriptors(
-		GetDevice()->GetDevice(),
-		GetRenderer()->GetSrvDescriptorHeap(),
-		mResourceManager.get()
-	))
-	{
-		LOG_ERROR("[Material] Failed to allocate descriptors for helmet");
-		return;
-	}
-
-	LOG_INFO("[Material] Helmet material setup complete");
 }
 
 //=============================================================================
@@ -756,6 +978,12 @@ void ModelViewerApp::OnUpdate(Core::float32 deltaTime)
 		// Helmet 회전
 		transformSystem->SetRotationEuler(
 			mHelmetEntity,
+			Math::Vector3(0.0f, mRotationAngle, 0.0f)
+		);
+
+		// Cube 회전
+		transformSystem->SetRotationEuler(
+			mCubeEntity,
 			Math::Vector3(0.0f, mRotationAngle, 0.0f)
 		);
 	}

@@ -212,8 +212,14 @@ namespace Framework
 		}
 
 		// Phase 4.4: 서브메시 정보 복사
+		// Initialize에서 기본 서브메시 생성됨
+		// MeshAsset에 멀티 서브메시가 있을 때만 덮어쓰기
 		const auto& submeshes = meshAsset->GetSubmeshes();
-		mesh->SetSubmeshes(submeshes);
+		if (submeshes.size() > 1)
+		{
+			mesh->SetSubmeshes(submeshes);
+			LOG_DEBUG("[ResourceManager] Multi-submesh copied: %u submesh(es)", mesh->GetSubmeshCount());
+		}
 
 		LOG_DEBUG(
 			"[ResourceManager] Submeshes copied: %u submesh(es)",
