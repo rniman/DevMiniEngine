@@ -1,15 +1,16 @@
 ﻿/**
  * @file ModelViewerApp.h
- * @brief Phase 4.2: Model Loading 데모 애플리케이션
+ * @brief Phase 4.4: Model Loading 데모 애플리케이션
  *
- * Procedural Mesh vs Loaded Mesh 비교 + glTF 모델 텍스처 정보 테스트:
+ * 다양한 메시 로딩 방식과 멀티 서브메시 비교:
  * - 왼쪽: Procedural Sphere (PrimitiveGenerator + MikkTSpace)
  * - 중앙: Loaded Sphere (ModelLoader + glTF)
  * - 오른쪽: DamagedHelmet (LoadModel + 머티리얼/텍스처 정보)
+ * - 상단: MultiMaterialCube (멀티 서브메시 + 개별 머티리얼)
  *
  * 텍스처 로딩 지원:
  * - 외부 텍스처: gltf + 별도 이미지 파일 (jpg, png 등)
- * - 임베디드 텍스처: glb 파일 내 포함된 텍스처 (Phase 4.2+)
+ * - 임베디드 텍스처: glb 파일 내 포함된 텍스처
  * - 폴백 텍스처: 로드 실패 시 1x1 Magenta
  */
 #pragma once
@@ -46,7 +47,7 @@ namespace Graphics
 }
 
 /**
- * @brief Phase 4.2: Model Loading 데모 애플리케이션
+ * @brief Phase 4.4: Model Loading 데모 애플리케이션
  */
 class ModelViewerApp : public Framework::Application
 {
@@ -67,7 +68,7 @@ private:
 	{
 		Framework::ApplicationDesc desc;
 		desc.applicationName = "ModelViewer";
-		desc.windowTitle = "11_ModelViewer - Phase 4.2 Model Loading";
+		desc.windowTitle = "11_ModelViewer - Phase 4.4 Multi-Submesh";
 		desc.windowWidth = 1280;
 		desc.windowHeight = 720;
 		desc.enableVSync = true;
@@ -108,30 +109,48 @@ private:
 	/** @brief BrickWall 텍스처를 사용하는 공유 머티리얼 설정 */
 	void SetupSharedMaterial();
 
-	/** @brief DamagedHelmet 메시 로드 (LoadModel API 사용) */
-	void SetupHelmetMesh();
+	//=========================================================================
+	// 모델 로딩 헬퍼 (중복 코드 제거)
+	//=========================================================================
 
 	/**
-	 * @brief DamagedHelmet 머티리얼 설정
+	 * @brief glTF 모델에서 메시를 로드하고 GPU 리소스 생성
 	 *
-	 * LoadedModelData에서 텍스처 정보를 읽어 Material에 바인딩합니다.
+	 * LoadedModelData의 모든 메시를 하나로 병합하고 서브메시 정보를 생성합니다.
+	 * MeshAsset을 통해 GPU 버퍼를 생성합니다.
 	 *
-	 * 텍스처 로딩 우선순위:
-	 * 1. 임베디드 텍스처 (glb 내 포함, HasEmbeddedData() == true)
-	 *    - 압축 포맷 (PNG/JPG): LoadTextureFromMemory()
-	 *    - 원시 RGBA: CreateTextureFromMemory()
-	 * 2. 외부 텍스처 (gltf + 별도 파일)
-	 *    - LoadTexture(path)
-	 * 3. 폴백 텍스처 (로드 실패 시)
-	 *    - GetFallbackTexture() (1x1 Magenta)
+	 * @param modelPath glTF/glb 파일 경로
+	 * @param modelName 리소스 이름 (로그 및 ResourceId용)
+	 * @param outModelData 로드된 모델 데이터 (출력)
+	 * @param outMeshAsset 생성된 MeshAsset (출력)
+	 * @param outMeshId 생성된 MeshResource ID (출력)
+	 * @return 성공 여부
 	 */
-	void SetupHelmetMaterial();
+	bool LoadAndCreateMesh(
+		const char* modelPath,
+		const std::string& modelName,
+		Framework::LoadedModelData& outModelData,
+		std::unique_ptr<Framework::MeshAsset>& outMeshAsset,
+		Framework::ResourceId& outMeshId
+	);
 
-	/** @brief MultiMaterialCube 메시 로드 */
-	void SetupCubeMesh();
-
-	/** @brief MultiMaterialCube 머티리얼 설정 */
-	void SetupCubeMaterial();
+	/**
+	 * @brief LoadedModelData에서 머티리얼들을 생성
+	 *
+	 * 각 머티리얼에 대해:
+	 * 1. MaterialResource 생성
+	 * 2. 텍스처 로드 (임베디드/외부/폴백)
+	 * 3. Descriptor 할당
+	 *
+	 * @param modelData 로드된 모델 데이터
+	 * @param materialNamePrefix 머티리얼 이름 접두어
+	 * @param outMaterialIds 생성된 머티리얼 ID 목록 (출력)
+	 */
+	void CreateMaterialsFromModelData(
+		Framework::LoadedModelData& modelData,
+		const std::string& materialNamePrefix,
+		std::vector<Framework::ResourceId>& outMaterialIds
+	);
 
 	//=========================================================================
 	// Debug UI
@@ -149,7 +168,6 @@ private:
 	void RenderModelInfoPanelTextures();
 
 private:
-
 	// 리소스 관리
 	std::unique_ptr<Framework::ResourceManager> mResourceManager;
 	std::unique_ptr<Framework::AssetManager> mAssetManager;

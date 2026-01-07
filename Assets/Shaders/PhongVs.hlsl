@@ -6,6 +6,7 @@ cbuffer ObjectConstants : register(b0)
 {
 	float4x4 worldMatrix;
 	float4x4 mvpMatrix;
+	float4x4 worldInvTranspose;
 };
 
 // Input Layout (StandardVertex)
@@ -40,11 +41,11 @@ VS_OUTPUT VSMain(VS_INPUT input)
     
     // 3. 월드 노멀 변환
     // worldMatrix의 3x3 부분만 사용 (회전/스케일만, 평행이동 제외)
-	output.Normal = mul(input.Normal, (float3x3) worldMatrix);
+	output.Normal = mul(input.Normal, (float3x3) worldInvTranspose);
 	output.Normal = normalize(output.Normal);
     
     // 4. 월드 Tangent 변환
-	output.Tangent = mul(input.Tangent.xyz, (float3x3) worldMatrix);
+	output.Tangent = mul(input.Tangent.xyz, (float3x3) worldInvTranspose);
 	output.Tangent = normalize(output.Tangent);
     
     // 5. Bitangent 계산 (부호 적용)

@@ -5,12 +5,13 @@
  * ECS 원칙: Components는 데이터만 포함
  * 모든 로직은 TransformSystem에서 처리
  *
- * @warning position/rotation/scale 직접 수정 금지!
- *          반드시 TransformSystem API 사용
+ * @warning position/rotation/scale 직접 수정 시 MarkDirty() 호출 필수!
+ *          권장: TransformSystem API 사용
  *          - TransformSystem::SetPosition()
  *          - TransformSystem::SetRotation()
  *          - TransformSystem::SetScale()
- *          직접 수정 시 dirty 플래그가 설정되지 않아 행렬이 갱신되지 않음
+ *
+ * Phase 3.5: 계층 구조 및 Dirty Flag 최적화 추가
  */
 #pragma once
 #include "ECS/Entity.h"
@@ -35,6 +36,26 @@ namespace ECS
 		Math::Vector3 position = Math::Vector3::Zero();
 		Math::Quaternion rotation = Math::Quaternion::Identity();
 		Math::Vector3 scale = Math::Vector3::One();
+
+		//=====================================================================
+		// Euler 각도 캐시
+		//=====================================================================
+
+		/**
+		 * @brief Euler 각도 힌트 (라디안)
+		 *
+		 * Inspector 표시 및 직렬화용 Euler 각도 캐시입니다.
+		 * Quaternion과 동기화되어야 하며, TransformSystem API 사용 시 자동 동기화됩니다.
+		 *
+		 * @note Quaternion → Euler 변환의 불안정성(값 점프, Gimbal Lock)을 방지하기 위해
+		 *       Inspector에서는 이 값을 직접 사용합니다.
+		 *
+		 * 동기화 규칙:
+		 * - SetRotationEuler() 호출 시: eulerHint = 입력값, rotation = Quaternion 변환
+		 * - SetRotation() 호출 시: rotation = 입력값, eulerHint = Euler 변환
+		 * - Inspector 편집 시: eulerHint 직접 수정 → rotation 동기화
+		 */
+		Math::Vector3 eulerHint = Math::Vector3::Zero();
 
 		//=====================================================================
 		// 캐시된 행렬

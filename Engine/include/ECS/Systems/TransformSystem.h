@@ -142,20 +142,11 @@ namespace ECS
 		void ForceUpdateWorldMatrix(Entity entity);
 
 		//=========================================================================
-		// 저수준 API (Component 직접) - System 내부, 다른 System에서 호출
+		// 저수준 읽기 전용 API (Component 직접)
 		//=========================================================================
 
-		static void SetRotationEuler(TransformComponent& transform, const Math::Vector3& eulerAngles);
-		static void SetRotationEuler(
-			TransformComponent& transform,
-			Core::float32 pitch,
-			Core::float32 yaw,
-			Core::float32 roll
-		);
+		/// Quaternion에서 Euler 각도 추출
 		static Math::Vector3 GetRotationEuler(const TransformComponent& transform);
-
-		static void Rotate(TransformComponent& transform, const Math::Vector3& eulerDelta);
-		static void RotateAround(TransformComponent& transform, const Math::Vector3& axis, Core::float32 angle);
 
 		/// Local Matrix 계산 (캐시 사용하지 않음, 항상 재계산)
 		static Math::Matrix4x4 CalculateLocalMatrix(const TransformComponent& transform);
@@ -166,13 +157,55 @@ namespace ECS
 		/// 캐시된 World Matrix 반환
 		static const Math::Matrix4x4& GetWorldMatrix(const TransformComponent& transform);
 
+		/// World 역전치 행렬 계산 (노멀 변환용)
 		static Math::Matrix4x4 GetWorldInvTranspose(const TransformComponent& transform);
 
+		/// 로컬 Forward 벡터 반환
 		static Math::Vector3 GetForward(const TransformComponent& transform);
+
+		/// 로컬 Right 벡터 반환
 		static Math::Vector3 GetRight(const TransformComponent& transform);
+
+		/// 로컬 Up 벡터 반환
 		static Math::Vector3 GetUp(const TransformComponent& transform);
 
+		/**
+		 * @brief Transform 변경 시 dirty 플래그 설정
+		 *
+		 * TransformComponent를 직접 수정한 경우 반드시 호출해야 합니다.
+		 * TransformSystem의 고수준 API(SetPosition 등)를 사용하면 자동으로 호출됩니다.
+		 *
+		 * @code
+		 * // ECSInspector 등에서 직접 수정 시:
+		 * transform->position = newPosition;
+		 * TransformSystem::MarkDirty(*transform);  // 필수!
+		 * @endcode
+		 *
+		 * @param transform 수정된 TransformComponent
+		 */
+		static void MarkDirty(TransformComponent& transform);
+
 	private:
+		//=========================================================================
+		// 저수준 쓰기 API (내부 전용)
+		// - dirty flag를 설정하지 않음
+		// - 고수준 API에서 내부적으로 사용
+		//=========================================================================
+
+		static void SetRotationEulerInternal(TransformComponent& transform, const Math::Vector3& eulerAngles);
+		static void SetRotationEulerInternal(
+			TransformComponent& transform,
+			Core::float32 pitch,
+			Core::float32 yaw,
+			Core::float32 roll
+		);
+		static void RotateInternal(TransformComponent& transform, const Math::Vector3& eulerDelta);
+		static void RotateAroundInternal(TransformComponent& transform, const Math::Vector3& axis, Core::float32 angle);
+
+		//=========================================================================
+		// 내부 헬퍼 함수
+		//=========================================================================
+
 		/// Root Entity 목록에 추가
 		void AddRootEntity(Entity entity);
 
@@ -187,9 +220,6 @@ namespace ECS
 
 		/// Hierarchy 없는 Entity들 업데이트
 		void UpdateStandaloneEntities();
-
-		/// Transform 변경 시 dirty 플래그 설정
-		void MarkLocalDirty(TransformComponent& transform);
 
 	private:
 		/// Root Entity 목록 (parent가 Invalid인 HierarchyComponent를 가진 Entity)

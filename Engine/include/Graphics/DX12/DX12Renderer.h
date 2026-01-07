@@ -17,6 +17,7 @@ namespace Graphics
 	{
 		Math::Matrix4x4 worldMatrix;
 		Math::Matrix4x4 mvpMatrix;
+		Math::Matrix4x4 worldInvTranspose;
 	};
 
 	// Material Constant Buffer (b1) - Phase 3.3

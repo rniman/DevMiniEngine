@@ -8,6 +8,7 @@
 #include "ECS/Components/LightComponents.h"
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/MaterialComponent.h"
+#include "ECS/Systems/TransformSystem.h"
 
 // Math
 #include "Math/MathUtils.h"
@@ -250,24 +251,25 @@ namespace Framework
 		if (ImGui::DragFloat3("Position", pos, 0.1f))
 		{
 			transform->position = Math::Vector3(pos[0], pos[1], pos[2]);
+			ECS::TransformSystem::MarkDirty(*transform);
 		}
 
-		// Rotation (Euler)
-		Math::Vector3 euler = Math::Vector3EulerFromQuaternion(transform->rotation);
+		// Rotation - eulerHint 사용 (Quaternion 변환 불안정성 방지)
 		float rot[3] = {
-			Math::RadToDeg(euler.x),
-			Math::RadToDeg(euler.y),
-			Math::RadToDeg(euler.z)
+			Math::RadToDeg(transform->eulerHint.x),
+			Math::RadToDeg(transform->eulerHint.y),
+			Math::RadToDeg(transform->eulerHint.z)
 		};
-		if (ImGui::DragFloat3("Rotation", rot, 1.0f, -180.0f, 180.0f))
+
+		if (ImGui::DragFloat3("Rotation", rot, 1.0f))
 		{
-			transform->rotation = Math::QuaternionFromEuler(
-				Math::Vector3(
-					Math::DegToRad(rot[0]),
-					Math::DegToRad(rot[1]),
-					Math::DegToRad(rot[2])
-				)
+			transform->eulerHint = Math::Vector3(
+				Math::DegToRad(rot[0]),
+				Math::DegToRad(rot[1]),
+				Math::DegToRad(rot[2])
 			);
+			transform->rotation = Math::QuaternionFromEuler(transform->eulerHint);
+			ECS::TransformSystem::MarkDirty(*transform);
 		}
 
 		// Scale
@@ -275,6 +277,7 @@ namespace Framework
 		if (ImGui::DragFloat3("Scale", scale, 0.01f, 0.01f, 100.0f))
 		{
 			transform->scale = Math::Vector3(scale[0], scale[1], scale[2]);
+			ECS::TransformSystem::MarkDirty(*transform);
 		}
 	}
 

@@ -521,7 +521,8 @@ namespace Graphics
 
 			ObjectConstants objectData;
 			objectData.worldMatrix = Math::MatrixTranspose(item.worldMatrix);
-			objectData.mvpMatrix = item.mvpMatrix;
+			objectData.mvpMatrix = Math::MatrixTranspose(item.mvpMatrix);
+			objectData.worldInvTranspose = Math::MatrixTranspose(item.worldInvTranspose);
 
 			mObjectConstantBuffer->UpdateAtOffset(
 				mCurrentFrameIndex,      // 프레임 인덱스

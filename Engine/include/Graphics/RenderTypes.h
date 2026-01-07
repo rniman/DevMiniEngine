@@ -22,6 +22,7 @@ namespace Graphics
 		const MaterialResource* material = nullptr;
 		Math::Matrix4x4 worldMatrix = Math::Matrix4x4::Identity();
 		Math::Matrix4x4 mvpMatrix = Math::Matrix4x4::Identity();
+		Math::Matrix4x4 worldInvTranspose = Math::Matrix4x4::Identity();
 		Core::uint32 submeshIndex = 0;
 	};
 

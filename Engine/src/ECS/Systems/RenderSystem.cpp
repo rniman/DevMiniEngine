@@ -109,7 +109,8 @@ namespace ECS
 				renderItem.mesh = mesh;
 				renderItem.material = material;
 				renderItem.worldMatrix = worldMatrix;
-				renderItem.mvpMatrix = Math::MatrixTranspose(worldMatrix * viewProj);
+				renderItem.mvpMatrix = worldMatrix * viewProj;
+				renderItem.worldInvTranspose = TransformSystem::GetWorldInvTranspose(*transform);
 				renderItem.submeshIndex = i;
 
 				mFrameData.opaqueItems.push_back(renderItem);

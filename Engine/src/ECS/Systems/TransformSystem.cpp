@@ -199,7 +199,7 @@ namespace ECS
 		}
 
 		transform->position = position;
-		MarkLocalDirty(*transform);
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -223,8 +223,9 @@ namespace ECS
 			return false;
 		}
 
-		SetRotationEuler(*transform, eulerAngles);
-		MarkLocalDirty(*transform);
+		transform->eulerHint = eulerAngles;  // Euler 캐시 저장
+		SetRotationEulerInternal(*transform, eulerAngles);
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -237,7 +238,8 @@ namespace ECS
 		}
 
 		transform->rotation = rotation.Normalized();
-		MarkLocalDirty(*transform);
+		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -262,7 +264,7 @@ namespace ECS
 		}
 
 		transform->scale = scale;
-		MarkLocalDirty(*transform);
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -279,8 +281,9 @@ namespace ECS
 			return false;
 		}
 
-		Rotate(*transform, eulerDelta);
-		MarkLocalDirty(*transform);
+		RotateInternal(*transform, eulerDelta);
+		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -292,8 +295,9 @@ namespace ECS
 			return false;
 		}
 
-		RotateAround(*transform, axis, angle);
-		MarkLocalDirty(*transform);
+		RotateAroundInternal(*transform, axis, angle);
+		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -306,7 +310,7 @@ namespace ECS
 		}
 
 		transform->position += delta;
-		MarkLocalDirty(*transform);
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -370,7 +374,8 @@ namespace ECS
 		rotMatrix.m[2][2] = forward.z;
 
 		transform->rotation = Math::QuaternionFromRotationMatrix(rotMatrix);
-		MarkLocalDirty(*transform);
+		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
+		MarkDirty(*transform);
 		return true;
 	}
 
@@ -414,39 +419,12 @@ namespace ECS
 	}
 
 	//=============================================================================
-	// 저수준 API (Component 직접) - 정적
+	// 저수준 읽기 전용 API (public static)
 	//=============================================================================
-
-	void TransformSystem::SetRotationEuler(TransformComponent& transform, const Math::Vector3& eulerAngles)
-	{
-		transform.rotation = Math::QuaternionFromEuler(eulerAngles);
-	}
-
-	void TransformSystem::SetRotationEuler(
-		TransformComponent& transform,
-		Core::float32 pitch,
-		Core::float32 yaw,
-		Core::float32 roll
-	)
-	{
-		transform.rotation = Math::QuaternionFromEuler(pitch, yaw, roll);
-	}
 
 	Math::Vector3 TransformSystem::GetRotationEuler(const TransformComponent& transform)
 	{
 		return transform.rotation.ToEuler();
-	}
-
-	void TransformSystem::Rotate(TransformComponent& transform, const Math::Vector3& eulerDelta)
-	{
-		Math::Quaternion delta = Math::QuaternionFromEuler(eulerDelta);
-		transform.rotation = (transform.rotation * delta).Normalized();
-	}
-
-	void TransformSystem::RotateAround(TransformComponent& transform, const Math::Vector3& axis, Core::float32 angle)
-	{
-		Math::Quaternion delta = Math::QuaternionFromAxisAngle(axis, angle);
-		transform.rotation = (transform.rotation * delta).Normalized();
 	}
 
 	Math::Matrix4x4 TransformSystem::CalculateLocalMatrix(const TransformComponent& transform)
@@ -498,6 +476,43 @@ namespace ECS
 	Math::Vector3 TransformSystem::GetUp(const TransformComponent& transform)
 	{
 		return transform.rotation.GetUp();
+	}
+
+	void TransformSystem::MarkDirty(TransformComponent& transform)
+	{
+		transform.localDirty = true;
+		transform.worldDirty = true;
+	}
+
+	//=============================================================================
+	// 저수준 쓰기 API (private static)
+	//=============================================================================
+
+	void TransformSystem::SetRotationEulerInternal(TransformComponent& transform, const Math::Vector3& eulerAngles)
+	{
+		transform.rotation = Math::QuaternionFromEuler(eulerAngles);
+	}
+
+	void TransformSystem::SetRotationEulerInternal(
+		TransformComponent& transform,
+		Core::float32 pitch,
+		Core::float32 yaw,
+		Core::float32 roll
+	)
+	{
+		transform.rotation = Math::QuaternionFromEuler(pitch, yaw, roll);
+	}
+
+	void TransformSystem::RotateInternal(TransformComponent& transform, const Math::Vector3& eulerDelta)
+	{
+		Math::Quaternion delta = Math::QuaternionFromEuler(eulerDelta);
+		transform.rotation = (transform.rotation * delta).Normalized();
+	}
+
+	void TransformSystem::RotateAroundInternal(TransformComponent& transform, const Math::Vector3& axis, Core::float32 angle)
+	{
+		Math::Quaternion delta = Math::QuaternionFromAxisAngle(axis, angle);
+		transform.rotation = (transform.rotation * delta).Normalized();
 	}
 
 	//=============================================================================
@@ -640,12 +655,6 @@ namespace ECS
 				transform->worldDirty = false;
 			}
 		}
-	}
-
-	void TransformSystem::MarkLocalDirty(TransformComponent& transform)
-	{
-		transform.localDirty = true;
-		transform.worldDirty = true;
 	}
 
 } // namespace ECS

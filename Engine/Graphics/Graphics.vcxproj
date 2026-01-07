@@ -31,9 +31,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\src\Graphics\Camera\Camera.cpp" />
-    <ClCompile Include="..\src\Graphics\Camera\OrthographicCamera.cpp" />
-    <ClCompile Include="..\src\Graphics\Camera\PerspectiveCamera.cpp" />
     <ClCompile Include="..\src\Graphics\DebugDraw\DebugRenderer.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandContext.cpp" />
     <ClCompile Include="..\src\Graphics\DX12\DX12CommandQueue.cpp" />
@@ -68,9 +65,6 @@
     <ClInclude Include="..\..\ThirdParty\Microsoft\D3DX12\d3dx12.h" />
     <ClInclude Include="..\..\ThirdParty\Microsoft\DirectXTex\DDSTextureLoader12.h" />
     <ClInclude Include="..\..\ThirdParty\Microsoft\DirectXTex\WICTextureLoader12.h" />
-    <ClInclude Include="..\include\Graphics\Camera\Camera.h" />
-    <ClInclude Include="..\include\Graphics\Camera\OrthographicCamera.h" />
-    <ClInclude Include="..\include\Graphics\Camera\PerspectiveCamera.h" />
     <ClInclude Include="..\include\Graphics\DebugDraw\DebugRenderer.h" />
     <ClInclude Include="..\include\Graphics\DebugDraw\DebugTypes.h" />
     <ClInclude Include="..\include\Graphics\DebugDraw\DebugShapes.h" />
