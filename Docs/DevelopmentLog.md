@@ -26,6 +26,133 @@
 
 ---
 
+## 2025-01-07 - Phase 4.4 Refactoring 01: 코드 정리 및 Transform API 개선
+
+### Overview
+
+Phase 4.4 Multi-submesh 완료 후 Phase 5 PBR 진입 전 코드 정리.
+ModelViewerApp 중복 제거, TransformSystem API 정리, worldInvTranspose 파이프라인 적용.
+
+### Tasks
+
+- [x] ModelViewerApp 코드 정리 (중복 제거, 버그 수정)
+- [x] worldInvTranspose 렌더링 파이프라인 연결
+- [x] TransformSystem 저수준 쓰기 API private 전환
+- [x] TransformSystem::MarkDirty() public static 노출
+- [x] TransformComponent eulerHint 추가 (Unity 방식)
+- [x] ECSInspector Rotation 편집 안정화
+- [x] 미사용 Camera 소스 솔루션에서 제외
+
+### Decisions
+
+**worldInvTranspose 변환 위치**
+- 선택: DX12Renderer에서 일괄 Transpose
+- 이유: RenderItem은 수학적 행렬만 저장, GPU 포맷 변환은 Renderer 책임
+- 결과: 모든 행렬이 동일한 패턴으로 처리
+
+```cpp
+// RenderSystem - 수학적 행렬
+renderItem.worldMatrix = worldMatrix;
+renderItem.mvpMatrix = worldMatrix * viewProj;
+renderItem.worldInvTranspose = GetWorldInvTranspose(*transform);
+
+// DX12Renderer - GPU 포맷 변환
+objectData.worldMatrix = MatrixTranspose(item.worldMatrix);
+objectData.mvpMatrix = MatrixTranspose(item.mvpMatrix);
+objectData.worldInvTranspose = MatrixTranspose(item.worldInvTranspose);
+```
+
+**TransformSystem API 접근 수준**
+- 저수준 쓰기 API → private (SetRotationEulerInternal 등)
+- 저수준 읽기 API → public 유지 (GetWorldMatrix, GetForward 등)
+- MarkDirty() → public static (외부 직접 수정 시 호출)
+- 이유: ECS 원칙 유지하면서 API 오용 방지
+
+**Euler 캐시 방식 (Unity 방식 채택)**
+- 선택: TransformComponent에 eulerHint 필드 추가
+- 대안 A: Inspector 캐시 (빠른 구현, 제한적)
+- 대안 B: Euler Primary (Unreal 방식, 성능 오버헤드)
+- 이유: 산업 표준, 직렬화 지원, 일관된 Euler 접근
+
+```cpp
+// 동기화 규칙
+SetRotationEuler(euler) → eulerHint = euler, rotation = Quat(euler)
+SetRotation(quat)       → rotation = quat, eulerHint = quat.ToEuler()
+Inspector 편집          → eulerHint 직접 수정 → rotation 동기화
+```
+
+### Issues Encountered
+
+**ECSInspector Transform 수정 반영 안됨**
+- 원인: 직접 수정 시 dirty flag 미설정
+- 흐름: `transform->position = x` → localDirty = false → Update 스킵
+- 해결: MarkDirty() public 노출, Inspector에서 수정 후 호출
+
+**Rotation 드래그 시 값 점프**
+- 원인: Quaternion ↔ Euler 변환의 비결정성
+- 예시: Y=45 입력 후 Z=45 입력 → X,Y,Z 전체 변경
+- 해결: eulerHint 캐시로 Quaternion→Euler 역변환 회피
+
+**OnShutdown Entity 삭제 버그**
+- 원인: Entity 삭제 후 다른 Entity 참조 시 무효 핸들
+- 해결: Entity 배열에 복사 후 일괄 삭제
+
+```cpp
+// 수정 전 (버그)
+if (mEntityA.IsValid()) mRegistry->DestroyEntity(mEntityA);
+if (mEntityB.IsValid()) mRegistry->DestroyEntity(mEntityB);  // mEntityA 영향받을 수 있음
+
+// 수정 후
+Entity toDestroy[] = { mEntityA, mEntityB, ... };
+for (auto& e : toDestroy) {
+    if (e.IsValid()) mRegistry->DestroyEntity(e);
+}
+```
+
+### Files Modified
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| TransformComponent.h | eulerHint 필드 추가 (12바이트) |
+| TransformSystem.h | 저수준 쓰기 API private, MarkDirty public static |
+| TransformSystem.cpp | eulerHint 동기화, 함수명 Internal 접미사 |
+| ECSInspector.cpp | eulerHint 사용, MarkDirty 호출 |
+| RenderTypes.h | RenderItem에 worldInvTranspose 추가 |
+| RenderSystem.cpp | worldInvTranspose 계산 및 전달 |
+| DX12Renderer.h | ObjectConstants에 worldInvTranspose 추가 |
+| DX12Renderer.cpp | 행렬 Transpose 일괄 처리 |
+| ModelViewerApp.h | 멤버 변수 정리 |
+| ModelViewerApp.cpp | 중복 제거, OnShutdown 버그 수정 |
+
+### Results
+
+**Transform API 일관성**
+- 고수준 API: Entity 기반, dirty 자동 설정
+- 직접 수정: 멤버 수정 후 MarkDirty() 호출
+- 읽기 전용: static 함수로 어디서든 접근
+
+**Inspector Rotation 안정성**
+- 값 입력 시 점프 현상 제거
+- 드래그 시 부드러운 변경
+- Gimbal Lock 근처에서도 안정적
+
+**렌더링 파이프라인**
+- 비균등 스케일 시 노멀/탄젠트 정확한 변환
+- worldMatrix, mvpMatrix, worldInvTranspose 일관된 처리
+
+### Notes
+
+- eulerHint는 직렬화 시 저장하여 씬 파일 가독성 향상
+- worldInvTranspose는 균등 스케일 시 worldMatrix 반환 (최적화)
+- Camera 소스는 삭제하지 않고 솔루션에서만 제외 (향후 재사용)
+
+### Next Steps
+
+- [ ] Phase 5.1: PBR Pipeline 기초
+- [ ] Phase 5.2: IBL (Image Based Lighting)
+
+---
+
 ## 2026-01-06 - Phase 4.4: Multi-Submesh Support (Complete)
 
 ### Overview
@@ -757,4 +884,4 @@ template<> ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const;
 
 ---
 
-**최종 업데이트**: 2025-01-04
+**최종 업데이트**: 2025-01-07
