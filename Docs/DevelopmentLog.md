@@ -26,6 +26,154 @@
 
 ---
 
+## 2026-01-06 - Phase 4.4: Multi-Submesh Support (Complete)
+
+### Overview
+
+하나의 메시가 여러 Material을 사용하는 경우(캐릭터의 피부, 옷, 장비 등) 서브메시별로 개별 렌더링할 수 있는 기능 구현. Phase 5 PBR Pipeline의 선행 요구사항.
+
+### Tasks
+
+**4.4.1 Graphics 레이어 확장**
+- [x] Graphics/SubmeshInfo.h 신규 생성 (의존성 방향 정리)
+- [x] MeshResource.DrawSubmesh() 구현
+- [x] MeshResource.SetSubmeshes(), GetSubmeshCount() 추가
+- [x] ResourceManager 서브메시 복사 로직
+
+**4.4.2 ECS 레이어 확장**
+- [x] MaterialComponent 배열 구조 변경 (MAX_MATERIALS = 8)
+- [x] RenderItem.submeshIndex 추가
+- [x] RenderSystem 서브메시 순회 로직
+- [x] MeshResource Initialize에서 기본 서브메시 생성
+- [x] ResourceManager 중복 SetSubmeshes 제거
+- [x] ECSInspector 다중 Material 표시
+
+**4.4.3 DX12Renderer 수정**
+- [x] DrawRenderItems()에서 DrawSubmesh() 호출
+
+**4.4.4 검증 및 테스트**
+- [x] 멀티 서브메시 모델 테스트 (MultiMaterialCube - 3개 서브메시)
+- [x] 서브메시별 다른 Material 적용 확인
+- [x] 기존 Sphere, Helmet 정상 동작 확인
+- [x] ModelViewerApp 4개 Entity 렌더링
+
+### Decisions
+
+**MaterialComponent 구조**
+```cpp
+struct MaterialComponent
+{
+    static constexpr uint32 MAX_MATERIALS = 8;
+    ResourceId materialIds[MAX_MATERIALS];  // 64 bytes
+    uint32 count = 1;                       // 4 bytes
+    uint32 _padding = 0;                    // 4 bytes
+};  // 총 72 bytes
+```
+- POD 유지, 고정 크기, 캐시 친화적
+- 서브메시 > Material 수일 때 마지막 Material 반복
+- 최대 8개 Material (대부분 게임 모델 커버)
+
+**기본 서브메시 자동 생성**
+- 모든 Initialize 함수에서 `CreateDefaultSubmesh()` 호출
+- ProceduralSphere 등 직접 Initialize하는 메시 대응
+- `GetSubmeshCount() >= 1` 항상 보장
+
+**glTF 멀티 메시 → 서브메시 병합**
+- Assimp가 멀티 머티리얼을 별도 메시(Primitive)로 파싱
+- ModelViewerApp에서 모든 메시를 하나로 병합하고 서브메시 정보 생성
+
+### Files Modified
+
+| 파일 | 변경 내용 |
+|------|----------|
+| Graphics/SubmeshInfo.h | 신규 생성 |
+| Graphics/MeshResource.h | 서브메시 멤버, DrawSubmesh, Getter/Setter |
+| Graphics/MeshResource.cpp | DrawSubmesh 구현, Initialize에서 기본 서브메시 생성 |
+| Graphics/RenderTypes.h | RenderItem.submeshIndex 추가 |
+| Graphics/DX12/DX12Renderer.cpp | Draw → DrawSubmesh |
+| Framework/Assets/MeshAsset.h | Graphics::SubmeshInfo include |
+| Framework/Resources/ResourceManager.cpp | 멀티 서브메시만 SetSubmeshes |
+| ECS/Components/MaterialComponent.h | 배열 구조, GetMaterial, SetMaterial |
+| ECS/Systems/RenderSystem.cpp | 서브메시 순회 로직 |
+| Framework/DebugUI/ECSInspector.cpp | 다중 Material 표시 |
+| Samples/ModelViewerApp.h | Cube 관련 멤버, 함수 선언 추가 |
+| Samples/ModelViewerApp.cpp | CreateCubeEntity, SetupCubeMesh, SetupCubeMaterial 구현 |
+
+### Implementation Details
+
+**RenderSystem 서브메시 순회**
+```cpp
+uint32 submeshCount = mesh->GetSubmeshCount();
+
+for (uint32 i = 0; i < submeshCount; ++i)
+{
+    ResourceId matId = materialComp->GetMaterial(i);
+    MaterialResource* material = GetMaterial(matId);
+
+    RenderItem item;
+    item.mesh = mesh;
+    item.material = material;
+    item.submeshIndex = i;
+    mFrameData.opaqueItems.push_back(item);
+}
+```
+
+**DX12Renderer 변경**
+```cpp
+// 변경 전
+item.mesh->Draw(cmdList);
+
+// 변경 후
+item.mesh->DrawSubmesh(cmdList, item.submeshIndex);
+```
+
+**glTF 멀티 메시 병합 (ModelViewerApp)**
+```cpp
+for (size_t i = 0; i < modelData.meshes.size(); ++i)
+{
+    auto& meshData = modelData.meshes[i];
+
+    Graphics::SubmeshInfo submesh;
+    submesh.startIndex = baseIndex;
+    submesh.indexCount = static_cast<uint32>(meshData.indices.size());
+    submesh.baseVertex = baseVertex;
+    submesh.materialIndex = static_cast<uint32>(i);
+    submeshes.push_back(submesh);
+
+    allVertices.insert(allVertices.end(), meshData.vertices.begin(), meshData.vertices.end());
+    allIndices.insert(allIndices.end(), meshData.indices.begin(), meshData.indices.end());
+
+    baseVertex += static_cast<uint32>(meshData.vertices.size());
+    baseIndex += static_cast<uint32>(meshData.indices.size());
+}
+```
+
+### Results
+
+**ModelViewerApp 4개 Entity 렌더링**
+
+| 위치 | Entity | 서브메시 |
+|------|--------|----------|
+| (-3.5, 0, 0) | Procedural Sphere | 1 |
+| (0, 0, 0) | Loaded Sphere | 1 |
+| (3.5, 0, 0) | DamagedHelmet | 1 |
+| (0, 2.5, 0) | MultiMaterialCube | 3 |
+
+- 단일 서브메시 모델 정상 렌더링
+- 멀티 서브메시 모델 (MultiMaterialCube) 3개 Material 각각 적용
+- 하위 호환성 유지 (기존 코드 변경 최소화)
+
+### Notes
+
+- ProceduralSphere는 MeshAsset 경유 없이 직접 Initialize하므로 기본 서브메시 필수
+- Assimp는 빈 기본 머티리얼을 자동 추가함 (무시해도 무방)
+- MaterialComponent.GetMaterial()에서 부족한 Material은 마지막 Material 반복
+
+### Next Steps
+
+- [ ] Phase 5: PBR Pipeline
+
+---
 
 ## 2026-01-06 - Phase 4.4.1: Graphics 레이어 서브메시 지원
 
