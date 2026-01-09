@@ -314,6 +314,184 @@ namespace ECS
 		return true;
 	}
 
+	//=============================================================================
+	// 고수준 API 확장 - Position
+	//=============================================================================
+
+	bool TransformSystem::MoveTowards(Entity entity, const Math::Vector3& target, Core::float32 maxDistance)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		Math::Vector3 direction = target - transform->position;
+		Core::float32 distance = direction.Length();
+
+		if (distance <= maxDistance || distance < Math::EPSILON)
+		{
+			transform->position = target;
+		}
+		else
+		{
+			transform->position += direction.Normalized() * maxDistance;
+		}
+
+		MarkDirty(*transform);
+		return true;
+	}
+
+	bool TransformSystem::LerpPosition(Entity entity, const Math::Vector3& target, Core::float32 t)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		transform->position = Math::Lerp(transform->position, target, Math::Saturate(t));
+		MarkDirty(*transform);
+		return true;
+	}
+
+	//=============================================================================
+	// 고수준 API 확장 - Rotation
+	//=============================================================================
+
+	bool TransformSystem::RotateTowards(Entity entity, const Math::Quaternion& target, Core::float32 maxRadians)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		// 현재와 목표 사이 각도 계산
+		Math::Vector3 fromDir = transform->rotation.GetForward();
+		Math::Vector3 toDir = target.GetForward();
+		Core::float32 angle = Math::AngleBetween(fromDir, toDir);
+
+		if (angle < Math::EPSILON)
+		{
+			return true;  // 이미 목표에 도달
+		}
+
+		Core::float32 t = Math::Min(maxRadians / angle, 1.0f);
+		transform->rotation = Math::QuaternionSlerp(transform->rotation, target, t);
+		transform->eulerHint = transform->rotation.ToEuler();
+		MarkDirty(*transform);
+		return true;
+	}
+
+	bool TransformSystem::SlerpRotation(Entity entity, const Math::Quaternion& target, Core::float32 t)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		transform->rotation = Math::QuaternionSlerp(transform->rotation, target, Math::Saturate(t));
+		transform->eulerHint = transform->rotation.ToEuler();
+		MarkDirty(*transform);
+		return true;
+	}
+
+	bool TransformSystem::LookDirection(Entity entity, const Math::Vector3& direction, const Math::Vector3& up)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		if (direction.LengthSquared() < Math::EPSILON)
+		{
+			return false;
+		}
+
+		transform->rotation = Math::QuaternionLookAt(direction, up);
+		transform->eulerHint = transform->rotation.ToEuler();
+		MarkDirty(*transform);
+		return true;
+	}
+
+	//=============================================================================
+	// 고수준 API 확장 - Scale
+	//=============================================================================
+
+	bool TransformSystem::ScaleBy(Entity entity, const Math::Vector3& multiplier)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		transform->scale.x *= multiplier.x;
+		transform->scale.y *= multiplier.y;
+		transform->scale.z *= multiplier.z;
+		MarkDirty(*transform);
+		return true;
+	}
+
+	bool TransformSystem::ScaleBy(Entity entity, Core::float32 uniformMultiplier)
+	{
+		return ScaleBy(entity, Math::Vector3(uniformMultiplier));
+	}
+
+	bool TransformSystem::LerpScale(Entity entity, const Math::Vector3& target, Core::float32 t)
+	{
+		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return false;
+		}
+
+		transform->scale = Math::Lerp(transform->scale, target, Math::Saturate(t));
+		MarkDirty(*transform);
+		return true;
+	}
+
+	//=============================================================================
+	// 유틸리티 Query API
+	//=============================================================================
+
+	Core::float32 TransformSystem::GetDistanceTo(Entity from, Entity to) const
+	{
+		const auto* fromT = GetRegistry()->GetComponent<TransformComponent>(from);
+		const auto* toT = GetRegistry()->GetComponent<TransformComponent>(to);
+
+		if (!fromT || !toT)
+		{
+			return -1.0f;
+		}
+
+		return Math::Distance(fromT->position, toT->position);
+	}
+
+	bool TransformSystem::GetDirectionTo(Entity from, Entity to, Math::Vector3& outDirection) const
+	{
+		const auto* fromT = GetRegistry()->GetComponent<TransformComponent>(from);
+		const auto* toT = GetRegistry()->GetComponent<TransformComponent>(to);
+
+		if (!fromT || !toT)
+		{
+			return false;
+		}
+
+		Math::Vector3 diff = toT->position - fromT->position;
+		if (diff.LengthSquared() < Math::EPSILON)
+		{
+			outDirection = Math::Vector3::Forward();
+			return false;
+		}
+
+		outDirection = diff.Normalized();
+		return true;
+	}
+
 	bool TransformSystem::GetWorldMatrix(Entity entity, Math::Matrix4x4& outMatrix) const
 	{
 		const auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);

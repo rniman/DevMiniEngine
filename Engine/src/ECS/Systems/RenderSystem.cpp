@@ -96,7 +96,8 @@ namespace ECS
 			for (Core::uint32 i = 0; i < submeshCount; ++i)
 			{
 				// 서브메시에 해당하는 Material 획득
-				Framework::ResourceId matId = materialComp->GetMaterial(i);
+				Framework::ResourceId matId = ECS::MaterialHelpers::GetMaterial(*materialComp, i);
+				
 				Graphics::MaterialResource* material = mResourceManager->GetMaterial(matId);
 
 				if (!material)

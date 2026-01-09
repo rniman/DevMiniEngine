@@ -164,7 +164,7 @@ namespace Framework
 		if (!registry->IsEntityValid(mSelectedEntity))
 		{
 			ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Invalid Entity");
-			SelectEntity(ECS::Entity{});  // 변경
+			SelectEntity(ECS::Entity{});
 			return;
 		}
 
@@ -305,6 +305,7 @@ namespace Framework
 			return;
 		}
 
+		// Projection Type
 		const char* projTypes[] = { "Perspective", "Orthographic" };
 		int projIndex = static_cast<int>(camera->projectionType);
 		if (ImGui::Combo("Projection", &projIndex, projTypes, 2))
@@ -312,6 +313,7 @@ namespace Framework
 			camera->projectionType = static_cast<ECS::ProjectionType>(projIndex);
 		}
 
+		// FOV (Perspective only)
 		if (camera->projectionType == ECS::ProjectionType::Perspective)
 		{
 			float fovDeg = Math::RadToDeg(camera->fovY);
@@ -321,8 +323,33 @@ namespace Framework
 			}
 		}
 
+		// Clip Planes
 		ImGui::DragFloat("Near Clip", &camera->nearPlane, 0.01f, 0.001f, camera->farPlane - 0.1f);
 		ImGui::DragFloat("Far Clip", &camera->farPlane, 1.0f, camera->nearPlane + 0.1f, 10000.0f);
+
+		ImGui::Separator();
+
+		// Up Mode
+		const char* upModes[] = { "World Up", "Local Up" };
+		int upModeIndex = static_cast<int>(camera->upMode);
+		if (ImGui::Combo("Up Mode", &upModeIndex, upModes, 2))
+		{
+			camera->upMode = static_cast<ECS::CameraUpMode>(upModeIndex);
+		}
+
+		// Up Mode 설명
+		if (camera->upMode == ECS::CameraUpMode::WorldUp)
+		{
+			ImGui::TextDisabled("FPS/TPS style - Y axis fixed");
+		}
+		else
+		{
+			ImGui::TextDisabled("Flight sim style - roll enabled");
+		}
+
+		ImGui::Separator();
+
+		// Main Camera
 		ImGui::Checkbox("Main Camera", &camera->isMainCamera);
 	}
 

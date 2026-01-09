@@ -31,6 +31,7 @@ namespace ECS
 
 	void CameraSystem::Update(Core::float32 deltaTime)
 	{
+		(void)deltaTime;
 		UpdateAllCameras(*GetRegistry());
 	}
 
@@ -46,26 +47,6 @@ namespace ECS
 	Entity CameraSystem::FindMainCamera()
 	{
 		return FindMainCamera(*GetRegistry());
-	}
-
-	//=============================================================================
-	// 저수준 API (정적) - FindMainCamera
-	//=============================================================================
-
-	Entity CameraSystem::FindMainCamera(Registry& registry)
-	{
-		auto view = CameraOnlyArchetype::CreateView(registry);
-
-		for (Entity entity : view)
-		{
-			auto* camera = registry.GetComponent<CameraComponent>(entity);
-			if (camera && camera->isMainCamera)
-			{
-				return entity;
-			}
-		}
-
-		return Entity::Invalid();
 	}
 
 	bool CameraSystem::SetMainCamera(Entity entity)
@@ -101,7 +82,7 @@ namespace ECS
 			return false;
 		}
 
-		SetFovYDegrees(*camera, degrees);
+		SetFovYDegreesInternal(*camera, degrees);
 		return true;
 	}
 
@@ -113,7 +94,7 @@ namespace ECS
 			return false;
 		}
 
-		SetFovYRadians(*camera, radians);
+		SetFovYRadiansInternal(*camera, radians);
 		return true;
 	}
 
@@ -125,7 +106,7 @@ namespace ECS
 			return false;
 		}
 
-		SetAspectRatio(*camera, aspectRatio);
+		SetAspectRatioInternal(*camera, aspectRatio);
 		return true;
 	}
 
@@ -137,7 +118,8 @@ namespace ECS
 			return false;
 		}
 
-		SetAspectRatio(*camera, width, height);
+		CORE_ASSERT(width > 0.0f && height > 0.0f, "Width and height must be positive");
+		SetAspectRatioInternal(*camera, width / height);
 		return true;
 	}
 
@@ -149,7 +131,43 @@ namespace ECS
 			return false;
 		}
 
-		SetClipPlanes(*camera, nearPlane, farPlane);
+		SetClipPlanesInternal(*camera, nearPlane, farPlane);
+		return true;
+	}
+
+	bool CameraSystem::SetUpMode(Entity entity, CameraUpMode mode)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetUpModeInternal(*camera, mode);
+		return true;
+	}
+
+	bool CameraSystem::SetWorldUpReference(Entity entity, const Math::Vector3& worldUp)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetWorldUpReferenceInternal(*camera, worldUp);
+		return true;
+	}
+
+	bool CameraSystem::SetLocalUp(Entity entity, const Math::Vector3& localUp)
+	{
+		auto* camera = GetRegistry()->GetComponent<CameraComponent>(entity);
+		if (!camera)
+		{
+			return false;
+		}
+
+		SetLocalUpInternal(*camera, localUp);
 		return true;
 	}
 
@@ -157,7 +175,7 @@ namespace ECS
 		Entity entity,
 		const Math::Vector3& position,
 		const Math::Vector3& target,
-		const Math::Vector3& up
+		const Math::Vector3& worldUp
 	)
 	{
 		auto* transform = GetRegistry()->GetComponent<TransformComponent>(entity);
@@ -169,36 +187,54 @@ namespace ECS
 			return false;
 		}
 
-		SetLookAt(*transform, *camera, position, target, up);
+		SetLookAtInternal(*transform, *camera, position, target, worldUp);
 		return true;
 	}
 
 	//=============================================================================
-	// 저수준 API (Component 직접) - 정적
+	// 저수준 API (public static)
 	//=============================================================================
+
+	Entity CameraSystem::FindMainCamera(Registry& registry)
+	{
+		auto view = CameraOnlyArchetype::CreateView(registry);
+
+		for (Entity entity : view)
+		{
+			auto* camera = registry.GetComponent<CameraComponent>(entity);
+			if (camera && camera->isMainCamera)
+			{
+				return entity;
+			}
+		}
+
+		return Entity::Invalid();
+	}
 
 	void CameraSystem::UpdateViewMatrix(const TransformComponent& transform, CameraComponent& camera)
 	{
-		if (!camera.viewDirty)
+		// 카메라는 씬에 1-2개이므로 매 프레임 항상 계산
+		Math::Vector3 forward = transform.rotation.RotateVector(camera.forward);
+		Math::Vector3 up;
+
+		if (camera.upMode == CameraUpMode::WorldUp)
 		{
-			return;
+			// FPS 스타일: 월드 up 고정
+			up = camera.worldUpReference;
+		}
+		else
+		{
+			// 비행 스타일: 로컬 up을 회전
+			up = transform.rotation.RotateVector(camera.localUp);
 		}
 
-		Math::Vector3 forward = transform.rotation.RotateVector(camera.forward);
-		Math::Vector3 up = transform.rotation.RotateVector(camera.up);
 		Math::Vector3 target = transform.position + forward;
-
 		camera.viewMatrix = Math::MatrixLookAtLH(transform.position, target, up);
-		camera.viewDirty = false;
 	}
 
 	void CameraSystem::UpdateProjectionMatrix(CameraComponent& camera)
 	{
-		if (!camera.projectionDirty)
-		{
-			return;
-		}
-
+		// 카메라는 씬에 1-2개이므로 매 프레임 항상 계산
 		if (camera.projectionType == ProjectionType::Perspective)
 		{
 			CORE_ASSERT(camera.fovY > 0.0f && camera.fovY < Math::PI, "Invalid FOV");
@@ -224,8 +260,6 @@ namespace ECS
 				camera.farPlane
 			);
 		}
-
-		camera.projectionDirty = false;
 	}
 
 	void CameraSystem::UpdateAllCameras(Registry& registry)
@@ -245,59 +279,66 @@ namespace ECS
 		}
 	}
 
-	void CameraSystem::SetFovYDegrees(CameraComponent& camera, Core::float32 degrees)
+	//=============================================================================
+	// 내부 헬퍼 함수 (private static)
+	//=============================================================================
+
+	void CameraSystem::SetFovYDegreesInternal(CameraComponent& camera, Core::float32 degrees)
 	{
 		CORE_ASSERT(degrees > 0.0f && degrees < 180.0f, "FOV must be between 0 and 180 degrees");
 		camera.fovY = Math::DegToRad(degrees);
-		camera.projectionDirty = true;
 	}
 
-	void CameraSystem::SetFovYRadians(CameraComponent& camera, Core::float32 radians)
+	void CameraSystem::SetFovYRadiansInternal(CameraComponent& camera, Core::float32 radians)
 	{
 		CORE_ASSERT(radians > 0.0f && radians < Math::PI, "FOV must be between 0 and PI radians");
 		camera.fovY = radians;
-		camera.projectionDirty = true;
 	}
 
-	void CameraSystem::SetAspectRatio(CameraComponent& camera, Core::float32 aspectRatio)
+	void CameraSystem::SetAspectRatioInternal(CameraComponent& camera, Core::float32 aspectRatio)
 	{
 		CORE_ASSERT(aspectRatio > 0.0f, "Aspect ratio must be positive");
 		camera.aspectRatio = aspectRatio;
-		camera.projectionDirty = true;
 	}
 
-	void CameraSystem::SetAspectRatio(CameraComponent& camera, Core::float32 width, Core::float32 height)
-	{
-		CORE_ASSERT(width > 0.0f && height > 0.0f, "Width and height must be positive");
-		camera.aspectRatio = width / height;
-		camera.projectionDirty = true;
-	}
-
-	void CameraSystem::SetClipPlanes(CameraComponent& camera, Core::float32 nearPlane, Core::float32 farPlane)
+	void CameraSystem::SetClipPlanesInternal(CameraComponent& camera, Core::float32 nearPlane, Core::float32 farPlane)
 	{
 		CORE_ASSERT(nearPlane > 0.0f, "Near plane must be positive");
 		CORE_ASSERT(farPlane > nearPlane, "Far plane must be greater than near plane");
 		camera.nearPlane = nearPlane;
 		camera.farPlane = farPlane;
-		camera.projectionDirty = true;
 	}
 
-	void CameraSystem::SetLookAt(
+	void CameraSystem::SetUpModeInternal(CameraComponent& camera, CameraUpMode mode)
+	{
+		camera.upMode = mode;
+	}
+
+	void CameraSystem::SetWorldUpReferenceInternal(CameraComponent& camera, const Math::Vector3& worldUp)
+	{
+		camera.worldUpReference = worldUp.Normalized();
+	}
+
+	void CameraSystem::SetLocalUpInternal(CameraComponent& camera, const Math::Vector3& localUp)
+	{
+		camera.localUp = localUp.Normalized();
+	}
+
+	void CameraSystem::SetLookAtInternal(
 		TransformComponent& transform,
 		CameraComponent& camera,
 		const Math::Vector3& position,
 		const Math::Vector3& target,
-		const Math::Vector3& up
+		const Math::Vector3& worldUp
 	)
 	{
 		transform.position = position;
 
 		Math::Vector3 forward = (target - position).Normalized();
 
-		camera.viewMatrix = Math::MatrixLookAtLH(position, target, up);
+		// 카메라 방향 저장
 		camera.forward = forward;
-		camera.up = up;
-		camera.viewDirty = false;
+		camera.worldUpReference = worldUp;
 	}
 
 } // namespace ECS

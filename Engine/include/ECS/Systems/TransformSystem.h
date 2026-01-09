@@ -112,6 +112,104 @@ namespace ECS
 		bool RotateAround(Entity entity, const Math::Vector3& axis, Core::float32 angle);
 		bool Translate(Entity entity, const Math::Vector3& delta);
 
+		//=========================================================================
+		// 고수준 API 확장 - Position
+		//=========================================================================
+
+		/**
+		 * @brief 목표 지점을 향해 최대 maxDistance만큼 이동
+		 * @param entity 대상 Entity
+		 * @param target 목표 위치
+		 * @param maxDistance 최대 이동 거리
+		 * @return 성공 여부
+		 */
+		bool MoveTowards(Entity entity, const Math::Vector3& target, Core::float32 maxDistance);
+
+		/**
+		 * @brief 위치 선형 보간
+		 * @param entity 대상 Entity
+		 * @param target 목표 위치
+		 * @param t 보간 계수 (0~1, 자동 클램프)
+		 * @return 성공 여부
+		 */
+		bool LerpPosition(Entity entity, const Math::Vector3& target, Core::float32 t);
+
+		//=========================================================================
+		// 고수준 API 확장 - Rotation
+		//=========================================================================
+
+		/**
+		 * @brief 목표 회전으로 최대 maxRadians만큼 회전
+		 * @param entity 대상 Entity
+		 * @param target 목표 회전 (Quaternion)
+		 * @param maxRadians 최대 회전 각도 (라디안)
+		 * @return 성공 여부
+		 */
+		bool RotateTowards(Entity entity, const Math::Quaternion& target, Core::float32 maxRadians);
+
+		/**
+		 * @brief 회전 구면 선형 보간 (Slerp)
+		 * @param entity 대상 Entity
+		 * @param target 목표 회전
+		 * @param t 보간 계수 (0~1, 자동 클램프)
+		 * @return 성공 여부
+		 */
+		bool SlerpRotation(Entity entity, const Math::Quaternion& target, Core::float32 t);
+
+		/**
+		 * @brief 특정 방향을 바라보도록 회전
+		 * @param entity 대상 Entity
+		 * @param direction 바라볼 방향 (정규화 불필요)
+		 * @param up 상향 벡터
+		 * @return 성공 여부 (방향이 영벡터면 false)
+		 */
+		bool LookDirection(
+			Entity entity,
+			const Math::Vector3& direction,
+			const Math::Vector3& up = Math::Vector3::Up()
+		);
+
+		//=========================================================================
+		// 고수준 API 확장 - Scale
+		//=========================================================================
+
+		/**
+		 * @brief 상대적 스케일 적용 (현재 스케일에 곱하기)
+		 * @param entity 대상 Entity
+		 * @param multiplier 스케일 배수
+		 * @return 성공 여부
+		 */
+		bool ScaleBy(Entity entity, const Math::Vector3& multiplier);
+		bool ScaleBy(Entity entity, Core::float32 uniformMultiplier);
+
+		/**
+		 * @brief 스케일 선형 보간
+		 * @param entity 대상 Entity
+		 * @param target 목표 스케일
+		 * @param t 보간 계수 (0~1, 자동 클램프)
+		 * @return 성공 여부
+		 */
+		bool LerpScale(Entity entity, const Math::Vector3& target, Core::float32 t);
+
+		//=========================================================================
+		// 유틸리티 Query API
+		//=========================================================================
+
+		/**
+		 * @brief 두 Entity 간 거리 계산
+		 * @return 거리 (Entity 유효하지 않으면 -1.0f)
+		 */
+		Core::float32 GetDistanceTo(Entity from, Entity to) const;
+
+		/**
+		 * @brief 한 Entity에서 다른 Entity를 향한 방향 벡터
+		 * @param from 시작 Entity
+		 * @param to 목표 Entity
+		 * @param outDirection 결과 방향 벡터 (정규화됨)
+		 * @return 성공 여부 (같은 위치면 false, outDirection은 Forward)
+		 */
+		bool GetDirectionTo(Entity from, Entity to, Math::Vector3& outDirection) const;
+
 		/**
 		 * @brief 캐시된 World Matrix 반환
 		 *

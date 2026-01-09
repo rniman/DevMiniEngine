@@ -7,6 +7,7 @@
 #pragma once
 #include "Framework/Resources/ResourceId.h"
 #include "Core/Types.h"
+#include <array>
 
 namespace ECS
 {
@@ -23,26 +24,36 @@ namespace ECS
 	{
 		static constexpr Core::uint32 MAX_MATERIALS = 8;
 
-		Framework::ResourceId materialIds[MAX_MATERIALS] = {};
+		std::array<Framework::ResourceId, MAX_MATERIALS> materialIds = {};
 		Core::uint32 count = 1;
-		Core::uint32 _padding = 0;  // 8바이트 정렬
+	};
 
+	//=========================================================================
+	// MaterialComponent 헬퍼 함수
+	//=========================================================================
+
+	namespace MaterialHelpers
+	{
 		/**
 		 * @brief 서브메시 인덱스에 해당하는 Material 반환
 		 *
+		 * @param material MaterialComponent
 		 * @param submeshIndex 서브메시 인덱스
 		 * @return Material ID (부족하면 마지막 Material 반복)
 		 */
-		Framework::ResourceId GetMaterial(Core::uint32 submeshIndex) const
+		inline Framework::ResourceId GetMaterial(
+			const MaterialComponent& material,
+			Core::uint32 submeshIndex
+		)
 		{
-			if (submeshIndex < count)
+			if (submeshIndex < material.count)
 			{
-				return materialIds[submeshIndex];
+				return material.materialIds[submeshIndex];
 			}
 			// 부족하면 마지막 Material 반복
-			if (count > 0)
+			if (material.count > 0)
 			{
-				return materialIds[count - 1];
+				return material.materialIds[material.count - 1];
 			}
 			return Framework::ResourceId::Invalid();
 		}
@@ -50,17 +61,22 @@ namespace ECS
 		/**
 		 * @brief Material 설정
 		 *
+		 * @param material MaterialComponent
 		 * @param index 슬롯 인덱스
 		 * @param id Material ID
 		 */
-		void SetMaterial(Core::uint32 index, Framework::ResourceId id)
+		inline void SetMaterial(
+			MaterialComponent& material,
+			Core::uint32 index,
+			Framework::ResourceId id
+		)
 		{
-			if (index < MAX_MATERIALS)
+			if (index < MaterialComponent::MAX_MATERIALS)
 			{
-				materialIds[index] = id;
-				if (index >= count)
+				material.materialIds[index] = id;
+				if (index >= material.count)
 				{
-					count = index + 1;
+					material.count = index + 1;
 				}
 			}
 		}
@@ -68,13 +84,15 @@ namespace ECS
 		/**
 		 * @brief 단일 Material 설정 (하위 호환)
 		 *
+		 * @param material MaterialComponent
 		 * @param id Material ID
 		 */
-		void SetSingleMaterial(Framework::ResourceId id)
+		inline void SetSingleMaterial(MaterialComponent& material, Framework::ResourceId id)
 		{
-			materialIds[0] = id;
-			count = 1;
+			material.materialIds[0] = id;
+			material.count = 1;
 		}
-	};
+
+	} // namespace MaterialHelpers
 
 } // namespace ECS

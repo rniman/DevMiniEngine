@@ -282,24 +282,20 @@ void ModelViewerApp::CreateCameraEntity()
 	ECS::TransformComponent transform;
 	ECS::CameraComponent camera;
 
+	// Projection 설정
 	camera.projectionType = ECS::ProjectionType::Perspective;
-
-	ECS::CameraSystem::SetFovYDegrees(camera, DEFAULT_FOV);
-	ECS::CameraSystem::SetAspectRatio(
-		camera,
-		static_cast<Core::float32>(GetWindow()->GetWidth()),
-		static_cast<Core::float32>(GetWindow()->GetHeight())
-	);
-	ECS::CameraSystem::SetClipPlanes(camera, DEFAULT_NEAR_CLIP, DEFAULT_FAR_CLIP);
+	camera.fovY = Math::DegToRad(DEFAULT_FOV);
+	camera.aspectRatio = static_cast<Core::float32>(GetWindow()->GetWidth())
+		/ static_cast<Core::float32>(GetWindow()->GetHeight());
+	camera.nearPlane = DEFAULT_NEAR_CLIP;
+	camera.farPlane = DEFAULT_FAR_CLIP;
 	camera.isMainCamera = true;
 
-	ECS::CameraSystem::SetLookAt(
-		transform,
-		camera,
-		DEFAULT_CAMERA_POS,
-		DEFAULT_CAMERA_TARGET,
-		DEFAULT_CAMERA_UP
-	);
+	// LookAt 설정 (직접 계산)
+	transform.position = DEFAULT_CAMERA_POS;
+	Math::Vector3 forward = (DEFAULT_CAMERA_TARGET - DEFAULT_CAMERA_POS).Normalized();
+	camera.forward = forward;
+	camera.worldUpReference = DEFAULT_CAMERA_UP;
 
 	mRegistry->AddComponent(mCameraEntity, transform);
 	mRegistry->AddComponent(mCameraEntity, camera);
@@ -349,7 +345,8 @@ void ModelViewerApp::CreateProceduralSphereEntity()
 
 	// Material Component (공유)
 	ECS::MaterialComponent matComp;
-	matComp.SetSingleMaterial(mSharedMaterialId);
+	ECS::MaterialHelpers::SetSingleMaterial(matComp, mSharedMaterialId);
+
 	mRegistry->AddComponent(mProceduralSphereEntity, matComp);
 
 	// Mesh 설정
@@ -382,7 +379,7 @@ void ModelViewerApp::CreateLoadedSphereEntity()
 
 	// Material Component (공유)
 	ECS::MaterialComponent matComp;
-	matComp.SetSingleMaterial(mSharedMaterialId);
+	ECS::MaterialHelpers::SetSingleMaterial(matComp, mSharedMaterialId);
 	mRegistry->AddComponent(mLoadedSphereEntity, matComp);
 
 	LOG_INFO(
@@ -430,7 +427,7 @@ void ModelViewerApp::CreateHelmetEntity()
 	ECS::MaterialComponent matComp;
 	for (size_t i = 0; i < mHelmetMaterialIds.size() && i < ECS::MaterialComponent::MAX_MATERIALS; ++i)
 	{
-		matComp.SetMaterial(static_cast<Core::uint32>(i), mHelmetMaterialIds[i]);
+		ECS::MaterialHelpers::SetMaterial(matComp, static_cast<Core::uint32>(i), mHelmetMaterialIds[i]);
 	}
 	mRegistry->AddComponent(mHelmetEntity, matComp);
 
@@ -479,7 +476,7 @@ void ModelViewerApp::CreateCubeEntity()
 	ECS::MaterialComponent matComp;
 	for (size_t i = 0; i < mCubeMaterialIds.size() && i < ECS::MaterialComponent::MAX_MATERIALS; ++i)
 	{
-		matComp.SetMaterial(static_cast<Core::uint32>(i), mCubeMaterialIds[i]);
+		ECS::MaterialHelpers::SetMaterial(matComp, static_cast<Core::uint32>(i), mCubeMaterialIds[i]);
 	}
 	mRegistry->AddComponent(mCubeEntity, matComp);
 
