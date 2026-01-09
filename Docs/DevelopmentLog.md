@@ -26,6 +26,120 @@
 
 ---
 
+## 2026-01-09 - Phase 4.4 Refactoring 02: ECS Component/System API 개선
+
+### Overview
+
+Phase 5 PBR 진입 전 두 번째 리팩토링. MaterialComponent 헬퍼 함수 외부화, TransformSystem 유틸리티 함수 추가, CameraSystem 전면 개선 (CameraUpMode, Dirty 제거).
+
+### Tasks
+
+- [x] MaterialComponent 내부 함수 → MaterialHelpers 네임스페이스로 분리
+- [x] TransformSystem에 MoveToward, Lerp, LookAt 등 유틸리티 추가
+- [x] CameraComponent에 CameraUpMode 추가 (WorldUp/LocalUp)
+- [x] CameraComponent worldUpReference/localUp 벡터 분리
+- [x] CameraSystem API 구조 정리 (고수준/저수준 분리)
+- [x] CameraComponent Dirty Flag 완전 제거
+- [x] ECSInspector Camera Up Mode 콤보박스 추가
+
+### Decisions
+
+**MaterialComponent 헬퍼 외부화**
+- 변경 전: MaterialComponent 내부 static 함수
+- 변경 후: MaterialHelpers 네임스페이스의 독립 함수
+- 이유: ECS 원칙 (Component는 순수 데이터), 재사용성 향상
+
+```cpp
+// 변경 전
+MaterialComponent::SetSingleMaterial(matComp, materialId);
+
+// 변경 후
+MaterialHelpers::SetSingleMaterial(matComp, materialId);
+MaterialHelpers::SetMaterials(matComp, {mat1, mat2, mat3});
+MaterialHelpers::GetMaterialForSubmesh(matComp, submeshIndex);
+```
+
+**CameraUpMode 도입**
+- WorldUp: 월드 Y축 고정 (FPS, TPS, RTS)
+- LocalUp: 로컬 up 회전 적용 (비행 시뮬, 우주 게임)
+- 기본값: WorldUp (대부분의 게임에서 사용)
+
+```cpp
+enum class CameraUpMode : uint8
+{
+    WorldUp,   // worldUpReference 사용
+    LocalUp    // localUp을 rotation으로 회전
+};
+```
+
+**Camera Dirty Flag 제거**
+- 선택: 매 프레임 View/Projection 행렬 항상 계산
+- 이유: 카메라는 씬에 소수, dirty 관리 복잡도 대비 이득 없음
+- 장점: Transform 변경 자동 반영, 코드 단순화, 버그 가능성 감소
+
+```cpp
+// 변경 전
+void UpdateViewMatrix(const TransformComponent& transform, CameraComponent& camera)
+{
+    if (!camera.viewDirty) return;
+    // ... 계산 ...
+    camera.viewDirty = false;
+}
+
+// 변경 후
+void UpdateViewMatrix(const TransformComponent& transform, CameraComponent& camera)
+{
+    // 카메라는 씬에 1-2개이므로 매 프레임 항상 계산
+    // ... 계산 ...
+}
+```
+
+**TransformSystem 유틸리티 함수**
+- MoveToward: 목표 지점으로 일정 거리 이동
+- Lerp: 선형 보간
+- LookAt: 목표 방향으로 회전
+- 이유: 게임플레이 코드에서 자주 사용되는 패턴 제공
+
+### Files Modified
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| MaterialComponent.h | 내부 함수 제거, MaterialHelpers 네임스페이스 추가 |
+| TransformSystem.h/cpp | 유틸리티 함수 선언 및 구현 |
+| CameraComponent.h | viewDirty/projectionDirty 제거, CameraUpMode/worldUpReference/localUp 추가 |
+| CameraSystem.h/cpp | MarkDirty 함수 제거(매 프레임 계산 방식), upMode 분기 처리 |
+| ECSInspector.cpp | Camera Up Mode 콤보박스, MarkDirty 호출 제거 |
+| ModelViewerApp.cpp | 카메라 초기화 직접 필드 설정 방식 |
+
+### Results
+
+**MaterialComponent**
+- Component는 순수 데이터만 포함 (ECS 원칙 준수)
+- 헬퍼 함수로 사용성 유지
+
+**TransformSystem**
+- 게임플레이에 필요한 유틸리티 제공
+- 기존 API와 일관된 패턴 (Entity 기반 + Component 기반)
+
+**CameraSystem**
+- Transform 변경 시 View 행렬 자동 업데이트
+- Inspector에서 카메라 파라미터 즉시 반영
+- API 표면 축소 (MarkDirty 함수 3개 제거)
+- Up Mode 변경으로 FPS/비행 스타일 전환 가능
+
+### Notes
+
+- Camera dirty 제거로 매 프레임 행렬 2개 계산 추가되나, 카메라 수가 적어 영향 무시 가능
+- Transform dirty는 유지 (Entity 수가 많을 수 있음)
+- CameraUpMode는 런타임에 변경 가능 (Inspector 또는 API)
+
+### Next Steps
+
+- [ ] Phase 5.1: PBR Pipeline 기초
+- [ ] Phase 5.2: IBL (Image Based Lighting)
+
+---
+
 ## 2025-01-07 - Phase 4.4 Refactoring 01: 코드 정리 및 Transform API 개선
 
 ### Overview
