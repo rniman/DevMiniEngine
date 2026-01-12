@@ -544,8 +544,10 @@ namespace Framework
 			return false;
 		}
 
-		LOG_INFO("[ModelLoader] Loaded mesh: %s (%zu vertices, %zu indices)",
-			filePath.c_str(), outMeshData.vertices.size(), outMeshData.indices.size());
+		LOG_INFO(
+			"[ModelLoader] Loaded mesh: %s (%zu vertices, %zu indices)",
+			filePath.c_str(), outMeshData.vertices.size(), outMeshData.indices.size()
+		);
 
 		return true;
 	}
@@ -611,6 +613,42 @@ namespace Framework
 		);
 
 		return true;
+	}
+
+
+	DecomposedTransform ModelLoader::DecomposeMatrix(const Math::Matrix4x4& matrix)
+	{
+		DecomposedTransform result;
+
+		// Math::Matrix4x4 → aiMatrix4x4 변환
+		// (Assimp의 검증된 Decompose 활용)
+		aiMatrix4x4 aiMat;
+		aiMat.a1 = matrix.m[0][0]; aiMat.a2 = matrix.m[0][1]; aiMat.a3 = matrix.m[0][2]; aiMat.a4 = matrix.m[0][3];
+		aiMat.b1 = matrix.m[1][0]; aiMat.b2 = matrix.m[1][1]; aiMat.b3 = matrix.m[1][2]; aiMat.b4 = matrix.m[1][3];
+		aiMat.c1 = matrix.m[2][0]; aiMat.c2 = matrix.m[2][1]; aiMat.c3 = matrix.m[2][2]; aiMat.c4 = matrix.m[2][3];
+		aiMat.d1 = matrix.m[3][0]; aiMat.d2 = matrix.m[3][1]; aiMat.d3 = matrix.m[3][2]; aiMat.d4 = matrix.m[3][3];
+
+		// Assimp Decompose
+		aiVector3D scaling;
+		aiQuaternion rotation;
+		aiVector3D position;
+		aiMat.Decompose(scaling, rotation, position);
+
+		// 결과 변환
+		result.position = Math::Vector3(position.x, position.y, position.z);
+		result.rotation = Math::Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+		result.scale = Math::Vector3(scaling.x, scaling.y, scaling.z);
+
+		// 비균등 스케일 감지 (10% 이상 차이)
+		Core::float32 minScale = std::min({ result.scale.x, result.scale.y, result.scale.z });
+		Core::float32 maxScale = std::max({ result.scale.x, result.scale.y, result.scale.z });
+
+		if (minScale > 0.0f && (maxScale / minScale) > 1.1f)
+		{
+			result.hasNonUniformScale = true;
+		}
+
+		return result;
 	}
 
 } // namespace Framework

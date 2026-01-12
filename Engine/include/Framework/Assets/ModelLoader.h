@@ -194,6 +194,39 @@ namespace Framework
 	};
 
 	//=========================================================================
+	// Transform 분해 결과
+	//=========================================================================
+
+	/**
+	 * @brief Matrix4x4를 Position/Rotation/Scale로 분해한 결과
+	 *
+	 * glTF 노드의 localTransform(Matrix4x4)을 ECS TransformComponent의
+	 * position/rotation/scale로 변환할 때 사용합니다.
+	 *
+	 * @note Assimp의 aiMatrix4x4::Decompose()를 내부적으로 활용
+	 * @note Phase 4.5 노드 계층 → ECS 변환에서 사용
+	 */
+	struct DecomposedTransform
+	{
+		Math::Vector3 position = Math::Vector3::Zero();
+		Math::Quaternion rotation = Math::Quaternion::Identity();
+		Math::Vector3 scale = Math::Vector3::One();
+
+		/// 비균등 스케일 여부 (경고 출력용)
+		/// scale.x, y, z 간 차이가 10% 이상일 때 true
+		bool hasNonUniformScale = false;
+
+		void Clear()
+		{
+			position = Math::Vector3::Zero();
+			rotation = Math::Quaternion::Identity();
+			scale = Math::Vector3::One();
+			hasNonUniformScale = false;
+		}
+	};
+
+
+	//=========================================================================
 	// 전체 모델 데이터
 	//=========================================================================
 
@@ -296,6 +329,26 @@ namespace Framework
 		 * @note glb 파일의 임베디드 텍스처도 자동으로 추출됩니다
 		 */
 		static bool LoadModel(const std::string& filePath, LoadedModelData& outModelData);
+
+		/**
+		 * @brief 4x4 변환 행렬을 Position/Rotation/Scale로 분해
+		 *
+		 * glTF 노드의 localTransform을 ECS TransformComponent 초기화에
+		 * 사용할 수 있는 형태로 변환합니다.
+		 *
+		 * @param matrix 분해할 변환 행렬
+		 * @return 분해된 Transform 데이터 (position, rotation, scale)
+		 *
+		 * @note 비균등 스케일(max/min 비율 > 1.1) 시 hasNonUniformScale = true
+		 * @note 비균등 스케일 + 회전 조합 시 정확한 분해가 불가능할 수 있음
+		 *
+		 * @example
+		 * DecomposedTransform trs = ModelLoader::DecomposeMatrix(node.localTransform);
+		 * transform.position = trs.position;
+		 * transform.rotation = trs.rotation;
+		 * transform.scale = trs.scale;
+		 */
+		static DecomposedTransform DecomposeMatrix(const Math::Matrix4x4& matrix);
 	};
 
 } // namespace Framework

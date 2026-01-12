@@ -220,10 +220,10 @@ namespace Graphics
 		std::unique_ptr<DX12ConstantBuffer> mLightingConstantBuffer;    // b2: Lighting (Phase 3.3)
 
 		Core::uint32 mCurrentObjectCBIndex = 0;
-		static constexpr Core::uint32 MAX_OBJECTS_PER_FRAME = 500;
+		static constexpr Core::uint32 MAX_OBJECTS_PER_FRAME = 200;
 
 		Core::uint32 mCurrentMaterialCBIndex = 0;
-		static constexpr Core::uint32 MAX_MATERIALS_PER_FRAME = 500;
+		static constexpr Core::uint32 MAX_MATERIALS_PER_FRAME = 200;
 
 		std::unique_ptr<DX12DepthStencilBuffer> mDepthStencilBuffer;
 		std::unique_ptr<DX12DescriptorHeap> mSrvDescriptorHeap;

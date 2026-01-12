@@ -83,7 +83,7 @@ namespace Graphics
 		mObjectConstantBuffer = std::make_unique<DX12ConstantBuffer>();
 		if (!mObjectConstantBuffer->Initialize(
 			device->GetDevice(),
-			sizeof(ObjectConstants) * MAX_OBJECTS_PER_FRAME,
+			/*sizeof(ObjectConstants)*/ALIGNED_OBJECT_SIZE  * MAX_OBJECTS_PER_FRAME,
 			FRAME_BUFFER_COUNT
 		))
 		{
@@ -93,7 +93,7 @@ namespace Graphics
 		mMaterialConstantBuffer = std::make_unique<DX12ConstantBuffer>();
 		if (!mMaterialConstantBuffer->Initialize(
 			device->GetDevice(),
-			sizeof(MaterialConstants) * MAX_MATERIALS_PER_FRAME,
+			/*sizeof(MaterialConstants)*/ALIGNED_MATERIAL_SIZE * MAX_MATERIALS_PER_FRAME,
 			FRAME_BUFFER_COUNT
 		))
 		{
@@ -175,7 +175,7 @@ namespace Graphics
 		// Phase 3.3: 3개의 CBV + SRV Table + Sampler
 		CD3DX12_ROOT_PARAMETER1 rootParameters[4]{};
 
-		// CBV (b0) - Object Constants (worldMatrix, mvpMatrix)
+		// CBV (b0) - Object Constants (worldMatrix, mvpMatrix, worldinvtranspose)
 		rootParameters[0].InitAsConstantBufferView(
 			0,
 			0,
@@ -539,9 +539,9 @@ namespace Graphics
 			cmdList->SetGraphicsRootConstantBufferView(0, objectCbvAddress);
 
 			MaterialConstants materialData;
-			materialData.baseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f);  // 기본 흰색
-			materialData.metallic = 0.0f;
-			materialData.roughness = 0.5f;
+			materialData.baseColor = item.material->GetBaseColor();
+			materialData.metallic = item.material->GetMetallic();
+			materialData.roughness = item.material->GetRoughness();
 			materialData.textureFlags = item.material->GetTextureFlags();
 			materialData.padding = 0.0f;
 
@@ -579,6 +579,7 @@ namespace Graphics
 			++mCurrentObjectCBIndex;
 			++mCurrentMaterialCBIndex;
 		}
+
 	}
 
 	void DX12Renderer::UpdateLightingBuffer(const FrameData& frameData)

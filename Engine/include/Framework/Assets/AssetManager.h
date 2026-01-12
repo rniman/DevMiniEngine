@@ -229,6 +229,44 @@ namespace Framework
 		const TextureAsset* GetTextureAsset(ResourceId id) const;
 
 		//=========================================================================
+		// MeshAsset 등록 (ResourceManager 전용)
+		//=========================================================================
+
+		/**
+		 * @brief MeshAsset 등록 (ResourceManager에서 호출)
+		 *
+		 * GPU MeshResource 생성 시 대응되는 MeshAsset을 등록합니다.
+		 * 소유권이 AssetManager로 이전됩니다.
+		 *
+		 * @param id ResourceManager에서 생성한 ResourceId
+		 * @param name 메시 이름
+		 * @param asset MeshAsset (소유권 이전)
+		 */
+		void RegisterMeshAsset(
+			ResourceId id,
+			const std::string& name,
+			std::unique_ptr<MeshAsset> asset
+		);
+
+		/**
+		 * @brief MeshAsset 등록 해제
+		 *
+		 * GPU MeshResource 해제 시 호출합니다.
+		 *
+		 * @param id 리소스 ID
+		 */
+		void UnregisterMeshAsset(ResourceId id);
+
+		/**
+		 * @brief MeshAsset 조회
+		 *
+		 * @param id 리소스 ID
+		 * @return MeshAsset 포인터 (없으면 nullptr)
+		 */
+		MeshAsset* GetMeshAsset(ResourceId id);
+		const MeshAsset* GetMeshAsset(ResourceId id) const;
+
+		//=========================================================================
 		// 기본 Asset (Default Assets)
 		//=========================================================================
 

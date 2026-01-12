@@ -8,6 +8,7 @@
 #include "ECS/Components/LightComponents.h"
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/MaterialComponent.h"
+#include "ECS/Components/HierarchyComponent.h"
 #include "ECS/Systems/TransformSystem.h"
 
 // Math
@@ -112,46 +113,109 @@ namespace Framework
 
 		ImGui::Separator();
 
+		// 뷰 모드 토글
+		ImGui::Checkbox("Hierarchy View", &mShowHierarchyView);
+
 		// 필터
 		ImGui::InputTextWithHint("##Filter", "Filter...", mEntityFilter, sizeof(mEntityFilter));
 		ImGui::Separator();
 
-		// Entity 목록
-		const std::vector<ECS::Entity>& entities = registry->GetAllEntities();
-
-		for (const ECS::Entity& entity : entities)
+		if (mShowHierarchyView)
 		{
-			if (!entity.IsValid())
+			// =========================================
+			// 계층 뷰 모드
+			// =========================================
+
+			// 1. 루트 Entity들 (부모 없는 HierarchyComponent)
+			std::vector<ECS::Entity> rootEntities = CollectRootEntities(registry);
+
+			if (!rootEntities.empty())
 			{
-				continue;
+				ImGui::TextDisabled("-- Hierarchy --");
+				for (ECS::Entity root : rootEntities)
+				{
+					RenderEntityTreeNode(registry, root);
+				}
 			}
 
-			char entityName[32];
-			snprintf(entityName, sizeof(entityName), "Entity %u", entity.id);
+			// 2. 계층 없는 Entity들 (HierarchyComponent 없음)
+			std::vector<ECS::Entity> flatEntities = CollectFlatEntities(registry);
 
-			if (mEntityFilter[0] != '\0')
+			if (!flatEntities.empty())
 			{
-				if (strstr(entityName, mEntityFilter) == nullptr)
+				ImGui::Separator();
+				ImGui::TextDisabled("-- Standalone --");
+
+				for (ECS::Entity entity : flatEntities)
+				{
+					std::string displayName = GetEntityDisplayName(registry, entity);
+
+					// 필터 적용
+					if (mEntityFilter[0] != '\0')
+					{
+						if (displayName.find(mEntityFilter) == std::string::npos)
+						{
+							continue;
+						}
+					}
+
+					bool isSelected = (mSelectedEntity == entity);
+					if (ImGui::Selectable(displayName.c_str(), isSelected))
+					{
+						if (isSelected)
+						{
+							SelectEntity(ECS::Entity{});
+						}
+						else
+						{
+							SelectEntity(entity);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			// =========================================
+			// 플랫 뷰 모드 (기존 방식)
+			// =========================================
+
+			const std::vector<ECS::Entity>& entities = registry->GetAllEntities();
+
+			for (const ECS::Entity& entity : entities)
+			{
+				if (!entity.IsValid())
 				{
 					continue;
 				}
-			}
 
-			bool isSelected = (mSelectedEntity == entity);
-			if (ImGui::Selectable(entityName, isSelected))
-			{
-				// 토글: 이미 선택된 Entity를 다시 클릭하면 선택 해제
-				if (isSelected)
+				std::string displayName = GetEntityDisplayName(registry, entity);
+
+				// 필터 적용
+				if (mEntityFilter[0] != '\0')
 				{
-					SelectEntity(ECS::Entity{});
+					if (displayName.find(mEntityFilter) == std::string::npos)
+					{
+						continue;
+					}
 				}
-				else
+
+				bool isSelected = (mSelectedEntity == entity);
+				if (ImGui::Selectable(displayName.c_str(), isSelected))
 				{
-					SelectEntity(entity);
+					if (isSelected)
+					{
+						SelectEntity(ECS::Entity{});
+					}
+					else
+					{
+						SelectEntity(entity);
+					}
 				}
 			}
 		}
 	}
+
 
 	void ECSInspector::RenderComponentInspector(ECS::Registry* registry)
 	{
@@ -561,6 +625,144 @@ namespace Framework
 
 			ImGui::EndPopup();
 		}
+	}
+
+	void ECSInspector::RenderEntityTreeNode(ECS::Registry* registry, ECS::Entity entity)
+	{
+		if (!entity.IsValid() || !registry->IsEntityValid(entity))
+		{
+			return;
+		}
+
+		// HierarchyComponent 가져오기
+		ECS::HierarchyComponent* hierarchy = registry->GetComponent<ECS::HierarchyComponent>(entity);
+		bool hasChildren = hierarchy && !hierarchy->children.empty();
+
+		// 표시 이름
+		std::string displayName = GetEntityDisplayName(registry, entity);
+
+		// 필터 적용 (자식이 있으면 일단 보여줌)
+		if (mEntityFilter[0] != '\0' && !hasChildren)
+		{
+			if (displayName.find(mEntityFilter) == std::string::npos)
+			{
+				return;
+			}
+		}
+
+		// TreeNode 플래그 설정
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+		if (!hasChildren)
+		{
+			// 자식 없으면 리프 노드 (화살표 없음)
+			flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+		}
+
+		if (mSelectedEntity == entity)
+		{
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		// TreeNode 렌더링
+		bool isOpen = ImGui::TreeNodeEx(
+			reinterpret_cast<void*>(static_cast<intptr_t>(entity.id)),
+			flags,
+			"%s",
+			displayName.c_str()
+		);
+
+		// 클릭 처리
+		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+		{
+			if (mSelectedEntity == entity)
+			{
+				SelectEntity(ECS::Entity{});
+			}
+			else
+			{
+				SelectEntity(entity);
+			}
+		}
+
+		// 자식 렌더링 (펼쳐진 경우)
+		if (isOpen && hasChildren)
+		{
+			for (ECS::Entity child : hierarchy->children)
+			{
+				RenderEntityTreeNode(registry, child);  // 재귀!
+			}
+			ImGui::TreePop();
+		}
+	}
+
+	std::vector<ECS::Entity> ECSInspector::CollectRootEntities(ECS::Registry* registry)
+	{
+		std::vector<ECS::Entity> roots;
+
+		const std::vector<ECS::Entity>& allEntities = registry->GetAllEntities();
+
+		for (const ECS::Entity& entity : allEntities)
+		{
+			if (!entity.IsValid())
+			{
+				continue;
+			}
+
+			// HierarchyComponent가 있는 Entity만
+			ECS::HierarchyComponent* hierarchy = registry->GetComponent<ECS::HierarchyComponent>(entity);
+			if (!hierarchy)
+			{
+				continue;
+			}
+
+			// 부모가 없으면 루트
+			if (!hierarchy->parent.IsValid())
+			{
+				roots.push_back(entity);
+			}
+		}
+
+		return roots;
+	}
+
+	std::vector<ECS::Entity> ECSInspector::CollectFlatEntities(ECS::Registry* registry)
+	{
+		std::vector<ECS::Entity> flatEntities;
+
+		const std::vector<ECS::Entity>& allEntities = registry->GetAllEntities();
+
+		for (const ECS::Entity& entity : allEntities)
+		{
+			if (!entity.IsValid())
+			{
+				continue;
+			}
+
+			// HierarchyComponent가 없는 Entity
+			if (!registry->HasComponent<ECS::HierarchyComponent>(entity))
+			{
+				flatEntities.push_back(entity);
+			}
+		}
+
+		return flatEntities;
+	}
+
+	std::string ECSInspector::GetEntityDisplayName(ECS::Registry* registry, ECS::Entity entity)
+	{
+		// 기본: "Entity N"
+		char buffer[64];
+		snprintf(buffer, sizeof(buffer), "Entity %u", entity.id);
+
+		// TODO: 나중에 NameComponent 추가하면 여기서 이름 표시
+		// ECS::NameComponent* name = registry->GetComponent<ECS::NameComponent>(entity);
+		// if (name && !name->name.empty())
+		// {
+		//     snprintf(buffer, sizeof(buffer), "%s (E%u)", name->name.c_str(), entity.id);
+		// }
+
+		return std::string(buffer);
 	}
 
 } // namespace Framework

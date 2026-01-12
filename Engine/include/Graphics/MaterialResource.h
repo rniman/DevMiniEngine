@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include "Graphics/GraphicsTypes.h"
 #include "Graphics/TextureType.h"
-#include "Framework/Resources/ResourceId.h" 
+#include "Framework/Resources/ResourceId.h"
+#include "Math/MathTypes.h"
 #include <string>
 #include <array>
 
@@ -229,7 +230,21 @@ namespace Graphics
 		 */
 		size_t GetHash() const;
 
+
+		void SetBaseColor(const Math::Vector4& color) { mBaseColor = color; }
+		Math::Vector4 GetBaseColor() const { return mBaseColor; }
+
+		void SetMetallic(Core::float32 value) { mMetallic = value; }
+		Core::float32 GetMetallic() const { return mMetallic; }
+
+		void SetRoughness(Core::float32 value) { mRoughness = value; }
+		Core::float32 GetRoughness() const { return mRoughness; }
+
 	private:
+		Math::Vector4 mBaseColor = Math::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		Core::float32 mMetallic = 0.0f;
+		Core::float32 mRoughness = 0.5f;
+
 		/**
 		 * @brief BlendMode를 D3D12_BLEND_DESC로 변환
 		 */

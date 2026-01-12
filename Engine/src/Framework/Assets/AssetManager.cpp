@@ -330,6 +330,102 @@ namespace Framework
 	}
 
 	//=========================================================================
+	// MeshAsset 등록 (ResourceManager 전용)
+	//=========================================================================
+
+	void AssetManager::RegisterMeshAsset(
+		ResourceId id,
+		const std::string& name,
+		std::unique_ptr<MeshAsset> asset
+	)
+	{
+		// 이미 존재하면 스킵
+		auto it = mAssetCache.find(id);
+		if (it != mAssetCache.end())
+		{
+			LOG_DEBUG("[AssetManager] MeshAsset already registered: %s (ID: 0x%llX)", name.c_str(), id.id);
+			return;
+		}
+
+		if (!asset)
+		{
+			LOG_ERROR("[AssetManager] Cannot register null MeshAsset: %s", name.c_str());
+			return;
+		}
+
+		// AssetEntry 생성
+		AssetEntry entry;
+		entry.asset = std::move(asset);
+		entry.state = AssetState::Loaded;
+		entry.refCount = 0;
+		entry.isDefault = false;
+
+		// 캐시에 추가
+		mAssetCache[id] = std::move(entry);
+		mAssetPaths[id] = name;
+
+		LOG_DEBUG(
+			"[AssetManager] Registered MeshAsset: %s (ID: 0x%llX)",
+			name.c_str(),
+			id.id
+		);
+	}
+
+	void AssetManager::UnregisterMeshAsset(ResourceId id)
+	{
+		auto it = mAssetCache.find(id);
+		if (it == mAssetCache.end())
+		{
+			return;
+		}
+
+		// 기본 Asset은 해제 불가
+		if (it->second.isDefault)
+		{
+			LOG_WARN("[AssetManager] Cannot unregister default MeshAsset (ID: 0x%llX)", id.id);
+			return;
+		}
+
+		// MeshAsset인지 확인
+		if (it->second.asset && it->second.asset->GetType() != AssetType::Mesh)
+		{
+			LOG_WARN("[AssetManager] Asset is not a MeshAsset (ID: 0x%llX)", id.id);
+			return;
+		}
+
+		mAssetCache.erase(it);
+		mAssetPaths.erase(id);
+
+		LOG_DEBUG("[AssetManager] Unregistered MeshAsset (ID: 0x%llX)", id.id);
+	}
+
+	MeshAsset* AssetManager::GetMeshAsset(ResourceId id)
+	{
+		auto it = mAssetCache.find(id);
+		if (it != mAssetCache.end() && it->second.asset)
+		{
+			if (it->second.asset->GetType() == AssetType::Mesh)
+			{
+				return static_cast<MeshAsset*>(it->second.asset.get());
+			}
+		}
+		return nullptr;
+	}
+
+	const MeshAsset* AssetManager::GetMeshAsset(ResourceId id) const
+	{
+		auto it = mAssetCache.find(id);
+		if (it != mAssetCache.end() && it->second.asset)
+		{
+			if (it->second.asset->GetType() == AssetType::Mesh)
+			{
+				return static_cast<const MeshAsset*>(it->second.asset.get());
+			}
+		}
+		return nullptr;
+	}
+
+	//=========================================================================
 	// Asset 조회
 	//=========================================================================
 

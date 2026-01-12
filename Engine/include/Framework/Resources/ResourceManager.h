@@ -79,16 +79,18 @@ namespace Framework
 		ResourceId CreateMesh(const std::string& name);
 
 		/**
-		 * @brief MeshAsset에서 GPU Mesh 생성
+		 * @brief MeshAsset에서 GPU MeshResource 생성
 		 *
-		 * @param name 메시 이름 (ResourceId 생성용)
-		 * @param meshAsset CPU 측 메시 데이터
-		 * @return ResourceId (실패 시 Invalid)
+		 * MeshAsset의 소유권이 AssetManager로 이전됩니다.
 		 *
-		 * @note 정점 수에 따라 16비트/32비트 인덱스 자동 선택
-		 * @note ReleaseAfterUpload 정책이면 업로드 후 CPU 데이터 해제
+		 * @param name 리소스 이름
+		 * @param asset MeshAsset (소유권 이전)
+		 * @return 생성된 MeshResource의 ID
 		 */
-		ResourceId CreateMeshFromAsset(const std::string& name, MeshAsset* meshAsset);
+		ResourceId CreateMeshFromAsset(
+			const std::string& name,
+			std::unique_ptr<MeshAsset> asset
+		);
 
 		/**
 		 * @brief ResourceId로 Mesh 조회

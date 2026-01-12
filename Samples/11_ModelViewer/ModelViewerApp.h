@@ -1,12 +1,13 @@
 ﻿/**
  * @file ModelViewerApp.h
- * @brief Phase 4.4: Model Loading 데모 애플리케이션
+ * @brief Phase 4.5: Model Loading 데모 애플리케이션
  *
  * 다양한 메시 로딩 방식과 멀티 서브메시 비교:
  * - 왼쪽: Procedural Sphere (PrimitiveGenerator + MikkTSpace)
  * - 중앙: Loaded Sphere (ModelLoader + glTF)
  * - 오른쪽: DamagedHelmet (LoadModel + 머티리얼/텍스처 정보)
  * - 상단: MultiMaterialCube (멀티 서브메시 + 개별 머티리얼)
+ * - 하단: 2CylinderEngine (계층 구조 테스트)
  *
  * 텍스처 로딩 지원:
  * - 외부 텍스처: gltf + 별도 이미지 파일 (jpg, png 등)
@@ -46,8 +47,49 @@ namespace Graphics
 	struct FrameData;
 }
 
+//=============================================================================
+// 모델 계층 생성 결과 (Phase 4.5)
+//=============================================================================
+
 /**
- * @brief Phase 4.4: Model Loading 데모 애플리케이션
+ * @brief glTF 노드 계층 → ECS Entity 변환 결과
+ *
+ * CreateModelHierarchy() 함수의 반환 타입입니다.
+ * 루트 Entity, 전체 Entity 목록, 렌더링 대상 Entity 목록을 포함합니다.
+ *
+ * @note 추후 Framework 레이어로 이동 예정
+ */
+struct ModelHierarchyResult
+{
+	/// 계층 구조의 루트 Entity
+	ECS::Entity rootEntity;
+
+	/// 생성된 모든 Entity (루트 포함)
+	std::vector<ECS::Entity> allEntities;
+
+	/// MeshComponent를 가진 Entity만 (렌더링 대상)
+	std::vector<ECS::Entity> renderableEntities;
+
+	/// 유효성 검사
+	bool IsValid() const { return rootEntity.IsValid(); }
+
+	/// 초기화
+	void Clear()
+	{
+		rootEntity = ECS::Entity::Invalid();
+		allEntities.clear();
+		renderableEntities.clear();
+	}
+
+	/// 생성된 Entity 수
+	Core::size_t GetTotalCount() const { return allEntities.size(); }
+
+	/// 렌더링 대상 Entity 수
+	Core::size_t GetRenderableCount() const { return renderableEntities.size(); }
+};
+
+/**
+ * @brief Phase 4.5: Model Loading 데모 애플리케이션
  */
 class ModelViewerApp : public Framework::Application
 {
@@ -68,7 +110,7 @@ private:
 	{
 		Framework::ApplicationDesc desc;
 		desc.applicationName = "ModelViewer";
-		desc.windowTitle = "11_ModelViewer - Phase 4.4 Multi-Submesh";
+		desc.windowTitle = "11_ModelViewer - Phase 4.5 Hierarchy";
 		desc.windowWidth = 1280;
 		desc.windowHeight = 720;
 		desc.enableVSync = true;
@@ -96,6 +138,9 @@ private:
 	/** @brief MultiMaterialCube Entity 생성 (상단) */
 	void CreateCubeEntity();
 
+	/** @brief 2CylinderEngine Entity 생성 (하단) */
+	void CreateEngineEntity();
+
 	//=========================================================================
 	// 메시 설정
 	//=========================================================================
@@ -122,7 +167,6 @@ private:
 	 * @param modelPath glTF/glb 파일 경로
 	 * @param modelName 리소스 이름 (로그 및 ResourceId용)
 	 * @param outModelData 로드된 모델 데이터 (출력)
-	 * @param outMeshAsset 생성된 MeshAsset (출력)
 	 * @param outMeshId 생성된 MeshResource ID (출력)
 	 * @return 성공 여부
 	 */
@@ -130,7 +174,6 @@ private:
 		const char* modelPath,
 		const std::string& modelName,
 		Framework::LoadedModelData& outModelData,
-		std::unique_ptr<Framework::MeshAsset>& outMeshAsset,
 		Framework::ResourceId& outMeshId
 	);
 
@@ -150,6 +193,42 @@ private:
 		Framework::LoadedModelData& modelData,
 		const std::string& materialNamePrefix,
 		std::vector<Framework::ResourceId>& outMaterialIds
+	);
+
+	//=========================================================================
+	// 계층 모델 로딩 (Phase 4.5)
+	//=========================================================================
+
+	/**
+	 * @brief glTF 노드 계층을 ECS Entity 계층으로 변환
+	 *
+	 * @param modelData 로드된 모델 데이터
+	 * @param materialIds 미리 생성된 Material ID 목록
+	 * @param rootPosition 루트 Entity의 월드 위치 (기본: 원점)
+	 * @return 생성된 Entity 정보
+	 */
+	ModelHierarchyResult CreateModelHierarchy(
+		const Framework::LoadedModelData& modelData,
+		const std::vector<Framework::ResourceId>& materialIds,
+		const Math::Vector3& rootPosition = Math::Vector3::Zero()
+	);
+
+	/**
+	 * @brief 특정 노드의 메시들을 병합하여 GPU 리소스 생성
+	 *
+	 * 노드가 참조하는 meshIndices의 메시들을 하나로 병합하고
+	 * 서브메시 정보를 생성합니다.
+	 * MeshAsset 소유권은 AssetManager로 이전됩니다.
+	 *
+	 * @param meshIndices 병합할 메시 인덱스 목록
+	 * @param modelData 원본 모델 데이터
+	 * @param meshName 생성할 리소스 이름
+	 * @return 생성된 MeshResource ID (실패 시 Invalid)
+	 */
+	Framework::ResourceId CreateMeshFromNodeIndices(
+		const std::vector<Core::uint32>& meshIndices,
+		const Framework::LoadedModelData& modelData,
+		const std::string& meshName
 	);
 
 	//=========================================================================
@@ -191,7 +270,6 @@ private:
 	//=========================================================================
 	ECS::Entity mLoadedSphereEntity;
 	Framework::ResourceId mLoadedMeshId;
-	std::unique_ptr<Framework::MeshAsset> mLoadedSphereMeshAsset;
 
 	//=========================================================================
 	// DamagedHelmet (오른쪽)
@@ -199,7 +277,6 @@ private:
 	ECS::Entity mHelmetEntity;
 	Framework::ResourceId mHelmetMeshId;
 	std::vector<Framework::ResourceId> mHelmetMaterialIds;
-	std::unique_ptr<Framework::MeshAsset> mHelmetMeshAsset;
 	Framework::LoadedModelData mHelmetModelData;
 
 	//=========================================================================
@@ -208,9 +285,16 @@ private:
 	ECS::Entity mCubeEntity;
 	Framework::ResourceId mCubeMeshId;
 	std::vector<Framework::ResourceId> mCubeMaterialIds;
-	std::unique_ptr<Framework::MeshAsset> mCubeMeshAsset;
 	Framework::LoadedModelData mCubeModelData;
 	bool mCubeMeshValid = false;
+
+	//=========================================================================
+	// 2CylinderEngine (하단) - Phase 4.5 계층 테스트
+	//=========================================================================
+	ECS::Entity mEngineEntity;
+	std::vector<Framework::ResourceId> mEngineMaterialIds;
+	Framework::LoadedModelData mEngineModelData;
+	bool mEngineMeshValid = false;
 
 	//=========================================================================
 	// 공유 리소스

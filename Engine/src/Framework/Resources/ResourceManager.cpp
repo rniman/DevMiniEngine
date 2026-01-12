@@ -131,20 +131,20 @@ namespace Framework
 		return id;
 	}
 
-	ResourceId ResourceManager::CreateMeshFromAsset(const std::string& name, MeshAsset* meshAsset)
+	ResourceId ResourceManager::CreateMeshFromAsset(
+		const std::string& name,
+		std::unique_ptr<MeshAsset> meshAsset)
 	{
 		if (!meshAsset)
 		{
 			LOG_ERROR("[ResourceManager] CreateMeshFromAsset: meshAsset is null");
 			return ResourceId::Invalid();
 		}
-
 		if (!meshAsset->HasSourceData())
 		{
 			LOG_ERROR("[ResourceManager] CreateMeshFromAsset: meshAsset has no source data");
 			return ResourceId::Invalid();
 		}
-
 		if (meshAsset->GetVertexCount() == 0)
 		{
 			LOG_ERROR("[ResourceManager] CreateMeshFromAsset: meshAsset has no vertices");
@@ -212,8 +212,6 @@ namespace Framework
 		}
 
 		// Phase 4.4: 서브메시 정보 복사
-		// Initialize에서 기본 서브메시 생성됨
-		// MeshAsset에 멀티 서브메시가 있을 때만 덮어쓰기
 		const auto& submeshes = meshAsset->GetSubmeshes();
 		if (submeshes.size() > 1)
 		{
@@ -233,8 +231,15 @@ namespace Framework
 			LOG_DEBUG("[ResourceManager] Released CPU mesh data after GPU upload");
 		}
 
+		// GPU Resource 등록
 		mMeshes[id] = mesh;
 		mMeshNames[id] = name;
+
+		// AssetManager에 MeshAsset 등록 (소유권 이전)
+		if (mAssetManager)
+		{
+			mAssetManager->RegisterMeshAsset(id, name, std::move(meshAsset));
+		}
 
 		LOG_INFO(
 			"[ResourceManager] Created mesh from asset: %s (V:%u, I:%u, %s, ID: 0x%llX)",

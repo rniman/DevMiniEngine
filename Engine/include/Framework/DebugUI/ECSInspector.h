@@ -79,6 +79,16 @@ namespace Framework
 		// Component 추가/삭제 UI
 		void RenderAddComponentMenu(ECS::Registry* registry, ECS::Entity entity);
 
+		/// 계층 트리 노드 렌더링 (재귀)
+		void RenderEntityTreeNode(ECS::Registry* registry, ECS::Entity entity);
+
+		/// 루트 Entity 수집 (부모가 없는 HierarchyComponent Entity)
+		std::vector<ECS::Entity> CollectRootEntities(ECS::Registry* registry);
+		/// 계층 없는 Entity 수집
+		std::vector<ECS::Entity> CollectFlatEntities(ECS::Registry* registry);
+		/// Entity 표시 이름 생성 (노드 이름 또는 Entity ID)
+		std::string GetEntityDisplayName(ECS::Registry* registry, ECS::Entity entity);
+
 	private:
 		ECS::Entity mSelectedEntity;
 		bool mIsVisible = true;
@@ -94,6 +104,8 @@ namespace Framework
 		bool mPendingDeletePointLight = false;
 		bool mPendingDeleteMesh = false;
 		bool mPendingDeleteMaterial = false;
+		bool mShowHierarchyView = true;
+
 	};
 
 } // namespace Framework
