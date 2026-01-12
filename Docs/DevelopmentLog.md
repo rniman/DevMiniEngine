@@ -26,6 +26,71 @@
 
 ---
 
+## 2026-01-12 - Phase 4.5: Hierarchical Model Loading
+
+### Overview
+
+glTF 노드 계층 구조를 ECS Entity 계층으로 변환하는 기능 구현. 2CylinderEngine.glb(83노드, 43메시) 테스트 완료. 리팩토링으로 MeshAsset 소유권 정리, ECSInspector 트리뷰 추가.
+
+### Tasks
+
+- [x] LoadedNodeData 구조체 추가 (parentIndex, childIndices, meshIndices, localTransform)
+- [x] DecomposeMatrix() 행렬→TRS 분해 함수
+- [x] CreateModelHierarchy() 5단계 계층 생성 로직
+- [x] CreateMeshFromNodeIndices() 노드별 메시 병합
+- [x] ModelHierarchyResult 결과 구조체
+- [x] ECSInspector 계층 트리뷰 (재귀 TreeNode)
+- [x] MeshAsset 소유권 AssetManager 이전
+- [x] 상수 버퍼 정렬 확인 (256B, MAX 200)
+
+### Decisions
+
+**계층 생성 5단계**
+1. 노드→Entity 매핑 테이블
+2. Entity 생성 + Transform + Hierarchy
+3. SetParent()로 관계 설정
+4. 루트 위치 오프셋
+5. 메시/머티리얼 연결
+
+**MeshAsset 소유권**
+- AssetManager가 소유 (TextureAsset과 일관성)
+- ResourceManager::CreateMeshFromAsset()에서 std::move로 이전
+- App은 ResourceId만 보유
+
+**Material 파이프라인**
+- 현재 구조 유지 (MaterialResource가 PBR 파라미터 소유)
+- baseColor=(1,1,1,1), metallic=0, roughness=0.5
+
+### Issues Encountered
+
+**Dead Code 발견**
+- LoadAndCreateMesh() 미사용 (CreateModelHierarchy 전환 후)
+
+### Notes
+
+**수정 파일**: ModelLoader.h/cpp, ModelViewerApp.h/cpp, AssetManager.h/cpp, ResourceManager.h/cpp, ECSInspector.h/cpp
+
+**테스트 결과**
+
+| 모델 | 노드 | 렌더링 Entity |
+|------|------|---------------|
+| DamagedHelmet | 2 | 1 |
+| MultiMaterialCube | 1 | 1 |
+| 2CylinderEngine | 83 | 43 |
+
+**아키텍처 원칙**
+- Asset(CPU) / Resource(GPU) 분리
+- AssetManager: MeshAsset, TextureAsset 소유
+- 256B 정렬 상수 버퍼
+
+### Next Steps
+
+- [ ] Phase 5: PBR Pipeline
+- [ ] IBL (Image-Based Lighting)
+- [ ] 환경 맵 지원
+
+---
+
 ## 2026-01-09 - Phase 4.4 Refactoring 02: ECS Component/System API 개선
 
 ### Overview
