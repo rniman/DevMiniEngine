@@ -235,6 +235,7 @@
     <ClCompile Include="..\src\Framework\Application.cpp" />
     <ClCompile Include="..\src\Framework\Assets\AnimationAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\AssetManager.cpp" />
+    <ClCompile Include="..\src\Framework\Assets\Hierarchybuilder.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MaterialAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MeshAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MikkTSpaceCalculator.cpp" />
@@ -260,6 +261,7 @@
     <ClInclude Include="..\include\Framework\Assets\AssetHandle.h" />
     <ClInclude Include="..\include\Framework\Assets\AssetManager.h" />
     <ClInclude Include="..\include\Framework\Assets\AssetTypes.h" />
+    <ClInclude Include="..\include\Framework\Assets\Hierarchybuilder.h" />
     <ClInclude Include="..\include\Framework\Assets\IAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\MaterialAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\MeshAsset.h" />

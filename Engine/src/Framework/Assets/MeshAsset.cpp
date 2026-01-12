@@ -4,6 +4,7 @@
  */
 #include "pch.h"
 #include "Framework/Assets/MeshAsset.h"
+#include "Framework/Assets/ModelLoader.h"  
 #include "Core/Logging/LogMacros.h"
 #include <cmath>
 
@@ -45,6 +46,114 @@ namespace Framework
 		}
 
 		return usage;
+	}
+
+	std::unique_ptr<MeshAsset> MeshAsset::MergeFromMeshData(const std::vector<const LoadedMeshData*>& meshes)
+	{
+		if (meshes.empty())
+		{
+			LOG_WARN("[MeshAsset] MergeFromMeshData: empty mesh list");
+			return nullptr;
+		}
+
+		// 유효한 메시만 필터링
+		std::vector<const LoadedMeshData*> validMeshes;
+		validMeshes.reserve(meshes.size());
+
+		for (const auto* mesh : meshes)
+		{
+			if (mesh && !mesh->vertices.empty())
+			{
+				validMeshes.push_back(mesh);
+			}
+		}
+
+		if (validMeshes.empty())
+		{
+			LOG_WARN("[MeshAsset] MergeFromMeshData: no valid meshes");
+			return nullptr;
+		}
+
+		// 결과 데이터
+		std::vector<Graphics::StandardVertex> allVertices;
+		std::vector<Core::uint32> allIndices;
+		std::vector<Graphics::SubmeshInfo> submeshes;
+
+		// AABB 초기화
+		Math::Vector3 aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+		Math::Vector3 aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+		// 총 크기 예측 (reserve용)
+		Core::size_t totalVertices = 0;
+		Core::size_t totalIndices = 0;
+		for (const auto* mesh : validMeshes)
+		{
+			totalVertices += mesh->vertices.size();
+			totalIndices += mesh->indices.size();
+		}
+		allVertices.reserve(totalVertices);
+		allIndices.reserve(totalIndices);
+		submeshes.reserve(validMeshes.size());
+
+		// 병합
+		Core::uint32 baseVertex = 0;
+		Core::uint32 baseIndex = 0;
+
+		for (Core::size_t i = 0; i < validMeshes.size(); ++i)
+		{
+			const auto* meshData = validMeshes[i];
+
+			// 서브메시 정보 생성
+			Graphics::SubmeshInfo submesh;
+			submesh.startIndex = baseIndex;
+			submesh.indexCount = static_cast<Core::uint32>(meshData->indices.size());
+			submesh.baseVertex = baseVertex;
+			submesh.materialIndex = static_cast<Core::uint32>(i);
+			submeshes.push_back(submesh);
+
+			// 버텍스 추가
+			allVertices.insert(
+				allVertices.end(),
+				meshData->vertices.begin(),
+				meshData->vertices.end()
+			);
+
+			// 인덱스 추가
+			allIndices.insert(
+				allIndices.end(),
+				meshData->indices.begin(),
+				meshData->indices.end()
+			);
+
+			// AABB 병합
+			aabbMin.x = std::min(aabbMin.x, meshData->aabbMin.x);
+			aabbMin.y = std::min(aabbMin.y, meshData->aabbMin.y);
+			aabbMin.z = std::min(aabbMin.z, meshData->aabbMin.z);
+			aabbMax.x = std::max(aabbMax.x, meshData->aabbMax.x);
+			aabbMax.y = std::max(aabbMax.y, meshData->aabbMax.y);
+			aabbMax.z = std::max(aabbMax.z, meshData->aabbMax.z);
+
+			// 오프셋 갱신
+			baseVertex += static_cast<Core::uint32>(meshData->vertices.size());
+			baseIndex += static_cast<Core::uint32>(meshData->indices.size());
+		}
+
+		// MeshAsset 생성
+		auto result = std::make_unique<MeshAsset>();
+		result->SetVertices(std::move(allVertices));
+		result->SetIndices(std::move(allIndices));
+		result->SetSubmeshes(std::move(submeshes));
+		result->SetAABB(aabbMin, aabbMax);
+
+		LOG_DEBUG(
+			"[MeshAsset] Merged %zu meshes: %u vertices, %u indices, %u submeshes",
+			validMeshes.size(),
+			result->GetVertexCount(),
+			result->GetIndexCount(),
+			result->GetSubmeshCount()
+		);
+
+		return result;
 	}
 
 	//=========================================================================

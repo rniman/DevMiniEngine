@@ -10,14 +10,17 @@
 #include "Framework/Assets/AssetManager.h"
 #include "Framework/Assets/MeshAsset.h"
 #include "Framework/Assets/TextureAsset.h"
+#include "Framework/Assets/ModelLoader.h" 
 #include "Core/Logging/LogMacros.h"
 #include "Core/Hash.h"
 #include "Core/Types.h"
 #include "Graphics/DX12/DX12Device.h"
 #include "Graphics/DX12/DX12Renderer.h"
+#include "Graphics/DX12/DX12DescriptorHeap.h"
 #include "Graphics/MaterialResource.h"
 #include "Graphics/MeshResource.h"
 #include "Graphics/TextureResource.h"
+
 
 namespace Framework
 {
@@ -320,6 +323,155 @@ namespace Framework
 
 		LOG_DEBUG("Created material: %s (ID: 0x%llX)", name.c_str(), id.id);
 		return id;
+	}
+
+	std::vector<ResourceId> ResourceManager::CreateMaterialsFromModelData(
+		LoadedModelData& modelData,
+		const std::string& materialNamePrefix,
+		const std::wstring& vsPath,
+		const std::wstring& psPath,
+		Graphics::DX12DescriptorHeap* srvHeap
+	)
+	{
+		std::vector<ResourceId> materialIds;
+
+		if (modelData.materials.empty())
+		{
+			LOG_WARN("[ResourceManager] No material data in model");
+			return materialIds;
+		}
+
+		materialIds.reserve(modelData.materials.size());
+
+		ResourceId fallbackTexId = GetFallbackTexture();
+
+		for (Core::size_t matIndex = 0; matIndex < modelData.materials.size(); ++matIndex)
+		{
+			auto& matData = modelData.materials[matIndex];
+
+			// Material 이름 생성
+			std::string matName = materialNamePrefix + "_" + std::to_string(matIndex);
+			ResourceId matId = CreateMaterial(matName, vsPath, psPath);
+
+			auto* material = GetMaterial(matId);
+			if (!material)
+			{
+				LOG_ERROR("[ResourceManager] Failed to create material: %s", matName.c_str());
+				materialIds.push_back(ResourceId::Invalid());
+				continue;
+			}
+
+			// 텍스처 로드 (있는 경우만)
+			if (!matData.textures.empty())
+			{
+				LOG_INFO(
+					"[ResourceManager] Loading textures for material[%zu]: %s",
+					matIndex, matData.name.c_str()
+				);
+
+				for (auto& texInfo : matData.textures)
+				{
+					ResourceId texId;
+
+					if (texInfo.HasEmbeddedData())
+					{
+						// 임베디드 텍스처
+						std::string texName = modelData.name + "_" + texInfo.path;
+
+						if (texInfo.isCompressed)
+						{
+							texId = LoadTextureFromMemory(
+								texName,
+								texInfo.embeddedData.data(),
+								static_cast<Core::uint32>(texInfo.embeddedData.size()),
+								texInfo.type
+							);
+						}
+						else
+						{
+							texId = CreateTextureFromMemory(
+								texName,
+								texInfo.embeddedData.data(),
+								texInfo.width,
+								texInfo.height,
+								texInfo.type
+							);
+						}
+
+						if (texId.IsValid())
+						{
+							material->SetTexture(texInfo.type, texId);
+							texInfo.path = texName;  // 경로 업데이트
+							LOG_INFO("[ResourceManager] Loaded embedded %s", texInfo.path.c_str());
+						}
+					}
+					else if (!texInfo.isEmbedded)
+					{
+						// 외부 텍스처
+						texId = LoadTexture(texInfo.path, texInfo.type);
+
+						if (texId.IsValid())
+						{
+							material->SetTexture(texInfo.type, texId);
+							LOG_INFO(
+								"[ResourceManager] Loaded %s: %s",
+								Graphics::TextureTypeToString(texInfo.type),
+								texInfo.path.c_str()
+							);
+						}
+					}
+
+					// 실패 시 폴백
+					if (!texId.IsValid() && fallbackTexId.IsValid())
+					{
+						material->SetTexture(texInfo.type, fallbackTexId);
+					}
+				}
+			}
+			else
+			{
+				// 텍스처 없음 - baseColorFactor만 사용
+				LOG_DEBUG(
+					"[ResourceManager] Material[%zu] '%s' uses color only (no textures)",
+					matIndex, matData.name.c_str()
+				);
+
+				material->SetBaseColor(Math::Vector4(
+					matData.baseColorFactor.x,
+					matData.baseColorFactor.y,
+					matData.baseColorFactor.z,
+					matData.baseColorFactor.w
+				));
+				material->SetMetallic(matData.metallicFactor);
+				material->SetRoughness(matData.roughnessFactor);
+			}
+
+			// Descriptor 할당 (텍스처 없어도 필요)
+			if (srvHeap)
+			{
+				if (!material->AllocateDescriptors(
+					mDevice->GetDevice(),
+					srvHeap,
+					this
+				))
+				{
+					LOG_ERROR(
+						"[ResourceManager] Failed to allocate descriptors for: %s",
+						matName.c_str()
+					);
+				}
+			}
+
+			materialIds.push_back(matId);
+
+			LOG_DEBUG(
+				"[ResourceManager] Created material[%zu]: %s (ID: 0x%llX)",
+				matIndex, matName.c_str(), matId.id
+			);
+		}
+
+		LOG_INFO("[ResourceManager] Total %zu materials created", materialIds.size());
+		return materialIds;
 	}
 
 	Graphics::MaterialResource* ResourceManager::GetMaterial(ResourceId id)

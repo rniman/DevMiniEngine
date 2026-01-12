@@ -105,6 +105,7 @@
     <ClCompile Include="..\src\Framework\Assets\ModelLoader.cpp">
       <Filter>Source Files\Assets</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Framework\Assets\Hierarchybuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -167,5 +168,6 @@
     <ClInclude Include="..\include\Framework\DebugUI\ImGuiHelper.h">
       <Filter>Header Files\DebugUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Framework\Assets\Hierarchybuilder.h" />
   </ItemGroup>
 </Project>

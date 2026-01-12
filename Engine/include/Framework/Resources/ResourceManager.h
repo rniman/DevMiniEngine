@@ -25,6 +25,7 @@ namespace Graphics
 	class TextureResource;
 	class DX12Device;
 	class DX12Renderer;
+	class DX12DescriptorHeap;
 }
 
 namespace Framework
@@ -33,6 +34,7 @@ namespace Framework
 	class MeshAsset;
 	class TextureAsset;
 	class AssetManager;
+	struct LoadedModelData;
 
 	/**
 	 * @brief 중앙 집중식 리소스 관리자
@@ -113,6 +115,45 @@ namespace Framework
 			const std::string& name,
 			const std::wstring& vertexShader,
 			const std::wstring& pixelShader
+		);
+
+		/**
+		 * @brief LoadedModelData에서 머티리얼들을 일괄 생성
+		 *
+		 * 각 머티리얼에 대해:
+		 * 1. MaterialResource 생성
+		 * 2. 텍스처 로드 (임베디드/외부/폴백)
+		 * 3. Descriptor 할당
+		 *
+		 * @param modelData 로드된 모델 데이터 (텍스처 경로 업데이트됨)
+		 * @param materialNamePrefix 머티리얼 이름 접두어
+		 * @param vsPath 버텍스 셰이더 경로
+		 * @param psPath 픽셀 셰이더 경로
+		 * @param srvHeap SRV Descriptor Heap
+		 * @return 생성된 MaterialId 목록
+		 *
+		 * @note HierarchyBuilder와 함께 사용
+		 *
+		 * 사용 예시:
+		 * @code
+		 * LoadedModelData modelData;
+		 * ModelLoader::LoadModel("model.glb", modelData);
+		 *
+		 * auto materialIds = resourceManager.CreateMaterialsFromModelData(
+		 *     modelData,
+		 *     "ModelMat",
+		 *     L"Shaders/PhongVS.hlsl",
+		 *     L"Shaders/PhongPS.hlsl",
+		 *     srvHeap
+		 * );
+		 * @endcode
+		 */
+		std::vector<ResourceId> CreateMaterialsFromModelData(
+			LoadedModelData& modelData,
+			const std::string& materialNamePrefix,
+			const std::wstring& vsPath,
+			const std::wstring& psPath,
+			Graphics::DX12DescriptorHeap* srvHeap
 		);
 
 		Graphics::MaterialResource* GetMaterial(ResourceId id);

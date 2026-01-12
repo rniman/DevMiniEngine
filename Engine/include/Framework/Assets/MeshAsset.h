@@ -19,6 +19,8 @@
 
 namespace Framework
 {
+	struct LoadedMeshData;
+
 	//=========================================================================
 	// 메시 데이터 정책
 	//=========================================================================
@@ -59,6 +61,31 @@ namespace Framework
 		const std::string& GetPath() const override { return mPath; }
 		AssetState GetState() const override { return mState; }
 		Core::size_t GetMemoryUsage() const override;
+
+		//=========================================================================
+		// 정적 팩토리 메서드
+		//=========================================================================
+
+		/**
+		 * @brief 여러 LoadedMeshData를 하나로 병합하여 MeshAsset 생성
+		 *
+		 * 각 메시는 별도의 서브메시로 등록됩니다.
+		 * 인덱스는 각 메시의 머티리얼 인덱스를 서브메시의 materialIndex로 사용합니다.
+		 *
+		 * @param meshes 병합할 메시 데이터 포인터 목록
+		 * @return 병합된 MeshAsset (실패 시 nullptr)
+		 *
+		 * @note HierarchyBuilder에서 노드별 메시 생성 시 사용
+		 *
+		 * 사용 예시:
+		 * @code
+		 * std::vector<const LoadedMeshData*> meshPtrs = { &mesh0, &mesh1 };
+		 * auto merged = MeshAsset::MergeFromMeshData(meshPtrs);
+		 * @endcode
+		 */
+		static std::unique_ptr<MeshAsset> MergeFromMeshData(
+			const std::vector<const LoadedMeshData*>& meshes
+		);
 
 		//=========================================================================
 		// 정점/인덱스 데이터 접근

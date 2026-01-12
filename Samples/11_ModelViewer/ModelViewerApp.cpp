@@ -13,6 +13,7 @@
 #include "Framework/Assets/ModelAsset.h"
 #include "Framework/Assets/ModelLoader.h"
 #include "Framework/Assets/TextureAsset.h"
+#include "Framework/Assets/HierarchyBuilder.h"
 #include "Framework/DebugUI/ECSInspector.h"
 #include "Framework/DebugUI/ImGuiHelper.h"
 #include "Framework/Resources/ResourceId.h"
@@ -205,7 +206,7 @@ ModelViewerApp::~ModelViewerApp()
 
 bool ModelViewerApp::OnInitialize()
 {
-	LOG_INFO("=== Phase 4.4: Multi-Submesh Demo ===");
+	LOG_INFO("=== Phase 4.7+: Model Hierarchy Demo ===");
 
 	// ResourceManager 생성
 	mResourceManager = std::make_unique<Framework::ResourceManager>(
@@ -407,18 +408,26 @@ void ModelViewerApp::CreateHelmetEntity()
 		return;
 	}
 
-	// 2. Material 생성
-	CreateMaterialsFromModelData(
+	// 2. Material 생성 (ResourceManager 메서드 사용)
+	mHelmetMaterialIds = mResourceManager->CreateMaterialsFromModelData(
 		mHelmetModelData,
 		mHelmetModelData.name + "_Mat",
-		mHelmetMaterialIds
+		L"../../Assets/Shaders/PhongVS.hlsl",
+		L"../../Assets/Shaders/PhongPS.hlsl",
+		GetRenderer()->GetSrvDescriptorHeap()
 	);
 
-	// 3. 계층 생성 (materialIds 전달)
-	ModelHierarchyResult result = CreateModelHierarchy(
+	// 3. 계층 생성 (HierarchyBuilder 사용)
+	Framework::HierarchyBuildOptions options;
+	options.rootPosition = HELMET_POS;
+
+	Framework::HierarchyBuildResult result = Framework::HierarchyBuilder::Build(
 		mHelmetModelData,
 		mHelmetMaterialIds,
-		HELMET_POS
+		*mRegistry,
+		*mSystemManager,
+		*mResourceManager,
+		options
 	);
 
 	// 4. 결과 저장
@@ -452,18 +461,26 @@ void ModelViewerApp::CreateCubeEntity()
 		return;
 	}
 
-	// 2. Material 생성
-	CreateMaterialsFromModelData(
+	// 2. Material 생성 (ResourceManager 메서드 사용)
+	mCubeMaterialIds = mResourceManager->CreateMaterialsFromModelData(
 		mCubeModelData,
 		"CubeMat",
-		mCubeMaterialIds
+		L"../../Assets/Shaders/PhongVS.hlsl",
+		L"../../Assets/Shaders/PhongPS.hlsl",
+		GetRenderer()->GetSrvDescriptorHeap()
 	);
 
-	// 3. 계층 생성 (materialIds 전달)
-	ModelHierarchyResult result = CreateModelHierarchy(
+	// 3. 계층 생성 (HierarchyBuilder 사용)
+	Framework::HierarchyBuildOptions options;
+	options.rootPosition = CUBE_POS;
+
+	Framework::HierarchyBuildResult result = Framework::HierarchyBuilder::Build(
 		mCubeModelData,
 		mCubeMaterialIds,
-		CUBE_POS
+		*mRegistry,
+		*mSystemManager,
+		*mResourceManager,
+		options
 	);
 
 	// 4. 결과 저장
@@ -484,6 +501,7 @@ void ModelViewerApp::CreateCubeEntity()
 		LOG_ERROR("[ModelViewerApp] Failed to create MultiMaterialCube hierarchy");
 	}
 }
+
 void ModelViewerApp::CreateEngineEntity()
 {
 	LOG_INFO("[ModelViewerApp] Creating 2CylinderEngine Entity (Hierarchy)...");
@@ -496,31 +514,30 @@ void ModelViewerApp::CreateEngineEntity()
 		return;
 	}
 
-	// 2. Material 생성
-	CreateMaterialsFromModelData(
+	// 2. Material 생성 (ResourceManager 메서드 사용)
+	mEngineMaterialIds = mResourceManager->CreateMaterialsFromModelData(
 		mEngineModelData,
 		"EngineMat",
-		mEngineMaterialIds
+		L"../../Assets/Shaders/PhongVS.hlsl",
+		L"../../Assets/Shaders/PhongPS.hlsl",
+		GetRenderer()->GetSrvDescriptorHeap()
 	);
 
-	// 3. 계층 생성
-	ModelHierarchyResult result = CreateModelHierarchy(
+	// 3. 계층 생성 (HierarchyBuilder 사용, 스케일 포함)
+	Framework::HierarchyBuildOptions options;
+	options.rootPosition = ENGINE_POS;
+	options.rootScale = ENGINE_SCALE;  // 스케일도 옵션으로 전달
+
+	Framework::HierarchyBuildResult result = Framework::HierarchyBuilder::Build(
 		mEngineModelData,
 		mEngineMaterialIds,
-		ENGINE_POS
+		*mRegistry,
+		*mSystemManager,
+		*mResourceManager,
+		options
 	);
 
-	// 4. Scale 적용 (모델이 매우 크므로 축소)
-	if (result.rootEntity.IsValid())
-	{
-		auto* transformSystem = mSystemManager->GetSystem<ECS::TransformSystem>();
-		if (transformSystem)
-		{
-			transformSystem->SetScale(result.rootEntity, ENGINE_SCALE);
-		}
-	}
-
-	// 5. 결과 저장
+	// 4. 결과 저장
 	mEngineEntity = result.rootEntity;
 	mEngineMeshValid = result.IsValid();
 
@@ -813,405 +830,6 @@ bool ModelViewerApp::LoadAndCreateMesh(
 
 	return true;
 }
-
-void ModelViewerApp::CreateMaterialsFromModelData(
-	Framework::LoadedModelData& modelData,
-	const std::string& materialNamePrefix,
-	std::vector<Framework::ResourceId>& outMaterialIds
-)
-{
-	outMaterialIds.clear();
-	if (modelData.materials.empty())
-	{
-		LOG_WARN("[Material] No material data in model");
-		return;
-	}
-
-	Framework::ResourceId fallbackTexId = mResourceManager->GetFallbackTexture();
-
-	for (size_t matIndex = 0; matIndex < modelData.materials.size(); ++matIndex)
-	{
-		auto& matData = modelData.materials[matIndex];
-
-		// Material 이름 생성
-		std::string matName = materialNamePrefix + "_" + std::to_string(matIndex);
-		Framework::ResourceId matId = mResourceManager->CreateMaterial(
-			matName,
-			L"../../Assets/Shaders/PhongVS.hlsl",
-			L"../../Assets/Shaders/PhongPS.hlsl"
-		);
-
-		auto* material = mResourceManager->GetMaterial(matId);
-		if (!material)
-		{
-			LOG_ERROR("[Material] Failed to create material: %s", matName.c_str());
-			outMaterialIds.push_back(Framework::ResourceId::Invalid());
-			continue;
-		}
-
-		// 텍스처 로드 (있는 경우만)
-		if (!matData.textures.empty())
-		{
-			LOG_INFO("[Material] Loading textures for material[%zu]: %s", matIndex, matData.name.c_str());
-
-			for (auto& texInfo : matData.textures)
-			{
-				Framework::ResourceId texId;
-				if (texInfo.HasEmbeddedData())
-				{
-					// 임베디드 텍스처
-					std::string texName = modelData.name + "_" + texInfo.path;
-					if (texInfo.isCompressed)
-					{
-						texId = mResourceManager->LoadTextureFromMemory(
-							texName,
-							texInfo.embeddedData.data(),
-							static_cast<Core::uint32>(texInfo.embeddedData.size()),
-							texInfo.type
-						);
-					}
-					else
-					{
-						texId = mResourceManager->CreateTextureFromMemory(
-							texName,
-							texInfo.embeddedData.data(),
-							texInfo.width,
-							texInfo.height,
-							texInfo.type
-						);
-					}
-					if (texId.IsValid())
-					{
-						material->SetTexture(texInfo.type, texId);
-						texInfo.path = texName;
-						LOG_INFO("[Material] Loaded embedded %s", texInfo.path.c_str());
-					}
-				}
-				else if (!texInfo.isEmbedded)
-				{
-					// 외부 텍스처
-					texId = mResourceManager->LoadTexture(texInfo.path, texInfo.type);
-					if (texId.IsValid())
-					{
-						material->SetTexture(texInfo.type, texId);
-						LOG_INFO(
-							"[Material] Loaded %s: %s",
-							Graphics::TextureTypeToString(texInfo.type),
-							texInfo.path.c_str()
-						);
-					}
-				}
-				// 실패 시 폴백
-				if (!texId.IsValid() && fallbackTexId.IsValid())
-				{
-					material->SetTexture(texInfo.type, fallbackTexId);
-				}
-			}
-		}
-		else
-		{
-			// 텍스처 없음 - baseColorFactor만 사용
-			LOG_DEBUG(
-				"[Material] Material[%zu] '%s' uses color only (no textures)",
-				matIndex, matData.name.c_str()
-			);
-
-			material->SetBaseColor(Math::Vector4(
-				matData.baseColorFactor.x,
-				matData.baseColorFactor.y,
-				matData.baseColorFactor.z,
-				matData.baseColorFactor.w
-			));
-			material->SetMetallic(matData.metallicFactor);
-			material->SetRoughness(matData.roughnessFactor);
-		}
-
-		// Descriptor 할당 (텍스처 없어도 필요)
-		if (!material->AllocateDescriptors(
-			GetDevice()->GetDevice(),
-			GetRenderer()->GetSrvDescriptorHeap(),
-			mResourceManager.get()
-		))
-		{
-			LOG_ERROR("[Material] Failed to allocate descriptors for: %s", matName.c_str());
-		}
-
-		outMaterialIds.push_back(matId);
-
-		LOG_DEBUG("[Material] Created material[%zu]: %s (ID: 0x%llX)", matIndex, matName.c_str(), matId.id);
-	}
-
-	LOG_INFO("[Material] Total %zu materials created", outMaterialIds.size());
-}
-
-//=============================================================================
-// 계층 모델 로딩 (Phase 4.5)
-//=============================================================================
-
-ModelHierarchyResult ModelViewerApp::CreateModelHierarchy(
-	const Framework::LoadedModelData& modelData,
-	const std::vector<Framework::ResourceId>& materialIds,
-	const Math::Vector3& rootPosition
-)
-{
-	ModelHierarchyResult result;
-	result.Clear();
-
-	if (modelData.nodes.empty())
-	{
-		LOG_ERROR("[Hierarchy] Model has no nodes");
-		return result;
-	}
-
-	LOG_INFO("[Hierarchy] Creating hierarchy from %zu nodes", modelData.nodes.size());
-
-	// TransformSystem 가져오기
-	auto* transformSystem = mSystemManager->GetSystem<ECS::TransformSystem>();
-	if (!transformSystem)
-	{
-		LOG_ERROR("[Hierarchy] TransformSystem not found");
-		return result;
-	}
-
-	// 1단계: 노드 인덱스 → Entity 매핑 테이블
-	std::vector<ECS::Entity> nodeToEntity(modelData.nodes.size());
-
-	// 2단계: 모든 노드에 대해 Entity 생성
-	for (size_t i = 0; i < modelData.nodes.size(); ++i)
-	{
-		const auto& node = modelData.nodes[i];
-
-		// Entity 생성
-		ECS::Entity entity = mRegistry->CreateEntity();
-		nodeToEntity[i] = entity;
-		result.allEntities.push_back(entity);
-
-		// Transform 분해
-		Framework::DecomposedTransform trs = Framework::ModelLoader::DecomposeMatrix(node.localTransform);
-
-		// 비균등 스케일 경고
-		if (trs.hasNonUniformScale)
-		{
-			LOG_WARN(
-				"[Hierarchy] Node '%s' has non-uniform scale (%.2f, %.2f, %.2f)",
-				node.name.c_str(), trs.scale.x, trs.scale.y, trs.scale.z
-			);
-		}
-
-		// TransformComponent 추가
-		ECS::TransformComponent transform;
-		transform.position = trs.position;
-		transform.rotation = trs.rotation;
-		transform.scale = trs.scale;
-		transform.eulerHint = trs.rotation.ToEuler();
-		mRegistry->AddComponent(entity, transform);
-
-		// HierarchyComponent 추가
-		ECS::HierarchyComponent hierarchy;
-		mRegistry->AddComponent(entity, hierarchy);
-
-		LOG_DEBUG(
-			"[Hierarchy] Node[%zu] '%s' -> Entity %u (meshes: %zu)",
-			i, node.name.c_str(), entity.id, node.meshIndices.size()
-		);
-	}
-
-	// 3단계: 부모-자식 관계 설정
-	ECS::Entity rootEntity = ECS::Entity::Invalid();
-
-	for (size_t i = 0; i < modelData.nodes.size(); ++i)
-	{
-		const auto& node = modelData.nodes[i];
-		ECS::Entity entity = nodeToEntity[i];
-
-		if (node.parentIndex >= 0 && node.parentIndex < static_cast<Core::int32>(nodeToEntity.size()))
-		{
-			// 부모가 있는 경우
-			ECS::Entity parentEntity = nodeToEntity[node.parentIndex];
-			transformSystem->SetParent(entity, parentEntity);
-		}
-		else
-		{
-			// 루트 노드 (parentIndex == -1)
-			transformSystem->SetParent(entity, ECS::Entity::Invalid());
-
-			// 첫 번째 루트를 메인 루트로 설정
-			if (!rootEntity.IsValid())
-			{
-				rootEntity = entity;
-			}
-		}
-	}
-
-	result.rootEntity = rootEntity;
-
-	// 4단계: 루트 위치 오프셋 적용
-	if (rootEntity.IsValid() && rootPosition != Math::Vector3::Zero())
-	{
-		transformSystem->SetPosition(rootEntity, rootPosition);
-	}
-
-	// 5단계: 메시/머티리얼 연결
-	for (size_t i = 0; i < modelData.nodes.size(); ++i)
-	{
-		const auto& node = modelData.nodes[i];
-		ECS::Entity entity = nodeToEntity[i];
-
-		if (node.meshIndices.empty())
-		{
-			// 피벗 노드 - 메시 없음
-			continue;
-		}
-
-		// 메시 생성 (소유권은 AssetManager로 이전)
-		std::string meshName = modelData.name + "_" + node.name + "_Mesh";
-
-		Framework::ResourceId meshId = CreateMeshFromNodeIndices(
-			node.meshIndices,
-			modelData,
-			meshName
-		);
-
-		if (!meshId.IsValid())
-		{
-			LOG_WARN("[Hierarchy] Failed to create mesh for node '%s'", node.name.c_str());
-			continue;
-		}
-
-		// MeshComponent 추가
-		ECS::MeshComponent meshComp;
-		meshComp.meshId = meshId;
-		mRegistry->AddComponent(entity, meshComp);
-
-		// MaterialComponent 추가
-		ECS::MaterialComponent matComp;
-		for (size_t j = 0; j < node.meshIndices.size() && j < ECS::MaterialComponent::MAX_MATERIALS; ++j)
-		{
-			Core::uint32 meshIdx = node.meshIndices[j];
-			if (meshIdx < modelData.meshes.size())
-			{
-				Core::int32 matIdx = modelData.meshes[meshIdx].materialIndex;
-				if (matIdx >= 0 && matIdx < static_cast<Core::int32>(materialIds.size()))
-				{
-					ECS::MaterialHelpers::SetMaterial(
-						matComp,
-						static_cast<Core::uint32>(j),
-						materialIds[matIdx]
-					);
-				}
-			}
-		}
-		mRegistry->AddComponent(entity, matComp);
-
-		// 렌더링 대상으로 등록
-		result.renderableEntities.push_back(entity);
-	}
-
-	LOG_INFO(
-		"[Hierarchy] Created %zu entities (%zu renderable) from '%s'",
-		result.GetTotalCount(),
-		result.GetRenderableCount(),
-		modelData.name.c_str()
-	);
-
-	return result;
-}
-
-Framework::ResourceId ModelViewerApp::CreateMeshFromNodeIndices(
-	const std::vector<Core::uint32>& meshIndices,
-	const Framework::LoadedModelData& modelData,
-	const std::string& meshName
-)
-{
-	if (meshIndices.empty())
-	{
-		return Framework::ResourceId::Invalid();
-	}
-
-	// 단일 메시 최적화
-	if (meshIndices.size() == 1)
-	{
-		Core::uint32 meshIdx = meshIndices[0];
-		if (meshIdx >= modelData.meshes.size())
-		{
-			LOG_ERROR("[Hierarchy] Mesh index %u out of range", meshIdx);
-			return Framework::ResourceId::Invalid();
-		}
-
-		const auto& meshData = modelData.meshes[meshIdx];
-
-		auto meshAsset = std::make_unique<Framework::MeshAsset>();
-
-		// 데이터 복사 (const이므로 move 불가)
-		std::vector<Graphics::StandardVertex> vertices = meshData.vertices;
-		std::vector<Core::uint32> indices = meshData.indices;
-		std::vector<Graphics::SubmeshInfo> submeshes = meshData.submeshes;
-
-		meshAsset->SetVertices(std::move(vertices));
-		meshAsset->SetIndices(std::move(indices));
-		meshAsset->SetSubmeshes(std::move(submeshes));
-		meshAsset->SetAABB(meshData.aabbMin, meshData.aabbMax);
-		meshAsset->SetDataPolicy(Framework::MeshDataPolicy::ReleaseAfterUpload);
-
-		return mResourceManager->CreateMeshFromAsset(meshName, std::move(meshAsset));
-	}
-
-	// 멀티 메시 병합
-	std::vector<Graphics::StandardVertex> allVertices;
-	std::vector<Core::uint32> allIndices;
-	std::vector<Graphics::SubmeshInfo> submeshes;
-
-	Math::Vector3 aabbMin = { FLT_MAX, FLT_MAX, FLT_MAX };
-	Math::Vector3 aabbMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-	Core::uint32 baseVertex = 0;
-	Core::uint32 baseIndex = 0;
-
-	for (size_t i = 0; i < meshIndices.size(); ++i)
-	{
-		Core::uint32 meshIdx = meshIndices[i];
-		if (meshIdx >= modelData.meshes.size())
-		{
-			LOG_WARN("[Hierarchy] Mesh index %u out of range, skipping", meshIdx);
-			continue;
-		}
-
-		const auto& meshData = modelData.meshes[meshIdx];
-
-		// 서브메시 정보
-		Graphics::SubmeshInfo submesh;
-		submesh.startIndex = baseIndex;
-		submesh.indexCount = static_cast<Core::uint32>(meshData.indices.size());
-		submesh.baseVertex = baseVertex;
-		submesh.materialIndex = static_cast<Core::uint32>(i);
-		submeshes.push_back(submesh);
-
-		// 버텍스/인덱스 추가
-		allVertices.insert(allVertices.end(), meshData.vertices.begin(), meshData.vertices.end());
-		allIndices.insert(allIndices.end(), meshData.indices.begin(), meshData.indices.end());
-
-		// AABB 병합
-		aabbMin.x = std::min(aabbMin.x, meshData.aabbMin.x);
-		aabbMin.y = std::min(aabbMin.y, meshData.aabbMin.y);
-		aabbMin.z = std::min(aabbMin.z, meshData.aabbMin.z);
-		aabbMax.x = std::max(aabbMax.x, meshData.aabbMax.x);
-		aabbMax.y = std::max(aabbMax.y, meshData.aabbMax.y);
-		aabbMax.z = std::max(aabbMax.z, meshData.aabbMax.z);
-
-		baseVertex += static_cast<Core::uint32>(meshData.vertices.size());
-		baseIndex += static_cast<Core::uint32>(meshData.indices.size());
-	}
-
-	auto meshAsset = std::make_unique<Framework::MeshAsset>();
-	meshAsset->SetVertices(std::move(allVertices));
-	meshAsset->SetIndices(std::move(allIndices));
-	meshAsset->SetSubmeshes(std::move(submeshes));
-	meshAsset->SetAABB(aabbMin, aabbMax);
-	meshAsset->SetDataPolicy(Framework::MeshDataPolicy::ReleaseAfterUpload);
-
-	return mResourceManager->CreateMeshFromAsset(meshName, std::move(meshAsset));
-}
-
 
 //=============================================================================
 // Update / Render
