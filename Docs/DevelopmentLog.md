@@ -26,6 +26,60 @@
 
 ---
 
+## 2026-01-13 - Phase 4.5.1: 아키텍처 리팩토링
+
+### Overview
+
+ModelViewerApp의 계층 빌드 로직을 Framework 레이어로 분리. Asset/Resource 분리 원칙 현황 점검.
+
+### Tasks
+
+- [x] HierarchyBuilder 클래스 신규 생성
+- [x] MeshAsset::MergeFromMeshData 정적 팩토리 추가
+- [x] ResourceManager::CreateMaterialsFromModelData 추가
+- [x] ModelViewerApp 리팩토링
+
+### Changes
+
+**코드 분리**
+
+| 분리 대상 | 이동 위치 |
+|----------|----------|
+| `CreateModelHierarchy` | `HierarchyBuilder::Build` |
+| `CreateMeshFromNodeIndices` | `HierarchyBuilder` 내부 |
+| `CreateMaterialsFromModelData` | `ResourceManager` 메서드 |
+| 메시 병합 로직 | `MeshAsset::MergeFromMeshData` |
+
+**파일 변경**
+
+| 파일 | 변경 |
+|------|------|
+| HierarchyBuilder.h/cpp | 신규 생성 |
+| MeshAsset.h/cpp | MergeFromMeshData 추가 |
+| ResourceManager.h/cpp | CreateMaterialsFromModelData 추가 |
+| ModelViewerApp.h/cpp | 분리된 함수 제거 (약 420줄 감소) |
+
+### Asset/Resource 분리 현황
+
+| 리소스 | 상태 | 비고 |
+|--------|------|------|
+| Mesh | 준수 | MeshAsset → MeshResource 흐름 정립 |
+| Texture | 부분적 | 메타데이터만 Asset (실용적 타협) |
+| Material | 미흡 | MaterialAsset 미사용, Phase 5 전 개선 필요 |
+
+### Results
+
+- ModelViewerApp 단순화 (약 420줄 감소)
+- HierarchyBuilder 재사용 가능
+- Mesh 파이프라인 Asset/Resource 원칙 확인
+
+### Next Steps
+
+- [ ] Material 파이프라인 정리 (MaterialAsset 활용)
+- [ ] Phase 5: PBR Pipeline
+
+---
+
 ## 2026-01-12 - Phase 4.5: Hierarchical Model Loading
 
 ### Overview
@@ -1063,4 +1117,4 @@ template<> ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const;
 
 ---
 
-**최종 업데이트**: 2025-01-07
+**최종 업데이트**: 2026-01-13
