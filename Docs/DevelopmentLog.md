@@ -26,7 +26,103 @@
 
 ---
 
-## 2026-01-13 - Phase 4.5.1: 아키텍처 리팩토링
+## 2026-01-12 - Phase 4 Refactor 02: ModelAsset/AnimationAsset 제거
+
+### Overview
+
+Asset 시스템 정리. ModelAsset이 "슈퍼 Asset" 안티패턴에 해당하여 제거. LoadedModelData와 HierarchyBuilder가 역할을 대체하므로 중복 구조 정리.
+
+### Tasks
+
+- [x] ModelAsset, AnimationAsset 클래스 제거
+- [x] AssetManager에서 관련 코드 제거
+- [x] AssetTypes 열거형 정리
+- [x] AssetHandle 예제 코드 수정
+- [x] ModelViewerApp UI 정리
+
+### Decisions
+
+**ModelAsset 제거 근거**
+
+| 문제점 | 설명 |
+|--------|------|
+| 사용처 없음 | HierarchyBuilder가 모델→ECS 변환 담당 |
+| 빈 껍데기 | 인덱스만 보유, 실제 데이터 없음 |
+| TODO 방치 | CreateDefaultAssets()에서 미구현 상태 |
+
+**분리 아키텍처 유지**
+```
+LoadedModelData (임시)
+    ↓ HierarchyBuilder::Build()
+개별 Asset/Resource로 분해
+├─ MeshAsset + MeshResource
+├─ TextureAsset + TextureResource
+├─ MaterialResource
+└─ ECS Entities (계층 구조)
+```
+
+**향후 재도입 가능**
+- Hot Reload 필요 시 → 메타데이터 버전으로 재도입
+- 대량 인스턴싱 필요 시 → ModelRecipe 패턴 도입
+
+### Files Modified
+
+| 파일 | 변경 내용 |
+|------|----------|
+| AssetManager.cpp | ModelAsset/AnimationAsset include 제거, mDefaultModelId 제거, 기본 Asset 4→3개 |
+| AssetManager.h | mDefaultModelId 멤버 제거, GetDefaultAssetId<ModelAsset> 특수화 제거 |
+| AssetTypes.h | AssetType::Model, Animation 열거형 제거 |
+| AssetHandle.h | 예제 코드 ModelAsset→MeshAsset 변경 |
+| ModelViewerApp.cpp | Default Asset 패널에서 Model 표시 제거 |
+
+### Files Deleted
+
+| 파일 | 비고 |
+|------|------|
+| ModelAsset.h/cpp | 사용처 없음, HierarchyBuilder가 대체 |
+| AnimationAsset.h/cpp | Phase 4 범위 외, 추후 재도입 가능 |
+
+### Results
+
+**정리된 Asset 시스템**
+```
+AssetManager (CPU)
+├─ MeshAsset      (정점/인덱스, GPU 업로드 후 해제 가능)
+├─ TextureAsset   (메타데이터만)
+└─ MaterialAsset  (Phase 5 PBR 대비)
+
+ResourceManager (GPU)
+├─ MeshResource
+├─ TextureResource
+└─ MaterialResource
+```
+
+**기대 효과**
+- 미사용 코드 제거로 유지보수성 향상
+- Asset/Resource 역할 명확화
+- Phase 5 PBR 진입 전 코드베이스 정리
+
+### Notes
+
+**SetupSharedMaterial() 폴백 추가**
+```cpp
+if (albedoTexId.IsValid())
+    material->SetTexture(TextureType::Albedo, albedoTexId);
+else
+    material->SetTexture(TextureType::Albedo, mResourceManager->GetFallbackTexture());
+```
+- 텍스처 로드 실패 시 마젠타 폴백으로 문제 시각화
+- Normal Map 폴백은 Phase 5에서 평탄 노말 텍스처로 개선 예정
+
+### Next Steps
+
+- [ ] Phase 5: PBR Pipeline
+- [ ] IBL (Image-Based Lighting)
+- [ ] Normal Map 전용 폴백 텍스처 (128, 128, 255)
+
+---
+
+## 2026-01-12 - Phase 4 Refactor 01: 아키텍처 리팩토링
 
 ### Overview
 
@@ -1117,4 +1213,4 @@ template<> ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const;
 
 ---
 
-**최종 업데이트**: 2026-01-13
+**최종 업데이트**: 2026-01-12
