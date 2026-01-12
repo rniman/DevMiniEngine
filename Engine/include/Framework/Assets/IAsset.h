@@ -15,7 +15,7 @@ namespace Framework
 	/**
 	 * @brief Asset의 기본 인터페이스
 	 *
-	 * 모든 Asset(MeshAsset, TextureAsset, ModelAsset 등)은 이 인터페이스를 구현합니다.
+	 * 모든 Asset(MeshAsset, TextureAsset 등)은 이 인터페이스를 구현합니다.
 	 * Asset은 파일에서 로드된 CPU 측 데이터를 보유하며,
 	 * ResourceManager를 통해 GPU Resource로 변환됩니다.
 	 *

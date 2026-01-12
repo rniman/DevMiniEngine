@@ -233,13 +233,11 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\src\Framework\Application.cpp" />
-    <ClCompile Include="..\src\Framework\Assets\AnimationAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\AssetManager.cpp" />
     <ClCompile Include="..\src\Framework\Assets\Hierarchybuilder.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MaterialAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MeshAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\MikkTSpaceCalculator.cpp" />
-    <ClCompile Include="..\src\Framework\Assets\ModelAsset.cpp" />
     <ClCompile Include="..\src\Framework\Assets\ModelLoader.cpp" />
     <ClCompile Include="..\src\Framework\Assets\TextureAsset.cpp" />
     <ClCompile Include="..\src\Framework\DebugUI\DebugVisualizationPanel.cpp" />
@@ -257,7 +255,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Framework\Application.h" />
-    <ClInclude Include="..\include\Framework\Assets\AnimationAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\AssetHandle.h" />
     <ClInclude Include="..\include\Framework\Assets\AssetManager.h" />
     <ClInclude Include="..\include\Framework\Assets\AssetTypes.h" />
@@ -266,7 +263,6 @@
     <ClInclude Include="..\include\Framework\Assets\MaterialAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\MeshAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\MikkTSpaceCalculator.h" />
-    <ClInclude Include="..\include\Framework\Assets\ModelAsset.h" />
     <ClInclude Include="..\include\Framework\Assets\ModelLoader.h" />
     <ClInclude Include="..\include\Framework\Assets\TextureAsset.h" />
     <ClInclude Include="..\include\Framework\DebugUI\DebugVisualizationPanel.h" />

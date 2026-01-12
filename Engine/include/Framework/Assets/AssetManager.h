@@ -27,8 +27,6 @@ namespace Framework
 	class MeshAsset;
 	class TextureAsset;
 	class MaterialAsset;
-	class ModelAsset;
-	class AnimationAsset;
 
 	//=========================================================================
 	// 타입 → AssetType 매핑 (컴파일 타임)
@@ -49,8 +47,6 @@ namespace Framework
 	template<> constexpr AssetType GetAssetTypeFor<MeshAsset>() { return AssetType::Mesh; }
 	template<> constexpr AssetType GetAssetTypeFor<TextureAsset>() { return AssetType::Texture; }
 	template<> constexpr AssetType GetAssetTypeFor<MaterialAsset>() { return AssetType::Material; }
-	template<> constexpr AssetType GetAssetTypeFor<ModelAsset>() { return AssetType::Model; }
-	template<> constexpr AssetType GetAssetTypeFor<AnimationAsset>() { return AssetType::Animation; }
 
 	/**
 	 * @brief Asset 엔트리 (내부 관리용)
@@ -273,7 +269,7 @@ namespace Framework
 		/**
 		 * @brief 기본 Asset의 ResourceId 반환
 		 *
-		 * @tparam T Asset 타입 (MeshAsset, TextureAsset, MaterialAsset, ModelAsset)
+		 * @tparam T Asset 타입 (MeshAsset, TextureAsset, MaterialAsset)
 		 * @return 기본 Asset의 ResourceId
 		 *
 		 * @note 로드 실패 시 폴백으로 사용
@@ -421,7 +417,6 @@ namespace Framework
 		ResourceId mDefaultMeshId;
 		ResourceId mDefaultTextureId;
 		ResourceId mDefaultMaterialId;
-		ResourceId mDefaultModelId;
 
 		bool mInitialized = false;
 	};
@@ -579,6 +574,5 @@ namespace Framework
 	template<> ResourceId AssetManager::GetDefaultAssetId<MeshAsset>() const;
 	template<> ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const;
 	template<> ResourceId AssetManager::GetDefaultAssetId<MaterialAsset>() const;
-	template<> ResourceId AssetManager::GetDefaultAssetId<ModelAsset>() const;
 
 } // namespace Framework

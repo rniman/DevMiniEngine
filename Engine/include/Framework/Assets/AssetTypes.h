@@ -22,8 +22,8 @@ namespace Framework
 		Mesh = 0,		// 단일 메시 데이터
 		Texture,		// 텍스처 이미지
 		Material,		// 머티리얼 정의
-		Model,			// glTF 모델 (메시 + 머티리얼 + 계층구조)
-		Animation,		// 애니메이션 데이터 (Phase 6+)
+		// Model,			// glTF 모델 (메시 + 머티리얼 + 계층구조)
+		// Animation,		// 애니메이션 데이터 (Phase 6+)
 
 		Count,
 		Unknown
@@ -74,10 +74,10 @@ namespace Framework
 			return "Texture";
 		case AssetType::Material:
 			return "Material";
-		case AssetType::Model:
-			return "Model";
-		case AssetType::Animation:
-			return "Animation";
+		//case AssetType::Model:
+		//	return "Model";
+		//case AssetType::Animation:
+		//	return "Animation";
 		default:
 			return "Unknown";
 		}
@@ -127,9 +127,9 @@ namespace Framework
 
 		// 확장자 매핑 테이블
 		static const std::unordered_map<std::string, AssetType> sExtensionMap = {
-			// Model
-			{ ".gltf", AssetType::Model },
-			{ ".glb",  AssetType::Model },
+			// // Model
+			//{ ".gltf", AssetType::Model },
+			//{ ".glb",  AssetType::Model },
 
 			// Texture
 			{ ".dds",  AssetType::Texture },

@@ -21,7 +21,6 @@
 namespace Framework
 {
 	// 전방 선언
-	class ModelAsset;
 	class AssetManager;
 
 	//=========================================================================

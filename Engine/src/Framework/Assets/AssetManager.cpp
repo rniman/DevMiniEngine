@@ -9,8 +9,6 @@
 #include "Framework/Assets/MeshAsset.h"
 #include "Framework/Assets/TextureAsset.h"
 #include "Framework/Assets/MaterialAsset.h"
-#include "Framework/Assets/ModelAsset.h"
-#include "Framework/Assets/AnimationAsset.h"
 #include "Framework/Resources/ResourceManager.h"
 #include "Core/Hash.h"
 #include "Core/Logging/LogMacros.h"
@@ -25,7 +23,6 @@ namespace Framework
 		constexpr const char* MESH = "__default__/mesh";
 		constexpr const char* TEXTURE = "__default__/texture";
 		constexpr const char* MATERIAL = "__default__/material";
-		constexpr const char* MODEL = "__default__/model";
 	}
 
 	//=========================================================================
@@ -50,12 +47,6 @@ namespace Framework
 		return mDefaultMaterialId;
 	}
 
-	template<>
-	ResourceId AssetManager::GetDefaultAssetId<ModelAsset>() const
-	{
-		return mDefaultModelId;
-	}
-
 	//=========================================================================
 	// 생성자/소멸자
 	//=========================================================================
@@ -66,7 +57,6 @@ namespace Framework
 		, mDefaultMeshId(ResourceId::Invalid())
 		, mDefaultTextureId(ResourceId::Invalid())
 		, mDefaultMaterialId(ResourceId::Invalid())
-		, mDefaultModelId(ResourceId::Invalid())
 		, mInitialized(false)
 	{
 	}
@@ -125,7 +115,6 @@ namespace Framework
 		mDefaultMeshId = ResourceId::Invalid();
 		mDefaultTextureId = ResourceId::Invalid();
 		mDefaultMaterialId = ResourceId::Invalid();
-		mDefaultModelId = ResourceId::Invalid();
 
 		mInitialized = false;
 
@@ -200,26 +189,6 @@ namespace Framework
 			mAssetPaths[mDefaultMaterialId] = DefaultAssetPaths::MATERIAL;
 
 			LOG_DEBUG("[AssetManager] Created default MaterialAsset (ID: 0x%llX)", mDefaultMaterialId.id);
-		}
-
-		// 기본 Model Asset (마젠타 Cube 모델)
-		{
-			mDefaultModelId = PathToId(DefaultAssetPaths::MODEL);
-
-			auto asset = std::make_unique<ModelAsset>();
-			// TODO: Phase 4.2 - 기본 Mesh/Material 연결
-			// asset->AddMeshIndex(0);  // 기본 Mesh 참조
-
-			AssetEntry entry;
-			entry.asset = std::move(asset);
-			entry.state = AssetState::Loaded;
-			entry.refCount = 1;
-			entry.isDefault = true;
-
-			mAssetCache[mDefaultModelId] = std::move(entry);
-			mAssetPaths[mDefaultModelId] = DefaultAssetPaths::MODEL;
-
-			LOG_DEBUG("[AssetManager] Created default ModelAsset (ID: 0x%llX)", mDefaultModelId.id);
 		}
 
 		LOG_INFO("[AssetManager] Default assets created (4 assets)");

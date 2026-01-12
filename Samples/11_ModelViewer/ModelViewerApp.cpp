@@ -10,7 +10,6 @@
 #include "Framework/Assets/MaterialAsset.h"
 #include "Framework/Assets/MeshAsset.h"
 #include "Framework/Assets/MikkTSpaceCalculator.h"
-#include "Framework/Assets/ModelAsset.h"
 #include "Framework/Assets/ModelLoader.h"
 #include "Framework/Assets/TextureAsset.h"
 #include "Framework/Assets/HierarchyBuilder.h"
@@ -674,6 +673,7 @@ void ModelViewerApp::SetupSharedMaterial()
 	}
 	else
 	{
+		material->SetTexture(Graphics::TextureType::Albedo, mResourceManager->GetFallbackTexture());
 		LOG_WARN("[Material] Failed to load Albedo texture - using default");
 	}
 
@@ -690,6 +690,7 @@ void ModelViewerApp::SetupSharedMaterial()
 	}
 	else
 	{
+		material->SetTexture(Graphics::TextureType::Normal, mResourceManager->GetFallbackTexture());
 		LOG_WARN("[Material] Failed to load Normal texture - using default");
 	}
 
@@ -994,7 +995,6 @@ void ModelViewerApp::RenderAssetManagerPanel()
 		ImGui::Text("Mesh:     0x%llX", mAssetManager->GetDefaultAssetId<MeshAsset>().id);
 		ImGui::Text("Texture:  0x%llX", mAssetManager->GetDefaultAssetId<TextureAsset>().id);
 		ImGui::Text("Material: 0x%llX", mAssetManager->GetDefaultAssetId<MaterialAsset>().id);
-		ImGui::Text("Model:    0x%llX", mAssetManager->GetDefaultAssetId<ModelAsset>().id);
 	}
 
 	// 로드된 Asset 목록

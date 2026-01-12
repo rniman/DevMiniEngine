@@ -26,10 +26,10 @@ namespace Framework
 	 *       AssetHandle은 참조만 보유합니다.
 	 *
 	 * @example
-	 * AssetHandle<ModelAsset> model = assetManager.Load<ModelAsset>("Model.gltf");
-	 * if (model.IsLoaded())
+	 * AssetHandle<MeshAsset> mesh = assetManager.Load<MeshAsset>("Mesh.gltf");
+	 * if (mesh.IsLoaded())
 	 * {
-	 *     model->GetMeshCount();
+	 *     mesh->GetVertexCount();
 	 * }
 	 */
 	template<typename T>
