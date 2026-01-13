@@ -615,18 +615,26 @@ void ModelViewerApp::SetupProceduralSphereMesh(Core::uint32 segments, Core::uint
 
 void ModelViewerApp::SetupLoadedSphereMesh()
 {
-	// glTF 모델 로드 (단일 메시)
-	Framework::LoadedMeshData meshData;
-	if (!Framework::ModelLoader::LoadMesh(SPHERE_MODEL_PATH, meshData))
+	// glTF 모델 로드 (LoadModel로 변경 - ModelData 보존)
+	if (!Framework::ModelLoader::LoadModel(SPHERE_MODEL_PATH, mLoadedSphereModelData))
 	{
 		LOG_ERROR("[Mesh] Failed to load sphere model: %s", SPHERE_MODEL_PATH);
 		mLoadedMeshValid = false;
 		return;
 	}
 
+	if (mLoadedSphereModelData.meshes.empty())
+	{
+		LOG_ERROR("[Mesh] No meshes in sphere model");
+		mLoadedMeshValid = false;
+		return;
+	}
+
+	// 첫 번째 메시 데이터 사용
+	auto& meshData = mLoadedSphereModelData.meshes[0];
+
 	// MeshAsset 생성 및 데이터 설정
 	auto meshAsset = std::make_unique<Framework::MeshAsset>();
-
 	meshAsset->SetVertices(std::move(meshData.vertices));
 	meshAsset->SetIndices(std::move(meshData.indices));
 	meshAsset->SetSubmeshes(std::move(meshData.submeshes));
@@ -647,7 +655,6 @@ void ModelViewerApp::SetupLoadedSphereMesh()
 	}
 
 	mLoadedMeshValid = true;
-
 	LOG_INFO("[Mesh] Loaded sphere mesh via Asset Pipeline");
 }
 
@@ -989,40 +996,48 @@ void ModelViewerApp::RenderAssetManagerPanel()
 	ImGui::Text("Loaded Assets: %u", mAssetManager->GetLoadedAssetCount());
 	ImGui::Separator();
 
-	// 기본 Asset ID
-	if (ImGuiBeginSection("Default Assets"))
-	{
-		ImGui::Text("Mesh:     0x%llX", mAssetManager->GetDefaultAssetId<MeshAsset>().id);
-		ImGui::Text("Texture:  0x%llX", mAssetManager->GetDefaultAssetId<TextureAsset>().id);
-		ImGui::Text("Material: 0x%llX", mAssetManager->GetDefaultAssetId<MaterialAsset>().id);
-	}
-
 	// 로드된 Asset 목록
 	if (ImGuiBeginSection("Loaded Assets"))
 	{
-		auto infos = mAssetManager->GetLoadedAssetInfos(true);
+		auto infos = mAssetManager->GetLoadedAssetInfos();
 
 		ImGui::BeginChild("AssetList", ImVec2(0, 120), true);
 		for (const auto& info : infos)
 		{
 			const char* typeName = AssetTypeToString(info.type);
 			const char* stateName = AssetStateToString(info.state);
-			bool isDefault = mAssetManager->IsDefaultAsset(mAssetManager->FindByPath(info.path));
 
-			// 기본 Asset은 파란색
-			if (isDefault)
-			{
-				ImGui::TextColored(UIColor::Info, "[%s] %s", typeName, info.path.c_str());
-			}
-			else
-			{
-				ImGui::Text("[%s] %s", typeName, info.path.c_str());
-			}
+			ImGui::Text("[%s] %s", typeName, info.path.c_str());
 
 			ImGui::SameLine();
 			ImGui::TextDisabled("(ref=%u, %s)", info.refCount, stateName);
 		}
 		ImGui::EndChild();
+	}
+
+	// RenderAssetManagerPanel() 내부에 추가
+	if (ImGuiBeginSection("Loaded Meshes AABB"))
+	{
+		for (const auto& info : mAssetManager->GetLoadedAssetInfos())
+		{
+			if (info.type != Framework::AssetType::Mesh)
+				continue;
+
+			ResourceId id = mAssetManager->FindByPath(info.path);
+			auto* mesh = mAssetManager->GetMeshAsset(id);
+			if (!mesh)
+				continue;
+
+			if (ImGui::TreeNode(info.path.c_str()))
+			{
+				Math::Vector3 min = mesh->GetAABBMin();
+				Math::Vector3 max = mesh->GetAABBMax();
+
+				ImGui::Text("Min: (%.2f, %.2f, %.2f)", min.x, min.y, min.z);
+				ImGui::Text("Max: (%.2f, %.2f, %.2f)", max.x, max.y, max.z);
+				ImGui::TreePop();
+			}
+		}
 	}
 
 	// 유틸리티 버튼
@@ -1096,31 +1111,161 @@ void ModelViewerApp::RenderSphereControlPanel()
 }
 
 //=============================================================================
-// Model Info 패널 - 헬퍼 함수
+// Model Inspector 헬퍼 함수
 //=============================================================================
 
-void ModelViewerApp::RenderModelInfoPanelSummary()
+const Framework::LoadedModelData* ModelViewerApp::GetSelectedModelData() const
 {
-	ImGui::Text("Model: %s", mHelmetModelData.name.c_str());
+	switch (mSelectedModel)
+	{
+	case SelectedModel::LoadedSphere:
+		return &mLoadedSphereModelData;
+	case SelectedModel::Helmet:
+		return &mHelmetModelData;
+	case SelectedModel::Cube:
+		return &mCubeModelData;
+	case SelectedModel::Engine:
+		return &mEngineModelData;
+	default:
+		return nullptr;  // ProceduralSphere는 LoadedModelData 없음
+	}
+}
+
+Framework::ResourceId ModelViewerApp::GetSelectedMeshId() const
+{
+	ECS::Entity entity = ECS::Entity::Invalid();
+
+	switch (mSelectedModel)
+	{
+	case SelectedModel::ProceduralSphere:
+		entity = mProceduralSphereEntity;
+		break;
+	case SelectedModel::LoadedSphere:
+		entity = mLoadedSphereEntity;
+		break;
+	case SelectedModel::Helmet:
+		entity = mHelmetEntity;
+		break;
+	case SelectedModel::Cube:
+		entity = mCubeEntity;
+		break;
+	case SelectedModel::Engine:
+		entity = mEngineEntity;
+		break;
+	default:
+		return Framework::ResourceId::Invalid();
+	}
+
+	if (!entity.IsValid() || !mRegistry)
+	{
+		return Framework::ResourceId::Invalid();
+	}
+
+	// Entity의 MeshComponent에서 meshId 조회
+	auto* meshComp = mRegistry->GetComponent<ECS::MeshComponent>(entity);
+	if (meshComp)
+	{
+		return meshComp->meshId;
+	}
+
+	// Root Entity에 MeshComponent 없으면 첫 번째 자식 확인 (Engine 같은 계층 구조)
+	auto* hierarchy = mRegistry->GetComponent<ECS::HierarchyComponent>(entity);
+	if (hierarchy && hierarchy->children[0].IsValid())
+	{
+		auto* childMesh = mRegistry->GetComponent<ECS::MeshComponent>(hierarchy->children[0]);
+		if (childMesh)
+		{
+			return childMesh->meshId;
+		}
+	}
+
+	return Framework::ResourceId::Invalid();
+}
+
+bool ModelViewerApp::IsSelectedModelValid() const
+{
+	switch (mSelectedModel)
+	{
+	case SelectedModel::ProceduralSphere:
+		return mProceduralMeshId.IsValid();
+	case SelectedModel::LoadedSphere:
+		return mLoadedMeshValid;
+	case SelectedModel::Helmet:
+		return mHelmetMeshValid;
+	case SelectedModel::Cube:
+		return mCubeMeshValid;
+	case SelectedModel::Engine:
+		return mEngineMeshValid;
+	default:
+		return false;
+	}
+}
+
+const char* ModelViewerApp::GetSelectedModelName() const
+{
+	switch (mSelectedModel)
+	{
+	case SelectedModel::ProceduralSphere:
+		return "Procedural Sphere";
+	case SelectedModel::LoadedSphere:
+		return "Loaded Sphere";
+	case SelectedModel::Helmet:
+		return "DamagedHelmet";
+	case SelectedModel::Cube:
+		return "MultiMaterialCube";
+	case SelectedModel::Engine:
+		return "2CylinderEngine";
+	default:
+		return "Unknown";
+	}
+}
+
+//=============================================================================
+// Model Info 패널 - 섹션별 렌더링
+//=============================================================================
+
+void ModelViewerApp::RenderModelInfoPanelSummary(const Framework::LoadedModelData* modelData)
+{
+	if (!modelData)
+	{
+		return;
+	}
+
+	ImGui::Text("Model: %s", modelData->name.c_str());
 	ImGui::Text(
 		"Meshes: %zu | Materials: %zu | Nodes: %zu",
-		mHelmetModelData.meshes.size(),
-		mHelmetModelData.materials.size(),
-		mHelmetModelData.nodes.size()
+		modelData->meshes.size(),
+		modelData->materials.size(),
+		modelData->nodes.size()
 	);
 	ImGui::Text(
 		"Vertices: %u | Indices: %u",
-		mHelmetModelData.GetTotalVertexCount(),
-		mHelmetModelData.GetTotalIndexCount()
+		modelData->GetTotalVertexCount(),
+		modelData->GetTotalIndexCount()
 	);
 	ImGui::Text(
 		"Textures: %u (Embedded: %u)",
-		mHelmetModelData.GetTotalTextureCount(),
-		mHelmetModelData.GetEmbeddedTextureCount()
+		modelData->GetTotalTextureCount(),
+		modelData->GetEmbeddedTextureCount()
 	);
 }
 
-void ModelViewerApp::RenderModelInfoPanelAssetPipeline()
+void ModelViewerApp::RenderModelInfoPanelProceduralInfo()
+{
+	ImGui::Text("Type: Procedural Mesh");
+	ImGui::Text("Generator: PrimitiveGenerator::CreateUVSphere");
+	ImGui::Text("Tangents: MikkTSpace");
+	ImGui::Separator();
+
+	ImGui::Text("Segments: %u", mSphereSegments);
+	ImGui::Text("Rings: %u", mSphereRings);
+
+	Core::uint32 vertCount = (mSphereSegments + 1) * (mSphereRings + 1);
+	Core::uint32 triCount = mSphereSegments * mSphereRings * 2;
+	ImGui::Text("Vertices: %u | Triangles: %u", vertCount, triCount);
+}
+
+void ModelViewerApp::RenderModelInfoPanelAssetPipeline(Framework::ResourceId meshId)
 {
 	using namespace Framework;
 
@@ -1129,17 +1274,21 @@ void ModelViewerApp::RenderModelInfoPanelAssetPipeline()
 		return;
 	}
 
-	// MeshAsset은 이제 AssetManager가 소유
-	const MeshAsset* meshAsset = mAssetManager->GetMeshAsset(mHelmetMeshId);
-
-	bool hasSourceData = meshAsset && meshAsset->HasSourceData();
-	ImGuiTextStatus("Source Data", hasSourceData, "Retained", "Released");
-
-	if (!meshAsset)
+	if (!meshId.IsValid())
 	{
-		ImGui::TextDisabled("MeshAsset not available");
+		ImGui::TextDisabled("No MeshAsset available");
 		return;
 	}
+
+	const MeshAsset* meshAsset = mAssetManager->GetMeshAsset(meshId);
+	if (!meshAsset)
+	{
+		ImGui::TextDisabled("MeshAsset not found");
+		return;
+	}
+
+	bool hasSourceData = meshAsset->HasSourceData();
+	ImGuiTextStatus("Source Data", hasSourceData, "Retained", "Released");
 
 	// 인덱스 포맷
 	ImGui::Text(
@@ -1153,18 +1302,23 @@ void ModelViewerApp::RenderModelInfoPanelAssetPipeline()
 	ImGui::Text("Bounding Sphere: R=%.2f", meshAsset->GetBoundingSphereRadius());
 }
 
-void ModelViewerApp::RenderModelInfoPanelMaterials()
+void ModelViewerApp::RenderModelInfoPanelMaterials(const Framework::LoadedModelData* modelData)
 {
 	using namespace Framework;
+
+	if (!modelData || modelData->materials.empty())
+	{
+		return;
+	}
 
 	if (!ImGuiBeginSection("Materials"))
 	{
 		return;
 	}
 
-	for (size_t i = 0; i < mHelmetModelData.materials.size(); ++i)
+	for (size_t i = 0; i < modelData->materials.size(); ++i)
 	{
-		const auto& mat = mHelmetModelData.materials[i];
+		const auto& mat = modelData->materials[i];
 		ImGui::PushID(static_cast<int>(i));
 
 		if (ImGui::TreeNode("MaterialNode", "Material %zu: %s", i, mat.name.c_str()))
@@ -1194,46 +1348,93 @@ void ModelViewerApp::RenderModelInfoPanelMaterials()
 	}
 }
 
-void ModelViewerApp::RenderModelInfoPanelMeshes()
+void ModelViewerApp::RenderModelInfoPanelMeshes(
+	const Framework::LoadedModelData* modelData,
+	Framework::ResourceId meshId
+)
 {
 	using namespace Framework;
 
-	if (!ImGuiBeginSection("Meshes", false))  // 기본 접힘
+	if (!ImGuiBeginSection("Meshes", false))
 	{
 		return;
 	}
 
-	// MeshAsset은 이제 AssetManager가 소유
-	const MeshAsset* meshAsset = mAssetManager->GetMeshAsset(mHelmetMeshId);
+	const MeshAsset* meshAsset = meshId.IsValid()
+		? mAssetManager->GetMeshAsset(meshId)
+		: nullptr;
 
-	// 첫 번째 메시
-	if (meshAsset && !mHelmetModelData.meshes.empty())
+	// modelData가 있고 meshes가 비어있지 않을 때
+	if (modelData && !modelData->meshes.empty())
 	{
+		for (size_t i = 0; i < modelData->meshes.size(); ++i)
+		{
+			const auto& mesh = modelData->meshes[i];
+
+			if (i == 0 && meshAsset)
+			{
+				ImGui::Text(
+					"Mesh %zu: %s (%u verts, %u indices)",
+					i,
+					mesh.name.c_str(),
+					meshAsset->GetVertexCount(),
+					meshAsset->GetIndexCount()
+				);
+			}
+			else
+			{
+				ImGui::Text(
+					"Mesh %zu: %s (%zu verts, %zu indices)",
+					i,
+					mesh.name.c_str(),
+					mesh.vertices.size(),
+					mesh.indices.size()
+				);
+			}
+
+			ImGui::PushID(static_cast<int>(i));
+			if (ImGui::TreeNode("AABB"))
+			{
+				ImGui::Text("Min: (%.2f, %.2f, %.2f)", mesh.aabbMin.x, mesh.aabbMin.y, mesh.aabbMin.z);
+				ImGui::Text("Max: (%.2f, %.2f, %.2f)", mesh.aabbMax.x, mesh.aabbMax.y, mesh.aabbMax.z);
+				ImGui::TreePop();
+			}
+			ImGui::PopID();
+		}
+	}
+	else if (meshAsset)
+	{
+		// Procedural 또는 LoadedSphere (modelData 없거나 비어있음)
 		ImGui::Text(
-			"Mesh 0: %s (%u verts, %u indices)",
-			mHelmetModelData.meshes[0].name.c_str(),
+			"Mesh: %u verts, %u indices",
 			meshAsset->GetVertexCount(),
 			meshAsset->GetIndexCount()
 		);
-	}
 
-	// 나머지 메시
-	for (size_t i = 1; i < mHelmetModelData.meshes.size(); ++i)
+		// AABB 표시
+		if (ImGui::TreeNode("AABB"))
+		{
+			Math::Vector3 min = meshAsset->GetAABBMin();
+			Math::Vector3 max = meshAsset->GetAABBMax();
+			ImGui::Text("Min: (%.2f, %.2f, %.2f)", min.x, min.y, min.z);
+			ImGui::Text("Max: (%.2f, %.2f, %.2f)", max.x, max.y, max.z);
+			ImGui::TreePop();
+		}
+	}
+	else
 	{
-		const auto& mesh = mHelmetModelData.meshes[i];
-		ImGui::Text(
-			"Mesh %zu: %s (%zu verts, %zu indices)",
-			i,
-			mesh.name.c_str(),
-			mesh.vertices.size(),
-			mesh.indices.size()
-		);
+		ImGui::TextDisabled("No mesh data available");
 	}
 }
 
-void ModelViewerApp::RenderModelInfoPanelTextures()
+void ModelViewerApp::RenderModelInfoPanelTextures(const Framework::LoadedModelData* modelData)
 {
 	using namespace Framework;
+
+	if (!modelData)
+	{
+		return;
+	}
 
 	if (!ImGuiBeginSection("Loaded Textures", false))  // 기본 접힘
 	{
@@ -1248,7 +1449,7 @@ void ModelViewerApp::RenderModelInfoPanelTextures()
 
 	// 모든 머티리얼의 텍스처 수집
 	Core::uint32 textureCount = 0;
-	for (const auto& mat : mHelmetModelData.materials)
+	for (const auto& mat : modelData->materials)
 	{
 		for (const auto& tex : mat.textures)
 		{
@@ -1315,34 +1516,62 @@ void ModelViewerApp::RenderModelInfoPanelTextures()
 // Model Info 패널 - 메인
 //=============================================================================
 
+
 void ModelViewerApp::RenderModelInfoPanel()
 {
 	using namespace Framework;
 
-	ImGui::SetNextWindowSize(ImVec2(400, 450), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
 
-	if (!ImGui::Begin("Model Info (F6)", &mShowModelInfoPanel))
+	if (!ImGui::Begin("Model Inspector (F6)", &mShowModelInfoPanel))
 	{
 		ImGui::End();
 		return;
 	}
+
+	// 모델 선택 드롭다운
+	const char* modelNames[] = {
+		"Procedural Sphere",
+		"Loaded Sphere",
+		"DamagedHelmet",
+		"MultiMaterialCube",
+		"2CylinderEngine"
+	};
+
+	int selected = static_cast<int>(mSelectedModel);
+	if (ImGui::Combo("Model", &selected, modelNames, IM_ARRAYSIZE(modelNames)))
+	{
+		mSelectedModel = static_cast<SelectedModel>(selected);
+	}
+
+	ImGui::Separator();
 
 	// 모델 로드 실패 시
-	if (!mHelmetMeshValid)
+	if (!IsSelectedModelValid())
 	{
-		ImGui::TextColored(UIColor::Error, "DamagedHelmet not loaded");
-		ImGui::TextColored(UIColor::Disabled, "Place DamagedHelmet.glb in Assets/Models/");
+		ImGui::TextColored(UIColor::Error, "%s not loaded", GetSelectedModelName());
 		ImGui::End();
 		return;
 	}
 
-	// 각 섹션 렌더링
-	RenderModelInfoPanelSummary();
+	// Procedural Sphere는 별도 처리 (MeshAsset 없음)
+	if (mSelectedModel == SelectedModel::ProceduralSphere)
+	{
+		RenderModelInfoPanelProceduralInfo();
+		ImGui::End();
+		return;
+	}
+
+	// 로드된 모델
+	const LoadedModelData* modelData = GetSelectedModelData();
+	ResourceId meshId = GetSelectedMeshId();
+
+	RenderModelInfoPanelSummary(modelData);
 	ImGui::Separator();
-	RenderModelInfoPanelAssetPipeline();
-	RenderModelInfoPanelMaterials();
-	RenderModelInfoPanelTextures();
-	RenderModelInfoPanelMeshes();
+	RenderModelInfoPanelAssetPipeline(meshId);
+	RenderModelInfoPanelMaterials(modelData);
+	RenderModelInfoPanelTextures(modelData);
+	RenderModelInfoPanelMeshes(modelData, meshId);
 
 	ImGui::End();
 }

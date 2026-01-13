@@ -6,6 +6,7 @@
  * ResourceManager와 협력하여 Asset을 GPU Resource로 변환합니다.
  *
  * @note Phase 4.3: TextureAsset 메타데이터 관리 추가
+ * @note Phase 4.5: Default Asset 시스템 제거 (ResourceManager 폴백 사용)
  */
 #pragma once
 #include "Framework/Assets/AssetTypes.h"
@@ -56,8 +57,7 @@ namespace Framework
 		std::unique_ptr<IAsset> asset;
 		AssetState state = AssetState::Unloaded;
 		Core::uint32 refCount = 0;
-		bool isDefault = false;  // 기본 Asset 여부
-		// TODO: Phase 4.5 - Hot Reload용
+		// TODO: Hot Reload용
 		// std::filesystem::file_time_type lastModifiedTime;
 	};
 
@@ -70,6 +70,7 @@ namespace Framework
 	 * @note Phase 4.1: 동기 로딩만 구현, 비동기는 API만 정의
 	 * @note Phase 4.3: TextureAsset 메타데이터 관리
 	 * @note Asset은 CPU 데이터, GPU Resource 변환은 ResourceManager 담당
+	 * @note 폴백 텍스처는 ResourceManager::GetFallbackTexture() 사용
 	 */
 	class AssetManager
 	{
@@ -119,26 +120,13 @@ namespace Framework
 		ResourceId Load(const std::string& path);
 
 		/**
-		 * @brief Asset 로드, 실패 시 기본 Asset 반환
-		 *
-		 * @tparam T Asset 타입
-		 * @param path Asset 상대 경로
-		 * @return ResourceId (로드 실패 시 기본 Asset ID)
-		 *
-		 * @note 로드 실패 시 자동으로 기본 Asset으로 폴백
-		 * @note 호출 측에서 별도 에러 처리 불필요
-		 */
-		template<typename T>
-		ResourceId LoadOrDefault(const std::string& path);
-
-		/**
 		 * @brief Asset 비동기 로드 요청
 		 *
 		 * @tparam T Asset 타입
 		 * @param path Asset 상대 경로
 		 * @return ResourceId (즉시 반환, 로딩은 백그라운드)
 		 *
-		 * @note Phase 4.1: 내부적으로 동기 로딩, Phase 4.5에서 실제 비동기 구현
+		 * @note Phase 4.1: 내부적으로 동기 로딩, 향후 실제 비동기 구현
 		 */
 		template<typename T>
 		ResourceId LoadAsync(const std::string& path);
@@ -263,41 +251,6 @@ namespace Framework
 		const MeshAsset* GetMeshAsset(ResourceId id) const;
 
 		//=========================================================================
-		// 기본 Asset (Default Assets)
-		//=========================================================================
-
-		/**
-		 * @brief 기본 Asset의 ResourceId 반환
-		 *
-		 * @tparam T Asset 타입 (MeshAsset, TextureAsset, MaterialAsset)
-		 * @return 기본 Asset의 ResourceId
-		 *
-		 * @note 로드 실패 시 폴백으로 사용
-		 *       마젠타 색상으로 문제를 시각적으로 표시
-		 */
-		template<typename T>
-		ResourceId GetDefaultAssetId() const;
-
-		/**
-		 * @brief 기본 Asset 포인터 반환
-		 *
-		 * @tparam T Asset 타입
-		 * @return 기본 Asset 포인터
-		 */
-		template<typename T>
-		T* GetDefaultAsset();
-
-		template<typename T>
-		const T* GetDefaultAsset() const;
-
-		/**
-		 * @brief Asset이 기본 Asset인지 확인
-		 * @param id ResourceId
-		 * @return 기본 Asset이면 true
-		 */
-		bool IsDefaultAsset(ResourceId id) const;
-
-		//=========================================================================
 		// Asset 해제
 		//=========================================================================
 
@@ -305,8 +258,6 @@ namespace Framework
 		 * @brief 특정 Asset 강제 해제
 		 * @param id ResourceId
 		 * @return 해제 성공 여부
-		 *
-		 * @note 기본 Asset은 해제할 수 없음
 		 */
 		bool Unload(ResourceId id);
 
@@ -317,13 +268,11 @@ namespace Framework
 		 * 씬 전환 시 호출하면 효과적입니다.
 		 *
 		 * @return 해제된 Asset 개수
-		 *
-		 * @note 기본 Asset은 해제되지 않음
 		 */
 		Core::uint32 UnloadUnusedAssets();
 
 		/**
-		 * @brief 모든 Asset 해제 (기본 Asset 제외)
+		 * @brief 모든 Asset 해제
 		 */
 		void Clear();
 
@@ -366,15 +315,14 @@ namespace Framework
 		const std::string& GetAssetRoot() const { return mAssetRoot; }
 
 		/**
-		 * @brief 로드된 Asset 개수 반환 (기본 Asset 제외)
+		 * @brief 로드된 Asset 개수 반환
 		 */
 		Core::uint32 GetLoadedAssetCount() const;
 
 		/**
 		 * @brief 모든 로드된 Asset 정보 반환 (디버그/UI용)
-		 * @param includeDefaults 기본 Asset 포함 여부
 		 */
-		std::vector<AssetInfo> GetLoadedAssetInfos(bool includeDefaults = false) const;
+		std::vector<AssetInfo> GetLoadedAssetInfos() const;
 
 		/**
 		 * @brief 경로로 ResourceId 조회
@@ -389,11 +337,6 @@ namespace Framework
 		ResourceManager* GetResourceManager() { return mResourceManager; }
 
 	private:
-		/**
-		 * @brief 기본 Asset 생성 (Initialize 시 호출)
-		 */
-		void CreateDefaultAssets();
-
 		/**
 		 * @brief 상대 경로를 전체 경로로 변환
 		 */
@@ -412,11 +355,6 @@ namespace Framework
 
 		// 역참조 맵 (ResourceId → 경로, 디버깅용)
 		std::unordered_map<ResourceId, std::string> mAssetPaths;
-
-		// 기본 Asset ID
-		ResourceId mDefaultMeshId;
-		ResourceId mDefaultTextureId;
-		ResourceId mDefaultMaterialId;
 
 		bool mInitialized = false;
 	};
@@ -449,13 +387,12 @@ namespace Framework
 		entry.asset = std::move(asset);
 		entry.state = AssetState::Loaded;  // Phase 4.1: 즉시 Loaded 상태
 		entry.refCount = 0;
-		entry.isDefault = false;
 
 		// 캐시에 추가
 		mAssetCache[id] = std::move(entry);
 		mAssetPaths[id] = path;
 
-		// TODO: Phase 4.2+ - 실제 파일 로딩
+		// TODO: 실제 파일 로딩
 		// entry.state = AssetState::Loading;
 		// bool success = LoadFromFile<T>(ResolvePath(path), entry.asset.get());
 		// entry.state = success ? AssetState::Loaded : AssetState::Failed;
@@ -464,28 +401,10 @@ namespace Framework
 	}
 
 	template<typename T>
-	ResourceId AssetManager::LoadOrDefault(const std::string& path)
-	{
-		static_assert(std::is_base_of_v<IAsset, T>, "T must derive from IAsset");
-
-		ResourceId id = Load<T>(path);
-
-		// 로드 실패 또는 상태가 Failed면 기본 Asset 반환
-		if (!id.IsValid() || GetState(id) == AssetState::Failed)
-		{
-			// LOG_WARN은 .cpp에서만 사용 가능하므로 헤더에서는 생략
-			// 실제 파일 로딩 구현 시 .cpp로 이동 권장
-			return GetDefaultAssetId<T>();
-		}
-
-		return id;
-	}
-
-	template<typename T>
 	ResourceId AssetManager::LoadAsync(const std::string& path)
 	{
 		// Phase 4.1: 내부적으로 동기 로딩
-		// Phase 4.5: 실제 비동기 구현
+		// 향후: 실제 비동기 구현
 		return Load<T>(path);
 	}
 
@@ -505,7 +424,6 @@ namespace Framework
 			if (expectedType != AssetType::Unknown && actualType != expectedType)
 			{
 				// 타입 불일치 - nullptr 반환
-				// 로깅은 .cpp에서만 가능하므로 여기서는 생략
 				return nullptr;
 			}
 #endif
@@ -536,43 +454,5 @@ namespace Framework
 		}
 		return nullptr;
 	}
-
-	// 기본 Asset ID 반환 - 특수화 필요
-	template<typename T>
-	ResourceId AssetManager::GetDefaultAssetId() const
-	{
-		// 기본 구현: Invalid 반환
-		// 지원되는 타입은 .cpp에서 특수화
-		return ResourceId::Invalid();
-	}
-
-	template<typename T>
-	T* AssetManager::GetDefaultAsset()
-	{
-		ResourceId id = GetDefaultAssetId<T>();
-		if (id.IsValid())
-		{
-			return GetAsset<T>(id);
-		}
-		return nullptr;
-	}
-
-	template<typename T>
-	const T* AssetManager::GetDefaultAsset() const
-	{
-		ResourceId id = GetDefaultAssetId<T>();
-		if (id.IsValid())
-		{
-			return GetAsset<T>(id);
-		}
-		return nullptr;
-	}
-
-	//=========================================================================
-	// 템플릿 특수화 선언 (정의는 .cpp에)
-	//=========================================================================
-	template<> ResourceId AssetManager::GetDefaultAssetId<MeshAsset>() const;
-	template<> ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const;
-	template<> ResourceId AssetManager::GetDefaultAssetId<MaterialAsset>() const;
 
 } // namespace Framework

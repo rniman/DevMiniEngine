@@ -3,6 +3,7 @@
  * @brief AssetManager 클래스 구현
  *
  * @note Phase 4.3: TextureAsset 메타데이터 관리 추가
+ * @note Phase 4.5: Default Asset 시스템 제거 (ResourceManager 폴백 사용)
  */
 #include "pch.h"
 #include "Framework/Assets/AssetManager.h"
@@ -16,47 +17,12 @@
 namespace Framework
 {
 	//=========================================================================
-	// 기본 Asset 경로 (예약된 내부 경로)
-	//=========================================================================
-	namespace DefaultAssetPaths
-	{
-		constexpr const char* MESH = "__default__/mesh";
-		constexpr const char* TEXTURE = "__default__/texture";
-		constexpr const char* MATERIAL = "__default__/material";
-	}
-
-	//=========================================================================
-	// GetDefaultAssetId 템플릿 특수화
-	//=========================================================================
-
-	template<>
-	ResourceId AssetManager::GetDefaultAssetId<MeshAsset>() const
-	{
-		return mDefaultMeshId;
-	}
-
-	template<>
-	ResourceId AssetManager::GetDefaultAssetId<TextureAsset>() const
-	{
-		return mDefaultTextureId;
-	}
-
-	template<>
-	ResourceId AssetManager::GetDefaultAssetId<MaterialAsset>() const
-	{
-		return mDefaultMaterialId;
-	}
-
-	//=========================================================================
 	// 생성자/소멸자
 	//=========================================================================
 
 	AssetManager::AssetManager(ResourceManager* resourceManager)
 		: mResourceManager(resourceManager)
 		, mAssetRoot("Assets/")
-		, mDefaultMeshId(ResourceId::Invalid())
-		, mDefaultTextureId(ResourceId::Invalid())
-		, mDefaultMaterialId(ResourceId::Invalid())
 		, mInitialized(false)
 	{
 	}
@@ -89,9 +55,6 @@ namespace Framework
 			mAssetRoot += '/';
 		}
 
-		// 기본 Asset 생성
-		CreateDefaultAssets();
-
 		mInitialized = true;
 
 		LOG_INFO("[AssetManager] Initialized with root: %s", mAssetRoot.c_str());
@@ -107,91 +70,13 @@ namespace Framework
 
 		LOG_INFO("[AssetManager] Shutting down...");
 
-		// 모든 Asset 해제 (기본 Asset 포함)
+		// 모든 Asset 해제
 		mAssetCache.clear();
 		mAssetPaths.clear();
-
-		// 기본 Asset ID 초기화
-		mDefaultMeshId = ResourceId::Invalid();
-		mDefaultTextureId = ResourceId::Invalid();
-		mDefaultMaterialId = ResourceId::Invalid();
 
 		mInitialized = false;
 
 		LOG_INFO("[AssetManager] Shutdown complete");
-	}
-
-	//=========================================================================
-	// 기본 Asset 생성
-	//=========================================================================
-
-	void AssetManager::CreateDefaultAssets()
-	{
-		LOG_INFO("[AssetManager] Creating default assets...");
-
-		// 기본 Mesh Asset (마젠타 Cube)
-		{
-			mDefaultMeshId = PathToId(DefaultAssetPaths::MESH);
-
-			auto asset = std::make_unique<MeshAsset>();
-			// TODO: Phase 4.2 - 실제 Cube 데이터 설정
-			// asset->SetVertices(cubeVertices);
-			// asset->SetIndices(cubeIndices);
-
-			AssetEntry entry;
-			entry.asset = std::move(asset);
-			entry.state = AssetState::Loaded;
-			entry.refCount = 1;  // 항상 참조됨 (해제 방지)
-			entry.isDefault = true;
-
-			mAssetCache[mDefaultMeshId] = std::move(entry);
-			mAssetPaths[mDefaultMeshId] = DefaultAssetPaths::MESH;
-
-			LOG_DEBUG("[AssetManager] Created default MeshAsset (ID: 0x%llX)", mDefaultMeshId.id);
-		}
-
-		// 기본 Texture Asset (마젠타/검정 체크무늬)
-		{
-			mDefaultTextureId = PathToId(DefaultAssetPaths::TEXTURE);
-
-			auto asset = std::make_unique<TextureAsset>();
-			// TODO: Phase 4.3 - 실제 체크무늬 텍스처 데이터 설정
-			// asset->SetPixelData(checkerboardData);
-			// asset->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
-
-			AssetEntry entry;
-			entry.asset = std::move(asset);
-			entry.state = AssetState::Loaded;
-			entry.refCount = 1;
-			entry.isDefault = true;
-
-			mAssetCache[mDefaultTextureId] = std::move(entry);
-			mAssetPaths[mDefaultTextureId] = DefaultAssetPaths::TEXTURE;
-
-			LOG_DEBUG("[AssetManager] Created default TextureAsset (ID: 0x%llX)", mDefaultTextureId.id);
-		}
-
-		// 기본 Material Asset (마젠타 색상)
-		{
-			mDefaultMaterialId = PathToId(DefaultAssetPaths::MATERIAL);
-
-			auto asset = std::make_unique<MaterialAsset>();
-			// TODO: Phase 4.3 - 실제 마젠타 머티리얼 설정
-			// asset->SetBaseColor(Vector4(1.0f, 0.0f, 1.0f, 1.0f));  // 마젠타
-
-			AssetEntry entry;
-			entry.asset = std::move(asset);
-			entry.state = AssetState::Loaded;
-			entry.refCount = 1;
-			entry.isDefault = true;
-
-			mAssetCache[mDefaultMaterialId] = std::move(entry);
-			mAssetPaths[mDefaultMaterialId] = DefaultAssetPaths::MATERIAL;
-
-			LOG_DEBUG("[AssetManager] Created default MaterialAsset (ID: 0x%llX)", mDefaultMaterialId.id);
-		}
-
-		LOG_INFO("[AssetManager] Default assets created (4 assets)");
 	}
 
 	//=========================================================================
@@ -228,7 +113,6 @@ namespace Framework
 		entry.asset = std::move(asset);
 		entry.state = AssetState::Loaded;
 		entry.refCount = 0;
-		entry.isDefault = false;
 
 		// 캐시에 추가
 		mAssetCache[id] = std::move(entry);
@@ -249,13 +133,6 @@ namespace Framework
 		auto it = mAssetCache.find(id);
 		if (it == mAssetCache.end())
 		{
-			return;
-		}
-
-		// 기본 Asset은 해제 불가
-		if (it->second.isDefault)
-		{
-			LOG_WARN("[AssetManager] Cannot unregister default TextureAsset (ID: 0x%llX)", id.id);
 			return;
 		}
 
@@ -327,7 +204,6 @@ namespace Framework
 		entry.asset = std::move(asset);
 		entry.state = AssetState::Loaded;
 		entry.refCount = 0;
-		entry.isDefault = false;
 
 		// 캐시에 추가
 		mAssetCache[id] = std::move(entry);
@@ -345,13 +221,6 @@ namespace Framework
 		auto it = mAssetCache.find(id);
 		if (it == mAssetCache.end())
 		{
-			return;
-		}
-
-		// 기본 Asset은 해제 불가
-		if (it->second.isDefault)
-		{
-			LOG_WARN("[AssetManager] Cannot unregister default MeshAsset (ID: 0x%llX)", id.id);
 			return;
 		}
 
@@ -418,16 +287,6 @@ namespace Framework
 		return GetState(id) == AssetState::Loaded;
 	}
 
-	bool AssetManager::IsDefaultAsset(ResourceId id) const
-	{
-		auto it = mAssetCache.find(id);
-		if (it != mAssetCache.end())
-		{
-			return it->second.isDefault;
-		}
-		return false;
-	}
-
 	//=========================================================================
 	// Asset 해제
 	//=========================================================================
@@ -437,13 +296,6 @@ namespace Framework
 		auto it = mAssetCache.find(id);
 		if (it == mAssetCache.end())
 		{
-			return false;
-		}
-
-		// 기본 Asset은 해제 불가
-		if (it->second.isDefault)
-		{
-			LOG_WARN("[AssetManager] Cannot unload default asset (ID: 0x%llX)", id.id);
 			return false;
 		}
 
@@ -469,13 +321,6 @@ namespace Framework
 
 		for (auto it = mAssetCache.begin(); it != mAssetCache.end();)
 		{
-			// 기본 Asset은 건너뜀
-			if (it->second.isDefault)
-			{
-				++it;
-				continue;
-			}
-
 			if (it->second.refCount == 0)
 			{
 				ResourceId id = it->first;
@@ -510,23 +355,12 @@ namespace Framework
 
 	void AssetManager::Clear()
 	{
-		Core::uint32 count = 0;
+		Core::uint32 count = static_cast<Core::uint32>(mAssetCache.size());
 
-		for (auto it = mAssetCache.begin(); it != mAssetCache.end();)
-		{
-			// 기본 Asset은 유지
-			if (it->second.isDefault)
-			{
-				++it;
-				continue;
-			}
+		mAssetCache.clear();
+		mAssetPaths.clear();
 
-			mAssetPaths.erase(it->first);
-			it = mAssetCache.erase(it);
-			++count;
-		}
-
-		LOG_INFO("[AssetManager] Cleared %u assets (default assets preserved)", count);
+		LOG_INFO("[AssetManager] Cleared %u assets", count);
 	}
 
 	//=========================================================================
@@ -583,8 +417,7 @@ namespace Framework
 		Core::uint32 count = 0;
 		for (const auto& [id, entry] : mAssetCache)
 		{
-			// 기본 Asset 제외
-			if (!entry.isDefault && entry.state == AssetState::Loaded)
+			if (entry.state == AssetState::Loaded)
 			{
 				++count;
 			}
@@ -592,19 +425,13 @@ namespace Framework
 		return count;
 	}
 
-	std::vector<AssetInfo> AssetManager::GetLoadedAssetInfos(bool includeDefaults) const
+	std::vector<AssetInfo> AssetManager::GetLoadedAssetInfos() const
 	{
 		std::vector<AssetInfo> infos;
 		infos.reserve(mAssetCache.size());
 
 		for (const auto& [id, entry] : mAssetCache)
 		{
-			// 기본 Asset 필터링
-			if (!includeDefaults && entry.isDefault)
-			{
-				continue;
-			}
-
 			AssetInfo info;
 
 			// 경로 조회

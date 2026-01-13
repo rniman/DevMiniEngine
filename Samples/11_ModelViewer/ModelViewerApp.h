@@ -49,6 +49,19 @@ namespace Graphics
 }
 
 /**
+ * @brief Model Inspector에서 선택 가능한 모델
+ */
+enum class SelectedModel : int
+{
+	ProceduralSphere = 0,
+	LoadedSphere,
+	Helmet,
+	Cube,
+	Engine,
+	Count
+};
+
+/**
  * @brief Phase 4.5: Model Loading 데모 애플리케이션
  */
 class ModelViewerApp : public Framework::Application
@@ -144,12 +157,29 @@ private:
 	void RenderSphereControlPanel();
 	void RenderModelInfoPanel();
 
-	// Model Info 패널 헬퍼 (섹션별 분리)
-	void RenderModelInfoPanelSummary();
-	void RenderModelInfoPanelAssetPipeline();
-	void RenderModelInfoPanelMaterials();
-	void RenderModelInfoPanelMeshes();
-	void RenderModelInfoPanelTextures();
+	//=========================================================================
+	// Model Inspector 헬퍼
+	//=========================================================================
+
+	/** @brief 선택된 모델의 LoadedModelData 반환 (없으면 nullptr) */
+	const Framework::LoadedModelData* GetSelectedModelData() const;
+
+	/** @brief 선택된 모델의 MeshId 반환 (Entity에서 조회) */
+	Framework::ResourceId GetSelectedMeshId() const;
+
+	/** @brief 선택된 모델이 유효한지 (로드 성공) */
+	bool IsSelectedModelValid() const;
+
+	/** @brief 선택된 모델 이름 */
+	const char* GetSelectedModelName() const;
+
+	// Model Info 패널 섹션별 렌더링
+	void RenderModelInfoPanelSummary(const Framework::LoadedModelData* modelData);
+	void RenderModelInfoPanelProceduralInfo();
+	void RenderModelInfoPanelAssetPipeline(Framework::ResourceId meshId);
+	void RenderModelInfoPanelMaterials(const Framework::LoadedModelData* modelData);
+	void RenderModelInfoPanelMeshes(const Framework::LoadedModelData* modelData, Framework::ResourceId meshId);
+	void RenderModelInfoPanelTextures(const Framework::LoadedModelData* modelData);
 
 private:
 	// 리소스 관리
@@ -175,6 +205,7 @@ private:
 	//=========================================================================
 	ECS::Entity mLoadedSphereEntity;
 	Framework::ResourceId mLoadedMeshId;
+	Framework::LoadedModelData mLoadedSphereModelData;  // Inspector용
 
 	//=========================================================================
 	// DamagedHelmet (오른쪽)
@@ -223,6 +254,9 @@ private:
 	bool mShowAssetManagerPanel = true;
 	bool mShowSphereControlPanel = true;
 	bool mShowModelInfoPanel = true;
+
+	// Model Inspector 선택
+	SelectedModel mSelectedModel = SelectedModel::ProceduralSphere;
 
 	// Procedural Mesh 재생성 플래그
 	bool mNeedsMeshRebuild = false;

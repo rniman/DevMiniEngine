@@ -106,6 +106,7 @@ namespace Framework
 				return Graphics::TextureType::Emissive;
 
 			default:
+				LOG_WARN("[ModelLoader] Unknown texture type: %d, defaulting to Albedo", aiType);
 				return Graphics::TextureType::Albedo;
 			}
 		}
@@ -129,8 +130,9 @@ namespace Framework
 			{
 				return std::stoi(path.substr(1));
 			}
-			catch (...)
+			catch (const std::exception& e)
 			{
+				LOG_WARN("[ModelLoader] Failed to parse embedded index: %s", e.what());
 				return -1;
 			}
 		}
@@ -414,7 +416,12 @@ namespace Framework
 				positions[i].z = mesh->mVertices[i].z;
 
 				// AABB 업데이트
-				UpdateAABB(positions[i], outMeshData.aabbMin, outMeshData.aabbMax);
+				// UpdateAABB(positions[i], outMeshData.aabbMin, outMeshData.aabbMax);
+				if (mesh->mAABB.mMin.x != mesh->mAABB.mMax.x)  // 유효성 체크
+				{
+					outMeshData.aabbMin = { mesh->mAABB.mMin.x, mesh->mAABB.mMin.y, mesh->mAABB.mMin.z };
+					outMeshData.aabbMax = { mesh->mAABB.mMax.x, mesh->mAABB.mMax.y, mesh->mAABB.mMax.z };
+				}
 
 				// Normal
 				if (mesh->HasNormals())
