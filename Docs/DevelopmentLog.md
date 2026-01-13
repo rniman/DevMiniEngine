@@ -26,6 +26,86 @@
 
 ---
 
+## 2026-01-13 - Phase 4 Refactor 03: Default Asset 제거 및 Model Inspector 리팩토링
+
+### Tasks
+
+- [x] AssetManager Default Asset 시스템 제거
+- [x] ResourceManager 폴백 사용으로 일원화
+- [x] Model Inspector 드롭다운 선택 방식 구현
+- [x] Procedural/Loaded 메시 표시 분리
+
+### Decisions
+
+**Default Asset 시스템 제거**
+- AssetManager의 Default Asset은 GPU 데이터 없이 ID만 생성 (무의미)
+- 실제 폴백은 `ResourceManager::GetFallbackTexture()` 1x1 마젠타만 사용
+- 이원화된 시스템 → ResourceManager 폴백으로 일원화
+
+**Procedural Mesh 처리**
+- MeshAsset 등록 안 함 (테스트/디버그 용도)
+- Inspector에서 파라미터만 표시 (Segments, Rings)
+- 향후 디버그 도형은 DebugRenderer로 별도 구현
+
+**MeshId 조회 방식**
+- 멤버 변수 중복 저장 → Entity MeshComponent에서 직접 조회
+- 계층 구조(Engine)는 첫 번째 자식 MeshComponent 확인
+
+### Changes
+
+**AssetManager.h 제거 항목:**
+```cpp
+// 멤버 변수
+ResourceId mDefaultMeshId, mDefaultTextureId, mDefaultMaterialId;
+
+// 함수
+CreateDefaultAssets(), GetDefaultAssetId<T>(), GetDefaultAsset<T>()
+LoadOrDefault<T>(), IsDefaultAsset()
+
+// 필드/파라미터
+AssetEntry::isDefault, GetLoadedAssetInfos(bool includeDefaults)
+```
+
+**ModelViewerApp.h 추가:**
+```cpp
+enum class SelectedModel : int { ProceduralSphere, LoadedSphere, Helmet, Cube, Engine };
+Framework::LoadedModelData mLoadedSphereModelData;
+SelectedModel mSelectedModel = SelectedModel::Helmet;
+
+// 헬퍼 함수
+GetSelectedModelData(), GetSelectedMeshId(), IsSelectedModelValid(), GetSelectedModelName()
+```
+
+**ModelViewerApp.cpp 수정:**
+- `SetupLoadedSphereMesh()`: LoadMesh → LoadModel, mLoadedSphereModelData 채우기
+- `RenderModelInfoPanel()`: 드롭다운 + Procedural/Loaded 분기
+
+### Results
+
+**폴백 전략 정리:**
+```
+텍스처: ResourceManager::GetFallbackTexture() (1x1 마젠타)
+메시/머티리얼: 없음 (로드 실패 시 에러 처리)
+```
+
+**Model Inspector UI:**
+```
+[Combo] Model Selection
+├─ Procedural Sphere → 파라미터 표시 (Type, Segments, Rings)
+└─ Loaded Models → Summary, AssetPipeline, Materials, Textures, Meshes
+```
+
+### Notes
+
+- Procedural Mesh는 향후 DebugRenderer(와이어프레임 박스, 구, 라인)로 분리 예정
+- LoadedSphereModelData 추가로 Inspector에서 모든 Loaded 모델 동일하게 표시
+
+### Next Steps
+
+- [ ] Phase 5: PBR Pipeline
+
+---
+
 ## 2026-01-12 - Phase 4 Refactor 02: ModelAsset/AnimationAsset 제거
 
 ### Overview
