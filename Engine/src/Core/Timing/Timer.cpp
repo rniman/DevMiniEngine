@@ -15,7 +15,6 @@ namespace Core::Timing
 	Timer::Timer()
 	{
 #ifdef _WIN32
-		// Windows 고정밀 타이머 초기화
 		int64 countsPerSec = 0;
 		if (QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&countsPerSec)))
 		{
@@ -30,7 +29,6 @@ namespace Core::Timing
 			return;
 		}
 #elif defined(__linux__)
-		// Linux 타이머 초기화 (향후 구현)
 		mIsValid = false;
 		LOG_WARN("Linux timer not yet implemented");
 #else
@@ -48,7 +46,6 @@ namespace Core::Timing
 			return;
 		}
 
-		// 일시정지 상태면 delta time은 0
 		if (mPaused)
 		{
 			mDeltaTime = 0.0f;
@@ -56,80 +53,67 @@ namespace Core::Timing
 			return;
 		}
 
-		// 현재 시간 얻기
 		mCurrentTime = GetCurrentCounter();
 
-		// 프레임 시간 계산 (초 단위)
-		mRawDeltaTime = static_cast<float32>(
-			(mCurrentTime - mPreviousTime) * mSecondsPerCount
-			);
+		mRawDeltaTime = static_cast<float32>((mCurrentTime - mPreviousTime) * mSecondsPerCount);
 
-		// FPS 제한 (선택적)
+		// FPS 제한 (VSync 미사용 시 활용)
 		if (lockFPS > 0.0f)
 		{
 			float32 targetFrameTime = 1.0f / lockFPS;
 
-			// 목표 프레임 시간에 도달할 때까지 대기
 			while (mRawDeltaTime < targetFrameTime)
 			{
-				// CPU 점유율을 낮추기 위해 약간의 Sleep
+				// CPU 양보 후 즉시 반환
 				if (targetFrameTime - mRawDeltaTime > 0.001f)
 				{
 #ifdef _WIN32
-					Sleep(0);  // 다른 스레드에 양보
+					Sleep(0);
 #endif
 				}
 
 				mCurrentTime = GetCurrentCounter();
-				mRawDeltaTime = static_cast<float32>(
-					(mCurrentTime - mPreviousTime) * mSecondsPerCount
-					);
+				mRawDeltaTime = static_cast<float32>((mCurrentTime - mPreviousTime) * mSecondsPerCount);
 			}
 		}
 
 		mPreviousTime = mCurrentTime;
 
-		// 극단적인 값 필터링 (1초 이상 차이는 무시)
-		// 디버거 중단이나 포커스 전환 시 발생할 수 있는 큰 delta time 방지
+		// 극단적인 값 필터링 (디버거 중단, 포커스 전환 등)
 		if (mRawDeltaTime > 1.0f)
 		{
-			mRawDeltaTime = 0.016667f;  // 60 FPS 기본값
+			mRawDeltaTime = 0.016667f;
 		}
 
-		// 프레임 시간 히스토리 업데이트 (순환 버퍼)
+		// 순환 버퍼 업데이트 - O(1)
 		if (mSampleCount < MAX_SAMPLE_COUNT)
 		{
-			mFrameTimeHistory[mSampleCount++] = mRawDeltaTime;
+			// 초기 채우기 단계
+			mFrameTimeHistory[mSampleCount] = mRawDeltaTime;
+			mFrameTimeSum += mRawDeltaTime;
+			mSampleCount++;
 		}
 		else
 		{
-			// 오래된 값을 제거하고 새 값 추가
-			std::rotate(
-				mFrameTimeHistory.begin(),
-				mFrameTimeHistory.begin() + 1,
-				mFrameTimeHistory.end()
-			);
-			mFrameTimeHistory[MAX_SAMPLE_COUNT - 1] = mRawDeltaTime;
+			// 순환 교체: 오래된 값 빼고 새 값 더하기
+			mFrameTimeSum -= mFrameTimeHistory[mSampleIndex];
+			mFrameTimeSum += mRawDeltaTime;
+			mFrameTimeHistory[mSampleIndex] = mRawDeltaTime;
+			mSampleIndex = (mSampleIndex + 1) % MAX_SAMPLE_COUNT;
 		}
 
-		// 평균 delta time 계산
-		float32 sum = 0.0f;
-		for (uint32 i = 0; i < mSampleCount; ++i)
-		{
-			sum += mFrameTimeHistory[i];
-		}
-		mDeltaTime = (mSampleCount > 0) ? (sum / static_cast<float32>(mSampleCount)) : mRawDeltaTime;
+		// 평균 delta time
+		mDeltaTime = mFrameTimeSum / static_cast<float32>(mSampleCount);
 
-		// FPS 계산
+		// FPS 계산 (1초마다 업데이트)
 		mFrameCount++;
 		mFpsTimeAccumulator += mRawDeltaTime;
 
-		// 1초마다 FPS 업데이트
 		if (mFpsTimeAccumulator >= 1.0f)
 		{
 			mCurrentFrameRate = mFrameCount;
 			mFrameCount = 0;
-			mFpsTimeAccumulator -= 1.0f;  // 정확한 1초 간격 유지
+			mFpsTimeAccumulator -= 1.0f;
 		}
 	}
 
@@ -142,16 +126,11 @@ namespace Core::Timing
 
 		int64 startTime = GetCurrentCounter();
 
-		// 일시정지 상태에서 재개
 		if (mPaused)
 		{
 			// 일시정지된 시간 누적
 			mPausedTime += (startTime - mStopTime);
-
-			// 이전 시간을 현재로 설정하여 큰 delta time 방지
 			mPreviousTime = startTime;
-
-			// 상태 초기화
 			mStopTime = 0;
 			mPaused = false;
 
@@ -166,7 +145,6 @@ namespace Core::Timing
 			return;
 		}
 
-		// 이미 정지 상태면 무시
 		if (!mPaused)
 		{
 			mStopTime = GetCurrentCounter();
@@ -193,7 +171,9 @@ namespace Core::Timing
 
 		// 프레임 히스토리 초기화
 		mFrameTimeHistory.fill(0.0f);
+		mSampleIndex = 0;
 		mSampleCount = 0;
+		mFrameTimeSum = 0.0f;
 		mDeltaTime = 0.0f;
 		mRawDeltaTime = 0.0f;
 
@@ -212,14 +192,12 @@ namespace Core::Timing
 			return 0.0f;
 		}
 
-		// 정지 상태면 정지된 시점까지의 시간 반환
 		if (mPaused)
 		{
 			return static_cast<float32>(
 				((mStopTime - mPausedTime) - mBaseTime) * mSecondsPerCount
 				);
 		}
-		// 실행 중이면 현재까지의 시간 반환
 		else
 		{
 			return static_cast<float32>(
@@ -243,7 +221,6 @@ namespace Core::Timing
 #else
 	int64 Timer::GetCurrentCounter() const
 	{
-		// 지원하지 않는 플랫폼
 		return 0;
 	}
 #endif

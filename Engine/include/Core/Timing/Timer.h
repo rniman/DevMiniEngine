@@ -17,7 +17,7 @@ namespace Core::Timing
 		Timer();
 		~Timer() = default;
 
-		// 복사/이동 금지 (싱글톤 아니지만 타이머는 복사될 필요 없음)
+		// 복사 금지, 이동 허용
 		Timer(const Timer&) = delete;
 		Timer& operator=(const Timer&) = delete;
 		Timer(Timer&&) = default;
@@ -25,7 +25,7 @@ namespace Core::Timing
 
 		/**
 		 * @brief 타이머 업데이트 (매 프레임 호출)
-		 * @param lockFPS FPS 제한 (0 = 제한 없음)
+		 * @param lockFPS FPS 제한 (0 = 제한 없음, VSync 사용 시 불필요)
 		 */
 		void Tick(float32 lockFPS = 0.0f);
 
@@ -46,13 +46,13 @@ namespace Core::Timing
 
 		/**
 		 * @brief 프레임 간 경과 시간 (초 단위)
-		 * @return 평균화된 delta time
+		 * @return 평균화된 delta time (게임 로직, 물리, 애니메이션용)
 		 */
 		float32 GetDeltaTime() const { return mDeltaTime; }
 
 		/**
 		 * @brief 순간 프레임 시간 (평균화 안 됨)
-		 * @return 실제 프레임 시간
+		 * @return 실제 프레임 시간 (프로파일링용)
 		 */
 		float32 GetRawDeltaTime() const { return mRawDeltaTime; }
 
@@ -64,7 +64,6 @@ namespace Core::Timing
 
 		/**
 		 * @brief 현재 FPS
-		 * @return 초당 프레임 수
 		 */
 		uint32 GetFrameRate() const { return mCurrentFrameRate; }
 
@@ -74,26 +73,16 @@ namespace Core::Timing
 		 */
 		std::string GetFrameRateString() const;
 
-		/**
-		 * @brief 일시정지 상태 확인
-		 * @return 일시정지 중이면 true
-		 */
 		bool IsPaused() const { return mPaused; }
-
-		/**
-		 * @brief 플랫폼별 타이머 초기화 확인
-		 * @return 타이머가 정상적으로 초기화되었으면 true
-		 */
 		bool IsValid() const { return mIsValid; }
 
 	private:
-		// 플랫폼별 구현
+		// 플랫폼별 카운터 쿼리
+		int64 GetCurrentCounter() const;
+
 #ifdef _WIN32
 		float64 mSecondsPerCount = 0.0;
 #endif
-
-		// 플랫폼별 카운터 쿼리
-		int64 GetCurrentCounter() const;
 
 		// Delta time
 		float32 mDeltaTime = 0.0f;
@@ -106,10 +95,12 @@ namespace Core::Timing
 		int64 mPreviousTime = 0;
 		int64 mCurrentTime = 0;
 
-		// 프레임 시간 평균화
+		// 프레임 시간 평균화 (순환 버퍼)
 		static constexpr size_t MAX_SAMPLE_COUNT = 50;
 		std::array<float32, MAX_SAMPLE_COUNT> mFrameTimeHistory = {};
-		uint32 mSampleCount = 0;
+		uint32 mSampleIndex = 0;      // 현재 삽입 위치
+		uint32 mSampleCount = 0;      // 유효한 샘플 수
+		float32 mFrameTimeSum = 0.0f; // 합계 캐싱
 
 		// FPS 계산
 		uint32 mCurrentFrameRate = 0;
@@ -123,7 +114,6 @@ namespace Core::Timing
 
 	/**
 	 * @brief 전역 타이머 인스턴스 획득
-	 * @return 전역 타이머 참조
 	 */
 	Timer& GetGlobalTimer();
 
