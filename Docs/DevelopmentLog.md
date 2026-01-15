@@ -26,6 +26,32 @@
 
 ---
 
+## 2025-01-15 - Timer 클래스 개선
+
+### Tasks
+- [x] 프레임 히스토리 순환 버퍼 방식으로 변경
+- [x] Delta time 합계 캐싱 추가
+- [x] FPS 제한 Sleep 정밀도 문제 수정
+
+### Decisions
+- **순환 버퍼 도입**: `std::rotate` O(N) → 인덱스 기반 O(1)로 변경
+- **합계 캐싱**: 매 프레임 전체 합산 대신 `mFrameTimeSum` 증분 업데이트
+- **Sleep(0) 유지**: `Sleep(1)`은 Windows 타이머 해상도(~15.6ms) 문제로 46FPS 발생, `Sleep(0)`으로 복원
+
+### Notes
+- Windows 기본 타이머 해상도는 약 15.6ms (64Hz)
+- `Sleep(1)` 사용 시 실제 15ms 대기하여 FPS 제한 부정확
+- `timeBeginPeriod(1)`로 해상도 변경 가능하나 시스템 전역 영향 있음
+- 현재 VSync ON 상태에서는 Timer FPS 제한 불필요
+
+### Changes
+| 항목 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| 프레임 히스토리 업데이트 | `std::rotate` | 순환 버퍼 (mSampleIndex) |
+| 평균 계산 | 매 프레임 전체 합산 | mFrameTimeSum 캐싱 |
+
+---
+
 ## 2026-01-13 - Phase 4 Refactor 03: Default Asset 제거 및 Model Inspector 리팩토링
 
 ### Tasks
