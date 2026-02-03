@@ -47,9 +47,10 @@ namespace ECS
 		 * @brief 매 프레임 Transform 계층 구조 업데이트
 		 *
 		 * 1. Root Entity부터 DFS 순회
-		 * 2. localDirty면 localMatrix 재계산
-		 * 3. worldDirty면 worldMatrix 재계산 + 자식 worldDirty 마킹
-		 * 4. Hierarchy 없는 Entity는 단독 처리
+		 * 2. localDirty/worldDirty/subtreeDirty 모두 false면 서브트리 스킵
+		 * 3. localDirty면 localMatrix 재계산
+		 * 4. worldDirty면 worldMatrix 재계산 + 자식 worldDirty 마킹
+		 * 5. Hierarchy 없는 Entity는 단독 처리
 		 */
 		void Update(Core::float32 deltaTime) override;
 
@@ -267,21 +268,20 @@ namespace ECS
 		/// 로컬 Up 벡터 반환
 		static Math::Vector3 GetUp(const TransformComponent& transform);
 
+		//=========================================================================
+		// Dirty Flag API
+		//=========================================================================
+
 		/**
-		 * @brief Transform 변경 시 dirty 플래그 설정
+		 * @brief Transform 변경 시 dirty 플래그 설정 + 부모 체인 subtreeDirty 전파
 		 *
-		 * TransformComponent를 직접 수정한 경우 반드시 호출해야 합니다.
-		 * TransformSystem의 고수준 API(SetPosition 등)를 사용하면 자동으로 호출됩니다.
+		 * 대상 Entity의 localDirty + worldDirty를 설정하고,
+		 * 부모 체인을 따라 subtreeDirty를 전파합니다.
+		 * 상위 노드가 이미 subtreeDirty면 전파를 조기 종료합니다.
 		 *
-		 * @code
-		 * // ECSInspector 등에서 직접 수정 시:
-		 * transform->position = newPosition;
-		 * TransformSystem::MarkDirty(*transform);  // 필수!
-		 * @endcode
-		 *
-		 * @param transform 수정된 TransformComponent
+		 * 계층 구조의 중간 노드를 직접 수정할 때 사용합니다.
 		 */
-		static void MarkDirty(TransformComponent& transform);
+		static void MarkDirty(Registry& registry, Entity entity);
 
 	private:
 		//=========================================================================
@@ -328,7 +328,8 @@ namespace ECS
 
 		//=========================================================================
 		// TODO: [OPTIMIZATION] Phase 4+
-		// - 현재: DFS 재귀 순회
+		// - 현재: DFS 재귀 순회 + subtreeDirty 상향 전파
+		// - 최적화: 비트마스크 dirty flag (dirty 종류 4개 이상 시)
 		// - 최적화: 명시적 스택 (깊이 100+ 시)
 		// - 최적화: Topological Sort 캐싱 (Entity 10,000+ 시)
 		// - 최적화: 독립 서브트리 병렬 처리 (Job System 도입 후)

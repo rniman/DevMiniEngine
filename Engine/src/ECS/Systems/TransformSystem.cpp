@@ -158,12 +158,8 @@ namespace ECS
 			AddRootEntity(child);
 		}
 
-		// child의 worldDirty 설정
-		auto* childTransform = registry->GetComponent<TransformComponent>(child);
-		if (childTransform)
-		{
-			childTransform->worldDirty = true;
-		}
+		// child의 dirty 설정 + 부모 체인 전파
+		MarkDirty(*registry, child);
 
 		return true;
 	}
@@ -199,7 +195,7 @@ namespace ECS
 		}
 
 		transform->position = position;
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -225,7 +221,7 @@ namespace ECS
 
 		transform->eulerHint = eulerAngles;  // Euler 캐시 저장
 		SetRotationEulerInternal(*transform, eulerAngles);
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -239,7 +235,7 @@ namespace ECS
 
 		transform->rotation = rotation.Normalized();
 		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -264,7 +260,7 @@ namespace ECS
 		}
 
 		transform->scale = scale;
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -283,7 +279,7 @@ namespace ECS
 
 		RotateInternal(*transform, eulerDelta);
 		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -297,7 +293,7 @@ namespace ECS
 
 		RotateAroundInternal(*transform, axis, angle);
 		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -310,7 +306,7 @@ namespace ECS
 		}
 
 		transform->position += delta;
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -338,7 +334,7 @@ namespace ECS
 			transform->position += direction.Normalized() * maxDistance;
 		}
 
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -351,7 +347,7 @@ namespace ECS
 		}
 
 		transform->position = Math::Lerp(transform->position, target, Math::Saturate(t));
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -380,7 +376,7 @@ namespace ECS
 		Core::float32 t = Math::Min(maxRadians / angle, 1.0f);
 		transform->rotation = Math::QuaternionSlerp(transform->rotation, target, t);
 		transform->eulerHint = transform->rotation.ToEuler();
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -394,7 +390,7 @@ namespace ECS
 
 		transform->rotation = Math::QuaternionSlerp(transform->rotation, target, Math::Saturate(t));
 		transform->eulerHint = transform->rotation.ToEuler();
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -413,7 +409,7 @@ namespace ECS
 
 		transform->rotation = Math::QuaternionLookAt(direction, up);
 		transform->eulerHint = transform->rotation.ToEuler();
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -432,7 +428,7 @@ namespace ECS
 		transform->scale.x *= multiplier.x;
 		transform->scale.y *= multiplier.y;
 		transform->scale.z *= multiplier.z;
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -450,7 +446,7 @@ namespace ECS
 		}
 
 		transform->scale = Math::Lerp(transform->scale, target, Math::Saturate(t));
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -553,7 +549,7 @@ namespace ECS
 
 		transform->rotation = Math::QuaternionFromRotationMatrix(rotMatrix);
 		transform->eulerHint = transform->rotation.ToEuler();  // Euler 캐시 갱신
-		MarkDirty(*transform);
+		MarkDirty(*GetRegistry(), entity);
 		return true;
 	}
 
@@ -656,10 +652,44 @@ namespace ECS
 		return transform.rotation.GetUp();
 	}
 
-	void TransformSystem::MarkDirty(TransformComponent& transform)
+	//=========================================================================
+	// Dirty Flag API
+	//=========================================================================
+
+	void TransformSystem::MarkDirty(Registry& registry, Entity entity)
 	{
-		transform.localDirty = true;
-		transform.worldDirty = true;
+		auto* transform = registry.GetComponent<TransformComponent>(entity);
+		if (!transform)
+		{
+			return;
+		}
+
+		transform->localDirty = true;
+		transform->worldDirty = true;
+
+		// 부모 체인을 따라 subtreeDirty 전파
+		const auto* hierarchy = registry.GetComponent<HierarchyComponent>(entity);
+		Entity current = hierarchy ? hierarchy->parent : Entity::Invalid();
+
+		while (current.IsValid())
+		{
+			auto* parentTransform = registry.GetComponent<TransformComponent>(current);
+			if (!parentTransform)
+			{
+				break;
+			}
+
+			// 이미 마킹되어 있으면 상위도 마킹된 상태 → 조기 종료
+			if (parentTransform->subtreeDirty)
+			{
+				break;
+			}
+
+			parentTransform->subtreeDirty = true;
+
+			const auto* parentHierarchy = registry.GetComponent<HierarchyComponent>(current);
+			current = parentHierarchy ? parentHierarchy->parent : Entity::Invalid();
+		}
 	}
 
 	//=============================================================================
@@ -728,51 +758,33 @@ namespace ECS
 	void TransformSystem::UpdateHierarchy(Entity entity, const Math::Matrix4x4& parentWorldMatrix)
 	{
 		Registry* registry = GetRegistry();
-
 		auto* transform = registry->GetComponent<TransformComponent>(entity);
 		if (!transform)
 		{
 			return;
 		}
 
-		// dirty 아닌 서브트리는 스킵
-		if (!transform->localDirty && !transform->worldDirty)
+		bool clean = !transform->localDirty && !transform->worldDirty && !transform->subtreeDirty;
+		// 자신과 서브트리 모두 clean이면 스킵
+		if (clean)
 		{
-			// 자식들도 dirty 아니면 전체 스킵
-			const auto* hierarchy = registry->GetComponent<HierarchyComponent>(entity);
-			if (hierarchy)
-			{
-				bool anyChildDirty = false;
-				for (Entity child : hierarchy->children)
-				{
-					auto* childTransform = registry->GetComponent<TransformComponent>(child);
-					if (childTransform && (childTransform->localDirty || childTransform->worldDirty))
-					{
-						anyChildDirty = true;
-						break;
-					}
-				}
-
-				if (!anyChildDirty)
-				{
-					return;  // 이 서브트리 전체 스킵
-				}
-			}
-			else
-			{
-				return;  // 자식 없고 dirty 아니면 스킵
-			}
+			return;
 		}
 
 		// Local 업데이트
 		UpdateLocalMatrix(*transform);
 
 		// World 업데이트
+		bool worldUpdated = false;
 		if (transform->worldDirty)
 		{
 			transform->worldMatrix = transform->localMatrix * parentWorldMatrix;
 			transform->worldDirty = false;
+			worldUpdated = true;
 		}
+
+		// subtreeDirty 클리어 (자식 처리 전)
+		transform->subtreeDirty = false;
 
 		// 자식 처리
 		const auto* hierarchy = registry->GetComponent<HierarchyComponent>(entity);
@@ -785,11 +797,14 @@ namespace ECS
 					continue;
 				}
 
-				// 자식의 worldDirty 설정 (부모가 업데이트되었으므로)
-				auto* childTransform = registry->GetComponent<TransformComponent>(child);
-				if (childTransform)
+				// 부모의 world가 실제로 갱신된 경우에만 자식 worldDirty 설정
+				if (worldUpdated)
 				{
-					childTransform->worldDirty = true;
+					auto* childTransform = registry->GetComponent<TransformComponent>(child);
+					if (childTransform)
+					{
+						childTransform->worldDirty = true;
+					}
 				}
 
 				// 재귀 호출

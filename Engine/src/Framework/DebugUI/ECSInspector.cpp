@@ -315,9 +315,9 @@ namespace Framework
 		if (ImGui::DragFloat3("Position", pos, 0.1f))
 		{
 			transform->position = Math::Vector3(pos[0], pos[1], pos[2]);
-			ECS::TransformSystem::MarkDirty(*transform);
+			ECS::TransformSystem::MarkDirty(*registry, entity);
 		}
-
+		
 		// Rotation - eulerHint 사용 (Quaternion 변환 불안정성 방지)
 		float rot[3] = {
 			Math::RadToDeg(transform->eulerHint.x),
@@ -333,7 +333,7 @@ namespace Framework
 				Math::DegToRad(rot[2])
 			);
 			transform->rotation = Math::QuaternionFromEuler(transform->eulerHint);
-			ECS::TransformSystem::MarkDirty(*transform);
+			ECS::TransformSystem::MarkDirty(*registry, entity);
 		}
 
 		// Scale
@@ -341,7 +341,7 @@ namespace Framework
 		if (ImGui::DragFloat3("Scale", scale, 0.01f, 0.01f, 100.0f))
 		{
 			transform->scale = Math::Vector3(scale[0], scale[1], scale[2]);
-			ECS::TransformSystem::MarkDirty(*transform);
+			ECS::TransformSystem::MarkDirty(*registry, entity);
 		}
 	}
 

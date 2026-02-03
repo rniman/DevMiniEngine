@@ -77,6 +77,9 @@ namespace ECS
 		/// World 행렬 재계산 필요 여부 (local 변경 또는 parent 변경 시 true)
 		bool worldDirty = true;
 
+		/// 하위 서브트리에 dirty 노드 존재 여부 (상향 전파로 설정됨)
+		bool subtreeDirty = false;
+
 		//=====================================================================
 		// TODO: [OPTIMIZATION] Phase 4+
 		// - 현재: localMatrix + worldMatrix 캐시
