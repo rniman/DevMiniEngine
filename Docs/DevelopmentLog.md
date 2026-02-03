@@ -26,6 +26,105 @@
 
 ---
 
+## 2026-02-02 - Transform 계층 구조 Dirty Flag 전파 개선
+
+### Overview
+
+깊은 계층 구조(depth 2+)에서 중간 노드를 Inspector로 수정할 때 변경이 반영되지 않는 버그 수정. subtreeDirty 플래그 도입 및 MarkDirty API 통합.
+
+### Tasks
+
+- [x] 문제 원인 분석 (UpdateHierarchy early-exit 로직)
+- [x] TransformComponent에 subtreeDirty 플래그 추가
+- [x] MarkDirty API 통합 (부모 체인 상향 전파 포함)
+- [x] UpdateHierarchy early-exit 로직 개선
+- [x] 고수준 API 전체 MarkDirty 호출부 변경
+- [x] SetParent MarkDirty 호출로 통일
+- [x] ECSInspector 호출부 변경
+
+### Issues Encountered
+
+**깊은 계층 구조에서 Inspector 수정 미반영**
+- 현상: 2CylinderEngine 모델에서 depth 2+ 자식 노드를 Inspector로 수정 시 변경 미반영. Root 수정은 정상 동작.
+- 원인: UpdateHierarchy의 early-exit이 직접 자식(depth 1)의 dirty만 검사. 손자 이하 노드의 dirty 상태를 감지하지 못해 서브트리 전체를 스킵.
+- 해결: subtreeDirty 플래그 + 부모 체인 상향 전파로 근본 해결.
+
+```
+// 기존 문제 상황
+Root (clean) → 직접 자식만 검사 (clean) → 서브트리 스킵
+  └── Mesh_Engine (clean)
+        └── Crankshaft (clean)
+              └── Piston (dirty!) ← 검사되지 않음
+```
+
+### Decisions
+
+**방안 B 채택: subtreeDirty 플래그 + 상향 전파**
+- Transform dirty flag 패턴은 업계 표준 (Unity/Unreal 유사 패턴)
+- 향후 Animation/Physics 시스템에서도 동일 전파 패턴 재사용 가능
+- 방안 A(매 프레임 전체 순회)는 규모 증가 시 확장성 부족
+
+**MarkDirty API 단일화**
+- 기존 `MarkDirty(TransformComponent&)` 제거, `MarkDirty(Registry&, Entity)` 하나로 통합
+- 이유: 구 API는 부모 체인 전파가 불가능하여 고수준 API(SetPosition 등)에서도 동일한 버그 잠재
+- SetParent도 MarkDirty 호출로 통일 (localDirty 불필요 설정되나, SetParent는 매 프레임 호출이 아니므로 무시 가능)
+
+**UpdateHierarchy 자식 worldDirty 전파 조건 개선**
+- 기존: 부모 진입 시 자식에 무조건 worldDirty 설정
+- 변경: 부모의 world가 실제로 갱신된 경우(worldUpdated)에만 자식 worldDirty 설정
+- 이유: subtreeDirty로만 진입한 경우(자신은 clean, 하위에 dirty 존재) 자식에 불필요한 world 재계산 방지
+
+**대안 기술 비교 (향후 확장용)**
+| 기법 | 영역 | 도입 시점 |
+|------|------|----------|
+| subtreeDirty (채택) | dirty 전파 로직 | 현재 |
+| 비트마스크 (localDirty 등 통합) | 저장 포맷 | dirty 종류 4개 이상 시 |
+| Topological Sort 캐싱 | 순회 구조 | Entity 만 단위 시 |
+
+세 기법은 독립적 차원이므로 순차 적용 가능.
+
+### Changes
+
+**TransformComponent.h**
+- subtreeDirty 필드 추가
+
+```cpp
+bool subtreeDirty = false;  // 하위 서브트리에 dirty 노드 존재
+```
+
+**TransformSystem.h**
+- `MarkDirty(TransformComponent&)` 제거
+- `MarkDirty(Registry&, Entity)` 선언 (public static)
+
+**TransformSystem.cpp - MarkDirty**
+- localDirty + worldDirty 설정 후 부모 체인을 따라 subtreeDirty 상향 전파
+- 상위 노드가 이미 subtreeDirty면 조기 종료 (중복 전파 방지)
+
+**TransformSystem.cpp - UpdateHierarchy**
+- early-exit: 직접 자식 순회 루프(anyChildDirty) → subtreeDirty 단일 검사로 교체
+- worldUpdated 플래그로 자식 worldDirty 전파 조건 한정
+- subtreeDirty는 자식 처리 전 클리어
+
+**TransformSystem.cpp - 고수준 API (15곳)**
+- `MarkDirty(*transform)` → `MarkDirty(*GetRegistry(), entity)` 일괄 변경
+
+**TransformSystem.cpp - SetParent**
+- `childTransform->worldDirty = true` → `MarkDirty(*registry, child)` 로 통일
+
+**ECSInspector.cpp**
+- Position/Rotation/Scale 수정 시 `TransformSystem::MarkDirty(*registry, entity)` 호출
+
+### Notes
+
+- UpdateHierarchy 내부의 `childTransform->worldDirty = true` 직접 대입은 유지. 시스템 내부 순회 중 처리이므로 상향 전파가 불필요.
+- HierarchyComponent가 없는 Standalone Entity는 subtreeDirty와 무관 (UpdateStandaloneEntities에서 별도 처리)
+
+### Next Steps
+
+- [ ] Phase 5 PBR 셰이더 구현 진행
+
+---
+
 ## 2025-01-15 - Timer 클래스 개선
 
 ### Tasks
